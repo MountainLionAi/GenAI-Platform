@@ -11,7 +11,8 @@ from utils.captcha_utils import CaptchaGenerator
 from utils.time_utils import get_format_time
 from utils.common_utils import mask_email
 from constant.email_info import EMAIL_INFO
-import lib.hcaptcha as hcaptcha
+# import lib.hcaptcha as hcaptcha
+import utils.hcaptcha_utils as hcaptcha
 import utils.email_utils as email_utils
 
 

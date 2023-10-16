@@ -26,4 +26,5 @@ python-dotenv==1.0.0
 qdrant-client==1.4.0
 requests==2.31.0
 urllib3==1.26.16
-asyncio
+langchain==0.0.314
+tiktoken==0.5.1
