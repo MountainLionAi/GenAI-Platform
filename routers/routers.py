@@ -1,9 +1,9 @@
 from sanic import Blueprint
-from controller import kchart, gpt, firstTask, user, topic, predict, coin, gptstrem, userRate, pay, nfts, swap
+from controller import gpt, user, gptstrem, userRate, pay
 
 # chatbot相关接口
 blueprint_chatbot = Blueprint(name="chat_bot", url_prefix="/mpcbot")
-blueprint_chatbot.add_route(gpt.http, "/sendchat", methods=["POST"])
+# blueprint_chatbot.add_route(gpt.http, "/sendchat", methods=["POST"])
 blueprint_chatbot.add_route(gpt.http4gpt4, "/sendchat_gpt4", methods=["POST"])
 
 
@@ -11,7 +11,7 @@ blueprint_chatbot.add_route(gpt.http4gpt4, "/sendchat_gpt4", methods=["POST"])
 blueprint_v1 = Blueprint(name="v1_versions", url_prefix="api", version=1)
 
 # gpt相关接口
-blueprint_v1.add_route(gpt.send_chat, "sendChat", methods=["POST"])
+# blueprint_v1.add_route(gpt.send_chat, "sendChat", methods=["POST"])
 blueprint_v1.add_route(gpt.get_message_list, "getMessageList", methods=["GET"])
 blueprint_v1.add_route(gpt.get_msggroup_list, "getMsgGroupList", methods=["GET"])
 blueprint_v1.add_route(gpt.del_msggroup_list, "delMsgGroupList", methods=["POST"])

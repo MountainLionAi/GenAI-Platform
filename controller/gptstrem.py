@@ -11,27 +11,23 @@ import requests
 import json
 # import snowflake.client
 import services.gpt_service as gpt_service
-import controller.predict as predict
-import controller.kchart as kchart
-import controller.firstTask as firstTask
 from controller.preset_entry import preset_entry_mapping
-import services.kchart_service as kchart_service
 import services.user_account_service_wrapper as user_account_service_wrapper
 from datetime import datetime
 from utils.log_utils import logger
 import time
 from pprint import pprint
-from liondispatcher.api import gpt_functions, afunc_gpt4_generator, aref_answer_gpt_generator
-from liondispatcher.utils import get_qa_vdb_topk, merge_ref_and_input_text
-from liondispatcher.prompts_v001 import LionPrompt
-# from liondispatcher.gptfunction import unfiltered_gpt_functions, gpt_function_filter
-from liondispatcher.functions import gpt_functions_mapping, gpt_function_filter
-from liondispatcher.postprocess import posttext_mapping, PostTextParam
+from dispatcher.api import gpt_functions, afunc_gpt4_generator, aref_answer_gpt_generator
+from dispatcher.utils import get_qa_vdb_topk, merge_ref_and_input_text
+from dispatcher.prompts_v001 import LionPrompt
+# from dispatcher.gptfunction import unfiltered_gpt_functions, gpt_function_filter
+from dispatcher.functions import gpt_functions_mapping, gpt_function_filter
+from dispatcher.postprocess import posttext_mapping, PostTextParam
 from utils.redis_utils import RedisConnectionPool
 from conf.server import IS_INNER_DEBUG
 import os
 from dotenv import load_dotenv
-load_dotenv()
+load_dotenv(override=True)
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 proxy = { 'https' : '127.0.0.1:8001'}

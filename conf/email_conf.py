@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-load_dotenv()
+load_dotenv(override=True)
 # os.getenv("")
 
 SMTP_HOST = os.getenv("SMTP_HOST")

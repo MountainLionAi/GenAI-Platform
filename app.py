@@ -1,3 +1,4 @@
+import argparse
 from sanic import Sanic
 
 from conf import server
@@ -31,7 +32,25 @@ app.blueprint(routers.blueprint_chatbot)
 app.register_middleware(check_user, "request")
 app.register_middleware(save_user_log, "request")
 
-# workers的数量可以单独设置，如果设置为fast则默认为8
+# parameter for different modes
+parser = argparse.ArgumentParser(description=f"{server.SERVICE_NAME} usage",
+                                 formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+parser.add_argument("-a", "--addvectordb", action="store_true", help="add vector db mode")
+args = parser.parse_args()
+# args.addvectordb
+config = vars(args)
 
 if __name__ == "__main__":
-    app.run(host=server.HOST, port=server.PORT, fast=True)
+    '''
+    python app.py -a # add dispatcher/vdb_pairs to vector db
+    python app.py # run server
+    '''
+    if args.addvectordb:
+        from dispatcher.create_vdb import update_all_vdb
+        update_all_vdb()
+    else:
+        if server.IS_INNER_DEBUG:
+            app.run(host=server.HOST, port=server.PORT)
+        else:
+            # workers的数量可以单独设置，如果设置为fast则默认为8
+            app.run(host=server.HOST, port=server.PORT, fast=True)
