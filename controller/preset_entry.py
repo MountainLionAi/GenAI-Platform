@@ -1,4 +1,7 @@
 from utils.log_utils import logger
+from importlib import import_module
+from conf.server import PLUGIN_NAME
+
 
 async def getAndPickSampleData(location, unit, language, subtype=None):
     presetContent = {}
@@ -16,3 +19,7 @@ preset_entry_mapping = {
         "get_and_pick": getAndPickSampleData,
     }
 }
+
+if PLUGIN_NAME:    
+    plugin_name = PLUGIN_NAME
+    math_module = import_module(module_name)
