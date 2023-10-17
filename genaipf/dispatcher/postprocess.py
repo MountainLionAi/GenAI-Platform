@@ -3,6 +3,9 @@ from typing import Union
 from abc import abstractmethod
 from dataclasses import dataclass
 
+from importlib import import_module
+from genaipf.conf.server import PLUGIN_NAME
+
 @dataclass
 class PostTextParam:
     language: str = "en"
@@ -39,3 +42,9 @@ If you have the need to another service, I can provide further service for you.
 posttext_mapping = {
     "another_service": AnotherPostText("another_service")
 }
+
+if PLUGIN_NAME:
+    plugin_submodule_name = f'{PLUGIN_NAME}.dispatcher.postprocess'
+    plugin_submodule = import_module(plugin_submodule_name)
+    posttext_mapping = plugin_submodule.posttext_mapping
+    PostTextParam = plugin_submodule.PostTextParam

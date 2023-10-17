@@ -20,6 +20,23 @@ preset_entry_mapping = {
     }
 }
 
-if PLUGIN_NAME:    
-    plugin_name = PLUGIN_NAME
-    math_module = import_module(module_name)
+if PLUGIN_NAME:
+    '''
+    from importlib import import_module
+
+    # the full path to the submodule 
+    module_name = "m1.s1"
+    submodule = import_module(module_name)
+
+    # name of the item you want to import
+    item_name = "x1"
+    item = getattr(submodule, item_name)
+
+    # now item is equivalent to x1 and you can use it as such
+    '''
+    # plugin_controller_name = f'{PLUGIN_NAME}.controller'
+    # plugin_controller = import_module(plugin_controller_name)
+    # preset_entry_mapping = plugin_controller.preset_entry.preset_entry_mapping
+    plugin_submodule_name = f'{PLUGIN_NAME}.controller.preset_entry'
+    plugin_submodule = import_module(plugin_submodule_name)
+    preset_entry_mapping = plugin_submodule.preset_entry_mapping

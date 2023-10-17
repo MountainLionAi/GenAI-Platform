@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 load_dotenv(override=True)
 
 SERVICE_NAME = os.getenv("SERVICE_NAME", "GenAI")
-PLUGIN_NAME = os.getenv("SERVICE_NAME", None)
+PLUGIN_NAME = os.getenv("PLUGIN_NAME", None)
 REQUEST_TIMEOUT = 180
 RESPONSE_TIMEOUT = 180
 KEEP_ALIVE_TIMEOUT = 180

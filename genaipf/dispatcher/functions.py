@@ -2,6 +2,9 @@ from genaipf.dispatcher.utils import get_vdb_topk, gpt_func_coll_name
 from genaipf.dispatcher.vdb_pairs.gpt_func import vdb_map
 from genaipf.utils.log_utils import logger
 
+from importlib import import_module
+from genaipf.conf.server import PLUGIN_NAME
+
 gpt_functions_mapping = {
     "weather_____get_current_weather": {
         "name": "weather_____get_current_weather",
@@ -42,3 +45,10 @@ def gpt_function_filter(gpt_functions_mapping, messages, msg_k=5, v_n=5, per_n=2
     except Exception as e:
         logger.error(f'>>>>>>gpt_function_filter {e}')
         return gpt_functions
+    
+
+if PLUGIN_NAME:
+    plugin_submodule_name = f'{PLUGIN_NAME}.dispatcher.functions'
+    plugin_submodule = import_module(plugin_submodule_name)
+    gpt_functions_mapping = plugin_submodule.gpt_functions_mapping
+    gpt_functions = list(gpt_functions_mapping.values())

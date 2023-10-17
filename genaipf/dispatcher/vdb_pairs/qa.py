@@ -1,3 +1,6 @@
+from importlib import import_module
+from genaipf.conf.server import PLUGIN_NAME
+
 import pandas as pd
 
 vdb_map = {}
@@ -10,3 +13,7 @@ qa_jsonl = [
 for kv in qa_jsonl:
     vdb_map[kv["prompt"]] = kv["completion"]
 
+if PLUGIN_NAME:
+    plugin_submodule_name = f'{PLUGIN_NAME}.dispatcher.vdb_pairs.qa'
+    plugin_submodule = import_module(plugin_submodule_name)
+    vdb_map = plugin_submodule.vdb_map
