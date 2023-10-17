@@ -1,6 +1,6 @@
 import redis
 
-from conf import redis_conf
+from genaipf.conf import redis_conf
 
 
 class RedisConnectionPool:

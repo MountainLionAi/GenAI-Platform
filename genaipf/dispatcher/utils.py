@@ -14,7 +14,7 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 MAX_CH_LENGTH = 8000
 qdrant_url = "http://localhost:6333"
 
-from conf.server import SERVICE_NAME
+from genaipf.conf.server import SERVICE_NAME
 vdb_prefix = SERVICE_NAME
 
 qa_coll_name = f"{vdb_prefix}_filtered_qa"

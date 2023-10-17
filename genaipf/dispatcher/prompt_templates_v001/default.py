@@ -1,5 +1,5 @@
 from datetime import datetime
-from dispatcher.utils import merge_ref_and_qa
+from genaipf.dispatcher.utils import merge_ref_and_qa
 
 
 def _get_default_afunc_prompt(language):

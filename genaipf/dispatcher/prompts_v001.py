@@ -1,4 +1,4 @@
-from dispatcher.prompt_templates_v001.default import _get_default_afunc_prompt, _get_default_aref_answer_prompt, _get_default_merge_ref_and_input_text
+from genaipf.dispatcher.prompt_templates_v001.default import _get_default_afunc_prompt, _get_default_aref_answer_prompt, _get_default_merge_ref_and_input_text
 
 _default_lang = "en"
 class LionPrompt:

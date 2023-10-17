@@ -1,10 +1,10 @@
-from interfaces.common_response import success, fail
+from genaipf.interfaces.common_response import success, fail
 from sanic import Request
-from conf.path_without_login import PATH_WITHOUT_LOGIN
-from constant.error_code import ERROR_CODE
-import services.user_service as user_service
-from utils.jwt_utils import JWTManager
-from utils.redis_utils import RedisConnectionPool
+from genaipf.conf.path_without_login import PATH_WITHOUT_LOGIN
+from genaipf.constant.error_code import ERROR_CODE
+import genaipf.services.user_service as user_service
+from genaipf.utils.jwt_utils import JWTManager
+from genaipf.utils.redis_utils import RedisConnectionPool
 
 
 # 判断用户的登陆态并赋值给request对象

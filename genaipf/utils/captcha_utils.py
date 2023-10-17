@@ -3,7 +3,7 @@ import string
 import base64
 from io import BytesIO
 from PIL import Image, ImageDraw, ImageFont
-from conf.server import FONT_PATH
+from genaipf.conf.server import FONT_PATH
 
 
 class CaptchaGenerator:

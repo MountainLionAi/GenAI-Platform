@@ -1,9 +1,9 @@
 from sanic import Request
-import services.user_service as user_service
-import services.user_log_service as user_log_service
-from utils.jwt_utils import JWTManager
-from utils.redis_utils import RedisConnectionPool
-from utils.log_utils import logger
+import genaipf.services.user_service as user_service
+import genaipf.services.user_log_service as user_log_service
+from genaipf.utils.jwt_utils import JWTManager
+from genaipf.utils.redis_utils import RedisConnectionPool
+from genaipf.utils.log_utils import logger
 
 
 # 记录用户操作日志

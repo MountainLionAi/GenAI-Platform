@@ -1,11 +1,11 @@
 import aiosmtplib
-import conf.email_conf as email_conf
-from utils.log_utils import logger
+import genaipf.conf.email_conf as email_conf
+from genaipf.utils.log_utils import logger
 import aiofiles
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from constant.redis_keys import REDIS_KEYS
-from utils.redis_utils import RedisConnectionPool
+from genaipf.constant.redis_keys import REDIS_KEYS
+from genaipf.utils.redis_utils import RedisConnectionPool
 
 LIMIT_TIME_10MIN = {
     'REGISTER': 8,

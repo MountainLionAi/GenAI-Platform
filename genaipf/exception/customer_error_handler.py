@@ -1,6 +1,6 @@
 from sanic.handlers import ErrorHandler
-from exception.customer_exception import CustomerError
-from interfaces.common_response import fail
+from genaipf.exception.customer_exception import CustomerError
+from genaipf.interfaces.common_response import fail
 
 
 class CustomerErrorHandler(ErrorHandler):

@@ -1,4 +1,4 @@
-from utils.mysql_utils import CollectionPool
+from genaipf.utils.mysql_utils import CollectionPool
 
 
 # 查询会员卡信息

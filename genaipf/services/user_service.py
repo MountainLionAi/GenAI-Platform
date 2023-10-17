@@ -1,19 +1,18 @@
 import bcrypt
 import random
-from utils.mysql_utils import CollectionPool
-from exception.customer_exception import CustomerError
-from constant.error_code import ERROR_CODE
-from utils.jwt_utils import JWTManager
-from utils.redis_utils import RedisConnectionPool
-from constant.redis_keys import REDIS_KEYS
-from utils.log_utils import logger
-from utils.captcha_utils import CaptchaGenerator
-from utils.time_utils import get_format_time
-from utils.common_utils import mask_email
-from constant.email_info import EMAIL_INFO
-# import lib.hcaptcha as hcaptcha
-import utils.hcaptcha_utils as hcaptcha
-import utils.email_utils as email_utils
+from genaipf.utils.mysql_utils import CollectionPool
+from genaipf.exception.customer_exception import CustomerError
+from genaipf.constant.error_code import ERROR_CODE
+from genaipf.utils.jwt_utils import JWTManager
+from genaipf.utils.redis_utils import RedisConnectionPool
+from genaipf.constant.redis_keys import REDIS_KEYS
+from genaipf.utils.log_utils import logger
+from genaipf.utils.captcha_utils import CaptchaGenerator
+from genaipf.utils.time_utils import get_format_time
+from genaipf.utils.common_utils import mask_email
+from genaipf.constant.email_info import EMAIL_INFO
+import genaipf.utils.hcaptcha_utils as hcaptcha
+import genaipf.utils.email_utils as email_utils
 
 
 # 生成用户密码

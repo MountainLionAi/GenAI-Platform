@@ -1,10 +1,10 @@
 import json
-from utils.log_utils import logger
+from genaipf.utils.log_utils import logger
 from sanic import Request
-from exception.customer_exception import CustomerError
-from services.gpt_service import add_share_message, del_gpt_message_by_code, get_share_msg, set_gpt_gmessage_rate_by_id
-from constant.error_code import ERROR_CODE
-from interfaces.common_response import success, fail
+from genaipf.exception.customer_exception import CustomerError
+from genaipf.services.gpt_service import add_share_message, del_gpt_message_by_code, get_share_msg, set_gpt_gmessage_rate_by_id
+from genaipf.constant.error_code import ERROR_CODE
+from genaipf.interfaces.common_response import success, fail
 
 
 async def user_rate(request: Request):

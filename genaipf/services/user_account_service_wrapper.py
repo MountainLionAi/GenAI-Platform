@@ -1,7 +1,7 @@
-from services import daily_allowance_service, user_account_service
+from genaipf.services import daily_allowance_service, user_account_service
 from datetime import datetime
-from utils.redis_lock_utils import acquire_lock, release_lock
-from utils.log_utils import logger
+from genaipf.utils.redis_lock_utils import acquire_lock, release_lock
+from genaipf.utils.log_utils import logger
 
 
 async def query_user_account_by_userid(user_id):

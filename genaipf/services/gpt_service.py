@@ -1,4 +1,4 @@
-from utils.mysql_utils import CollectionPool
+from genaipf.utils.mysql_utils import CollectionPool
 
 
 # 记录一条新消息

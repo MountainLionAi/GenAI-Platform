@@ -1,7 +1,7 @@
 import json
 
-from utils.mysql_utils import CollectionPool
-from utils.log_utils import logger
+from genaipf.utils.mysql_utils import CollectionPool
+from genaipf.utils.log_utils import logger
 
 
 # 新增订单

@@ -1,11 +1,11 @@
 from sanic import Request, response
-from exception.customer_exception import CustomerError
-from constant.error_code import ERROR_CODE
-from interfaces.common_response import success,fail
+from genaipf.exception.customer_exception import CustomerError
+from genaipf.constant.error_code import ERROR_CODE
+from genaipf.interfaces.common_response import success,fail
 import requests
 import json
 # import snowflake.client
-import services.gpt_service as gpt_service
+import genaipf.services.gpt_service as gpt_service
 from datetime import datetime
 import os
 from dotenv import load_dotenv

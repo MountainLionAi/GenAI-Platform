@@ -1,4 +1,4 @@
-from utils.mysql_utils import CollectionPool
+from genaipf.utils.mysql_utils import CollectionPool
 import threading
 
 account_lock = threading.Lock()

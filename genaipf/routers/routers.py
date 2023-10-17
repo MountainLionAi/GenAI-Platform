@@ -1,5 +1,5 @@
 from sanic import Blueprint
-from controller import gpt, user, gptstrem, userRate, pay
+from genaipf.controller import gpt, user, gptstrem, userRate, pay
 
 # chatbot相关接口
 blueprint_chatbot = Blueprint(name="chat_bot", url_prefix="/mpcbot")

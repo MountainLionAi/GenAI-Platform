@@ -1,5 +1,5 @@
 import time
-from utils.redis_utils import RedisConnectionPool
+from genaipf.utils.redis_utils import RedisConnectionPool
 
 
 def acquire_lock(lock_name, acquire_timeout=10):

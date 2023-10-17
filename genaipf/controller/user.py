@@ -1,12 +1,12 @@
 from sanic import Request, response
-from exception.customer_exception import CustomerError
-from utils.log_utils import logger
-from interfaces.common_response import success, fail
-from constant.error_code import ERROR_CODE
-import services.user_service as user_service
-from utils.common_utils import mask_email
+from genaipf.exception.customer_exception import CustomerError
+from genaipf.utils.log_utils import logger
+from genaipf.interfaces.common_response import success, fail
+from genaipf.constant.error_code import ERROR_CODE
+import genaipf.services.user_service as user_service
+from genaipf.utils.common_utils import mask_email
 # import lib.hcaptcha as hcaptcha
-import utils.hcaptcha_utils as hcaptcha
+import genaipf.utils.hcaptcha_utils as hcaptcha
 
 
 # 用户登陆

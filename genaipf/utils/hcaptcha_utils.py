@@ -1,6 +1,6 @@
 import requests
-import conf.hcaptcha_conf as hcaptcha_conf
-from utils.log_utils import logger
+import genaipf.conf.hcaptcha_conf as hcaptcha_conf
+from genaipf.utils.log_utils import logger
 
 
 def verify_hcaptcha(response, email):

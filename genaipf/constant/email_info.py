@@ -1,4 +1,4 @@
-from conf.server import SERVICE_NAME
+from genaipf.conf.server import SERVICE_NAME
 
 EMAIL_INFO = {
     'REGISTER': {

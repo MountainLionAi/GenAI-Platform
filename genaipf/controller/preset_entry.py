@@ -1,6 +1,6 @@
-from utils.log_utils import logger
+from genaipf.utils.log_utils import logger
 from importlib import import_module
-from conf.server import PLUGIN_NAME
+from genaipf.conf.server import PLUGIN_NAME
 
 
 async def getAndPickSampleData(location, unit, language, subtype=None):

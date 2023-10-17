@@ -2,7 +2,7 @@ import logging
 import os
 import sys
 from logging.handlers import TimedRotatingFileHandler
-from conf import server
+from genaipf.conf import server
 
 LOG_PATH = server.LOG_PATH
 

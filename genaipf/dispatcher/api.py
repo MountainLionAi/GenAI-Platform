@@ -1,8 +1,8 @@
-from dispatcher.functions import gpt_functions
-from dispatcher.utils import openai
-from utils.log_utils import logger
+from genaipf.dispatcher.functions import gpt_functions
+from genaipf.dispatcher.utils import openai
+from genaipf.utils.log_utils import logger
 from datetime import datetime
-from dispatcher.prompts_v001 import LionPrompt
+from genaipf.dispatcher.prompts_v001 import LionPrompt
 from openai.error import InvalidRequestError
 
 

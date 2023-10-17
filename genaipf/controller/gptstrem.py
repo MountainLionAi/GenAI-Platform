@@ -4,27 +4,27 @@ import traceback
 import openai
 from sanic import Request, response
 from sanic.response import ResponseStream
-from exception.customer_exception import CustomerError
-from constant.error_code import ERROR_CODE
-from interfaces.common_response import success,fail
+from genaipf.exception.customer_exception import CustomerError
+from genaipf.constant.error_code import ERROR_CODE
+from genaipf.interfaces.common_response import success,fail
 import requests
 import json
 # import snowflake.client
-import services.gpt_service as gpt_service
-from controller.preset_entry import preset_entry_mapping
-import services.user_account_service_wrapper as user_account_service_wrapper
+import genaipf.services.gpt_service as gpt_service
+from genaipf.controller.preset_entry import preset_entry_mapping
+import genaipf.services.user_account_service_wrapper as user_account_service_wrapper
 from datetime import datetime
-from utils.log_utils import logger
+from genaipf.utils.log_utils import logger
 import time
 from pprint import pprint
-from dispatcher.api import gpt_functions, afunc_gpt4_generator, aref_answer_gpt_generator
-from dispatcher.utils import get_qa_vdb_topk, merge_ref_and_input_text
-from dispatcher.prompts_v001 import LionPrompt
+from genaipf.dispatcher.api import gpt_functions, afunc_gpt4_generator, aref_answer_gpt_generator
+from genaipf.dispatcher.utils import get_qa_vdb_topk, merge_ref_and_input_text
+from genaipf.dispatcher.prompts_v001 import LionPrompt
 # from dispatcher.gptfunction import unfiltered_gpt_functions, gpt_function_filter
-from dispatcher.functions import gpt_functions_mapping, gpt_function_filter
-from dispatcher.postprocess import posttext_mapping, PostTextParam
-from utils.redis_utils import RedisConnectionPool
-from conf.server import IS_INNER_DEBUG
+from genaipf.dispatcher.functions import gpt_functions_mapping, gpt_function_filter
+from genaipf.dispatcher.postprocess import posttext_mapping, PostTextParam
+from genaipf.utils.redis_utils import RedisConnectionPool
+from genaipf.conf.server import IS_INNER_DEBUG
 import os
 from dotenv import load_dotenv
 load_dotenv(override=True)

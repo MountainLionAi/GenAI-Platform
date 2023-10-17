@@ -1,5 +1,5 @@
 from sanic import response
-from constant.error_code import ERROR_CODE, ERROR_MESSAGE
+from genaipf.constant.error_code import ERROR_CODE, ERROR_MESSAGE
 
 
 # 成功返回

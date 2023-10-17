@@ -1,5 +1,5 @@
-from utils.redis_utils import RedisConnectionPool
-from utils import time_utils
+from genaipf.utils.redis_utils import RedisConnectionPool
+from genaipf.utils import time_utils
 import json
 
 DAILY_ALLOWANCE_PREFIX = 'DAILY_ALLOWANCE_'

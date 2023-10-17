@@ -1,4 +1,6 @@
-
+from genaipf.dispatcher.utils import get_vdb_topk, gpt_func_coll_name
+from genaipf.dispatcher.vdb_pairs.gpt_func import vdb_map
+from genaipf.utils.log_utils import logger
 
 gpt_functions_mapping = {
     "weather_____get_current_weather": {
@@ -25,9 +27,6 @@ gpt_functions_mapping = {
 gpt_functions = list(gpt_functions_mapping.values())
 
 def gpt_function_filter(gpt_functions_mapping, messages, msg_k=5, v_n=5, per_n=2):
-    from dispatcher.utils import get_vdb_topk, gpt_func_coll_name
-    from dispatcher.vdb_pairs.gpt_func import vdb_map
-    from utils.log_utils import logger
     try:
         user_messages = [msg['content'] for msg in messages if msg['role'] == 'user'][-msg_k:]
         used_names = set()

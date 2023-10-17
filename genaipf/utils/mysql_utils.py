@@ -1,8 +1,8 @@
 import pymysql
 import pymysql.cursors
 from queue import Queue
-from conf import db_conf
-from utils.log_utils import logger
+from genaipf.conf import db_conf
+from genaipf.utils.log_utils import logger
 
 
 class CollectionPool:
