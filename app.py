@@ -1,12 +1,12 @@
 import argparse
 from sanic import Sanic
 
-from conf import server
-from routers import routers
-from exception.customer_error_handler import CustomerErrorHandler
+from genaipf.conf import server
+from genaipf.routers import routers
+from genaipf.exception.customer_error_handler import CustomerErrorHandler
 from sanic_cors import CORS
-from middlewares.user_token_middleware import check_user
-from middlewares.user_log_middleware import save_user_log
+from genaipf.middlewares.user_token_middleware import check_user
+from genaipf.middlewares.user_log_middleware import save_user_log
 from sanic_session import Session
 
 Sanic(server.SERVICE_NAME)
@@ -46,7 +46,7 @@ if __name__ == "__main__":
     python app.py # run server
     '''
     if args.addvectordb:
-        from dispatcher.create_vdb import update_all_vdb
+        from genaipf.dispatcher.create_vdb import update_all_vdb
         update_all_vdb()
     else:
         if server.IS_INNER_DEBUG:
