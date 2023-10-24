@@ -128,7 +128,7 @@ python app.py
 
 ## 项目目录结构
 
-以下是GenAI-Platform中 `genaipf` 主要目录结构和它们的功能描述：
+以下是 `GenAI-Platform` 中 `genaipf` 主要目录结构和它们的功能描述：
 
 -**conf**: 包含项目的各种配置文件，如服务器端口、数据库连接等设置。
 
