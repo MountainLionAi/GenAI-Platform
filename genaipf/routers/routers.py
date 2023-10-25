@@ -1,5 +1,7 @@
 from sanic import Blueprint
 from genaipf.controller import gpt, user, gptstrem, userRate, pay
+from importlib import import_module
+from genaipf.conf.server import PLUGIN_NAME
 
 # chatbot相关接口
 blueprint_chatbot = Blueprint(name="chat_bot", url_prefix="/mpcbot")
@@ -37,3 +39,10 @@ blueprint_v1.add_route(pay.query_pay_card, "pay/cardInfo", methods=["GET"])
 blueprint_v1.add_route(pay.check_order, "pay/orderCheck", methods=["GET"])
 blueprint_v1.add_route(pay.query_user_account, "pay/account", methods=["GET"])
 blueprint_v1.add_route(pay.pay_success_callback, "pay/callback", methods=["POST"])
+
+if PLUGIN_NAME:
+    plugin_submodule_name = f'{PLUGIN_NAME}.routers.entry'
+    plugin_submodule = import_module(plugin_submodule_name)
+    plugin_router_mapping = plugin_submodule.plugin_router_mapping
+    for v in plugin_router_mapping.values():
+        blueprint_v1.add_route(v["handler"], v["uri"], v["methods"])

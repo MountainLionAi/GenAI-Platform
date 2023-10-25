@@ -1,3 +1,6 @@
+from importlib import import_module
+from genaipf.conf.server import PLUGIN_NAME
+
 # 不需要登陆态的接口元组
 PATH_WITHOUT_LOGIN = (
     '/v1/api/sendVerifyCode',
@@ -15,3 +18,9 @@ PATH_WITHOUT_LOGIN = (
     '/v1/api/pay/cardInfo',
     '/v1/api/pay/callback',
 )
+
+if PLUGIN_NAME:
+    plugin_submodule_name = f'{PLUGIN_NAME}.routers.without_login'
+    plugin_submodule = import_module(plugin_submodule_name)
+    without_login = plugin_submodule.WITHOUT_LOGIN
+    PATH_WITHOUT_LOGIN = PATH_WITHOUT_LOGIN + without_login
