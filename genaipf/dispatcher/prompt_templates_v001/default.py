@@ -2,7 +2,7 @@ from datetime import datetime
 from genaipf.dispatcher.utils import merge_ref_and_qa
 
 
-def _get_default_afunc_prompt(language):
+def _get_default_afunc_prompt(language, model=''):
     if language == "cn":
         return f'''
 当前时间是{datetime.now()}.
@@ -15,7 +15,7 @@ The current time is {datetime.now()}. From now on, you will be a professional in
 
 '''
 
-def _get_default_aref_answer_prompt(language):
+def _get_default_aref_answer_prompt(language, model=''):
     if language == "cn":
         return f'''
 当前时间是{datetime.now()}.

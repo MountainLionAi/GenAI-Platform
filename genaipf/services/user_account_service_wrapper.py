@@ -1,4 +1,4 @@
-from genaipf.services import daily_allowance_service, user_account_service
+from genaipf.services import daily_allowance_service, user_account_service, user_service
 from datetime import datetime
 from genaipf.utils.redis_lock_utils import acquire_lock, release_lock
 from genaipf.utils.log_utils import logger
@@ -10,7 +10,14 @@ async def query_user_account_by_userid(user_id):
     :param user_id:
     :return:
     """
-    allowance_num = await daily_allowance_service.get_daily_allowance(user_id)
+    is_new_user = True
+    user_infos = await user_service.get_user_info_by_userid(user_id)
+    if user_infos:
+        user_info = user_infos[0]
+        time1 = user_info['create_time'].strftime('%Y-%m-%d')
+        time2 = datetime.now().strftime('%Y-%m-%d')
+        is_new_user = time1 == time2
+    allowance_num = await daily_allowance_service.get_daily_allowance(user_id, is_new_user)
     user_account = await user_account_service.select_user_account_by_userid(user_id)
     if user_account is not None and user_account['due_date'] is not None and datetime.now() > user_account['due_date']:
         await expire_due_date_reset(user_id)

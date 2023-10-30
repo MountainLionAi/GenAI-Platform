@@ -59,7 +59,7 @@ async def aref_answer_gpt_generator(messages, model='', language=LionPrompt.defa
         try:
             system = {
                 "role": "system",
-                "content": LionPrompt.get_aref_answer_prompt(language=language, preset_name=preset_name)
+                "content": LionPrompt.get_aref_answer_prompt(language=language, preset_name=preset_name, use_model)
             }
             # messages.insert(0, system)
             # print(f'>>>>>test 003 : {messages}')

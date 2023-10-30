@@ -121,6 +121,13 @@ async def get_user_info_from_db(email):
     result = await CollectionPool().query(sql, (email, 0))
     return result
 
+# 根据userid获取用户信息
+async def get_user_info_by_userid(userid):
+    sql = 'SELECT id, create_time FROM user_infos WHERE ' \
+          'id=%s ' \
+          'AND status=%s'
+    result = await CollectionPool().query(sql, (userid, 0))
+    return result
 
 # 添加一个新用户
 async def add_user(user_info):
