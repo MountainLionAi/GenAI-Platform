@@ -6,7 +6,18 @@ from genaipf.dispatcher.prompts_v001 import LionPrompt
 from openai.error import InvalidRequestError
 
 
-async def afunc_gpt4_generator(messages, functions=gpt_functions, language=LionPrompt.default_lang, model=''):
+# temperature=2 # 值在[0,1]之间，越大表示回复越具有不确定性
+# max_tokens=2000 # 输出的最大 token 数
+# top_p=0.9 # 过滤掉低于阈值的 token 确保结果不散漫
+# frequency_penalty=0.1 # [-2,2]之间，该值越大则更倾向于产生不同的内容
+# presence_penalty=0.1 # [-2,2]之间，该值越大则更倾向于产生不同的内容
+temperature=0.8 # 值在[0,1]之间，越大表示回复越具有不确定性
+max_tokens=2000 # 输出的最大 token 数
+top_p=0.85 # 过滤掉低于阈值的 token 确保结果不散漫
+frequency_penalty=0.3 # [-2,2]之间，该值越大则更倾向于产生不同的内容
+presence_penalty=0.2 # [-2,2]之间，该值越大则更倾向于产生不同的内容
+
+async def afunc_gpt4_generator(messages, functions=gpt_functions, language=LionPrompt.default_lang, model='', picked_content="", related_qa=[]):
     '''
     "messages": [
         {"role": "user", "content": "Hello"},
@@ -22,7 +33,7 @@ async def afunc_gpt4_generator(messages, functions=gpt_functions, language=LionP
         try:
             system = {
                 "role": "system",
-                "content": LionPrompt.get_afunc_prompt(language=language)
+                "content": LionPrompt.get_afunc_prompt(language, picked_content, related_qa, use_model)
             }
             # messages.insert(0, system)
             _messages = [system] + messages
@@ -31,11 +42,11 @@ async def afunc_gpt4_generator(messages, functions=gpt_functions, language=LionP
                 model=use_model,
                 messages=_messages,
                 functions=functions,
-                temperature=2,  # 值在[0,1]之间，越大表示回复越具有不确定性
-                max_tokens=2000, # 输出的最大 token 数
-                top_p=0.9, # 过滤掉低于阈值的 token 确保结果不散漫
-                frequency_penalty=0.1,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
-                presence_penalty=0.1,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
+                temperature=temperature,  # 值在[0,1]之间，越大表示回复越具有不确定性
+                max_tokens=max_tokens, # 输出的最大 token 数
+                top_p=top_p, # 过滤掉低于阈值的 token 确保结果不散漫
+                frequency_penalty=frequency_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
+                presence_penalty=presence_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
                 stream=True
             )
             print('afunc_gpt4_generator called')
@@ -50,7 +61,7 @@ async def afunc_gpt4_generator(messages, functions=gpt_functions, language=LionP
             raise e
 
 
-async def aref_answer_gpt_generator(messages, model='', language=LionPrompt.default_lang, preset_name=None):
+async def aref_answer_gpt_generator(messages, model='', language=LionPrompt.default_lang, preset_name=None, picked_content="", related_qa=[]):
     use_model = 'gpt-3.5-turbo-16k'
     if model == 'ml-plus':
         use_model = 'gpt-4'
@@ -59,7 +70,7 @@ async def aref_answer_gpt_generator(messages, model='', language=LionPrompt.defa
         try:
             system = {
                 "role": "system",
-                "content": LionPrompt.get_aref_answer_prompt(language=language, preset_name=preset_name, use_model)
+                "content": LionPrompt.get_aref_answer_prompt(language, preset_name, picked_content, related_qa, use_model)
             }
             # messages.insert(0, system)
             # print(f'>>>>>test 003 : {messages}')
@@ -67,11 +78,11 @@ async def aref_answer_gpt_generator(messages, model='', language=LionPrompt.defa
             response = await openai.ChatCompletion.acreate(
                 model=use_model,
                 messages=_messages,
-                temperature=2,  # 值在[0,1]之间，越大表示回复越具有不确定性
-                max_tokens=2000, # 输出的最大 token 数
-                top_p=0.9, # 过滤掉低于阈值的 token 确保结果不散漫
-                frequency_penalty=0.1,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
-                presence_penalty=0.1,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
+                temperature=temperature,  # 值在[0,1]之间，越大表示回复越具有不确定性
+                max_tokens=max_tokens, # 输出的最大 token 数
+                top_p=top_p, # 过滤掉低于阈值的 token 确保结果不散漫
+                frequency_penalty=frequency_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
+                presence_penalty=presence_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
                 stream=True
             )
             print(f'aref_answer_gpt called')

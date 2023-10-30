@@ -94,7 +94,8 @@ def merge_ref_and_qa(picked_content, related_qa, language="en", model=''):
         ref_text += "\n\n可能相关的历史问答:\n" + "\n\n".join(related_qa)
     else:
         ref_text += "\n\nPossible related historical questions and answers:\n" + "\n\n".join(related_qa)
-    ref_text = limit_tokens_from_string(_ref_text, model, length + length_qa)
+    # ref_text = limit_tokens_from_string(_ref_text, model, length + length_qa)
+    ref_text = limit_tokens_from_string(ref_text, model, length + length_qa)
     return ref_text
 
 def limit_tokens_from_string(string: str, model: str, limit: int) -> str:
