@@ -39,14 +39,14 @@ async def send_email(subject, content, to_email):
 async def format_captcha_email(email, captcha_code, language, scene):
     if language == 'zh':
         if scene == EMAIL_SCENES['REGISTER']:
-            html_path = 'static/email_template_zh.html'
+            html_path = 'genaipf/static/email_template_zh.html'
         else:
-            html_path = 'static/email_template_zh_forget.html'
+            html_path = 'genaipf/static/email_template_zh_forget.html'
     else:
         if scene == EMAIL_SCENES['REGISTER']:
-            html_path = 'static/email_template_en.html'
+            html_path = 'genaipf/static/email_template_en.html'
         else:
-            html_path = 'static/email_template_en_forget.html'
+            html_path = 'genaipf/static/email_template_en_forget.html'
     f = await aiofiles.open(html_path, mode='r')
     email_content = await f.read()
     email_content = email_content.replace('{{email}}', email)
