@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>忘记密码</title>
+    <style>
+        .bold-text {
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>忘记密码</h1>
+    <p>您的账号<span class="bold-text">{{email}}</span> 正在进行忘记密码操作，请确认是否是本人操作</p>
+    <p>如果是您本人操作，请使用下面的验证码进行忘记密码验证。</p>
+    <p class="bold-text">{{emailCode}}</p>
+    <p>验证码将在15分钟后失效。切勿向他人透漏验证码。</p>
+    <p>请注意这是一条自动发送的消息，请勿直接回复本电子邮件。</p>
+    <p><a href="https://mountainlion.ai">Mountainlion团队</a></p>
+</body>
+
+</html>
