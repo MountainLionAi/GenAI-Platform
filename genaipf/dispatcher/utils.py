@@ -18,8 +18,8 @@ MAX_CH_LENGTH_QA_GPT3 = 3000
 MAX_CH_LENGTH_QA_GPT4 = 1500
 qdrant_url = "http://localhost:6333"
 
-from genaipf.conf.server import SERVICE_NAME
-vdb_prefix = SERVICE_NAME
+from genaipf.conf.server import PLUGIN_NAME
+vdb_prefix = PLUGIN_NAME
 
 qa_coll_name = f"{vdb_prefix}_filtered_qa"
 gpt_func_coll_name = f"{vdb_prefix}_gpt_func"
