@@ -8,12 +8,12 @@ class LionPrompt:
     default_lang = _default_lang
     
     @classmethod
-    def get_afunc_prompt(cls, language=_default_lang):
-        return _get_default_afunc_prompt(language)
+    def get_afunc_prompt(cls, language=_default_lang, picked_content="", related_qa=[], model=''):
+        return _get_default_afunc_prompt(language, picked_content, related_qa, model)
 
     @classmethod
-    def get_aref_answer_prompt(cls, language=_default_lang, preset_name=None, model=''):
-        return _get_default_aref_answer_prompt(language, model)
+    def get_aref_answer_prompt(cls, language=_default_lang, preset_name=None, picked_content="", related_qa=[], model=''):
+        return _get_default_aref_answer_prompt(language, picked_content, related_qa, model)
 
     @classmethod
     def get_merge_ref_and_input_prompt(cls, ref, related_qa, input_text, language=_default_lang, preset_name=None, data={}):
