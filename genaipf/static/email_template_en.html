@@ -10,13 +10,13 @@
 </head>
 <body>
     <h2>Registration Verification Code</h2>
-    <p>Welcome to MountainLion</p>
-    <p>Your account <span class="bold">{{email}}</span> is registering for MountainLion, please confirm whether it is you.</p>
+    <p>Welcome to {{ company_name }}</p>
+    <p>Your account <span class="bold">{{ email }}</span> is registering for {{ company_name }}, please confirm whether it is you.</p>
     <p>If it is you, please use the verification code below to register.</p>
-    <p class="bold">{{emailCode}}</p>
+    <p class="bold">{{ emailCode }}</p>
     <p>The verification code will expire after 15 minutes. Never share the verification code with others.</p>
     <p>If it is not you, please ignore this email.</p>
     <p><i>Please note that this is an automated message, please do not reply directly to this email.</i></p>
-    <p><a href="https://mountainlion.ai">MountainLion</a></p>
+    <p><a href="{{ company_url }}">{{ company_name }}</a></p>
 </body>
 </html>

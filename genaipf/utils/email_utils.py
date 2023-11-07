@@ -6,6 +6,9 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from genaipf.constant.redis_keys import REDIS_KEYS
 from genaipf.utils.redis_utils import RedisConnectionPool
+import os
+from jinja2 import Environment, FileSystemLoader, select_autoescape
+import asyncio
 
 LIMIT_TIME_10MIN = {
     'REGISTER': 8,
@@ -35,22 +38,35 @@ async def send_email(subject, content, to_email):
         use_tls=email_conf.SMTP_USE_TLS,
     )
 
+# 配置Jinja2环境
+env = Environment(
+    loader=FileSystemLoader('genaipf/static'),  # 指定模板文件夹
+    autoescape=select_autoescape(['html', 'xml'])
+)
 
 async def format_captcha_email(email, captcha_code, language, scene):
     if language == 'zh':
-        if scene == EMAIL_SCENES['REGISTER']:
-            html_path = 'genaipf/static/email_template_zh.html'
-        else:
-            html_path = 'genaipf/static/email_template_zh_forget.html'
+        template_file = 'email_template_zh.html' if scene == EMAIL_SCENES['REGISTER'] else 'email_template_zh_forget.html'
     else:
-        if scene == EMAIL_SCENES['REGISTER']:
-            html_path = 'genaipf/static/email_template_en.html'
-        else:
-            html_path = 'genaipf/static/email_template_en_forget.html'
-    f = await aiofiles.open(html_path, mode='r')
-    email_content = await f.read()
-    email_content = email_content.replace('{{email}}', email)
-    email_content = email_content.replace('{{emailCode}}', captcha_code)
+        template_file = 'email_template_en.html' if scene == EMAIL_SCENES['REGISTER'] else 'email_template_en_forget.html'
+    
+    company_name = os.getenv("COMPANY_NAME")
+    company_url = os.getenv("COMPANY_URL")
+
+    template = env.get_template(template_file)
+
+    loop = asyncio.get_event_loop()
+    email_content = await loop.run_in_executor(
+        None,
+        template.render,  
+        {
+            'email': email,
+            'emailCode': captcha_code,
+            'company_name': company_name,
+            'company_url': company_url
+        }
+    )
+
     return email_content
 
 
