@@ -8,6 +8,8 @@ from qdrant_client import QdrantClient
 from qdrant_client.http import models
 from dotenv import load_dotenv
 import tiktoken
+from openai import OpenAI, AsyncOpenAI
+from openai._types import NOT_GIVEN
 
 load_dotenv(override=True)
 
@@ -16,7 +18,17 @@ MAX_CH_LENGTH_GPT3 = 8000
 MAX_CH_LENGTH_GPT4 = 3000
 MAX_CH_LENGTH_QA_GPT3 = 3000
 MAX_CH_LENGTH_QA_GPT4 = 1500
+OPENAI_PLUS_MODEL = "gpt-4-1106-preview"
 qdrant_url = "http://localhost:6333"
+
+openai_client = OpenAI(
+    # defaults to os.environ.get("OPENAI_API_KEY")
+    api_key=openai.api_key,
+)
+async_openai_client = AsyncOpenAI(
+    # defaults to os.environ.get("OPENAI_API_KEY")
+    api_key=openai.api_key,
+)
 
 from genaipf.conf.server import PLUGIN_NAME
 vdb_prefix = PLUGIN_NAME
@@ -28,14 +40,31 @@ client = QdrantClient(qdrant_url)
 
 @cache
 def get_embedding(text, model = "text-embedding-ada-002"):
-    result = openai.Embedding.create(
+    # result = openai.Embedding.create(
+    result = openai_client.embeddings.create(
+        input=text,
         model=model,
-        input=text
     )
-    embedding = result["data"][0]["embedding"]
+    # embedding = result["data"][0]["embedding"]
+    embedding = result.data[0].embedding
     return embedding
 
-
+async def openai_chat_completion_acreate(
+    model, messages, functions,
+    temperature, max_tokens, top_p, frequency_penalty, presence_penalty, stream
+):
+    response = await async_openai_client.chat.completions.create(
+        model=model,
+        messages=messages,
+        functions=functions if functions else NOT_GIVEN,
+        temperature=temperature,  # 值在[0,1]之间，越大表示回复越具有不确定性
+        max_tokens=max_tokens, # 输出的最大 token 数
+        top_p=top_p, # 过滤掉低于阈值的 token 确保结果不散漫
+        frequency_penalty=frequency_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
+        presence_penalty=presence_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
+        stream=True
+    )
+    return response
 
 def merge_ref_and_input_text(ref, input_text, language='en'):
     if language == 'cn':
@@ -85,7 +114,7 @@ def merge_ref_and_qa(picked_content, related_qa, language="en", model=''):
     _ref_text = _ref_text.replace("\n", "")
     length = MAX_CH_LENGTH_GPT3
     length_qa = MAX_CH_LENGTH_QA_GPT3
-    if model == 'gpt-4':
+    if model == OPENAI_PLUS_MODEL:
         length = MAX_CH_LENGTH_GPT4
         length_qa = MAX_CH_LENGTH_QA_GPT4
     ref_text = limit_tokens_from_string(_ref_text, model, length)
