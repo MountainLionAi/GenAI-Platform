@@ -4,7 +4,7 @@ import json
 
 DAILY_ALLOWANCE_PREFIX = 'DAILY_ALLOWANCE_'
 redis_client = RedisConnectionPool().get_connection()
-
+default_num = 20
 
 async def get_daily_allowance(userid, is_new_user):
     """
@@ -13,9 +13,9 @@ async def get_daily_allowance(userid, is_new_user):
     :param is_new_user: 是否是当天注册新用户
     :return: 每天限免次数
     """
-    num = 2
+    num = default_num
     if is_new_user:
-        num = 5
+        num = default_num
 
     daily_allowance_key = DAILY_ALLOWANCE_PREFIX + str(userid)
     dailyAllowance = redis_client.get(daily_allowance_key)
@@ -48,10 +48,11 @@ async def daily_allowance_minus_one(userid):
     daily_allowance_key = DAILY_ALLOWANCE_PREFIX + str(userid)
     dailyAllowance = redis_client.get(daily_allowance_key)
     minus_status = False
+    num = default_num - 1
     if dailyAllowance is None or dailyAllowance == '':
         dailyAllowance = {
             "date": time_utils.get_format_time_YYYY_mm_dd(),
-            "num": 1
+            "num": num
         }
         redis_client.set(daily_allowance_key, json.dumps(dailyAllowance), 60 * 60 * 24)
         minus_status = True
@@ -65,7 +66,7 @@ async def daily_allowance_minus_one(userid):
         else:
             dailyAllowance = {
                 "date": time_utils.get_format_time_YYYY_mm_dd(),
-                "num": 1
+                "num": num
             }
             redis_client.set(daily_allowance_key, json.dumps(dailyAllowance), 60 * 60 * 24)
             minus_status = True
