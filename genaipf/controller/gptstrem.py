@@ -113,14 +113,16 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     # resp1 = await afunc_gpt4_generator(msgs, used_gpt_functions, language, model)
     resp1 = await afunc_gpt4_generator(msgs, used_gpt_functions, language, model, "", related_qa)
     chunk = await resp1.__anext__()
-    _func_or_text = chunk['choices'][0]['delta'].get("function_call", None)
+    # _func_or_text = chunk['choices'][0]['delta'].get("function_call", None)
+    _func_or_text = chunk.choices[0].delta.function_call
     if _func_or_text:
         mode1 = "func"
         logger.info(f">>>>> activate gpt function >>>>>")
     else:
         mode1 = "text"
     if mode1 == "text":
-        c0 = chunk['choices'][0]['delta'].get("content", "")
+        # c0 = chunk['choices'][0]['delta'].get("content", "")
+        c0 = chunk.choices[0].delta.content
         _tmp_text = ""
         _tmp_text += c0
         yield '[GPT]'
@@ -128,8 +130,10 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         yield json.dumps({"code": _code})
         yield json.dumps({"text": c0})
         async for chunk in resp1:
-            _gpt_letter = chunk['choices'][0]['delta'].get("content", "")
-            _tmp_text += _gpt_letter
+            # _gpt_letter = chunk['choices'][0]['delta'].get("content", "")
+            _gpt_letter = chunk.choices[0].delta.content
+            if _gpt_letter:
+                _tmp_text += _gpt_letter
             yield json.dumps({"text": _gpt_letter})
         yield "[DONE]"
         data = {
@@ -139,12 +143,16 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
             }
         logger.info(f'>>>>> text _tmp_text: {_tmp_text}')
     elif mode1 == "func":
-        big_func_name = _func_or_text["name"]
+        big_func_name = _func_or_text.name
         func_name, sub_func_name = big_func_name.split("_____")
-        _arguments = _func_or_text["arguments"]
+        _arguments = _func_or_text.arguments
         async for chunk in resp1:
-            _func_json = chunk['choices'][0]['delta'].get("function_call", {})
-            _arguments += _func_json.get("arguments", "")
+            # _func_json = chunk['choices'][0]['delta'].get("function_call", {})
+            _func_json = chunk.choices[0].delta.function_call
+            # print(f'>>>>> _func_json: {_func_json}')
+            if _func_json:
+                _arguments += _func_json.arguments
+            # _arguments += _func_json.get("arguments", "")
         _param = json.loads(_arguments)
         _param["language"] = language
         _param["subtype"] = sub_func_name
@@ -190,8 +198,11 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         #     yield json.dumps(_gptfunc_data)
         yield "[GPT]"
         async for chunk in resp2:
-            _gpt_letter = chunk['choices'][0]['delta'].get("content", "")
-            _tmp_text += _gpt_letter
+            # _gpt_letter = chunk['choices'][0]['delta'].get("content", "")
+            _gpt_letter = chunk.choices[0].delta.content
+            # print(f'>>>>> _gpt_letter: {_gpt_letter}')
+            if _gpt_letter:
+                _tmp_text += _gpt_letter
             yield json.dumps({"text": _gpt_letter})
         posttexter = posttext_mapping.get(func_name)
         if posttexter is not None:
