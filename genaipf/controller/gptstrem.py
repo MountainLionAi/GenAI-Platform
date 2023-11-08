@@ -134,7 +134,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
             _gpt_letter = chunk.choices[0].delta.content
             if _gpt_letter:
                 _tmp_text += _gpt_letter
-            yield json.dumps({"text": _gpt_letter})
+                yield json.dumps({"text": _gpt_letter})
         yield "[DONE]"
         data = {
                 'type' : 'gpt',
@@ -203,7 +203,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
             # print(f'>>>>> _gpt_letter: {_gpt_letter}')
             if _gpt_letter:
                 _tmp_text += _gpt_letter
-            yield json.dumps({"text": _gpt_letter})
+                yield json.dumps({"text": _gpt_letter})
         posttexter = posttext_mapping.get(func_name)
         if posttexter is not None:
             async for _gpt_letter in posttexter.get_text_agenerator(PostTextParam(language, sub_func_name)):
