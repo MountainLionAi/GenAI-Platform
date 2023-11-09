@@ -1,10 +1,10 @@
 from genaipf.dispatcher.functions import gpt_functions
-from genaipf.dispatcher.utils import openai
+from genaipf.dispatcher.utils import openai, OPENAI_PLUS_MODEL, openai_chat_completion_acreate
 from genaipf.utils.log_utils import logger
 from datetime import datetime
 from genaipf.dispatcher.prompts_v001 import LionPrompt
-from openai.error import InvalidRequestError
-
+# from openai.error import InvalidRequestError
+from openai import BadRequestError
 
 # temperature=2 # 值在[0,1]之间，越大表示回复越具有不确定性
 # max_tokens=2000 # 输出的最大 token 数
@@ -27,7 +27,7 @@ async def afunc_gpt4_generator(messages, functions=gpt_functions, language=LionP
     '''
     use_model = 'gpt-3.5-turbo-16k'
     if model == 'ml-plus':
-        use_model = 'gpt-4'
+        use_model = OPENAI_PLUS_MODEL
     for i in range(5):
         mlength = len(messages)
         try:
@@ -38,7 +38,7 @@ async def afunc_gpt4_generator(messages, functions=gpt_functions, language=LionP
             # messages.insert(0, system)
             _messages = [system] + messages
             # print(f'>>>>>test 004 : {_messages}')
-            response = await openai.ChatCompletion.acreate(
+            response = await openai_chat_completion_acreate(
                 model=use_model,
                 messages=_messages,
                 functions=functions,
@@ -51,9 +51,9 @@ async def afunc_gpt4_generator(messages, functions=gpt_functions, language=LionP
             )
             print('afunc_gpt4_generator called')
             return response
-        except InvalidRequestError as e:
+        except BadRequestError as e:
             print(e)
-            logger.error(f'afunc_gpt4_generator InvalidRequestError {e}', e)
+            logger.error(f'afunc_gpt4_generator BadRequestError {e}', e)
             messages = messages[mlength // 2:]
         except Exception as e:
             print(e)
@@ -64,7 +64,7 @@ async def afunc_gpt4_generator(messages, functions=gpt_functions, language=LionP
 async def aref_answer_gpt_generator(messages, model='', language=LionPrompt.default_lang, preset_name=None, picked_content="", related_qa=[]):
     use_model = 'gpt-3.5-turbo-16k'
     if model == 'ml-plus':
-        use_model = 'gpt-4'
+        use_model = OPENAI_PLUS_MODEL
     for i in range(5):
         mlength = len(messages)
         try:
@@ -75,9 +75,10 @@ async def aref_answer_gpt_generator(messages, model='', language=LionPrompt.defa
             # messages.insert(0, system)
             # print(f'>>>>>test 003 : {messages}')
             _messages = [system] + messages
-            response = await openai.ChatCompletion.acreate(
+            response = await openai_chat_completion_acreate(
                 model=use_model,
                 messages=_messages,
+                functions=None,
                 temperature=temperature,  # 值在[0,1]之间，越大表示回复越具有不确定性
                 max_tokens=max_tokens, # 输出的最大 token 数
                 top_p=top_p, # 过滤掉低于阈值的 token 确保结果不散漫
@@ -87,9 +88,9 @@ async def aref_answer_gpt_generator(messages, model='', language=LionPrompt.defa
             )
             print(f'aref_answer_gpt called')
             return response
-        except InvalidRequestError as e:
+        except BadRequestError as e:
             print(e)
-            logger.error(f'aref_answer_gpt_generator InvalidRequestError {e}', e)
+            logger.error(f'aref_answer_gpt_generator BadRequestError {e}', e)
             messages = messages[mlength // 2:]
         except Exception as e:
             print(e)
