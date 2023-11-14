@@ -1,5 +1,14 @@
 from sanic.request import Request
+from concurrent.futures import ThreadPoolExecutor
 from sanic.response import json
+import os
+from dotenv import load_dotenv
+load_dotenv(override=True)
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+
+proxy = { 'https' : '127.0.0.1:8001'}
+
+executor = ThreadPoolExecutor(max_workers=10)
 
 async def assistant_api(request: Request):
     # 解析请求体中的JSON数据
