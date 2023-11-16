@@ -18,10 +18,10 @@ async def add_assistant_user(user_info):
 # 根据 `outer_user_id`,`biz_id`,`source`, 获取用户信息
 async def get_assistant_user_info_from_db(outer_user_id, biz_id, source):
     sql = '''SELECT outer_user_id, biz_id, source, thread_id
-FROM user_infos WHERE
+FROM gpt_assistant_account WHERE
 outer_user_id=%s
 AND biz_id=%s
 AND source=%s'''
-    result = await CollectionPool().query(sql, (email, 0))
+    result = await CollectionPool().query(sql, (outer_user_id, biz_id, source))
     return result
 

@@ -3,6 +3,9 @@ from concurrent.futures import ThreadPoolExecutor
 from sanic.response import json
 from genaipf.interfaces.common_response import success,fail
 from genaipf.services import assistant_service
+from genaipf.utils.time_utils import get_format_time
+import time
+from datetime import datetime
 import os
 import openai
 from dotenv import load_dotenv
@@ -37,8 +40,8 @@ async def wait_on_run(run, thread):
             thread_id=thread.id,
             run_id=run.id,
         )
-        time.sleep(0.5)
-        print(run.status)
+        time.sleep(10)
+        print(f">>>>>[{datetime.now()}] thread.id: {thread.id}, run.status: {run.status}")
     return run
 
 async def get_assistant_response(assistant_id, thread_id, content_l):
@@ -87,7 +90,7 @@ async def assistant_chat(request: Request):
         assistant_id = ASSISTANT_ID_MAPPING["default"]
 
     # 业务逻辑code
-    user_l = assistant_service.get_assistant_user_info_from_db(outer_user_id, biz_id, source)
+    user_l = await assistant_service.get_assistant_user_info_from_db(outer_user_id, biz_id, source)
     if len(user_l) == 0:
         thread = await client.beta.threads.create()
         thread_id = thread.id
@@ -99,12 +102,11 @@ async def assistant_chat(request: Request):
             get_format_time()
         )
         await assistant_service.add_assistant_user(user_info)
-        res = await get_assistant_response(assistant_id, thread_id, content_l)
     else:
         user = user_l[0]
         thread_id = user["thread_id"]
-        res = await get_assistant_response(assistant_id, thread_id, content_l)
-
+    res = await get_assistant_response(assistant_id, thread_id, content_l)
+    print(f">>>>> request_params: {request_params}\n>>>>> res: {res}")
     # 构造输出JSON响应
     response_data = {
         "type": "text",
