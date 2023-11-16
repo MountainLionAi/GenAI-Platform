@@ -17,6 +17,8 @@ PATH_WITHOUT_LOGIN = (
     '/v1/api/getShareMessages',
     '/v1/api/pay/cardInfo',
     '/v1/api/pay/callback',
+    
+    '/v1/api/assistantChat',
 )
 
 if PLUGIN_NAME:
