@@ -2,6 +2,7 @@ from sanic import Blueprint
 from genaipf.controller import gpt, user, gptstrem, userRate, pay
 from importlib import import_module
 from genaipf.conf.server import PLUGIN_NAME
+from genaipf.controller import assistant_api
 
 # chatbot相关接口
 blueprint_chatbot = Blueprint(name="chat_bot", url_prefix="/mpcbot")
@@ -22,6 +23,11 @@ blueprint_v1.add_route(userRate.user_rate, 'userRate', methods=["POST"])
 blueprint_v1.add_route(userRate.del_message_by_codes, 'delMessages', methods=["POST"])
 blueprint_v1.add_route(userRate.share_message, 'shareMessages', methods=["POST"])
 blueprint_v1.add_route(userRate.get_share_message, 'getShareMessages', methods=["POST"])
+
+# Assistant API 相关接口
+blueprint_v1.add_route(assistant_api.assistant_chat, "assistantChat", methods=["POST"])
+blueprint_v1.add_route(assistant_api.get_user_history, "getAssistantHistory", methods=["POST"])
+
 
 # 用户相关接口
 blueprint_v1.add_route(user.login, "userLogin", methods=["POST"])
