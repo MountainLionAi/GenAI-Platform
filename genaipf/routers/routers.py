@@ -26,6 +26,8 @@ blueprint_v1.add_route(userRate.get_share_message, 'getShareMessages', methods=[
 
 # Assistant API 相关接口
 blueprint_v1.add_route(assistant_api.assistant_chat, "assistantChat", methods=["POST"])
+blueprint_v1.add_route(assistant_api.get_user_history, "getConversationHistory", methods=["POST"])
+
 
 # 用户相关接口
 blueprint_v1.add_route(user.login, "userLogin", methods=["POST"])

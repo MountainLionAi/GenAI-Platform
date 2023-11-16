@@ -25,3 +25,8 @@ AND source=%s'''
     result = await CollectionPool().query(sql, (outer_user_id, biz_id, source))
     return result
 
+async def get_conversation_history_by_user_id(outer_user_id):
+    sql = '''SELECT outer_user_id, biz_id, thread_id
+FROM gpt_assistant_account WHERE outer_user_id=%s'''
+    result = await CollectionPool().query(sql, (outer_user_id,))
+    return result
