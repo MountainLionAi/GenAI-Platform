@@ -118,17 +118,29 @@ async def assistant_chat(request: Request):
     return success(response_data)
 
 async def get_user_history(request: Request):
+    # 解析请求体中的JSON数据
     request_params = request.json
     outer_user_id = request_params.get("outer_user_id", "")
+    biz_id = request_params.get("biz_id", "")
+    source = request_params.get("source", "")
 
-    # 从数据库中只使用outer_user_id获取用户信息
-    user_l = await assistant_service.get_conversation_history_by_user_id(outer_user_id)
+    # 业务逻辑code
+    user_l = await assistant_service.get_assistant_user_info_from_db(outer_user_id, biz_id, source)
     
     if len(user_l) == 0:
         return success({"message": "No conversation history available."})
+
     thread_id = user_l[0]["thread_id"]
     history = await client.beta.threads.messages.list(thread_id=thread_id)
 
     message_values = [msg.content[0].text.value for msg in history.data if msg.content]
 
-    return success(message_values)
+        # 构造输出JSON响应
+    response_data = {
+        "type": "text",
+        "format": "text",
+        "version": "v001",
+        "content": message_values
+    }
+    print(f">>>>> history: {message_values}")
+    return success(response_data)
