@@ -13,7 +13,7 @@ from genaipf.conf.assistant_conf import ASSISTANT_ID_MAPPING
 
 load_dotenv(override=True)
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-
+ASSISTANT_ACCESSTOKEN_TOTAL_STRING = os.getenv("ASSISTANT_ACCESSTOKEN_TOTAL_STRING")
 client = openai.AsyncOpenAI(api_key=OPENAI_API_KEY)
 
 async def submit_message(assistant_id, thread, user_message):
@@ -82,6 +82,9 @@ async def assistant_chat(request: Request):
     biz_id = request_params.get("biz_id", "")
     source = request_params.get("source", "")
     content_l = request_params.get("content", [])
+    access_token = request_params.get("access_token", "")
+    if len(access_token) < 20 or access_token not in ASSISTANT_ACCESSTOKEN_TOTAL_STRING:
+        return fail(code=5001)
 
     assistant_name = f'{biz_id}_____{source}'
     if assistant_name in ASSISTANT_ID_MAPPING:
@@ -123,24 +126,32 @@ async def get_user_history(request: Request):
     outer_user_id = request_params.get("outer_user_id", "")
     biz_id = request_params.get("biz_id", "")
     source = request_params.get("source", "")
+    access_token = request_params.get("access_token", "")
+    if len(access_token) < 20 or access_token not in ASSISTANT_ACCESSTOKEN_TOTAL_STRING:
+        return fail(code=5001)
 
     # 业务逻辑code
     user_l = await assistant_service.get_assistant_user_info_from_db(outer_user_id, biz_id, source)
     
     if len(user_l) == 0:
-        return success({"message": "No conversation history available."})
+        return success([])
 
     thread_id = user_l[0]["thread_id"]
     history = await client.beta.threads.messages.list(thread_id=thread_id)
 
-    message_values = [msg.content[0].text.value for msg in history.data if msg.content]
-
-        # 构造输出JSON响应
-    response_data = {
-        "type": "text",
-        "format": "text",
-        "version": "v001",
-        "content": message_values
-    }
-    print(f">>>>> history: {message_values}")
+    message_values = [{
+        "role": msg.role,
+        "content": msg.content[0].text.value
+    } for msg in history.data if msg.content]
+    message_values = message_values[:10][::-1]
+    for i in range(len(message_values)):
+        message_values[i].update({
+            "type": "text",
+            "format": "text",
+            "version": "v001",
+        })
+    # 构造输出JSON响应
+    response_data = message_values
+    to_show_m = "\n".join([m['role'] + ': ' + m["content"][:20] + "..." for m in message_values])
+    print(f">>>>> history: {to_show_m}")
     return success(response_data)
