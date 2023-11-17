@@ -14,3 +14,4 @@ LOG_PATH = os.getenv("SERVER_LOG_PATH")
 PROJ_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FONT_PATH = f"{PROJ_PATH}/static/arial.ttf"
 IS_INNER_DEBUG = True if os.getenv("IS_INNER_DEBUG") else False
+STATIC_PATH = os.getenv("STATIC_PATH")

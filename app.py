@@ -26,6 +26,8 @@ app.config.KEEP_ALIVE_TIMEOUT = server.KEEP_ALIVE_TIMEOUT
 app.config.KEEP_ALIVE = server.KEEP_ALIVE
 app.config.REAL_IP_HEADER = "X-Forwarded-For"
 
+app.static('/static', server.STATIC_PATH)
+
 # 加载路由
 app.blueprint(routers.blueprint_v1)
 app.blueprint(routers.blueprint_chatbot)
