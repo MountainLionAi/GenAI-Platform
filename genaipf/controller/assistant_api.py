@@ -65,8 +65,8 @@ async def assistant_chat(request: Request):
     INPUT:
     outer_user_id, biz_id, source
     content: [
-        {"type": "", "format": "", "version": "", "content": ""},
-        {"type": "", "format": "", "version": "", "content": ""}
+        {"role": "", "type": "", "format": "", "version": "", "content": ""},
+        {"role": "", "type": "", "format": "", "version": "", "content": ""}
     ]
     # 参考格式 https://platform.openai.com/docs/guides/vision/quick-start
     
@@ -111,12 +111,13 @@ async def assistant_chat(request: Request):
     res = await get_assistant_response(assistant_id, thread_id, content_l)
     print(f">>>>> request_params: {request_params}\n>>>>> res: {res}")
     # 构造输出JSON响应
-    response_data = {
+    response_data = [{
+        "role": "assistant",
         "type": "text",
         "format": "text",
         "version": "v001",
         "content": res
-    }
+    }]
 
     return success(response_data)
 
@@ -126,6 +127,7 @@ async def get_user_history(request: Request):
     outer_user_id = request_params.get("outer_user_id", "")
     biz_id = request_params.get("biz_id", "")
     source = request_params.get("source", "")
+    num_limit = request_params.get("num_limit", 10)
     access_token = request_params.get("access_token", "")
     if len(access_token) < 20 or access_token not in ASSISTANT_ACCESSTOKEN_TOTAL_STRING:
         return fail(code=5001)
@@ -143,7 +145,7 @@ async def get_user_history(request: Request):
         "role": msg.role,
         "content": msg.content[0].text.value
     } for msg in history.data if msg.content]
-    message_values = message_values[:10][::-1]
+    message_values = message_values[:num_limit][::-1]
     for i in range(len(message_values)):
         message_values[i].update({
             "type": "text",
