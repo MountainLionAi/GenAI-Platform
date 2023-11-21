@@ -77,47 +77,52 @@ async def assistant_chat(request: Request):
     {"type": "", "format": "", "version": "", "content": ""}
     '''
     # 解析请求体中的JSON数据
-    request_params = request.json
-    outer_user_id = request_params.get("outer_user_id", "")
-    biz_id = request_params.get("biz_id", "")
-    source = request_params.get("source", "")
-    content_l = request_params.get("content", [])
-    access_token = request_params.get("access_token", "")
-    if len(access_token) < 20 or access_token not in ASSISTANT_ACCESSTOKEN_TOTAL_STRING:
-        return fail(code=5001)
+    print(f">>>>> assistant api request in")
+    try:
+        request_params = request.json
+        outer_user_id = request_params.get("outer_user_id", "")
+        biz_id = request_params.get("biz_id", "")
+        source = request_params.get("source", "")
+        content_l = request_params.get("content", [])
+        access_token = request_params.get("access_token", "")
+        if len(access_token) < 20 or access_token not in ASSISTANT_ACCESSTOKEN_TOTAL_STRING:
+            return fail(code=5001)
 
-    assistant_name = f'{biz_id}_____{source}'
-    if assistant_name in ASSISTANT_ID_MAPPING:
-        assistant_id = ASSISTANT_ID_MAPPING[assistant_name]
-    else:
-        assistant_id = ASSISTANT_ID_MAPPING["default"]
+        assistant_name = f'{biz_id}_____{source}'
+        if assistant_name in ASSISTANT_ID_MAPPING:
+            assistant_id = ASSISTANT_ID_MAPPING[assistant_name]
+        else:
+            assistant_id = ASSISTANT_ID_MAPPING["default"]
 
-    # 业务逻辑code
-    user_l = await assistant_service.get_assistant_user_info_from_db(outer_user_id, biz_id, source)
-    if len(user_l) == 0:
-        thread = await client.beta.threads.create()
-        thread_id = thread.id
-        user_info = (
-            outer_user_id,
-            biz_id,
-            source,
-            thread_id,
-            get_format_time()
-        )
-        await assistant_service.add_assistant_user(user_info)
-    else:
-        user = user_l[0]
-        thread_id = user["thread_id"]
-    res = await get_assistant_response(assistant_id, thread_id, content_l)
-    print(f">>>>> request_params: {request_params}\n>>>>> res: {res}")
-    # 构造输出JSON响应
-    response_data = [{
-        "role": "assistant",
-        "type": "text",
-        "format": "text",
-        "version": "v001",
-        "content": res
-    }]
+        # 业务逻辑code
+        user_l = await assistant_service.get_assistant_user_info_from_db(outer_user_id, biz_id, source)
+        if len(user_l) == 0:
+            thread = await client.beta.threads.create()
+            thread_id = thread.id
+            user_info = (
+                outer_user_id,
+                biz_id,
+                source,
+                thread_id,
+                get_format_time()
+            )
+            await assistant_service.add_assistant_user(user_info)
+        else:
+            user = user_l[0]
+            thread_id = user["thread_id"]
+        res = await get_assistant_response(assistant_id, thread_id, content_l)
+        print(f">>>>> request_params: {request_params}\n>>>>> res: {res}")
+        # 构造输出JSON响应
+        response_data = [{
+            "role": "assistant",
+            "type": "text",
+            "format": "text",
+            "version": "v001",
+            "content": res
+        }]
+    except Exception as e:
+        print(type(e), e)
+        return fail(code=1001)
 
     return success(response_data)
 
