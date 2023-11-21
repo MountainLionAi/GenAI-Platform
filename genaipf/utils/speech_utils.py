@@ -1,5 +1,5 @@
 from openai import OpenAI
-from typing import FileTypes
+from openai._types import FileTypes
 
 
 def transcribe(
@@ -11,7 +11,7 @@ def transcribe(
     把音频文件转成文本
     transcrible example:
     client = openai.OpenAI()
-    with open(file_path) as audio_file
+    with open(file_path,"rb") as audio_file
         text=transcribe(client,audio_file)
     """
     transcript = client.audio.transcriptions.create(
