@@ -26,6 +26,7 @@ from genaipf.dispatcher.postprocess import posttext_mapping, PostTextParam
 from genaipf.utils.redis_utils import RedisConnectionPool
 from genaipf.conf.server import IS_INNER_DEBUG
 import os
+import base64
 from dotenv import load_dotenv
 load_dotenv(override=True)
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
@@ -41,24 +42,52 @@ async def http(request: Request):
 async def http4gpt4(request: Request):
     return response.json({"http4gpt4": "sendchat_gpt4"})
 
-async def send_strem_chat(request: Request):
-    logger.info("======start gptstrem===========")
+def process_messages(messages):
+    processed_messages = []
+    for message in messages:
+        if message.get('type') == 'voice':
+            content = transcribe(message['content'])
+        else:
+            content = message['content']
+        processed_messages.append({
+            "role": message['role'],
+            "content": content,
+            "type": message.get('type', 'text'),
+            "output_type": message.get('output_type', 'text'),
+            "format": message.get('format', 'text'),
+            "version": message.get('version', 'v001')
+        })
+    return processed_messages[-10:]
 
-    request_params = request.json
+def transcribe(base64_audio):
+    transcribed_text = "Transcribed text from audio"
+    
+    return transcribed_text
+
+
+def textToSpeech(text):
+    simulated_audio_data = "This is a simulated audio file for " + text
+    base64_encoded_data = base64.b64encode(simulated_audio_data.encode()).decode()
+
+    return base64_encoded_data
+
+async def send_strem_chat(request: Request):
+    logger.info("======start gptstream===========")
+
+    request_params = await request.json()
     # if not request_params or not request_params['content'] or not request_params['msggroup']:
     #     raise CustomerError(status_code=ERROR_CODE['PARAMS_ERROR'])
-    
+
     userid = 0
     if hasattr(request.ctx, 'user'):
         userid = request.ctx.user['id']
     language = request_params.get('language', 'en')
     msggroup = request_params.get('msggroup')
     messages = request_params.get('messages', [])
-    device_no = request.remote_addr
+    device_no = request.client.host
     question_code = request_params.get('code', '')
     model = request_params.get('model', '')
-
-    messages = messages[-10:]
+    messages = process_messages(messages)
     if not IS_INNER_DEBUG and model == 'ml-plus':
         can_use = await user_account_service_wrapper.get_user_can_use_time(userid)
         if can_use > 0:
@@ -125,16 +154,32 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         c0 = chunk.choices[0].delta.content
         _tmp_text = ""
         _tmp_text += c0
-        yield '[GPT]'
-        _code = generate_unique_id()    
-        yield json.dumps({"code": _code})
-        yield json.dumps({"text": c0})
+        if output_type == "voice":
+            # 对于语音输出，将文本转换为语音并编码
+            base64_encoded_voice = textToSpeech(c0)
+            yield '[TTS]'
+            yield json.dumps({
+                "role": "assistant", 
+                "type": "voice", 
+                "format": "mpc", 
+                "version": "001", 
+                "content": base64_encoded_voice
+            })
+        else:
+            yield '[GPT]'
+            _code = generate_unique_id()    
+            yield json.dumps({"code": _code})
+            yield json.dumps({"text": c0})
         async for chunk in resp1:
             # _gpt_letter = chunk['choices'][0]['delta'].get("content", "")
             _gpt_letter = chunk.choices[0].delta.content
             if _gpt_letter:
                 _tmp_text += _gpt_letter
-                yield json.dumps({"text": _gpt_letter})
+                if output_type == "voice":
+                    base64_encoded_voice = textToSpeech(_gpt_letter)
+                    yield json.dumps({"content": base64_encoded_voice})
+                else:
+                    yield json.dumps({"text": _gpt_letter})
         yield "[DONE]"
         data = {
                 'type' : 'gpt',
