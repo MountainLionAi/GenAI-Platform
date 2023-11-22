@@ -3,6 +3,11 @@ from pathlib import Path
 import tempfile
 import os
 import base64
+from dotenv import load_dotenv
+
+load_dotenv(dotenv_path=".env")
+
+client = OpenAI()
 
 def transcribe(base64_audio):
     # 解码 Base64 字符串以获取字节数据

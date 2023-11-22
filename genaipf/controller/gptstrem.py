@@ -63,7 +63,7 @@ def process_messages(messages):
 async def send_strem_chat(request: Request):
     logger.info("======start gptstream===========")
 
-    request_params = await request.json()
+    request_params = request.json
     # if not request_params or not request_params['content'] or not request_params['msggroup']:
     #     raise CustomerError(status_code=ERROR_CODE['PARAMS_ERROR'])
 
@@ -73,10 +73,13 @@ async def send_strem_chat(request: Request):
     language = request_params.get('language', 'en')
     msggroup = request_params.get('msggroup')
     messages = request_params.get('messages', [])
-    device_no = request.client.host
+    device_no = request.remote_addr
     question_code = request_params.get('code', '')
     model = request_params.get('model', '')
-    messages = process_messages(messages)
+    # messages = process_messages(messages)
+    output_type = messages[0]["output_type"] if messages else None
+    messages = [{"content": msg["content"], "role": msg["role"]} for msg in process_messages(messages)]
+    # messages = messages[-10:]
     if not IS_INNER_DEBUG and model == 'ml-plus':
         can_use = await user_account_service_wrapper.get_user_can_use_time(userid)
         if can_use > 0:
@@ -87,7 +90,7 @@ async def send_strem_chat(request: Request):
     try:
         async def event_generator(_response):
             # async for _str in getAnswerAndCallGpt(request_params['content'], userid, msggroup, language, messages):
-            async for _str in getAnswerAndCallGpt(request_params.get('content'), userid, msggroup, language, messages, device_no, question_code, model):
+            async for _str in getAnswerAndCallGpt(request_params.get('content'), userid, msggroup, language, messages, device_no, question_code, model, output_type):
                 await _response.write(f"data:{_str}\n\n")
                 await asyncio.sleep(0.01)
         return ResponseStream(event_generator, headers={"accept": "application/json"}, content_type="text/event-stream")
@@ -99,7 +102,7 @@ async def send_strem_chat(request: Request):
 
    
 
-async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messages, device_no, question_code, model):
+async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messages, device_no, question_code, model, output_type):
     t0 = time.time()
     MAX_CH_LENGTH = 8000
     _ensure_ascii = False
@@ -145,7 +148,12 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         _tmp_text += c0
         if output_type == "voice":
             # 对于语音输出，将文本转换为语音并编码
-            base64_encoded_voice = textToSpeech(c0)
+            async for chunk in resp1:
+            # _gpt_letter = chunk['choices'][0]['delta'].get("content", "")
+                _gpt_letter = chunk.choices[0].delta.content
+                if _gpt_letter:
+                    _tmp_text += _gpt_letter
+                    base64_encoded_voice = textToSpeech(_tmp_text)
             yield '[TTS]'
             yield json.dumps({
                 "role": "assistant", 
@@ -154,28 +162,34 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
                 "version": "001", 
                 "content": base64_encoded_voice
             })
+            yield "[DONE]"
+            data = {
+                'type' : 'TTS',
+                'content' : _tmp_text,
+            }
+            logger.info(f'>>>>> voice output: {_tmp_text}')
         else:
             yield '[GPT]'
             _code = generate_unique_id()    
             yield json.dumps({"code": _code})
             yield json.dumps({"text": c0})
-        async for chunk in resp1:
-            # _gpt_letter = chunk['choices'][0]['delta'].get("content", "")
-            _gpt_letter = chunk.choices[0].delta.content
-            if _gpt_letter:
-                _tmp_text += _gpt_letter
-                if output_type == "voice":
-                    base64_encoded_voice = textToSpeech(_gpt_letter)
-                    yield json.dumps({"content": base64_encoded_voice})
-                else:
-                    yield json.dumps({"text": _gpt_letter})
-        yield "[DONE]"
-        data = {
-                'type' : 'gpt',
-                'content' : _tmp_text,
-                'code' : _code
-            }
-        logger.info(f'>>>>> text _tmp_text: {_tmp_text}')
+            async for chunk in resp1:
+                # _gpt_letter = chunk['choices'][0]['delta'].get("content", "")
+                _gpt_letter = chunk.choices[0].delta.content
+                if _gpt_letter:
+                    _tmp_text += _gpt_letter
+                    if output_type == "voice":
+                        base64_encoded_voice = textToSpeech(_gpt_letter)
+                        yield json.dumps({"content": base64_encoded_voice})
+                    else:
+                        yield json.dumps({"text": _gpt_letter})
+            yield "[DONE]"
+            data = {
+                    'type' : 'gpt',
+                    'content' : _tmp_text,
+                    'code' : _code
+                }
+            logger.info(f'>>>>> text _tmp_text: {_tmp_text}')
     elif mode1 == "func":
         big_func_name = _func_or_text.name
         func_name, sub_func_name = big_func_name.split("_____")
