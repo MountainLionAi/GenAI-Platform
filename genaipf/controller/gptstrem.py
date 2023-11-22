@@ -25,6 +25,7 @@ from genaipf.dispatcher.functions import gpt_functions_mapping, gpt_function_fil
 from genaipf.dispatcher.postprocess import posttext_mapping, PostTextParam
 from genaipf.utils.redis_utils import RedisConnectionPool
 from genaipf.conf.server import IS_INNER_DEBUG
+from genaipf.utils.speech_utils import transcribe, textToSpeech
 import os
 import base64
 from dotenv import load_dotenv
@@ -58,18 +59,6 @@ def process_messages(messages):
             "version": message.get('version', 'v001')
         })
     return processed_messages[-10:]
-
-def transcribe(base64_audio):
-    transcribed_text = "Transcribed text from audio"
-    
-    return transcribed_text
-
-
-def textToSpeech(text):
-    simulated_audio_data = "This is a simulated audio file for " + text
-    base64_encoded_data = base64.b64encode(simulated_audio_data.encode()).decode()
-
-    return base64_encoded_data
 
 async def send_strem_chat(request: Request):
     logger.info("======start gptstream===========")
