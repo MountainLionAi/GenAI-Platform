@@ -45,7 +45,7 @@ async def wait_on_run(run, thread):
     return run
 
 async def get_assistant_response(assistant_id, thread_id, content_l):
-    content = content_l[0]
+    content = content_l[-1]
     user_input = content["content"]
     thread1, run1 = await retrieve_thread_and_run(
         assistant_id, thread_id, user_input
