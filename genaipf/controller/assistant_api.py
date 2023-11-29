@@ -11,6 +11,7 @@ import asyncio
 import openai
 from dotenv import load_dotenv
 from genaipf.conf.assistant_conf import ASSISTANT_ID_MAPPING
+from openai import BadRequestError
 
 load_dotenv(override=True)
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
@@ -124,6 +125,12 @@ async def assistant_chat(request: Request):
             "version": "v001",
             "content": res
         }]
+    except BadRequestError as e:
+        print(type(e), e)
+        if "while a run" in e.message:
+            return fail(code=1001, message=f"{outer_user_id} of {source} Cant add message while a run is active")
+        else:
+            return fail(code=1001, message=f"{outer_user_id} of {source} openai BadRequestError")
     except Exception as e:
         print(type(e), e)
         return fail(code=1001)
