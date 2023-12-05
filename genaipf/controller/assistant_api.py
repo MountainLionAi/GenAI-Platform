@@ -7,9 +7,11 @@ from genaipf.utils.time_utils import get_format_time
 import time
 from datetime import datetime
 import os
+import asyncio
 import openai
 from dotenv import load_dotenv
 from genaipf.conf.assistant_conf import ASSISTANT_ID_MAPPING
+from openai import BadRequestError
 
 load_dotenv(override=True)
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
@@ -35,17 +37,20 @@ async def retrieve_thread_and_run(assistant_id, thread_id, user_input):
     return thread, run
 
 async def wait_on_run(run, thread):
+    cnt = 0
     while run.status == "queued" or run.status == "in_progress":
         run = await client.beta.threads.runs.retrieve(
             thread_id=thread.id,
             run_id=run.id,
         )
-        time.sleep(10)
-        print(f">>>>>[{datetime.now()}] thread.id: {thread.id}, run.status: {run.status}")
+        await asyncio.sleep(1)
+        cnt += 1
+        if cnt % 10 == 0:
+            print(f">>>>>[{datetime.now()}] thread.id: {thread.id}, run.status: {run.status}")
     return run
 
 async def get_assistant_response(assistant_id, thread_id, content_l):
-    content = content_l[0]
+    content = content_l[-1]
     user_input = content["content"]
     thread1, run1 = await retrieve_thread_and_run(
         assistant_id, thread_id, user_input
@@ -120,6 +125,12 @@ async def assistant_chat(request: Request):
             "version": "v001",
             "content": res
         }]
+    except BadRequestError as e:
+        print(type(e), e)
+        if "while a run" in e.message:
+            return fail(code=1001, message=f"{outer_user_id} of {source} Cant add message while a run is active")
+        else:
+            return fail(code=1001, message=f"{outer_user_id} of {source} openai BadRequestError")
     except Exception as e:
         print(type(e), e)
         return fail(code=1001)

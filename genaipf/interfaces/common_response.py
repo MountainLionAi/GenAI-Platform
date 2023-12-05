@@ -17,7 +17,7 @@ def success(data, message="success", status="true", code=200):
 def fail(code=500, message="fail", status="false"):
     format_response = {
         "code": code,
-        "message": ERROR_MESSAGE[code],
+        "message": ERROR_MESSAGE[code] + " " + message,
         "status": status
     }
     return response.json(format_response)
