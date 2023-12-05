@@ -25,7 +25,9 @@ from genaipf.dispatcher.functions import gpt_functions_mapping, gpt_function_fil
 from genaipf.dispatcher.postprocess import posttext_mapping, PostTextParam
 from genaipf.utils.redis_utils import RedisConnectionPool
 from genaipf.conf.server import IS_INNER_DEBUG
+from genaipf.utils.speech_utils import transcribe, textToSpeech
 import os
+import base64
 from dotenv import load_dotenv
 load_dotenv(override=True)
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
@@ -41,13 +43,30 @@ async def http(request: Request):
 async def http4gpt4(request: Request):
     return response.json({"http4gpt4": "sendchat_gpt4"})
 
+def process_messages(messages):
+    processed_messages = []
+    for message in messages:
+        if message.get('type') == 'voice':
+            content = transcribe(message['content'])
+        else:
+            content = message['content']
+        processed_messages.append({
+            "role": message['role'],
+            "content": content,
+            "type": message.get('type', 'text'),
+            "output_type": message.get('output_type', 'text'),
+            "format": message.get('format', 'text'),
+            "version": message.get('version', 'v001')
+        })
+    return processed_messages[-10:]
+
 async def send_strem_chat(request: Request):
-    logger.info("======start gptstrem===========")
+    logger.info("======start gptstream===========")
 
     request_params = request.json
     # if not request_params or not request_params['content'] or not request_params['msggroup']:
     #     raise CustomerError(status_code=ERROR_CODE['PARAMS_ERROR'])
-    
+
     userid = 0
     if hasattr(request.ctx, 'user'):
         userid = request.ctx.user['id']
@@ -57,8 +76,10 @@ async def send_strem_chat(request: Request):
     device_no = request.remote_addr
     question_code = request_params.get('code', '')
     model = request_params.get('model', '')
-
-    messages = messages[-10:]
+    # messages = process_messages(messages)
+    output_type = messages[0]["output_type"] if messages else None
+    messages = [{"content": msg["content"], "role": msg["role"]} for msg in process_messages(messages)]
+    # messages = messages[-10:]
     if not IS_INNER_DEBUG and model == 'ml-plus':
         can_use = await user_account_service_wrapper.get_user_can_use_time(userid)
         if can_use > 0:
@@ -69,7 +90,7 @@ async def send_strem_chat(request: Request):
     try:
         async def event_generator(_response):
             # async for _str in getAnswerAndCallGpt(request_params['content'], userid, msggroup, language, messages):
-            async for _str in getAnswerAndCallGpt(request_params.get('content'), userid, msggroup, language, messages, device_no, question_code, model):
+            async for _str in getAnswerAndCallGpt(request_params.get('content'), userid, msggroup, language, messages, device_no, question_code, model, output_type):
                 await _response.write(f"data:{_str}\n\n")
                 await asyncio.sleep(0.01)
         return ResponseStream(event_generator, headers={"accept": "application/json"}, content_type="text/event-stream")
@@ -81,7 +102,7 @@ async def send_strem_chat(request: Request):
 
    
 
-async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messages, device_no, question_code, model):
+async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messages, device_no, question_code, model, output_type):
     t0 = time.time()
     MAX_CH_LENGTH = 8000
     _ensure_ascii = False
@@ -125,23 +146,50 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         c0 = chunk.choices[0].delta.content
         _tmp_text = ""
         _tmp_text += c0
-        yield '[GPT]'
-        _code = generate_unique_id()    
-        yield json.dumps({"code": _code})
-        yield json.dumps({"text": c0})
-        async for chunk in resp1:
+        if output_type == "voice":
+            # 对于语音输出，将文本转换为语音并编码
+            async for chunk in resp1:
             # _gpt_letter = chunk['choices'][0]['delta'].get("content", "")
-            _gpt_letter = chunk.choices[0].delta.content
-            if _gpt_letter:
-                _tmp_text += _gpt_letter
-                yield json.dumps({"text": _gpt_letter})
-        yield "[DONE]"
-        data = {
-                'type' : 'gpt',
+                _gpt_letter = chunk.choices[0].delta.content
+                if _gpt_letter:
+                    _tmp_text += _gpt_letter
+                    base64_encoded_voice = textToSpeech(_tmp_text)
+            yield '[TTS]'
+            yield json.dumps({
+                "role": "assistant", 
+                "type": "voice", 
+                "format": "mpc", 
+                "version": "001", 
+                "content": base64_encoded_voice
+            })
+            yield "[DONE]"
+            data = {
+                'type' : 'TTS',
                 'content' : _tmp_text,
-                'code' : _code
             }
-        logger.info(f'>>>>> text _tmp_text: {_tmp_text}')
+            logger.info(f'>>>>> voice output: {_tmp_text}')
+        else:
+            yield '[GPT]'
+            _code = generate_unique_id()    
+            yield json.dumps({"code": _code})
+            yield json.dumps({"text": c0})
+            async for chunk in resp1:
+                # _gpt_letter = chunk['choices'][0]['delta'].get("content", "")
+                _gpt_letter = chunk.choices[0].delta.content
+                if _gpt_letter:
+                    _tmp_text += _gpt_letter
+                    if output_type == "voice":
+                        base64_encoded_voice = textToSpeech(_gpt_letter)
+                        yield json.dumps({"content": base64_encoded_voice})
+                    else:
+                        yield json.dumps({"text": _gpt_letter})
+            yield "[DONE]"
+            data = {
+                    'type' : 'gpt',
+                    'content' : _tmp_text,
+                    'code' : _code
+                }
+            logger.info(f'>>>>> text _tmp_text: {_tmp_text}')
     elif mode1 == "func":
         big_func_name = _func_or_text.name
         func_name, sub_func_name = big_func_name.split("_____")
@@ -196,34 +244,75 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         #     yield '[GPTFUNC]'
         #     _gptfunc_data = {"role": "gptfunc", "function_call": {"name": big_func_name, "arguments": _arguments}}
         #     yield json.dumps(_gptfunc_data)
-        yield "[GPT]"
-        async for chunk in resp2:
-            # _gpt_letter = chunk['choices'][0]['delta'].get("content", "")
-            _gpt_letter = chunk.choices[0].delta.content
-            # print(f'>>>>> _gpt_letter: {_gpt_letter}')
-            if _gpt_letter:
-                _tmp_text += _gpt_letter
-                yield json.dumps({"text": _gpt_letter})
-        posttexter = posttext_mapping.get(func_name)
-        if posttexter is not None:
-            async for _gpt_letter in posttexter.get_text_agenerator(PostTextParam(language, sub_func_name)):
-                _tmp_text += _gpt_letter
-                yield json.dumps({"text": _gpt_letter})
-        if len(data) == 0 :
-            data = {
-                'type' : 'gpt',
-                'content' : _tmp_text
-            }
-        else :
-            data['content'] = _tmp_text
-        # print(f'>>>>>test 002 : {data}')
-        if data :
-            _code = generate_unique_id()
-            data['code'] = _code
-            yield '[DATA]'
-            yield json.dumps(data)
-        yield "[DONE]"
-        logger.info(f'>>>>> func & ref _tmp_text: {_tmp_text}')
+        if output_type != "voice":
+            yield "[GPT]"
+            async for chunk in resp2:
+                # _gpt_letter = chunk['choices'][0]['delta'].get("content", "")
+                _gpt_letter = chunk.choices[0].delta.content
+                # print(f'>>>>> _gpt_letter: {_gpt_letter}')
+                if _gpt_letter:
+                    _tmp_text += _gpt_letter
+                    yield json.dumps({"text": _gpt_letter})
+            posttexter = posttext_mapping.get(func_name)
+            if posttexter is not None:
+                async for _gpt_letter in posttexter.get_text_agenerator(PostTextParam(language, sub_func_name)):
+                    _tmp_text += _gpt_letter
+                    yield json.dumps({"text": _gpt_letter})
+            if len(data) == 0 :
+                data = {
+                    'type' : 'gpt',
+                    'content' : _tmp_text
+                }
+            else :
+                data['content'] = _tmp_text
+            # print(f'>>>>>test 002 : {data}')
+            if data :
+                _code = generate_unique_id()
+                data['code'] = _code
+                yield '[DATA]'
+                yield json.dumps(data)
+            yield "[DONE]"
+            logger.info(f'>>>>> func & ref _tmp_text: {_tmp_text}')
+        else:
+            yield "[TTS]"
+            async for chunk in resp2:
+                # _gpt_letter = chunk['choices'][0]['delta'].get("content", "")
+                _gpt_letter = chunk.choices[0].delta.content
+                # print(f'>>>>> _gpt_letter: {_gpt_letter}')
+                if _gpt_letter:
+                    _tmp_text += _gpt_letter
+                    # yield json.dumps({"text": _gpt_letter})
+            posttexter = posttext_mapping.get(func_name)
+            if posttexter is not None:
+                async for _gpt_letter in posttexter.get_text_agenerator(PostTextParam(language, sub_func_name)):
+                    _tmp_text += _gpt_letter
+                    # yield json.dumps({"text": _gpt_letter})
+            base64_encoded_voice = textToSpeech(_tmp_text)
+            if len(data) == 0 :
+                data = {
+                    "role": "assistant", 
+                    "type": "voice", 
+                    "format": "mpc", 
+                    "version": "001", 
+                    'content' : base64_encoded_voice
+                }
+            else :
+                data['content'] = base64_encoded_voice
+            yield json.dumps({
+                "role": "assistant", 
+                "type": "voice", 
+                "format": "mpc", 
+                "version": "001", 
+                "content": base64_encoded_voice
+            })
+            # print(f'>>>>>test 002 : {data}')
+            if data :
+                # _code = generate_unique_id()
+                # data['code'] = _code
+                yield '[DATA]'
+                yield json.dumps(data)
+            yield "[DONE]"
+            logger.info(f'>>>>> func & ref _tmp_text & output _voice: {_tmp_text}')
     if question and msggroup :
         gpt_message = (
         question,
