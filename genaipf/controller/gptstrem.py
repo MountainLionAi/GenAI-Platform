@@ -83,13 +83,17 @@ async def send_strem_chat(request: Request):
     # messages = [{"role": msg["role"], "content": msg["content"]} for msg in process_messages(messages)]
     # messages = messages[-10:]
     messages = process_messages(messages)
-    if not IS_INNER_DEBUG and model == 'ml-plus':
-        can_use = await user_account_service_wrapper.get_user_can_use_time(userid)
-        if can_use > 0:
-            await user_account_service_wrapper.minus_one_user_can_use_time(userid)
-        else:
-            raise CustomerError(status_code=ERROR_CODE['NO_REMAINING_TIMES'])
-    
+    try:
+        if not IS_INNER_DEBUG and model == 'ml-plus':
+            can_use = await user_account_service_wrapper.get_user_can_use_time(userid)
+            if can_use > 0:
+                await user_account_service_wrapper.minus_one_user_can_use_time(userid)
+            else:
+                raise CustomerError(status_code=ERROR_CODE['NO_REMAINING_TIMES'])
+    except Exception as e:
+        logger.error(e)
+        logger.error(traceback.format_exc())
+
     try:
         async def event_generator(_response):
             # async for _str in getAnswerAndCallGpt(request_params['content'], userid, msggroup, language, messages):
@@ -137,7 +141,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     # msgs = _messages[:-1] + [{"role": "user", "content": merged_ref_text}]
     msgs = _messages[::]
     # ^^^^^^^^ 在第一次 func gpt 就准备好数据 ^^^^^^^^
-    
+
     used_gpt_functions = gpt_function_filter(gpt_functions_mapping, _messages)
     # resp1 = await afunc_gpt4_generator(msgs, used_gpt_functions, language, model)
     resp1 = await afunc_gpt4_generator(msgs, used_gpt_functions, language, model, "", related_qa)
