@@ -126,6 +126,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     data = {}
     
     last_front_msg = front_messages[-1]
+    question = last_front_msg['content']
     if last_front_msg.get("need_whisper"):
         yield '[WHISPER]'
         yield json.dumps({"text": last_front_msg['content']})
