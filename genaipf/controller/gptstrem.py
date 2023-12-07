@@ -25,7 +25,9 @@ from genaipf.dispatcher.functions import gpt_functions_mapping, gpt_function_fil
 from genaipf.dispatcher.postprocess import posttext_mapping, PostTextParam
 from genaipf.utils.redis_utils import RedisConnectionPool
 from genaipf.conf.server import IS_INNER_DEBUG
+from genaipf.utils.speech_utils import transcribe, textToSpeech
 import os
+import base64
 from dotenv import load_dotenv
 load_dotenv(override=True)
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
@@ -41,13 +43,32 @@ async def http(request: Request):
 async def http4gpt4(request: Request):
     return response.json({"http4gpt4": "sendchat_gpt4"})
 
+def process_messages(messages):
+    processed_messages = []
+    for message in messages:
+        if message.get('type') == 'voice':
+            content = transcribe(message['content'])
+            need_whisper = True
+        else:
+            content = message['content']
+            need_whisper = False
+        processed_messages.append({
+            "role": message['role'],
+            "content": content,
+            "type": message.get('type', 'text'),
+            "format": message.get('format', 'text'),
+            "version": message.get('version', 'v001'),
+            "need_whisper": need_whisper
+        })
+    return processed_messages[-10:]
+
 async def send_strem_chat(request: Request):
-    logger.info("======start gptstrem===========")
+    logger.info("======start gptstream===========")
 
     request_params = request.json
     # if not request_params or not request_params['content'] or not request_params['msggroup']:
     #     raise CustomerError(status_code=ERROR_CODE['PARAMS_ERROR'])
-    
+
     userid = 0
     if hasattr(request.ctx, 'user'):
         userid = request.ctx.user['id']
@@ -57,19 +78,26 @@ async def send_strem_chat(request: Request):
     device_no = request.remote_addr
     question_code = request_params.get('code', '')
     model = request_params.get('model', '')
+    # messages = process_messages(messages)
+    output_type = request_params.get('output_type', 'text') # text or voice; (voice is mp3)
+    # messages = [{"role": msg["role"], "content": msg["content"]} for msg in process_messages(messages)]
+    # messages = messages[-10:]
+    messages = process_messages(messages)
+    try:
+        if not IS_INNER_DEBUG and model == 'ml-plus':
+            can_use = await user_account_service_wrapper.get_user_can_use_time(userid)
+            if can_use > 0:
+                await user_account_service_wrapper.minus_one_user_can_use_time(userid)
+            else:
+                raise CustomerError(status_code=ERROR_CODE['NO_REMAINING_TIMES'])
+    except Exception as e:
+        logger.error(e)
+        logger.error(traceback.format_exc())
 
-    messages = messages[-10:]
-    if not IS_INNER_DEBUG and model == 'ml-plus':
-        can_use = await user_account_service_wrapper.get_user_can_use_time(userid)
-        if can_use > 0:
-            await user_account_service_wrapper.minus_one_user_can_use_time(userid)
-        else:
-            raise CustomerError(status_code=ERROR_CODE['NO_REMAINING_TIMES'])
-    
     try:
         async def event_generator(_response):
             # async for _str in getAnswerAndCallGpt(request_params['content'], userid, msggroup, language, messages):
-            async for _str in getAnswerAndCallGpt(request_params.get('content'), userid, msggroup, language, messages, device_no, question_code, model):
+            async for _str in getAnswerAndCallGpt(request_params.get('content'), userid, msggroup, language, messages, device_no, question_code, model, output_type):
                 await _response.write(f"data:{_str}\n\n")
                 await asyncio.sleep(0.01)
         return ResponseStream(event_generator, headers={"accept": "application/json"}, content_type="text/event-stream")
@@ -81,7 +109,7 @@ async def send_strem_chat(request: Request):
 
    
 
-async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messages, device_no, question_code, model):
+async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messages, device_no, question_code, model, output_type):
     t0 = time.time()
     MAX_CH_LENGTH = 8000
     _ensure_ascii = False
@@ -92,10 +120,16 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         if x["role"] == "gptfunc":
             messages.append({"role": "assistant", "content": None, "function_call": x["function_call"]})
         else:
-            messages.append(x)
+            messages.append({"role": x["role"], "content": x["content"]})
     user_history_l = [x["content"] for x in messages if x["role"] == "user"]
     newest_question = user_history_l[-1]
     data = {}
+    
+    last_front_msg = front_messages[-1]
+    question = last_front_msg['content']
+    if last_front_msg.get("need_whisper"):
+        yield '[WHISPER]'
+        yield json.dumps({"text": last_front_msg['content']})
     
     # vvvvvvvv 在第一次 func gpt 就准备好数据 vvvvvvvv
     ref_text = ""
@@ -108,7 +142,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     # msgs = _messages[:-1] + [{"role": "user", "content": merged_ref_text}]
     msgs = _messages[::]
     # ^^^^^^^^ 在第一次 func gpt 就准备好数据 ^^^^^^^^
-    
+
     used_gpt_functions = gpt_function_filter(gpt_functions_mapping, _messages)
     # resp1 = await afunc_gpt4_generator(msgs, used_gpt_functions, language, model)
     resp1 = await afunc_gpt4_generator(msgs, used_gpt_functions, language, model, "", related_qa)
@@ -126,7 +160,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         _tmp_text = ""
         _tmp_text += c0
         yield '[GPT]'
-        _code = generate_unique_id()    
+        _code = generate_unique_id()
         yield json.dumps({"code": _code})
         yield json.dumps({"text": c0})
         async for chunk in resp1:
@@ -135,6 +169,17 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
             if _gpt_letter:
                 _tmp_text += _gpt_letter
                 yield json.dumps({"text": _gpt_letter})
+        if output_type == "voice":
+            # 对于语音输出，将文本转换为语音并编码
+            base64_encoded_voice = textToSpeech(_tmp_text)
+            yield '[TTS]'
+            yield json.dumps({
+                "role": "assistant", 
+                "type": "voice", 
+                "format": "mp3", 
+                "version": "v001", 
+                "content": base64_encoded_voice
+            })
         yield "[DONE]"
         data = {
                 'type' : 'gpt',
@@ -209,6 +254,17 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
             async for _gpt_letter in posttexter.get_text_agenerator(PostTextParam(language, sub_func_name)):
                 _tmp_text += _gpt_letter
                 yield json.dumps({"text": _gpt_letter})
+        if output_type == "voice":
+            # 对于语音输出，将文本转换为语音并编码
+            base64_encoded_voice = textToSpeech(_tmp_text)
+            yield '[TTS]'
+            yield json.dumps({
+                "role": "assistant", 
+                "type": "voice", 
+                "format": "mp3", 
+                "version": "v001", 
+                "content": base64_encoded_voice
+            })
         if len(data) == 0 :
             data = {
                 'type' : 'gpt',
@@ -217,13 +273,14 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         else :
             data['content'] = _tmp_text
         # print(f'>>>>>test 002 : {data}')
-        if data :
+        if data:
             _code = generate_unique_id()
             data['code'] = _code
             yield '[DATA]'
             yield json.dumps(data)
         yield "[DONE]"
-        logger.info(f'>>>>> func & ref _tmp_text: {_tmp_text}')
+        logger.info(f'>>>>> func & ref _tmp_text & output_type: {output_type}: {_tmp_text}')
+
     if question and msggroup :
         gpt_message = (
         question,
