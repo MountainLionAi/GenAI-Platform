@@ -143,7 +143,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     msgs = _messages[::]
     # ^^^^^^^^ 在第一次 func gpt 就准备好数据 ^^^^^^^^
 
-    used_gpt_functions = gpt_function_filter(gpt_functions_mapping, _messages)
+    used_gpt_functions = gpt_function_filter(gpt_functions_mapping, _messages, model)
     # resp1 = await afunc_gpt4_generator(msgs, used_gpt_functions, language, model)
     resp1 = await afunc_gpt4_generator(msgs, used_gpt_functions, language, model, "", related_qa)
     chunk = await resp1.__anext__()

@@ -21,7 +21,8 @@ def update_vdb(collection_name):
     if collection_name == qa_coll_name:
         from genaipf.dispatcher.vdb_pairs.qa import vdb_map
     elif collection_name == gpt_func_coll_name:
-        from genaipf.dispatcher.vdb_pairs.gpt_func import vdb_map
+        from genaipf.dispatcher.vdb_pairs.gpt_func import vdb_map, plus_vdb_map
+        vdb_map = {**vdb_map, **plus_vdb_map}
 
     colls = client.get_collections()
     if collection_name not in [x.name for x in colls.collections]:

@@ -1,5 +1,5 @@
 from genaipf.dispatcher.utils import get_vdb_topk, gpt_func_coll_name
-from genaipf.dispatcher.vdb_pairs.gpt_func import vdb_map
+from genaipf.dispatcher.vdb_pairs.gpt_func import vdb_map, plus_vdb_map
 from genaipf.utils.log_utils import logger
 
 from importlib import import_module
@@ -29,7 +29,7 @@ gpt_functions_mapping = {
 
 gpt_functions = list(gpt_functions_mapping.values())
 
-def gpt_function_filter(gpt_functions_mapping, messages, msg_k=5, v_n=5, per_n=2):
+def gpt_function_filter(gpt_functions_mapping, messages, model, msg_k=5, v_n=5, per_n=2):
     try:
         user_messages = [msg['content'] for msg in messages if msg['role'] == 'user'][-msg_k:]
         used_names = set()
@@ -37,7 +37,11 @@ def gpt_function_filter(gpt_functions_mapping, messages, msg_k=5, v_n=5, per_n=2
             tmp_names = []
             results = get_vdb_topk(text, gpt_func_coll_name, 0.1, v_n)
             for x in results:
-                _name = vdb_map.get(x["payload"]["q"])
+                if model == "ml-plus":
+                    new_vdb_map = {**vdb_map, **plus_vdb_map}
+                    _name = new_vdb_map.get(x["payload"]["q"])
+                else:
+                    _name = vdb_map.get(x["payload"]["q"])
                 if _name and _name not in tmp_names:
                     tmp_names.append(_name)
             used_names = used_names.union(set(tmp_names[:per_n]))
