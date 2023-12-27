@@ -222,7 +222,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
                 }
 
         related_qa = get_qa_vdb_topk(newest_question)
-        merged_ref_text = LionPrompt.get_merge_ref_and_input_prompt(str(picked_content), related_qa, newest_question, language, _type, data)
+        # merged_ref_text = LionPrompt.get_merge_ref_and_input_prompt(str(picked_content), related_qa, newest_question, language, _type, data)
         # merged_ref_text = merge_ref_and_input_text(ref_text, newest_question)
         _messages = [x for x in messages if x["role"] != "system"]
         # msgs = _messages[:-1] + [{"role": "user", "content": merged_ref_text}]

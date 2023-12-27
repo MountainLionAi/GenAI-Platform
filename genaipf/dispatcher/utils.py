@@ -62,7 +62,7 @@ async def openai_chat_completion_acreate(
         top_p=top_p, # 过滤掉低于阈值的 token 确保结果不散漫
         frequency_penalty=frequency_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
         presence_penalty=presence_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
-        stream=True
+        stream=stream
     )
     return response
 
