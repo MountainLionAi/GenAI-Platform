@@ -58,4 +58,5 @@ if __name__ == "__main__":
             app.run(host=server.HOST, port=server.PORT)
         else:
             # workers的数量可以单独设置，如果设置为fast则默认为8
-            app.run(host=server.HOST, port=server.PORT, fast=True)
+            # app.run(host=server.HOST, port=server.PORT, fast=True)
+            app.run(host=server.HOST, port=server.PORT, workers=2)
