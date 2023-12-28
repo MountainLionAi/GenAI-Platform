@@ -34,3 +34,4 @@ Jinja2~=3.1.2
 async-cache==1.1.1
 tavily-python==0.2.9
 sanic-ext==23.6.0
+aiomysql==0.2.0
