@@ -54,7 +54,7 @@ async def awrap_gpt_generator(gpt_response):
         _tmp_text = ""
         _tmp_text += c0
         yield get_format_output("gpt", c0)
-        async for chunk in resp1:
+        async for chunk in resp:
             _gpt_letter = chunk.choices[0].delta.content
             if _gpt_letter:
                 _tmp_text += _gpt_letter
@@ -65,7 +65,7 @@ async def awrap_gpt_generator(gpt_response):
         big_func_name = _func_or_text.name
         func_name, sub_func_name = big_func_name.split("_____")
         _arguments = _func_or_text.arguments
-        async for chunk in resp1:
+        async for chunk in resp:
             _func_json = chunk.choices[0].delta.function_call
             if _func_json:
                 _arguments += _func_json.arguments
