@@ -132,22 +132,15 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         yield json.dumps({"text": last_front_msg['content']})
     
     # vvvvvvvv 在第一次 func gpt 就准备好数据 vvvvvvvv
-    ref_text = ""
     related_qa = get_qa_vdb_topk(newest_question)
-    ref_text += "\n\n可能相关的历史问答:\n" + "\n\n".join(related_qa)
-    ref_text = ref_text[:MAX_CH_LENGTH + 3000]
-    logger.info(f'>>>>> frist ref_text: {ref_text}')
-    merged_ref_text = merge_ref_and_input_text(ref_text, newest_question, language=language)
+    logger.info(f'>>>>> frist related_qa: {related_qa}')
     _messages = [x for x in messages if x["role"] != "system"]
-    # msgs = _messages[:-1] + [{"role": "user", "content": merged_ref_text}]
     msgs = _messages[::]
     # ^^^^^^^^ 在第一次 func gpt 就准备好数据 ^^^^^^^^
 
     used_gpt_functions = gpt_function_filter(gpt_functions_mapping, _messages)
-    # resp1 = await afunc_gpt4_generator(msgs, used_gpt_functions, language, model)
     resp1 = await afunc_gpt4_generator(msgs, used_gpt_functions, language, model, "", related_qa)
     chunk = await resp1.__anext__()
-    # _func_or_text = chunk['choices'][0]['delta'].get("function_call", None)
     _func_or_text = chunk.choices[0].delta.function_call
     if _func_or_text:
         mode1 = "func"
@@ -222,12 +215,8 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
                 }
 
         related_qa = get_qa_vdb_topk(newest_question)
-        # merged_ref_text = LionPrompt.get_merge_ref_and_input_prompt(str(picked_content), related_qa, newest_question, language, _type, data)
-        # merged_ref_text = merge_ref_and_input_text(ref_text, newest_question)
         _messages = [x for x in messages if x["role"] != "system"]
-        # msgs = _messages[:-1] + [{"role": "user", "content": merged_ref_text}]
         msgs = _messages[::]
-        # resp2 = await aref_answer_gpt_generator(msgs, model="gpt-3.5-turbo-16k", language=language, preset_name=_type)
         resp2 = await aref_answer_gpt_generator(msgs, model, language, _type, str(picked_content), related_qa)
 
         # if data :
