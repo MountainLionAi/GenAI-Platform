@@ -5,6 +5,7 @@ from datetime import datetime
 from genaipf.dispatcher.prompts_v001 import LionPrompt
 # from openai.error import InvalidRequestError
 from openai import BadRequestError
+from genaipf.utils.redis_utils import RedisConnectionPool
 
 # temperature=2 # 值在[0,1]之间，越大表示回复越具有不确定性
 # max_tokens=2000 # 输出的最大 token 数
@@ -17,7 +18,65 @@ top_p=0.85 # 过滤掉低于阈值的 token 确保结果不散漫
 frequency_penalty=0.3 # [-2,2]之间，该值越大则更倾向于产生不同的内容
 presence_penalty=0.2 # [-2,2]之间，该值越大则更倾向于产生不同的内容
 
-async def afunc_gpt4_generator(messages, functions=gpt_functions, language=LionPrompt.default_lang, model='', picked_content="", related_qa=[]):
+
+def generate_unique_id():
+    redis_client = RedisConnectionPool().get_connection()
+    return redis_client.incr('unique_id')
+
+def get_format_output(role, content, mode=None):
+    if mode == "voice_mp3_v001":
+        return {
+            "role": role, 
+            "type": "voice", 
+            "format": "mp3", 
+            "version": "v001", 
+            "content": content
+        }
+    else:
+        return {"role": role, "type": "text", "format": "text", "version": "v001", "content": content}
+
+async def aget_error_generator(msg="ERROR"):
+    for c in msg:
+        await asyncio.sleep(0.02)
+        yield get_format_output("error", c)
+
+async def awrap_gpt_generator(gpt_response):
+    resp = gpt_response
+    chunk = await resp.__anext__()
+    _func_or_text = chunk.choices[0].delta.function_call
+    if _func_or_text:
+        mode1 = "func"
+    else:
+        mode1 = "text"
+    if mode1 == "text":
+        yield get_format_output("step", "llm_yielding")
+        c0 = chunk.choices[0].delta.content
+        _tmp_text = ""
+        _tmp_text += c0
+        yield get_format_output("gpt", c0)
+        async for chunk in resp1:
+            _gpt_letter = chunk.choices[0].delta.content
+            if _gpt_letter:
+                _tmp_text += _gpt_letter
+                yield get_format_output("gpt", _gpt_letter)
+        yield get_format_output("inner_____gpt_whole_text", _tmp_text)
+    elif mode1 == "func":
+        yield get_format_output("step", "agent_routing")
+        big_func_name = _func_or_text.name
+        func_name, sub_func_name = big_func_name.split("_____")
+        _arguments = _func_or_text.arguments
+        async for chunk in resp1:
+            _func_json = chunk.choices[0].delta.function_call
+            if _func_json:
+                _arguments += _func_json.arguments
+        _param = json.loads(_arguments)
+        _param["func_name"] = func_name
+        _param["sub_func_name"] = sub_func_name
+        _param["subtype"] = sub_func_name
+        yield get_format_output("inner_____func_param", _param)
+        
+
+async def afunc_gpt_generator(messages, functions=gpt_functions, language=LionPrompt.default_lang, model='', picked_content="", related_qa=[]):
     '''
     "messages": [
         {"role": "user", "content": "Hello"},
@@ -49,16 +108,17 @@ async def afunc_gpt4_generator(messages, functions=gpt_functions, language=LionP
                 presence_penalty=presence_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
                 stream=True
             )
-            print('afunc_gpt4_generator called')
-            return response
+            print('afunc_gpt_generator called')
+            return awrap_gpt_generator(response)
         except BadRequestError as e:
             print(e)
-            logger.error(f'afunc_gpt4_generator BadRequestError {e}', e)
+            logger.error(f'afunc_gpt_generator BadRequestError {e}', e)
             messages = messages[mlength // 2:]
         except Exception as e:
             print(e)
-            logger.error(f'afunc_gpt4_generator question_JSON call gpt4 error {e}', e)
-            raise e
+            logger.error(f'afunc_gpt_generator question_JSON call gpt4 error {e}', e)
+            return aget_error_generator(str(e))
+    return aget_error_generator("error after retry many times")
 
 
 async def aref_answer_gpt_generator(messages, model='', language=LionPrompt.default_lang, preset_name=None, picked_content="", related_qa=[]):
@@ -87,7 +147,7 @@ async def aref_answer_gpt_generator(messages, model='', language=LionPrompt.defa
                 stream=True
             )
             print(f'aref_answer_gpt called')
-            return response
+            return awrap_gpt_generator(response)
         except BadRequestError as e:
             print(e)
             logger.error(f'aref_answer_gpt_generator BadRequestError {e}', e)
@@ -95,7 +155,8 @@ async def aref_answer_gpt_generator(messages, model='', language=LionPrompt.defa
         except Exception as e:
             print(e)
             logger.error(f'aref_answer_gpt_generator question_JSON call gpt4 error {e}', e)
-
+            return aget_error_generator(str(e))
+    return aget_error_generator("error after retry many times")
 
 async def aref_oneshot_gpt_generator(messages, model='', language=LionPrompt.default_lang, preset_name=None, picked_content="", related_qa=[], data=None):
     front_messages = messages
