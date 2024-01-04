@@ -20,6 +20,7 @@ blueprint_v1.add_route(gpt.get_msggroup_list, "getMsgGroupList", methods=["GET"]
 blueprint_v1.add_route(gpt.del_msggroup_list, "delMsgGroupList", methods=["POST"])
 blueprint_v1.add_route(gptstrem.send_strem_chat, "sendStremChat", methods=["POST"])
 blueprint_v1.add_route(gpt_oneshot.send_oneshot_chat, "sendOneshotChat", methods=["POST"])
+blueprint_v1.add_route(gpt_oneshot.send_raw_chat_stream, "sendRawChatStream", methods=["POST"])
 blueprint_v1.add_route(userRate.user_rate, 'userRate', methods=["POST"])
 blueprint_v1.add_route(userRate.del_message_by_codes, 'delMessages', methods=["POST"])
 blueprint_v1.add_route(userRate.share_message, 'shareMessages', methods=["POST"])
