@@ -106,6 +106,7 @@ async def aref_oneshot_gpt_generator(messages, model='', language=LionPrompt.def
     try:
         if mode == "raw":
             _messages = [{"role": x["role"], "content": x["content"]} for x in front_messages]
+            _check_something = LionPrompt.get_merge_ref_and_input_prompt(str(picked_content), related_qa, "question", language, preset_name, data)
         else:
             system = {
                 "role": "system",
