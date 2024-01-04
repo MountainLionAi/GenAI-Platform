@@ -97,29 +97,34 @@ async def aref_answer_gpt_generator(messages, model='', language=LionPrompt.defa
             logger.error(f'aref_answer_gpt_generator question_JSON call gpt4 error {e}', e)
 
 
-async def aref_oneshot_gpt_generator(messages, model='', language=LionPrompt.default_lang, preset_name=None, picked_content="", related_qa=[], data=None):
+async def aref_oneshot_gpt_generator(messages, model='', language=LionPrompt.default_lang, preset_name=None, picked_content="", related_qa=[], data=None, stream=False, mode=None):
     front_messages = messages
+    gpt_prams = data.get("gpt_prams", {})
     use_model = 'gpt-3.5-turbo-16k'
     if model == 'ml-plus':
         use_model = OPENAI_PLUS_MODEL
     try:
-        system = {
-            "role": "system",
-            "content": LionPrompt.get_aref_answer_prompt(language, preset_name, picked_content, related_qa, use_model, data)
-        }
-        newest_question = front_messages[-1]["content"]
-        merged_ref_text = LionPrompt.get_merge_ref_and_input_prompt(str(picked_content), related_qa, newest_question, language, preset_name, data)
-        _messages = [system] + [{"role": "user", "content": merged_ref_text}]
+        if mode == "raw":
+            _messages = [{"role": x["role"], "content": x["content"]} for x in front_messages]
+        else:
+            system = {
+                "role": "system",
+                "content": LionPrompt.get_aref_answer_prompt(language, preset_name, picked_content, related_qa, use_model, data)
+            }
+            newest_question = front_messages[-1]["content"]
+            merged_ref_text = LionPrompt.get_merge_ref_and_input_prompt(str(picked_content), related_qa, newest_question, language, preset_name, data)
+            _messages = [system] + [{"role": "user", "content": merged_ref_text}]
+            
         response = await openai_chat_completion_acreate(
             model=use_model,
             messages=_messages,
             functions=None,
-            temperature=temperature,  # 值在[0,1]之间，越大表示回复越具有不确定性
-            max_tokens=max_tokens, # 输出的最大 token 数
-            top_p=top_p, # 过滤掉低于阈值的 token 确保结果不散漫
-            frequency_penalty=frequency_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
-            presence_penalty=presence_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
-            stream=False
+            temperature=gpt_prams.get("temperature", temperature),  # 值在[0,1]之间，越大表示回复越具有不确定性
+            max_tokens=gpt_prams.get("max_tokens", max_tokens), # 输出的最大 token 数
+            top_p=gpt_prams.get("top_p", top_p), # 过滤掉低于阈值的 token 确保结果不散漫
+            frequency_penalty=gpt_prams.get("frequency_penalty", frequency_penalty),  # [-2,2]之间，该值越大则更倾向于产生不同的内容
+            presence_penalty=gpt_prams.get("presence_penalty", presence_penalty),  # [-2,2]之间，该值越大则更倾向于产生不同的内容
+            stream=stream
         )
         print(f'aref_oneshot_gpt_generator called')
         return response
