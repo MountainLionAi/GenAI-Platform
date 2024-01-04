@@ -104,6 +104,7 @@ async def send_raw_chat_stream(request: Request):
                     _str = json.dumps({"text": _gpt_letter})
                     await _response.write(f"data:{_str}\n\n")
                     await asyncio.sleep(0.001)
+            await _response.write(f"data:[DONE]\n\n")
         return ResponseStream(event_generator, headers={"accept": "application/json"}, content_type="text/event-stream")
     except Exception as e:
         logger.error(e)
