@@ -203,6 +203,15 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         'content' : _tmp_text,
         'code' : _code
     })
+    if data["type"] != "gpt":
+        _tmp = {
+            "role": "preset", 
+            "type": data["type"], 
+            "format": data["subtype"], 
+            "version": "v001", 
+            "content": data
+        }
+        yield json.dumps(_tmp)
     yield json.dumps(get_format_output("step", "done"))
     logger.info(f'>>>>> func & ref _tmp_text & output_type: {output_type}: {_tmp_text}')
 
