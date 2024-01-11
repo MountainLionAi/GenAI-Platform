@@ -35,3 +35,6 @@ async-cache==1.1.1
 tavily-python==0.2.9
 sanic-ext==23.6.0
 aiomysql==0.2.0
+metaphor-python==0.1.23
+tenacity==8.2.3
+langchain_openai==0.0.2
