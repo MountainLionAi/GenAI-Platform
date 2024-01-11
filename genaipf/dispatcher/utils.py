@@ -1,4 +1,5 @@
 import os
+import asyncio
 import typing
 import openai
 import tqdm
@@ -53,17 +54,24 @@ async def openai_chat_completion_acreate(
     model, messages, functions,
     temperature, max_tokens, top_p, frequency_penalty, presence_penalty, stream
 ):
-    response = await async_openai_client.chat.completions.create(
-        model=model,
-        messages=messages,
-        functions=functions if functions else NOT_GIVEN,
-        temperature=temperature,  # 值在[0,1]之间，越大表示回复越具有不确定性
-        max_tokens=max_tokens, # 输出的最大 token 数
-        top_p=top_p, # 过滤掉低于阈值的 token 确保结果不散漫
-        frequency_penalty=frequency_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
-        presence_penalty=presence_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
-        stream=stream
-    )
+    try:
+        response = await asyncio.wait_for(
+            async_openai_client.chat.completions.create(
+                model=model,
+                messages=messages,
+                functions=functions if functions else NOT_GIVEN,
+                temperature=temperature,  # 值在[0,1]之间，越大表示回复越具有不确定性
+                max_tokens=max_tokens, # 输出的最大 token 数
+                top_p=top_p, # 过滤掉低于阈值的 token 确保结果不散漫
+                frequency_penalty=frequency_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
+                presence_penalty=presence_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
+                stream=stream
+            ),
+            timeout=180.0  # 设置超时时间为180秒
+        )
+    except asyncio.TimeoutError as e:
+        raise Exception("The request to OpenAI timed out after 3 minutes.")
+
     return response
 
 def merge_ref_and_input_text(ref, input_text, language='en'):
