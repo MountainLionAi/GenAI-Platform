@@ -14,10 +14,10 @@ async def perplexity_search(question: str, language=None):
     model_version = "mixtral-8x7b-instruct"
     payload = {
         "model": model_version,
-        "messages": [{"role": "system", "content": "准确、简洁。"}, {"role": "user", "content": question}]
+        "messages": [{"role": "system", "content": "Answer my questions in Chinese"}, {"role": "user", "content": question}]
     }
     if language == 'en':
-        payload["messages"] = [{"role": "system", "content": "Be precise and concise."}, {"role": "user", "content": question}]
+        payload["messages"] = [{"role": "system", "content": "Answer my questions in English"}, {"role": "user", "content": question}]
     try:
         print('PER_PLE_URL: ', PER_PLE_URL)
         print('headers: ', headers)
