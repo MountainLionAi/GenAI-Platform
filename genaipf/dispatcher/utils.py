@@ -73,7 +73,9 @@ async def openai_chat_completion_acreate(
     except asyncio.TimeoutError as e:
         print(f'>>>>>>>>>test002 async_openai_client.chat.completions.create, e: {e}')
         raise Exception("The request to OpenAI timed out after 3 minutes.")
-
+    except Exception as e:
+        print(f'>>>>>>>>>test003 async_openai_client.chat.completions.create, e: {e}')
+        raise e
     return response
 
 def merge_ref_and_input_text(ref, input_text, language='en'):
