@@ -142,7 +142,8 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         'content' : _tmp_text
     }
     resp1 = await afunc_gpt_generator(msgs, used_gpt_functions, language, model, "", related_qa)
-    chunk = await resp1.__anext__()
+    # chunk = await resp1.__anext__()
+    chunk = await asyncio.wait_for(resp1.__anext__(), timeout=20)
     assert chunk["role"] == "step"
     if chunk["content"] == "llm_yielding":
         async for chunk in resp1:
