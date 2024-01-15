@@ -57,3 +57,10 @@ def check_evm_wallet_format(address):
         return True
     else:
         return False
+
+def is_valid_number(s):
+        try:
+            float(s) 
+            return True
+        except ValueError:
+            return False
