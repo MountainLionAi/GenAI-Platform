@@ -1,4 +1,5 @@
 import asyncio
+from datetime import datetime
 from genaipf.agent.llama_index import LlamaIndexAgent
 
 async def multiply(a: int, b: int) -> int:
@@ -10,6 +11,7 @@ async def add(a: int, b: int) -> int:
     return a + b
 
 # agent = LlamaIndexAgent([multiply, add], system_prompt="Answer me with only one word.")
+# agent = LlamaIndexAgent([])
 agent = LlamaIndexAgent([multiply, add])
 
 agent.start_chat("What is (121 * 3) + 42?")
