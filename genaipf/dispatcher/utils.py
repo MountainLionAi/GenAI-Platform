@@ -7,12 +7,10 @@ import pandas as pd
 from functools import cache
 from qdrant_client import QdrantClient
 from qdrant_client.http import models
-from dotenv import load_dotenv
 import tiktoken
 from openai import OpenAI, AsyncOpenAI
 from openai._types import NOT_GIVEN
-
-load_dotenv(override=True)
+from genaipf.conf.server import os
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
 MAX_CH_LENGTH_GPT3 = 8000

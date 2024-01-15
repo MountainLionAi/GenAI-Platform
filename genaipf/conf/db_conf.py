@@ -1,6 +1,4 @@
-import os
-from dotenv import load_dotenv
-load_dotenv(override=True)
+from genaipf.conf.server import os
 
 HOST = os.getenv("MYSQL_HOST")
 PORT = int(os.getenv("MYSQL_PORT"))

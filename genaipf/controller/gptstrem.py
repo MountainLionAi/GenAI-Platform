@@ -26,10 +26,8 @@ from genaipf.dispatcher.postprocess import posttext_mapping, PostTextParam
 from genaipf.utils.redis_utils import RedisConnectionPool
 from genaipf.conf.server import IS_INNER_DEBUG, IS_UNLIMIT_USAGE
 from genaipf.utils.speech_utils import transcribe, textToSpeech
-import os
 import base64
-from dotenv import load_dotenv
-load_dotenv(override=True)
+from genaipf.conf.server import os
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 proxy = { 'https' : '127.0.0.1:8001'}

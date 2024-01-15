@@ -1,6 +1,14 @@
 import os
+import genaipf
+from pathlib import Path
 from dotenv import load_dotenv
-load_dotenv(override=True)
+try:
+    _env_path = Path(Path(genaipf.__path__[0]).parent, ".env")
+    load_dotenv(_env_path, override=True)
+except Exception as e:
+    print(f'genaipf/conf/server.py, {e}')
+    _env_path = ".env"
+    load_dotenv(override=True)
 
 SERVICE_NAME = os.getenv("SERVICE_NAME", "GenAI")
 PLUGIN_NAME = os.getenv("PLUGIN_NAME", None)
