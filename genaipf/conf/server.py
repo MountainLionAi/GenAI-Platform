@@ -25,3 +25,4 @@ IS_INNER_DEBUG = True if os.getenv("IS_INNER_DEBUG") else False
 IS_UNLIMIT_USAGE = True if os.getenv("IS_UNLIMIT_USAGE") else False
 STATIC_PATH = os.getenv("STATIC_PATH")
 PROXY_URL = os.getenv("PROXY_URL")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
