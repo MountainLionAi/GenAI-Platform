@@ -38,6 +38,7 @@ def check_user_password(hashed_pwd, password: str):
 def check_user_signature(signature, wallet_addr, time_stamp):
     is_valid = False
     # 检测时间是否过期
+    time_stamp = str(time_stamp)
     if get_current_timestamp() - int(time_stamp) > 1800:
         raise CustomerError(status_code=ERROR_CODE['LOGIN_EXPIRED'])
     w3 = Web3()
@@ -45,7 +46,7 @@ def check_user_signature(signature, wallet_addr, time_stamp):
     message = encode_defunct(text=original_message)
     recovered_signer = w3.eth.account.recover_message(message, signature=signature)
     # 判断签名的钱包地址
-    if wallet_addr == recovered_signer:
+    if wallet_addr.lower() == recovered_signer.lower():
         is_valid = True
     return is_valid
 
