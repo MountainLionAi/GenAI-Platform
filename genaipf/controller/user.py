@@ -33,8 +33,13 @@ async def login(request: Request):
 # 判断用户是否登陆
 async def check_login(request: Request):
     logger.info('check_user_login')
+    user_key = request.ctx.user.get('email')
+    if hasattr(user_key, '@'):
+        account = mask_email(user_key)
+    else:
+        account = user_key
     return success(
-        {'is_login': True, 'account': mask_email(request.ctx.user.get('email')), 'user_id': request.ctx.user.get('id')})
+        {'is_login': True, 'account': account, 'user_id': request.ctx.user.get('id')})
 
 
 # 用户注册

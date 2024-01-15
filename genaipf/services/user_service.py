@@ -72,6 +72,7 @@ async def user_login(email, password, signature, wallet_addr, timestamp, login_t
             await add_user(user_info)
         user = await get_user_info_by_address(wallet_addr)
         user_info = user[0]
+        account = wallet_addr
     else:
         user = await get_user_info_from_db(email)
         if not user:
@@ -79,6 +80,7 @@ async def user_login(email, password, signature, wallet_addr, timestamp, login_t
         user_info = user[0]
         if not check_user_password(user_info['password'].encode('utf-8'), password):
             raise CustomerError(status_code=ERROR_CODE['PWD_ERROR'])
+        account = mask_email(email)
     user_id = user_info['id']
     user_key = email if login_type == 0 else wallet_addr
     jwt_manager = JWTManager()
@@ -87,7 +89,7 @@ async def user_login(email, password, signature, wallet_addr, timestamp, login_t
     token_key = get_user_key(user_info['id'], user_key)
     redis_client.set(token_key, jwt_token, 3600 * 24 * 15)  # 设置登陆态到redis
     await update_user_token(user_info['id'], jwt_token)
-    return {'user_token': jwt_token, 'account': mask_email(email), 'user_id': user_id}
+    return {'user_token': jwt_token, 'account': account, 'user_id': user_id}
 
 
 # 用户登出相关操作
