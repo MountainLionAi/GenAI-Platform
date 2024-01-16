@@ -7,12 +7,10 @@ import pandas as pd
 from functools import cache
 from qdrant_client import QdrantClient
 from qdrant_client.http import models
-from dotenv import load_dotenv
 import tiktoken
 from openai import OpenAI, AsyncOpenAI
 from openai._types import NOT_GIVEN
-
-load_dotenv(override=True)
+from genaipf.conf.server import os
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
 MAX_CH_LENGTH_GPT3 = 8000
@@ -55,6 +53,7 @@ async def openai_chat_completion_acreate(
     temperature, max_tokens, top_p, frequency_penalty, presence_penalty, stream
 ):
     try:
+        # print(f'>>>>>>>>>test001.1 async_openai_client.chat.completions.create')
         response = await asyncio.wait_for(
             async_openai_client.chat.completions.create(
                 model=model,
@@ -67,11 +66,15 @@ async def openai_chat_completion_acreate(
                 presence_penalty=presence_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
                 stream=stream
             ),
-            timeout=180.0  # 设置超时时间为180秒
+            timeout=20.0  # 设置超时时间为180秒
         )
+        # print(f'>>>>>>>>>test001 async_openai_client.chat.completions.create, response: {response}')
     except asyncio.TimeoutError as e:
+        print(f'>>>>>>>>>test002 async_openai_client.chat.completions.create, e: {e}')
         raise Exception("The request to OpenAI timed out after 3 minutes.")
-
+    except Exception as e:
+        print(f'>>>>>>>>>test003 async_openai_client.chat.completions.create, e: {e}')
+        raise e
     return response
 
 def merge_ref_and_input_text(ref, input_text, language='en'):

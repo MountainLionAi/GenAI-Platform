@@ -7,9 +7,7 @@ import json
 # import snowflake.client
 import genaipf.services.gpt_service as gpt_service
 from datetime import datetime
-import os
-from dotenv import load_dotenv
-load_dotenv(override=True)
+from genaipf.conf.server import os
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 proxy = { 'https' : '127.0.0.1:8001'}

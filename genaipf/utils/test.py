@@ -1,8 +1,7 @@
-from dotenv import load_dotenv
+from genaipf.conf.server import os
 import speech_utils
 from openai import OpenAI
 
-load_dotenv(dotenv_path=".env")
 
 client = OpenAI()
 with open("speech.wav", "rb") as audio_file:
