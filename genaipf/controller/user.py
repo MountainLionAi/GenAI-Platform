@@ -13,17 +13,33 @@ import genaipf.utils.hcaptcha_utils as hcaptcha
 async def login(request: Request):
     logger.info('user_login')
     request_params = request.json
-    if not request_params or not request_params['email'] or not request_params['password']:
+    if not request_params:
         raise CustomerError(status_code=ERROR_CODE['PARAMS_ERROR'])
-    login_res = await user_service.user_login(request_params['email'], request_params['password'])
+    login_type = request_params.get('type', 0)
+    if int(login_type) == 0:
+        if not request_params.get('email') or not request_params.get('password'):
+            raise CustomerError(status_code=ERROR_CODE['PARAMS_ERROR'])
+    elif int(login_type) == 1:
+        if (not request_params.get('timestamp') or not request_params.get('signature')
+                or not request_params.get('wallet_address')):
+            raise CustomerError(status_code=ERROR_CODE['PARAMS_ERROR'])
+    login_res = await user_service.user_login(request_params.get('email', ''), request_params.get('password', ''),
+                                              request_params.get('signature', ''),
+                                              request_params.get('wallet_address', ''),
+                                              request_params.get('timestamp', ''), login_type)
     return success(login_res)
 
 
 # 判断用户是否登陆
 async def check_login(request: Request):
     logger.info('check_user_login')
+    user_key = request.ctx.user.get('email')
+    if hasattr(user_key, '@'):
+        account = mask_email(user_key)
+    else:
+        account = user_key
     return success(
-        {'is_login': True, 'account': mask_email(request.ctx.user.get('email')), 'user_id': request.ctx.user.get('id')})
+        {'is_login': True, 'account': account, 'user_id': request.ctx.user.get('id')})
 
 
 # 用户注册

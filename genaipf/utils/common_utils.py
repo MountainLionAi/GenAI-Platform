@@ -15,7 +15,7 @@ def check_is_json(text):
 def mask_email(email):
     parts = email.split("@")
     if len(parts) != 2:
-        return "Invalid email"
+        return ''
 
     local = parts[0]
     domain = parts[1]
@@ -57,3 +57,10 @@ def check_evm_wallet_format(address):
         return True
     else:
         return False
+
+def is_valid_number(s):
+        try:
+            float(s) 
+            return True
+        except ValueError:
+            return False

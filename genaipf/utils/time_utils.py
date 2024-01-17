@@ -12,3 +12,9 @@ def get_format_time():
 def get_format_time_YYYY_mm_dd():
     now = datetime.now()
     return now.strftime('%Y-%m-%d')
+
+
+# 获取当前的时间戳
+def get_current_timestamp():
+    now = datetime.now()
+    return int(datetime.timestamp(now))
