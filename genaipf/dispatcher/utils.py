@@ -113,10 +113,13 @@ def get_vdb_topk(text: str, cname: str, sim_th: float = 0.8, topk: int = 3) -> t
 
 def get_qa_vdb_topk(text: str, sim_th: float = 0.8, topk: int = 3) -> typing.List[typing.Mapping]:
     # results = get_vdb_topk(text, "qa", sim_th, topk)
+    from genaipf.dispatcher.vdb_pairs.qa import vdb_map
     results = get_vdb_topk(text, qa_coll_name, sim_th, topk)
     out_l = []
     for x in results:
-        v = f'{x["payload"].get("q")}: {x["payload"].get("a")}'
+        _a = vdb_map.get(x["payload"]["q"])
+        ans = _a if _a else x["payload"].get("a")
+        v = f'{x["payload"].get("q")}: {ans}'
         out_l.append(v)
     return out_l
 
