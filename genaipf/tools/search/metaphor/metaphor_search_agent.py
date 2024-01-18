@@ -6,7 +6,7 @@ from genaipf.tools.search.metaphor.tools import tools
 
 async def metaphor_search(question: str, language=None):
     """
-    question: 问题
+    question: 问题1
     language: en-英文;zh-中文
     """
     llm = ChatOpenAI(temperature=0)
