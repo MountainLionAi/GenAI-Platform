@@ -1,7 +1,4 @@
-import os
-from dotenv import load_dotenv
-load_dotenv(override=True)
-# os.getenv("")
+from genaipf.conf.server import os
 
 SMTP_HOST = os.getenv("SMTP_HOST")
 SMTP_PORT = int(os.getenv("SMTP_PORT"))

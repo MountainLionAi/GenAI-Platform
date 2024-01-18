@@ -3,9 +3,7 @@ from pathlib import Path
 import tempfile
 import os
 import base64
-from dotenv import load_dotenv
-
-load_dotenv(dotenv_path=".env")
+from genaipf.conf.server import os
 
 client = OpenAI()
 
