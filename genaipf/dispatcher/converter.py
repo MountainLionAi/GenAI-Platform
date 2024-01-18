@@ -27,12 +27,20 @@ async def convert_func_out_to_stream(chunk, messages, newest_question, model, la
         _args = [_param.get(x) for x in preset_conf["param_names"]]
         presetContent, picked_content = await preset_conf["get_and_pick"](*_args)
         if preset_conf.get("has_preset_content") and (_param.get("need_chart") or preset_conf.get("need_preset")):
-            _data.update({
-                'type' : _type,
-                'subtype': sub_func_name,
-                'content' : content,
-                'presetContent' : presetContent
-            })
+            if _type == "purchase_recommendation" and len(presetContent) > 0 and 'token_id' in presetContent[0]:
+                _data.update({
+                    'type' : "sub_purchase_recommendation",
+                    'subtype': "nft_subtoken",
+                    'content' : content,
+                    'presetContent' : presetContent
+                })
+            else:
+                _data.update({
+                    'type' : _type,
+                    'subtype': sub_func_name,
+                    'content' : content,
+                    'presetContent' : presetContent
+                })
     related_qa = get_qa_vdb_topk(newest_question)
     _messages = [x for x in messages if x["role"] != "system"]
     msgs = _messages[::]
