@@ -16,6 +16,7 @@ FONT_PATH = f"{PROJ_PATH}/static/arial.ttf"
 IS_INNER_DEBUG = True if os.getenv("IS_INNER_DEBUG") else False
 IS_UNLIMIT_USAGE = True if os.getenv("IS_UNLIMITED_USAGE") else False
 STATIC_PATH = os.getenv("STATIC_PATH")
+PROXY_URL = os.getenv("PROXY_URL")
 METAPHOR_API_KEY = os.getenv("METAPHOR_API_KEY")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 BING_SUBSCRIPTION_KEY = os.getenv("BING_SUBSCRIPTION_KEY")

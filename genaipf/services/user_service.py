@@ -8,11 +8,15 @@ from genaipf.utils.redis_utils import RedisConnectionPool
 from genaipf.constant.redis_keys import REDIS_KEYS
 from genaipf.utils.log_utils import logger
 from genaipf.utils.captcha_utils import CaptchaGenerator
-from genaipf.utils.time_utils import get_format_time
+from genaipf.utils.time_utils import get_format_time, get_current_timestamp
 from genaipf.utils.common_utils import mask_email
 from genaipf.constant.email_info import EMAIL_INFO
 import genaipf.utils.hcaptcha_utils as hcaptcha
 import genaipf.utils.email_utils as email_utils
+from web3 import Web3
+from eth_account.messages import encode_defunct
+
+ORIGIN_MESSAGE = "Welcome. Login Mountainlion. This is completely secure and doesn't cost anything! "
 
 
 # 生成用户密码
@@ -30,22 +34,62 @@ def check_user_password(hashed_pwd, password: str):
         return False
 
 
+# 判断用户的签名钱包是否一致
+def check_user_signature(signature, wallet_addr, time_stamp):
+    is_valid = False
+    # 检测时间是否过期
+    time_stamp = str(time_stamp)
+    if get_current_timestamp() - int(time_stamp) > 1800:
+        raise CustomerError(status_code=ERROR_CODE['LOGIN_EXPIRED'])
+    w3 = Web3()
+    original_message = ORIGIN_MESSAGE + time_stamp
+    message = encode_defunct(text=original_message)
+    recovered_signer = w3.eth.account.recover_message(message, signature=signature)
+    # 判断签名的钱包地址
+    if wallet_addr.lower() == recovered_signer.lower():
+        is_valid = True
+    return is_valid
+
+
 # 用户登陆
-async def user_login(email, password):
-    user = await get_user_info_from_db(email)
-    if not user:
-        raise CustomerError(status_code=ERROR_CODE['USER_NOT_EXIST'])
-    user_info = user[0]
+async def user_login(email, password, signature, wallet_addr, timestamp, login_type):
+    if login_type == 1:
+        if not check_user_signature(signature, wallet_addr, timestamp):
+            raise CustomerError(status_code=ERROR_CODE['WALLET_SIGN_ERROR'])
+        wallet_addr = wallet_addr.lower()
+        user = await get_user_info_by_address(wallet_addr)
+        if not user:
+            user_info = (
+                '',
+                '',
+                '',
+                '',
+                '',
+                wallet_addr,
+                '',
+                get_format_time()
+            )
+            await add_user(user_info)
+        user = await get_user_info_by_address(wallet_addr)
+        user_info = user[0]
+        account = wallet_addr
+    else:
+        user = await get_user_info_from_db(email)
+        if not user:
+            raise CustomerError(status_code=ERROR_CODE['USER_NOT_EXIST'])
+        user_info = user[0]
+        if not check_user_password(user_info['password'].encode('utf-8'), password):
+            raise CustomerError(status_code=ERROR_CODE['PWD_ERROR'])
+        account = mask_email(email)
     user_id = user_info['id']
-    if not check_user_password(user_info['password'].encode('utf-8'), password):
-        raise CustomerError(status_code=ERROR_CODE['PWD_ERROR'])
+    user_key = email if login_type == 0 else wallet_addr
     jwt_manager = JWTManager()
-    jwt_token = jwt_manager.generate_token(user_info['id'], email)
+    jwt_token = jwt_manager.generate_token(user_info['id'], user_key)
     redis_client = RedisConnectionPool().get_connection()
-    token_key = get_user_key(user_info['id'], email)
+    token_key = get_user_key(user_info['id'], user_key)
     redis_client.set(token_key, jwt_token, 3600 * 24 * 15)  # 设置登陆态到redis
     await update_user_token(user_info['id'], jwt_token)
-    return {'user_token': jwt_token, 'account': mask_email(email), 'user_id': user_id}
+    return {'user_token': jwt_token, 'account': account, 'user_id': user_id}
 
 
 # 用户登出相关操作
@@ -121,6 +165,16 @@ async def get_user_info_from_db(email):
     result = await CollectionPool().query(sql, (email, 0))
     return result
 
+
+# 根据wallet_address获取用户信息
+async def get_user_info_by_address(wallet_address):
+    sql = 'SELECT id, email, password, auth_token, user_name, avatar_url, wallet_address  FROM user_infos WHERE ' \
+          'wallet_address=%s ' \
+          'AND status=%s'
+    result = await CollectionPool().query(sql, (wallet_address, 0))
+    return result
+
+
 # 根据userid获取用户信息
 async def get_user_info_by_userid(userid):
     sql = 'SELECT id, create_time FROM user_infos WHERE ' \
@@ -128,6 +182,7 @@ async def get_user_info_by_userid(userid):
           'AND status=%s'
     result = await CollectionPool().query(sql, (userid, 0))
     return result
+
 
 # 添加一个新用户
 async def add_user(user_info):
