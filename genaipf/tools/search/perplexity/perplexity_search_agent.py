@@ -11,6 +11,7 @@ async def perplexity_search(question: str, language=None):
         "authorization": "Bearer " + PER_PLE_API_KEY
     }
     # pplx-7b-chat, pplx-70b-chat, pplx-7b-online, pplx-70b-online, llama-2-70b-chat, codellama-34b-instruct, mistral-7b-instruct, and mixtral-8x7b-instruct
+
     model_version = "mixtral-8x7b-instruct"
     payload = {
         "model": model_version,
