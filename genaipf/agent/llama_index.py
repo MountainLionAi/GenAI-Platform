@@ -8,6 +8,7 @@ from llama_index.agent import OpenAIAgent
 from llama_index.llms import OpenAI
 from genaipf.conf.server import OPENAI_API_KEY
 from genaipf.dispatcher.api import get_format_output
+from genaipf.agent.utils import create_function_from_method
 
 AsyncCallable = Callable[..., Awaitable[Any]]
 
@@ -33,16 +34,17 @@ class LlamaIndexAgent:
         def _wrap(fn: AsyncCallable, fn_name: str):
             async def _wrapped_fn(*args: Any, **kwargs: Any) -> Any:
                 await self.tool_q.put({"fn_name": fn_name, "step": "start", "res": {"args": args, "kwargs": kwargs}})
-                res = await fn(*args, **kwargs)
+                res = await fn(self, *args, **kwargs)
                 await self.tool_q.put({"fn_name": fn_name, "step": "end", "res": res})
                 return res
             return _wrapped_fn
         for fn in async_tools:
-            name = fn.__name__
-            docstring = fn.__doc__
-            description = f"{name}{signature(fn)}\n{docstring}"
+            formated_fn = create_function_from_method(fn)
+            name = formated_fn.__name__
+            docstring = formated_fn.__doc__
+            description = f"{name}{signature(formated_fn)}\n{docstring}"
             fn_schema = create_schema_from_function(
-                f"{name}", fn, additional_fields=None
+                f"{name}", formated_fn, additional_fields=None
             )
             tool_metadata = ToolMetadata(
                 name=name, description=description, fn_schema=fn_schema
