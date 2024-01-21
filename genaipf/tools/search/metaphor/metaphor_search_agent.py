@@ -3,7 +3,7 @@ from langchain.schema import SystemMessage
 from langchain_openai import ChatOpenAI
 from genaipf.tools.search.metaphor.tools import tools
 from genaipf.utils.log_utils import logger
-
+import json
 async def metaphor_search(question: str, language=None):
     """
     question: 问题1
@@ -24,7 +24,6 @@ async def metaphor_search(question: str, language=None):
     result = agent_executor.run(question)
     try:
         data_p = json.loads(result)
-        data_p['1234'].haah
         return data_p['data']['search'], data_p['data']['find_similar'], format_contents(data_p['data']['get_contents'])
     except Exception as e:
         logger.error(str(e))
