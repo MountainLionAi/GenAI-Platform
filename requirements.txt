@@ -28,11 +28,11 @@ python-dotenv==1.0.0
 qdrant-client==1.4.0
 requests==2.31.0
 urllib3==1.26.16
-langchain==0.0.314
-tiktoken==0.5.1
+langchain==0.1.0
+tiktoken==0.5.2
 Jinja2~=3.1.2
 async-cache==1.1.1
-tavily-python==0.2.9
+tavily-python==0.3.1
 sanic-ext==23.6.0
 aiomysql==0.2.0
 metaphor-python==0.1.23
