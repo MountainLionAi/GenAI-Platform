@@ -137,6 +137,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     logger.info(f'>>>>> other_search sources: {sources}')
     logger.info(f'>>>>> frist related_qa: {related_qa}')
     yield json.dumps(get_format_output("chatSerpResults", sources))
+    yield json.dumps(get_format_output("chatRelatedResults", [{'title': '今天天气真不错'}, {'title': '天气不错应该去哪里😩'}]))
     _messages = [x for x in messages if x["role"] != "system"]
     msgs = _messages[::]
     # ^^^^^^^^ 在第一次 func gpt 就准备好数据 ^^^^^^^^
