@@ -9,11 +9,11 @@ from datetime import datetime
 import os
 import asyncio
 import openai
-from dotenv import load_dotenv
+from genaipf.conf.server import os
 from genaipf.conf.assistant_conf import ASSISTANT_ID_MAPPING
 from openai import BadRequestError
 
-load_dotenv(override=True)
+
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 ASSISTANT_ACCESSTOKEN_TOTAL_STRING = os.getenv("ASSISTANT_ACCESSTOKEN_TOTAL_STRING")
 client = openai.AsyncOpenAI(api_key=OPENAI_API_KEY)

@@ -29,6 +29,7 @@ qdrant-client==1.4.0
 requests==2.31.0
 urllib3==1.26.16
 langchain==0.1.0
+llama-index==0.9.30
 tiktoken==0.5.2
 Jinja2~=3.1.2
 async-cache==1.1.1
