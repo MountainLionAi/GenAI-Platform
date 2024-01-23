@@ -27,7 +27,7 @@ async def search(self, query: str) -> List[str]:
     """Search for a webpage based on the query."""
     self.metaphor_query = query
     print(f'>>>>>search query: {query}')
-    res = metaphor.search(f"{query}")
+    res = await asearch_of_metaphor(f"{query}")
     ids = [x.id for x in res.results]
     results = await aget_contents_of_metaphor(ids)
     self.metaphor_results = results
@@ -55,37 +55,40 @@ system_prompt = """
 
 在回答用户问题之前，一定要调用 search 或 ask_john 中的一个，使用 search 或 ask_john 中的一个 function
 """
-chat_history = [
-    ChatMessage(role="user", content="我买什么币好？"),
-    ChatMessage(role="assistant", content="BTC")
-]
-agent = LlamaIndexAgent(tools, system_prompt=system_prompt, chat_history=chat_history, verbose=True)
-agent.metaphor_query = ""
-agent.metaphor_results = None
-agent.start_chat("最近它有什么新闻？")
 
-async for x in agent.async_response_gen():
-    # print(x)
-    pass
+async def test1():
+    chat_history = [
+        ChatMessage(role="user", content="我买什么币好？"),
+        ChatMessage(role="assistant", content="BTC")
+    ]
+    agent = LlamaIndexAgent(tools, system_prompt=system_prompt, chat_history=chat_history, verbose=True)
+    agent.metaphor_query = ""
+    agent.metaphor_results = None
+    agent.start_chat("最近它有什么新闻？")
 
-print(f'扩充后的问题: {agent.metaphor_query}')
-print(f'可以在 agent.metaphor_results 看结果: {agent.metaphor_results.contents[0].title}')
+    async for x in agent.async_response_gen():
+        # print(x)
+        pass
 
+    print(f'扩充后的问题: {agent.metaphor_query}')
+    print(f'可以在 agent.metaphor_results 看结果: {agent.metaphor_results.contents[0].title}')
 
-# 不需要联网的情况
-chat_history = [
-    ChatMessage(role="user", content="你好"),
-    ChatMessage(role="assistant", content="你也好")
-]
-agent = LlamaIndexAgent(tools, system_prompt=system_prompt, chat_history=chat_history, verbose=True)
-agent.metaphor_query = ""
-agent.metaphor_results = None
-agent.start_chat("再见")
+async def test2():
+    # 不需要联网的情况
+    chat_history = [
+        ChatMessage(role="user", content="你好"),
+        ChatMessage(role="assistant", content="你也好")
+    ]
+    agent = LlamaIndexAgent(tools, system_prompt=system_prompt, chat_history=chat_history, verbose=True)
+    agent.metaphor_query = ""
+    agent.metaphor_results = None
+    agent.start_chat("再见")
 
-async for x in agent.async_response_gen():
-    print(x)
-    # pass
+    async for x in agent.async_response_gen():
+        print(x)
+        # pass
 
-print(f'扩充后的问题: {agent.metaphor_query}')
-print(f'可以在 agent.metaphor_results 看结果: {agent.metaphor_results}')
+    print(f'扩充后的问题: {agent.metaphor_query}')
+    print(f'可以在 agent.metaphor_results 看结果: {agent.metaphor_results}')
 
+asyncio.run(test1())
