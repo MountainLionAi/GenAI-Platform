@@ -21,6 +21,7 @@ class LlamaIndexAgent:
     ):
         self.output_q = asyncio.Queue()
         self.tool_q = asyncio.Queue()
+        self.is_stopped = False
         self.traceable_tools: List[FunctionTool] = list()
         self.tools_to_traceable_tools(async_tools)
         llm = OpenAI(model="gpt-4-1106-preview", api_key=OPENAI_API_KEY)
@@ -71,7 +72,14 @@ class LlamaIndexAgent:
         def task_callback(task):
             resp = task.result()
             resp_gen = resp.async_response_gen()
-            async def response_wrapper(response_gen):
+            async def response_wrapper(response_gen: AsyncGenerator):
+                if self.is_stopped:
+                    self.is_stopped = False
+                    await response_gen.aclose()
+                    await self.tool_q.put(None)
+                    await self.output_q.put(get_format_output("step", "done"))
+                    await self.output_q.put(None)
+                    return
                 await self.output_q.put(get_format_output("step", "llm_yielding"))
                 async for item in response_gen:
                     await self.output_q.put(get_format_output("gpt", item))
