@@ -26,6 +26,7 @@ from genaipf.dispatcher.postprocess import posttext_mapping, PostTextParam
 from genaipf.utils.redis_utils import RedisConnectionPool
 from genaipf.conf.server import IS_INNER_DEBUG, IS_UNLIMIT_USAGE
 from genaipf.utils.speech_utils import transcribe, textToSpeech
+from genaipf.tools.search.utils.search_agent_utils import other_search
 import os
 import base64
 from dotenv import load_dotenv
@@ -131,7 +132,10 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     
     # vvvvvvvv 在第一次 func gpt 就准备好数据 vvvvvvvv
     related_qa = get_qa_vdb_topk(newest_question)
+    sources, related_qa = await other_search(newest_question, related_qa)
+    logger.info(f'>>>>> other_search sources: {sources}')
     logger.info(f'>>>>> frist related_qa: {related_qa}')
+    yield json.dumps(get_format_output("chatSerpResults", sources))
     _messages = [x for x in messages if x["role"] != "system"]
     msgs = _messages[::]
     # ^^^^^^^^ 在第一次 func gpt 就准备好数据 ^^^^^^^^

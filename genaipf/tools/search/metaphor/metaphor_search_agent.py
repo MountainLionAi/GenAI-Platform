@@ -37,6 +37,8 @@ def format_contents(contents):
         formatted_string += f"{news_item.extract}\n引用地址: {news_item.url}\n"
     return formatted_string
 
+# dict sources: [{'title': '', 'url': ''}]
+# str content
 async def metaphor_search2(question: str):
     search_result = metaphor.search(question, type="keyword" ,num_results=5)
     get_contents_result = metaphor.get_contents(search_result.results[0].id)
