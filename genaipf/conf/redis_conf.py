@@ -1,7 +1,4 @@
-import os
-from dotenv import load_dotenv
-load_dotenv(override=True)
-# os.getenv("")
+from genaipf.conf.server import os
 
 HOST = os.getenv("REDIS_HOST")
 PORT = int(os.getenv("REDIS_PORT"))

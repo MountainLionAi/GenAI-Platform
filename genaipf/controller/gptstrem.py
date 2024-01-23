@@ -23,14 +23,14 @@ from genaipf.dispatcher.prompts_v001 import LionPrompt
 # from dispatcher.gptfunction import unfiltered_gpt_functions, gpt_function_filter
 from genaipf.dispatcher.functions import gpt_functions_mapping, gpt_function_filter
 from genaipf.dispatcher.postprocess import posttext_mapping, PostTextParam
+from genaipf.dispatcher.converter import convert_func_out_to_stream
 from genaipf.utils.redis_utils import RedisConnectionPool
 from genaipf.conf.server import IS_INNER_DEBUG, IS_UNLIMIT_USAGE
 from genaipf.utils.speech_utils import transcribe, textToSpeech
 from genaipf.tools.search.utils.search_agent_utils import other_search
 import os
 import base64
-from dotenv import load_dotenv
-load_dotenv(override=True)
+from genaipf.conf.server import os
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 proxy = { 'https' : '127.0.0.1:8001'}
@@ -131,6 +131,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         yield json.dumps(get_format_output("whisper", last_front_msg['content']))
     
     # vvvvvvvv 在第一次 func gpt 就准备好数据 vvvvvvvv
+    logger.info(f'>>>>> newest_question: {newest_question}')
     related_qa = get_qa_vdb_topk(newest_question)
     sources, related_qa = await other_search(newest_question, related_qa)
     logger.info(f'>>>>> other_search sources: {sources}')
@@ -146,7 +147,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         'content' : _tmp_text
     }
     resp1 = await afunc_gpt_generator(msgs, used_gpt_functions, language, model, "", related_qa)
-    chunk = await resp1.__anext__()
+    chunk = await asyncio.wait_for(resp1.__anext__(), timeout=20)
     assert chunk["role"] == "step"
     if chunk["content"] == "llm_yielding":
         async for chunk in resp1:
@@ -156,47 +157,14 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
                 yield json.dumps(chunk)
     elif chunk["content"] == "agent_routing":
         chunk = await resp1.__anext__()
-        assert chunk["role"] == "inner_____func_param"
-        _param = chunk["content"]
-        _param["language"] = language
-        func_name = _param["func_name"]
-        sub_func_name = _param["subtype"]
-        logger.info(f'>>>>> func_name: {func_name}, sub_func_name: {sub_func_name}, _param: {_param}')
-        t01 = time.time()
-        logger.info(f'>>>>> gpt func time: {t01 - t0}')
-        content = ""
-        _type = ""
-        presetContent = {}
-        picked_content=""
-        if func_name in preset_entry_mapping:
-            preset_conf = preset_entry_mapping[func_name]
-            _type = preset_conf["type"]
-            _args = [_param.get(x) for x in preset_conf["param_names"]]
-            presetContent, picked_content = await preset_conf["get_and_pick"](*_args)
-            if preset_conf.get("has_preset_content") and (_param.get("need_chart") or preset_conf.get("need_preset")):
-                data.update({
-                    'type' : _type,
-                    'subtype': sub_func_name,
-                    'content' : content,
-                    'presetContent' : presetContent
-                })
-        related_qa = get_qa_vdb_topk(newest_question)
-        _messages = [x for x in messages if x["role"] != "system"]
-        msgs = _messages[::]
-        resp2 = await aref_answer_gpt_generator(msgs, model, language, _type, str(picked_content), related_qa)
-        t1 = time.time()
-        logger.info(f'>>>>> get data time: {t1 - t01}')
-        logger.info(f'>>>>> start->data done t1 - t0: {t1 - t0}')
-        async for chunk in resp2:
-            if chunk["role"] == "inner_____gpt_whole_text":
-                _tmp_text = chunk["content"]
+        stream_gen = convert_func_out_to_stream(chunk, messages, newest_question, model, language)
+        async for item in stream_gen:
+            if item["role"] == "inner_____gpt_whole_text":
+                _tmp_text = item["content"]
+            elif item["role"] == "inner_____preset":
+                data.update(item["content"])
             else:
-                yield json.dumps(chunk)
-        posttexter = posttext_mapping.get(func_name)
-        if posttexter is not None:
-            async for _gpt_letter in posttexter.get_text_agenerator(PostTextParam(language, sub_func_name)):
-                _tmp_text += _gpt_letter
-                yield json.dumps(get_format_output("gpt", _gpt_letter))
+                yield json.dumps(item)
 
     if output_type == "voice":
         # 对于语音输出，将文本转换为语音并编码

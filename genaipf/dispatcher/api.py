@@ -110,7 +110,7 @@ async def afunc_gpt_generator(messages, functions=gpt_functions, language=LionPr
                 presence_penalty=presence_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
                 stream=True
             )
-            print('afunc_gpt_generator called')
+            logger.info('afunc_gpt_generator called')
             return awrap_gpt_generator(response)
         except BadRequestError as e:
             print(e)
@@ -148,7 +148,7 @@ async def aref_answer_gpt_generator(messages, model='', language=LionPrompt.defa
                 presence_penalty=presence_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
                 stream=True
             )
-            print(f'aref_answer_gpt called')
+            logger.info(f'aref_answer_gpt called')
             return awrap_gpt_generator(response)
         except BadRequestError as e:
             print(e)
@@ -190,7 +190,7 @@ async def aref_oneshot_gpt_generator(messages, model='', language=LionPrompt.def
             presence_penalty=gpt_prams.get("presence_penalty", presence_penalty),  # [-2,2]之间，该值越大则更倾向于产生不同的内容
             stream=stream
         )
-        print(f'aref_oneshot_gpt_generator called')
+        logger.info(f'aref_oneshot_gpt_generator called')
         return response
     except BadRequestError as e:
         print(e)

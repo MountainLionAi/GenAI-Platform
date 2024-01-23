@@ -1,5 +1,3 @@
-import os
-from dotenv import load_dotenv
-load_dotenv(override=True)
+from genaipf.conf.server import os
 
 JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
