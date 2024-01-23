@@ -40,10 +40,14 @@ def format_contents(contents):
 # dict sources: [{'title': '', 'url': ''}]
 # str content
 async def metaphor_search2(question: str):
-    search_result = metaphor.search(question, type="keyword" ,num_results=5)
-    get_contents_result = metaphor.get_contents(search_result.results[0].id)
     sources = []
-    for result in search_result.results:
-        sources.append({'title': result.title, 'url': result.url})
-    content = format_contents(get_contents_result.contents)
+    content = ''
+    try:
+        search_result = metaphor.search(question, type="keyword" ,num_results=5)
+        get_contents_result = metaphor.get_contents(search_result.results[0].id)
+        for result in search_result.results:
+            sources.append({'title': result.title, 'url': result.url})
+        content = format_contents(get_contents_result.contents)
+    except Exception as e:
+        logger.error(f'metaphor search error: {str(e)}')
     return sources, content
