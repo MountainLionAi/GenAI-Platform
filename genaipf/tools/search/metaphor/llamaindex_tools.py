@@ -16,7 +16,7 @@ async def search(self, one_line_user_question: str) -> List[str]:
     """Search for a webpage based on the one_line_user_question."""
     self.metaphor_query = one_line_user_question
     print(f'>>>>>search query: {one_line_user_question}')
-    res = await search_of_metaphor(f"{one_line_user_question}", num_results=5)
+    res = await search_of_metaphor(f"{one_line_user_question}", num_results=5, type='keyword')
     ids = [x.id for x in res.results]
     results = await aget_contents_of_metaphor(ids)
     self.metaphor_results = results
