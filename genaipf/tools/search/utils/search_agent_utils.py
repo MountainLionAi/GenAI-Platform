@@ -3,6 +3,8 @@ from llama_index.llms import OpenAI, ChatMessage
 from genaipf.agent.llama_index import LlamaIndexAgent
 from genaipf.tools.search.metaphor.llamaindex_tools import tools
 from genaipf.utils.log_utils import logger
+from openai import OpenAI
+client = OpenAI()
 
 system_prompt = """
 你是个工具人，你既能联网，也能给用户推荐其他感兴趣的问题，必须调用工具 function，有 2 种情况：
@@ -69,3 +71,23 @@ def get_contents(contents):
         formatted_string += f"{news_item.extract}\n引用地址: {news_item.url}\n"
     return sources, formatted_string
 
+
+async def related_search(question: str, language=None):
+    messages = [
+        {"role": "system",
+         "content": "你是个工具人，生成 5 个用户可能感兴趣的问题，调用 show_related_questions。"},
+        {"role": "user", "content": question}
+    ]
+    if language == 'en':
+        messages = [
+            {"role": "system",
+             "content": "You are a tool person, generate 5 questions that users may be interested in, and call "
+                        "show_related_questions."},
+            {"role": "user", "content": question}
+        ]
+    completion = client.chat.completions.create(
+        model="gpt-4-1106-preview",
+        messages=messages,
+        tools=tools
+    )
+    print(completion.choices[0].message.content)
