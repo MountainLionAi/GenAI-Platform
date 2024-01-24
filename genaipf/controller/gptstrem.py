@@ -202,6 +202,8 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         await gpt_service.add_gpt_message_with_code(gpt_message)
         if data['type'] == 'coin_swap':  # 如果是兑换类型，存库时候需要加一个过期字段，前端用于判断不再发起交易
             data['expired'] = True
+        data['chatSerpResults'] = sources
+        data['chatRelatedResults'] = related_questions
         messageContent = json.dumps(data)
         gpt_message = (
             messageContent,
