@@ -1,5 +1,6 @@
+import ast
 from genaipf.tools.search.metaphor import metaphor_search_agent
-from llama_index.llms import OpenAI, ChatMessage
+from llama_index.llms import ChatMessage
 from genaipf.agent.llama_index import LlamaIndexAgent
 from genaipf.tools.search.metaphor.llamaindex_tools import tools
 from genaipf.utils.log_utils import logger
@@ -75,19 +76,23 @@ def get_contents(contents):
 async def related_search(question: str, language=None):
     messages = [
         {"role": "system",
-         "content": "你是个工具人，生成 5 个用户可能感兴趣的问题，调用 show_related_questions。"},
+         "content": "你是个工具人，直接根据用户的提问，生成 5 个用户可能感兴趣的问题。最后使用[]返回，例如：[{'title': '中国队在最近的亚洲杯对阵卡塔尔的比赛结果如何？'}]"},
         {"role": "user", "content": question}
     ]
     if language == 'en':
         messages = [
             {"role": "system",
-             "content": "You are a tool person, generate 5 questions that users may be interested in, and call "
-                        "show_related_questions."},
+             "content": "You are a tool person, directly generating 5 questions of potential interest to users based "
+                        "on their inquiries. Finally, return in the format of [], for example: [{'title': 'What is "
+                        "the recent result of the match between the Chinese team and Qatar in the Asian Cup?'}]."},
             {"role": "user", "content": question}
         ]
     completion = client.chat.completions.create(
         model="gpt-4-1106-preview",
-        messages=messages,
-        tools=tools
+        messages=messages
     )
-    print(completion.choices[0].message.content)
+    try:
+        python_object = ast.literal_eval(completion.choices[0].message.content)
+        return python_object
+    except (SyntaxError, ValueError) as e:
+        return []
