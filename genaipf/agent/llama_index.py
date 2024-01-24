@@ -6,6 +6,7 @@ from llama_index.tools import BaseTool, FunctionTool, ToolMetadata
 from llama_index.tools.utils import create_schema_from_function
 from llama_index.agent import OpenAIAgent
 from llama_index.llms import OpenAI
+from llama_index.llms.openai import DEFAULT_TEMPERATURE
 from genaipf.conf.server import OPENAI_API_KEY
 from genaipf.dispatcher.api import get_format_output
 from genaipf.agent.utils import create_function_from_method
@@ -18,13 +19,20 @@ class LlamaIndexAgent:
         system_prompt: Optional[str]=None,
         chat_history: Optional[List[ChatMessage]] = None,
         verbose: bool = False,
+        temperature: float = DEFAULT_TEMPERATURE,
+        max_tokens: int | None = None
     ):
         self.output_q = asyncio.Queue()
         self.tool_q = asyncio.Queue()
         self.is_stopped = False
         self.traceable_tools: List[FunctionTool] = list()
         self.tools_to_traceable_tools(async_tools)
-        llm = OpenAI(model="gpt-4-1106-preview", api_key=OPENAI_API_KEY)
+        llm = OpenAI(
+            model="gpt-4-1106-preview", 
+            api_key=OPENAI_API_KEY, 
+            temperature=temperature,
+            max_tokens=max_tokens
+        )
         self.agent = OpenAIAgent.from_tools(
             self.traceable_tools, llm=llm,
             chat_history=chat_history, verbose=verbose,
