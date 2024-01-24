@@ -47,7 +47,6 @@ async def premise_search(newest_question, message_history, related_qa=None):
     async for x in agent.async_response_gen():
         # print(x)
         pass
-    qa_content = agent.metaphor_results.contents
     related_questions = []
     if agent.related_questions is not None:
         for r_question in agent.related_questions:
