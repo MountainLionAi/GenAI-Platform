@@ -1,5 +1,6 @@
 import json
 import re
+import asyncio
 
 
 # 判断一个对象是不是json
@@ -58,9 +59,18 @@ def check_evm_wallet_format(address):
     else:
         return False
 
+
 def is_valid_number(s):
-        try:
-            float(s) 
-            return True
-        except ValueError:
-            return False
+    try:
+        float(s)
+        return True
+    except ValueError:
+        return False
+
+
+# 将同步方法转换成异步非阻塞的，避免在调用过程中阻塞
+def sync_to_async(fn):
+    async def _async_wrapped_fn(*args, **kwargs):
+        loop = asyncio.get_running_loop()
+        return await loop.run_in_executor(None, lambda: fn(*args, **kwargs))
+    return _async_wrapped_fn

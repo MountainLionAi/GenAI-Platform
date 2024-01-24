@@ -28,6 +28,7 @@ from genaipf.utils.redis_utils import RedisConnectionPool
 from genaipf.conf.server import IS_INNER_DEBUG, IS_UNLIMIT_USAGE
 from genaipf.utils.speech_utils import transcribe, textToSpeech
 from genaipf.tools.search.utils.search_agent_utils import other_search
+from genaipf.tools.search.utils.search_agent_utils import premise_search
 import os
 import base64
 from genaipf.conf.server import os
@@ -133,11 +134,12 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     # vvvvvvvv 在第一次 func gpt 就准备好数据 vvvvvvvv
     logger.info(f'>>>>> newest_question: {newest_question}')
     related_qa = get_qa_vdb_topk(newest_question)
-    sources, related_qa = await other_search(newest_question, related_qa)
+    sources, related_qa, related_questions = await premise_search(newest_question, user_history_l, related_qa)
+    # sources, related_qa = await other_search(newest_question, related_qa)
     logger.info(f'>>>>> other_search sources: {sources}')
     logger.info(f'>>>>> frist related_qa: {related_qa}')
     yield json.dumps(get_format_output("chatSerpResults", sources))
-    yield json.dumps(get_format_output("chatRelatedResults", [{'title': '今天天气真不错'}, {'title': '天气不错应该去哪里😩'}]))
+    yield json.dumps(get_format_output("chatRelatedResults", related_questions))
     _messages = [x for x in messages if x["role"] != "system"]
     msgs = _messages[::]
     # ^^^^^^^^ 在第一次 func gpt 就准备好数据 ^^^^^^^^
