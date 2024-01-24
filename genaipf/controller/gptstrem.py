@@ -166,6 +166,16 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
                 _tmp_text = item["content"]
             elif item["role"] == "inner_____preset":
                 data.update(item["content"])
+                _code = generate_unique_id()
+                _tmp = {
+                    "role": "preset", 
+                    "type": data["type"], 
+                    "format": data["subtype"], 
+                    "version": "v001", 
+                    "content": data,
+                    "code": _code
+                }
+                yield json.dumps(_tmp)
             else:
                 yield json.dumps(item)
 
@@ -173,20 +183,6 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         # 对于语音输出，将文本转换为语音并编码
         base64_encoded_voice = textToSpeech(_tmp_text)
         yield json.dumps(get_format_output("tts", base64_encoded_voice, "voice_mp3_v001"))
-    _code = generate_unique_id()
-    data.update({
-        'content' : _tmp_text,
-        'code' : _code
-    })
-    if data["type"] != "gpt":
-        _tmp = {
-            "role": "preset", 
-            "type": data["type"], 
-            "format": data["subtype"], 
-            "version": "v001", 
-            "content": data
-        }
-        yield json.dumps(_tmp)
     yield json.dumps(get_format_output("step", "done"))
     logger.info(f'>>>>> func & ref _tmp_text & output_type: {output_type}: {_tmp_text}')
 

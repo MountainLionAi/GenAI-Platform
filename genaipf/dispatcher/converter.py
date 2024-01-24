@@ -37,6 +37,13 @@ async def convert_func_out_to_stream(chunk, messages, newest_question, model, la
                 'content' : content,
                 'presetContent' : presetContent
             })
+    yield {
+        "role": "inner_____preset", 
+        "type": "inner_____preset", 
+        "format": "inner_____preset", 
+        "version": "v001", 
+        "content": _data
+    }
     related_qa = get_qa_vdb_topk(newest_question)
     _messages = [x for x in messages if x["role"] != "system"]
     msgs = _messages[::]
@@ -53,10 +60,3 @@ async def convert_func_out_to_stream(chunk, messages, newest_question, model, la
         async for _gpt_letter in posttexter.get_text_agenerator(PostTextParam(language, sub_func_name)):
             _tmp_text += _gpt_letter
             yield get_format_output("gpt", _gpt_letter)
-    yield {
-        "role": "inner_____preset", 
-        "type": "inner_____preset", 
-        "format": "inner_____preset", 
-        "version": "v001", 
-        "content": _data
-    }
