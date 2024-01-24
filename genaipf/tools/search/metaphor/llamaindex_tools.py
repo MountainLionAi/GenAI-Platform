@@ -12,11 +12,11 @@ aget_contents_of_metaphor = sync_to_async(metaphor.get_contents)
 
 
 # 利用metaphor搜索并检索相关内容
-async def search(self, query: str) -> List[str]:
-    """Search for a webpage based on the query."""
-    self.metaphor_query = query
-    print(f'>>>>>search query: {query}')
-    res = await search_of_metaphor(f"{query}", num_results=5)
+async def search(self, one_line_user_question: str) -> List[str]:
+    """Search for a webpage based on the one_line_user_question."""
+    self.metaphor_query = one_line_user_question
+    print(f'>>>>>search query: {one_line_user_question}')
+    res = await search_of_metaphor(f"{one_line_user_question}", num_results=5)
     ids = [x.id for x in res.results]
     results = await aget_contents_of_metaphor(ids)
     self.metaphor_results = results
