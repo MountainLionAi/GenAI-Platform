@@ -37,13 +37,14 @@ async def convert_func_out_to_stream(chunk, messages, newest_question, model, la
                 'content' : content,
                 'presetContent' : presetContent
             })
-    yield {
-        "role": "inner_____preset", 
-        "type": "inner_____preset", 
-        "format": "inner_____preset", 
-        "version": "v001", 
-        "content": _data
-    }
+    if _data:
+        yield {
+            "role": "inner_____preset", 
+            "type": "inner_____preset", 
+            "format": "inner_____preset", 
+            "version": "v001", 
+            "content": _data
+        }
     related_qa = get_qa_vdb_topk(newest_question)
     _messages = [x for x in messages if x["role"] != "system"]
     msgs = _messages[::]
