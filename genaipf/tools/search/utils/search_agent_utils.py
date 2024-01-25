@@ -8,19 +8,19 @@ from genaipf.utils.time_utils import get_format_time_YYYY_mm_dd
 from openai import OpenAI
 client = OpenAI()
 
-system_prompt = f"""
-今天是 {get_format_time_YYYY_mm_dd()}，你是个工具人，你既能联网，也能给用户推荐其他感兴趣的问题，必须调用工具 function，有 2 种情况 SCENE_1 和 SCENE_2：
-### SCENE_1
-用户问的问题最好联网搜索才能回答更好，
-用户问的问题可能是比较简单的表述，直接网络搜索的结果不好，
-用户的问题是什么语言 你必须根据这个语言扩充丰富一下形成一个全面完整的问题再触发 search 工具 function (完整的问题 query 一定要信息丰富但不要超过100个字符，query里(包括它前后)不要有换行符)
-调用 show_related_questions，必须根据用户当前问题相同的语言再生成 5 个用户可能感兴趣的问题，如果没有就不回复。
-### SCENE_2
-调用 show_related_questions, 必须根据用户当前问题相同的语言直接生成 5 个用户可能感兴趣的问题，如果没有就不回复。
-
-你在不能直接回答用户问题，在回答用户前必须按情况 SCENE_1 或 SCENE_2 的流程调用 gpt function。
-不要直接回答问题，即使用户说些无聊的对话也要根据用户的历史对话执行 SCENE_2 的 show_related_questions (而不是回答 "SCENE_2")
-"""
+# system_prompt = f"""
+# 今天是 {get_format_time_YYYY_mm_dd()}，你是个工具人，你既能联网，也能给用户推荐其他感兴趣的问题，必须调用工具 function，有 2 种情况 SCENE_1 和 SCENE_2：
+# ### SCENE_1
+# 用户问的问题最好联网搜索才能回答更好，
+# 用户问的问题可能是比较简单的表述，直接网络搜索的结果不好，
+# 用户的问题是什么语言 你必须根据这个语言扩充丰富一下形成一个全面完整的问题再触发 search 工具 function (完整的问题 query 一定要信息丰富但不要超过100个字符，query里(包括它前后)不要有换行符)
+# 调用 show_related_questions，必须根据用户当前问题相同的语言再生成 5 个用户可能感兴趣的问题，如果没有就不回复。
+# ### SCENE_2
+# 调用 show_related_questions, 必须根据用户当前问题相同的语言直接生成 5 个用户可能感兴趣的问题，如果没有就不回复。
+#
+# 你在不能直接回答用户问题，在回答用户前必须按情况 SCENE_1 或 SCENE_2 的流程调用 gpt function。
+# 不要直接回答问题，即使用户说些无聊的对话也要根据用户的历史对话执行 SCENE_2 的 show_related_questions (而不是回答 "SCENE_2")
+# """
 
 
 # dict sources: [{'title': '', 'url': ''}]
@@ -36,6 +36,19 @@ async def other_search(question: str, related_qa=[], language=None):
 
 
 async def premise_search(newest_question, message_history, related_qa=None):
+    system_prompt = f"""
+        今天是 {get_format_time_YYYY_mm_dd()}，你是个工具人，你既能联网，也能给用户推荐其他感兴趣的问题，必须调用工具 function，有 2 种情况 SCENE_1 和 SCENE_2：
+        ### SCENE_1
+        用户问的问题最好联网搜索才能回答更好
+        用户问的问题可能是比较简单的表述，直接网络搜索的结果不好
+        你必须使用[{newest_question}]这个问题相同的语言扩充丰富一下生成一个全面完整的问题再触发 search 工具 function (完整的问题 query 不是"SCENE_1"，并且一定要信息丰富但不要超过100个字符，query里(包括它前后)不要有换行符)
+        调用 show_related_questions，必须使用[{newest_question}]这个问题相同的语言生成 5 个用户可能感兴趣的问题，如果没有就不回复。
+        ### SCENE_2
+        调用 show_related_questions，必须使用[{newest_question}]这个问题相同的语言生成 5 个用户可能感兴趣的问题，如果没有就不回复。
+
+        你在不能直接回答用户问题，在回答用户前必须按情况 SCENE_1 或 SCENE_2 的流程调用 gpt function
+        不要直接回答问题，即使用户说些无聊的对话也要根据用户的历史对话执行 SCENE_2 的 show_related_questions (而不是回答 "SCENE_2")
+        """
     if related_qa is None:
         related_qa = []
     chat_history = []
