@@ -40,3 +40,4 @@ if PLUGIN_NAME:
     plugin_submodule_name = f'{PLUGIN_NAME}.controller.preset_entry'
     plugin_submodule = import_module(plugin_submodule_name)
     preset_entry_mapping = plugin_submodule.preset_entry_mapping
+    preset_entry_top_mapping = plugin_submodule.preset_entry_top_mapping
