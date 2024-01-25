@@ -146,6 +146,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     used_gpt_functions = gpt_function_filter(gpt_functions_mapping, _messages)
     _tmp_text = ""
     _code = generate_unique_id()
+    isPresetTop = False
     data = {
         'type' : 'gpt',
         'content' : _tmp_text
@@ -166,6 +167,9 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
             if item["role"] == "inner_____gpt_whole_text":
                 _tmp_text = item["content"]
             elif item["role"] == "inner_____preset":
+                data.update(item["content"])
+            elif item["role"] == "inner_____preset_top":
+                isPresetTop = True
                 data.update(item["content"])
                 data.update({
                     'code' : _code
@@ -189,6 +193,15 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         'content' : _tmp_text,
         'code' : _code
     })
+    if data["type"] != "gpt" and not isPresetTop:
+        _tmp = {
+            "role": "preset", 
+            "type": data["type"], 
+            "format": data["subtype"], 
+            "version": "v001", 
+            "content": data
+        }
+        yield json.dumps(_tmp)
     yield json.dumps(get_format_output("step", "done"))
     logger.info(f'>>>>> func & ref _tmp_text & output_type: {output_type}: {_tmp_text}')
 
