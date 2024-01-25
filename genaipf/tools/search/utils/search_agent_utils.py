@@ -41,10 +41,10 @@ async def premise_search(newest_question, message_history, related_qa=None):
         ### SCENE_1
         用户问的问题最好联网搜索才能回答更好
         用户问的问题可能是比较简单的表述，直接网络搜索的结果不好
-        你必须使用[{newest_question}]这个问题相同的语言扩充丰富一下生成一个全面完整的问题再触发 search 工具 function (完整的问题 query 不是"SCENE_1"，并且一定要信息丰富但不要超过100个字符，query里(包括它前后)不要有换行符)
-        调用 show_related_questions，必须使用[{newest_question}]这个问题相同的语言生成 5 个用户可能感兴趣的问题，如果没有就不回复。
+        你必须使用"{newest_question}"与这个相同的语言扩充丰富一下生成一个全面完整的问题再触发 search 工具 function (完整的问题 query 不是"SCENE_1"，并且一定要信息丰富但不要超过100个字符，query里(包括它前后)不要有换行符)
+        调用 show_related_questions，必须使用"{newest_question}"与这个相同的语言生成 5 个用户可能感兴趣的问题。
         ### SCENE_2
-        调用 show_related_questions，必须使用[{newest_question}]这个问题相同的语言生成 5 个用户可能感兴趣的问题，如果没有就不回复。
+        调用 show_related_questions，必须使用"{newest_question}"与这个相同的语言生成 5 个用户可能感兴趣的问题。
 
         你在不能直接回答用户问题，在回答用户前必须按情况 SCENE_1 或 SCENE_2 的流程调用 gpt function
         不要直接回答问题，即使用户说些无聊的对话也要根据用户的历史对话执行 SCENE_2 的 show_related_questions (而不是回答 "SCENE_2")
@@ -70,7 +70,9 @@ async def premise_search(newest_question, message_history, related_qa=None):
     related_questions = []
     if agent.related_questions is not None:
         for r_question in agent.related_questions:
-            related_questions.append({"title": r_question})
+            r_question = r_question.replace("\n", '', -1)
+            if len(r_question) > 0 and r_question != '':
+                related_questions.append({"title": r_question})
     sources = []
     if agent.metaphor_results and len(agent.metaphor_results.contents) != 0:
         sources, content = get_contents(agent.metaphor_results.contents)
@@ -78,6 +80,7 @@ async def premise_search(newest_question, message_history, related_qa=None):
     logger.info(f'>>>>> _tmp_text: {_tmp_text}')
     logger.info(f'>>>>> 扩充后的问题: {agent.metaphor_query}')
     logger.info(f'>>>>> 相关话题推荐: {agent.related_questions}')
+    logger.info(f'>>>>> 返回数据: {sources}, {related_questions}')
     return sources, related_qa, related_questions
 
 
