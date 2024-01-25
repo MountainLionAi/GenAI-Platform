@@ -56,6 +56,8 @@ system_prompt = f"""
 ### SCENE_2
 调用 show_related_questions, 直接生成 5 个用户可能感兴趣的问题。
 
+show_related_questions 中 related_questions 列出的相关问题需要和 user 问句和 user 历史对话用的语言一致，比如 user 之前用的汉语 show_related_questions 就是汉语，user 之前用的英语 show_related_questions 就是英语
+
 你在不能直接回答用户问题，在回答用户前必须按情况 SCENE_1 或 SCENE_2 的流程调用 gpt function。
 不要直接回答问题，即使用户说些无聊的对话也要根据用户的历史对话执行 SCENE_2 的 show_related_questions (而不是回答 "SCENE_2")
 """
@@ -72,16 +74,18 @@ async def test1():
         tools,
         system_prompt=system_prompt,
         chat_history=chat_history,
+        # chat_history=None,
         verbose=True,
         # temperature=0.2,
-        # max_tokens=300
+        max_tokens=300
     )
     agent.metaphor_query = ""
     agent.metaphor_results = None
     agent.related_questions = []
     # agent.start_chat("最近它有什么新闻？")
-    agent.start_chat("你好")
+    # agent.start_chat("你好")
     # agent.start_chat("再回答一遍")
+    agent.start_chat("BTC后续价格")
 
     _tmp_text = ""
     async for x in agent.async_response_gen():
