@@ -102,7 +102,7 @@ class SearchResponse:
     api: Optional['Bing'] = field(default=None, init=False)
 
     def get_contents(self):
-        return str(self)
+        return self.results
 
     def __str__(self):
         output = "\n\n".join(str(result) for result in self.results)
@@ -155,7 +155,3 @@ class Bing:
                        search_results.get('webPages').get('value')]
         search_response = SearchResponse(results=results)
         return search_response
-
-    def get_contents(self, urls: List[str]) -> GetContentsResponse:
-
-        return
