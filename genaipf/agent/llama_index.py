@@ -20,7 +20,7 @@ class LlamaIndexAgent:
         chat_history: Optional[List[ChatMessage]] = None,
         verbose: bool = False,
         temperature: float = DEFAULT_TEMPERATURE,
-        max_tokens: int | None = None
+        max_tokens: int = None
     ):
         self.output_q = asyncio.Queue()
         self.tool_q = asyncio.Queue()
