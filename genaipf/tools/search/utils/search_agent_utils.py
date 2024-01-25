@@ -85,9 +85,10 @@ async def premise_search(newest_question, message_history, related_qa=None):
 def get_contents(contents):
     sources = []
     formatted_string = ''
-    for news_item in contents[:3]:
+    for index, news_item in enumerate(contents):
+        if index < 3:
+            formatted_string += f"{news_item.extract}\n引用地址: {news_item.url}\n"
         sources.append({"title": news_item.title, "url": news_item.url})
-        formatted_string += f"{news_item.extract}\n引用地址: {news_item.url}\n"
     return sources, formatted_string
 
 
