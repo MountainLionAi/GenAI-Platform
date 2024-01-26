@@ -2,10 +2,17 @@ import ast
 from genaipf.tools.search.metaphor import metaphor_search_agent
 from llama_index.llms import ChatMessage
 from genaipf.agent.llama_index import LlamaIndexAgent
-from genaipf.tools.search.metaphor.llamaindex_tools import tools
 from genaipf.utils.log_utils import logger
 from genaipf.utils.time_utils import get_format_time_YYYY_mm_dd
 from openai import OpenAI
+import os
+
+RAG_MODEL = os.getenv("RAG_MODEL", "METAPHOR")
+if RAG_MODEL == 'BING':
+    from genaipf.tools.search.bing.llamaindex_tools import tools
+else:
+    from genaipf.tools.search.metaphor.llamaindex_tools import tools
+
 client = OpenAI()
 
 system_prompt = f"""
