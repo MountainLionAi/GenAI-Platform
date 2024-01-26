@@ -135,12 +135,12 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     logger.info(f'>>>>> newest_question: {newest_question}')
     related_qa = get_qa_vdb_topk(newest_question)
     # TODO 速度问题暂时注释掉
-    # sources, related_qa, related_questions = await premise_search(newest_question, user_history_l, related_qa)
+    sources, related_qa, related_questions = await premise_search(newest_question, user_history_l, related_qa)
     # sources, related_qa = await other_search(newest_question, related_qa)
-    # logger.info(f'>>>>> other_search sources: {sources}')
-    # logger.info(f'>>>>> frist related_qa: {related_qa}')
-    # yield json.dumps(get_format_output("chatSerpResults", sources))
-     #yield json.dumps(get_format_output("chatRelatedResults", related_questions))
+    logger.info(f'>>>>> other_search sources: {sources}')
+    logger.info(f'>>>>> frist related_qa: {related_qa}')
+    yield json.dumps(get_format_output("chatSerpResults", sources))
+    yield json.dumps(get_format_output("chatRelatedResults", related_questions))
     _messages = [x for x in messages if x["role"] != "system"]
     msgs = _messages[::]
     # ^^^^^^^^ 在第一次 func gpt 就准备好数据 ^^^^^^^^
@@ -219,8 +219,8 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         if data['type'] == 'coin_swap':  # 如果是兑换类型，存库时候需要加一个过期字段，前端用于判断不再发起交易
             data['expired'] = True
         # TODO 速度问题暂时注释掉
-        # data['chatSerpResults'] = sources
-        # data['chatRelatedResults'] = related_questions
+        data['chatSerpResults'] = sources
+        data['chatRelatedResults'] = related_questions
         messageContent = json.dumps(data)
         gpt_message = (
             messageContent,
