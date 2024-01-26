@@ -54,8 +54,10 @@ async def premise_search(newest_question, message_history, related_qa=None):
     The user's questions may be expressed in a relatively simple manner, and the results of direct web searches may not be optimal.
     Expand and enrich the question to form a comprehensive and complete question before triggering the search tool function (The complete question query is not "SCENE_1," and it must be informative but not exceed 100 characters, with no line breaks in the query, including before and after it).
     Call show_related_questions; generate 5 questions that users might find interesting.
+    The final results must be returned in the language of "{newest_question}".
     ### SCENE_2
     Call show_related_questions; generate 5 questions that users might find interesting.
+    The final results must be returned in the language of "{newest_question}".
     
     You cannot directly answer user questions; before responding to the user, you must invoke the gpt function following the SCENE_1 or SCENE_2 process.
     Do not answer questions directly; even if users engage in somewhat trivial conversation, execute SCENE_2's show_related_questions based on the user's conversation history (instead of answering "SCENE_2").
