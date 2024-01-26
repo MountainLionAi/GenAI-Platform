@@ -37,17 +37,17 @@ async def other_search(question: str, related_qa=[], language=None):
 
 async def premise_search(newest_question, message_history, related_qa=None):
     system_prompt = f"""
-            今天是 {get_format_time_YYYY_mm_dd()}，你是个工具人，你既能联网，也能给用户推荐其他感兴趣的问题，必须调用工具 function，有 2 种情况 SCENE_1 和 SCENE_2：
-            ### SCENE_1
-            用户问的问题可能是比较简单的表述，直接网络搜索的结果不好
-            你扩充丰富一下生成一个全面完整的问题再触发 search 工具 function (完整的问题 query 不是"SCENE_1"，并且一定要信息丰富但不要超过100个字符，query里(包括它前后)不要有换行符)
-            调用 show_related_questions，生成 5 个用户可能感兴趣的问题。
-            ### SCENE_2
-            调用 show_related_questions，生成 5 个用户可能感兴趣的问题。
-
-            你在不能直接回答用户问题，在回答用户前必须按情况 SCENE_1 或 SCENE_2 的流程调用 gpt function
-            不要直接回答问题，即使用户说些无聊的对话也要根据用户的历史对话执行 SCENE_2 的 show_related_questions (而不是回答 "SCENE_2")
-            """
+    Today is {get_format_time_YYYY_mm_dd()}, and you are a tool that can browse the internet and recommend other interesting questions to users. You must invoke a tool function in two scenarios: SCENE_1 and SCENE_2:
+    ### SCENE_1
+    The user's questions may be expressed in a relatively simple manner, and the results of direct web searches may not be optimal.
+    Expand and enrich the question to form a comprehensive and complete question before triggering the search tool function (The complete question query is not "SCENE_1," and it must be informative but not exceed 100 characters, with no line breaks in the query, including before and after it).
+    Call show_related_questions; generate 5 questions that users might find interesting.
+    ### SCENE_2
+    Call show_related_questions; generate 5 questions that users might find interesting.
+    
+    You cannot directly answer user questions; before responding to the user, you must invoke the gpt function following the SCENE_1 or SCENE_2 process.
+    Do not answer questions directly; even if users engage in somewhat trivial conversation, execute SCENE_2's show_related_questions based on the user's conversation history (instead of answering "SCENE_2").
+    """
     if related_qa is None:
         related_qa = []
     chat_history = []
