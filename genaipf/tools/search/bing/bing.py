@@ -102,7 +102,7 @@ class SearchResponse:
     api: Optional['Bing'] = field(default=None, init=False)
 
     def get_contents(self):
-        return self.get_contents
+        return self.contents
 
     def __str__(self):
         output = "\n\n".join(str(content) for content in self.contents)
@@ -153,5 +153,5 @@ class Bing:
                               page.get('datePublished')[:10] if page.get('datePublished') and len(
                                   page.get('datePublished')) > 10 else "", None, page.get('snippet')) for page in
                        search_results.get('webPages').get('value')]
-        search_response = SearchResponse(results=results)
+        search_response = SearchResponse(contents=results)
         return search_response

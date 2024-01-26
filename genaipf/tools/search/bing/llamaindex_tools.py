@@ -16,10 +16,9 @@ async def search(self, one_line_user_question: str) -> List[str]:
     self.metaphor_query = one_line_user_question
     print(f'>>>>>search query: {one_line_user_question}')
     res = await search_of_bing(f"{one_line_user_question}")
-    results = res.get_contents()
-    self.metaphor_results = results
+    self.metaphor_results = res
     # self.is_stopped = True
-    titles = [x.title for x in self.metaphor_results]
+    titles = [x.title for x in self.metaphor_results.contents]
     return titles
 
 
