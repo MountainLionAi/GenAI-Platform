@@ -134,6 +134,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     # vvvvvvvv 在第一次 func gpt 就准备好数据 vvvvvvvv
     logger.info(f'>>>>> newest_question: {newest_question}')
     related_qa = get_qa_vdb_topk(newest_question)
+    # TODO 速度问题暂时注释掉
     sources, related_qa, related_questions = await premise_search(newest_question, user_history_l, related_qa)
     # sources, related_qa = await other_search(newest_question, related_qa)
     logger.info(f'>>>>> other_search sources: {sources}')
@@ -146,6 +147,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     used_gpt_functions = gpt_function_filter(gpt_functions_mapping, _messages)
     _tmp_text = ""
     _code = generate_unique_id()
+    isPresetTop = False
     data = {
         'type' : 'gpt',
         'content' : _tmp_text
@@ -166,6 +168,9 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
             if item["role"] == "inner_____gpt_whole_text":
                 _tmp_text = item["content"]
             elif item["role"] == "inner_____preset":
+                data.update(item["content"])
+            elif item["role"] == "inner_____preset_top":
+                isPresetTop = True
                 data.update(item["content"])
                 data.update({
                     'code' : _code
@@ -189,6 +194,15 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         'content' : _tmp_text,
         'code' : _code
     })
+    if data["type"] != "gpt" and not isPresetTop:
+        _tmp = {
+            "role": "preset", 
+            "type": data["type"], 
+            "format": data["subtype"], 
+            "version": "v001", 
+            "content": data
+        }
+        yield json.dumps(_tmp)
     yield json.dumps(get_format_output("step", "done"))
     logger.info(f'>>>>> func & ref _tmp_text & output_type: {output_type}: {_tmp_text}')
 
@@ -204,6 +218,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         await gpt_service.add_gpt_message_with_code(gpt_message)
         if data['type'] == 'coin_swap':  # 如果是兑换类型，存库时候需要加一个过期字段，前端用于判断不再发起交易
             data['expired'] = True
+        # TODO 速度问题暂时注释掉
         data['chatSerpResults'] = sources
         data['chatRelatedResults'] = related_questions
         messageContent = json.dumps(data)
