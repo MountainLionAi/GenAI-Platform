@@ -97,15 +97,15 @@ class SearchResponse:
     Attributes:
         results (List[Result]): A list of search results.
     """
-    results: List[Result]
+    contents: List[Result]
     autoprompt_string: Optional[str] = None
     api: Optional['Bing'] = field(default=None, init=False)
 
     def get_contents(self):
-        return self.results
+        return self.get_contents
 
     def __str__(self):
-        output = "\n\n".join(str(result) for result in self.results)
+        output = "\n\n".join(str(content) for content in self.contents)
         if self.autoprompt_string:
             output += f"\n\nAutoprompt String: {self.autoprompt_string}"
         return output
