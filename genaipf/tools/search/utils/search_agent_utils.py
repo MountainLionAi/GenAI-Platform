@@ -44,17 +44,17 @@ async def other_search(question: str, related_qa=[], language=None):
 
 async def premise_search(newest_question, message_history, related_qa=None):
     system_prompt = f"""
-            今天是 {get_format_time_YYYY_mm_dd()}，你是个工具人，你既能联网，也能给用户推荐其他感兴趣的问题，必须调用工具 function，有 2 种情况 SCENE_1 和 SCENE_2：
-            ### SCENE_1
-            用户问的问题可能是比较简单的表述，直接网络搜索的结果不好
-            你必须使用"{newest_question}"相同的语言，扩充丰富一下生成一个全面完整的问题再触发 search 工具 function (完整的问题 query 不是"SCENE_1"，并且一定要信息丰富但不要超过100个字符，query里(包括它前后)不要有换行符)
-            调用 show_related_questions，必须使用"{newest_question}"相同的语言生成 5 个用户可能感兴趣的问题。
-            ### SCENE_2
-            调用 show_related_questions，必须使用"{newest_question}"相同的语言生成 5 个用户可能感兴趣的问题。
-
-            你在不能直接回答用户问题，在回答用户前必须按情况 SCENE_1 或 SCENE_2 的流程调用 gpt function
-            不要直接回答问题，即使用户说些无聊的对话也要根据用户的历史对话执行 SCENE_2 的 show_related_questions (而不是回答 "SCENE_2")
-            """
+        今天是 {get_format_time_YYYY_mm_dd()}，你是个工具人，你既能联网，也能给用户推荐其他感兴趣的问题，必须调用工具 function，有 2 种情况 SCENE_1 和 SCENE_2：
+        ### SCENE_1
+        用户问的问题可能是比较简单的表述，直接网络搜索的结果不好
+        你扩充丰富一下生成一个全面完整的问题再调用 metaphor_search (完整的问题 query 不是"SCENE_1"，并且一定要信息丰富但不要超过100个字符，query里(包括它前后)不要有换行符)
+        调用 show_related_questions，生成 5 个用户可能感兴趣的问题。
+        ### SCENE_2
+        调用 show_related_questions，生成 5 个用户可能感兴趣的问题。
+    
+        你在不能直接回答用户问题，在回答用户前必须按情况 SCENE_1 或 SCENE_2 的流程调用 gpt function
+        不要直接回答问题，即使用户说些无聊的对话也要根据用户的历史对话执行 SCENE_2 的 show_related_questions (而不是回答 "SCENE_2")
+        """
     if related_qa is None:
         related_qa = []
     chat_history = []
