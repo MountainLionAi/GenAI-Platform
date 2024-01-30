@@ -5,10 +5,15 @@ from genaipf.agent.llama_index import LlamaIndexAgent
 from genaipf.utils.log_utils import logger
 from genaipf.utils.time_utils import get_format_time_YYYY_mm_dd
 from openai import OpenAI
-import os
+from genaipf.utils.redis_utils import RedisConnectionPool
 
-RAG_MODEL = os.getenv("RAG_MODEL", "METAPHOR")
-if RAG_MODEL == 'BING':
+redis_client = RedisConnectionPool().get_connection()
+# rag model: values rang ["BING", "METAPHOR"] default "METAPHOR"
+RAG_MODEL = redis_client.get('RAG_MODEL')
+
+print('RAG_MODEL=' + RAG_MODEL)
+
+if RAG_MODEL is not None and RAG_MODEL == 'BING':
     from genaipf.tools.search.bing.llamaindex_tools import tools
 else:
     from genaipf.tools.search.metaphor.llamaindex_tools import tools
@@ -47,7 +52,7 @@ async def premise_search(newest_question, message_history, related_qa=None):
         今天是 {get_format_time_YYYY_mm_dd()}，你是个工具人，你既能联网，也能给用户推荐其他感兴趣的问题，必须调用工具 function，有 2 种情况 SCENE_1 和 SCENE_2：
         ### SCENE_1
         用户问的问题可能是比较简单的表述，直接网络搜索的结果不好
-        你扩充丰富一下生成一个全面完整的问题再调用 metaphor_search (完整的问题 query 不是"SCENE_1"，并且一定要信息丰富但不要超过100个字符，query里(包括它前后)不要有换行符)
+        你扩充丰富一下生成一个全面完整的问题再调用 search (完整的问题 query 不是"SCENE_1"，并且一定要信息丰富但不要超过100个字符，query里(包括它前后)不要有换行符)
         调用 show_related_questions，生成 5 个用户可能感兴趣的问题。
         ### SCENE_2
         调用 show_related_questions，生成 5 个用户可能感兴趣的问题。
