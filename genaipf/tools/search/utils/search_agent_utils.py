@@ -1,14 +1,15 @@
 import ast
 from genaipf.tools.search.metaphor import metaphor_search_agent
-from llama_index.llms import ChatMessage
 from genaipf.agent.llama_index import LlamaIndexAgent
 from genaipf.tools.search.metaphor.llamaindex_tools import tools
+from genaipf.utils.common_utils import sync_to_async
 from genaipf.utils.log_utils import logger
 from genaipf.utils.time_utils import get_format_time_YYYY_mm_dd
 from openai import OpenAI
 import asyncio
 from genaipf.dispatcher.prompts_common import LionPromptCommon
 from genaipf.dispatcher.utils import simple_achat
+other_search = sync_to_async(metaphor_search_agent.other_search)
 
 client = OpenAI()
 
@@ -25,19 +26,6 @@ client = OpenAI()
 # 你在不能直接回答用户问题，在回答用户前必须按情况 SCENE_1 或 SCENE_2 的流程调用 gpt function。
 # 不要直接回答问题，即使用户说些无聊的对话也要根据用户的历史对话执行 SCENE_2 的 show_related_questions (而不是回答 "SCENE_2")
 # """
-
-
-# dict sources: [{'title': '', 'url': ''}]
-# str content
-async def other_search(question: str, related_qa=[], language=None):
-    # -------- metaphor --------
-    sources, metaphor_result = await metaphor_search_agent.metaphor_search2(question)
-    if len(sources) > 0:
-        related_qa.append(question + ' : ' + metaphor_result)
-
-    # -------- other --------
-    return sources, related_qa
-
 
 async def premise_search(newest_question, message_history, related_qa=None):
     system_prompt = f"""
@@ -86,7 +74,7 @@ async def premise_search(newest_question, message_history, related_qa=None):
     logger.info(f'>>>>> 返回数据: {sources}, {related_questions}')
     return sources, related_qa, related_questions
 
-async def premise_search1(front_messages, message_history, related_qa=None):
+async def premise_search1(front_messages, related_qa=None):
     data = {}
     data['messages'] = front_messages
     msgs1 = LionPromptCommon.get_prompted_messages("if_need_search", data)
