@@ -8,13 +8,11 @@ search_of_metaphor = sync_to_async(metaphor.search)
 aget_contents_of_metaphor = sync_to_async(metaphor.get_contents)
 
 def format_contents(contents):
-    sources = []
     formatted_string = ''
     for index, news_item in enumerate(contents):
         if index < 3:
             formatted_string += f"{news_item.extract}\n引用地址: {news_item.url}\n"
-        sources.append({"title": news_item.title, "url": news_item.url})
-    return sources, formatted_string
+    return formatted_string
 
 # dict sources: [{'title': '', 'url': ''}]
 # str content
