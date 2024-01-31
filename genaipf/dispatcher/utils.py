@@ -11,6 +11,8 @@ import tiktoken
 from openai import OpenAI, AsyncOpenAI
 from openai._types import NOT_GIVEN
 from genaipf.conf.server import os
+from llama_index.llms import ChatMessage, OpenAI as OpenAI2
+from llama_index.llms.openai import DEFAULT_OPENAI_MODEL
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
 MAX_CH_LENGTH_GPT3 = 8000
@@ -76,6 +78,18 @@ async def openai_chat_completion_acreate(
         print(f'>>>>>>>>>test003 async_openai_client.chat.completions.create, e: {e}')
         raise e
     return response
+
+async def simple_achat(messages: typing.List[typing.Mapping[str, str]], model: str = DEFAULT_OPENAI_MODEL):
+    OPENAI_API_KEY = openai.api_key
+    _msgs = []
+    for m in messages:
+        if m["role"] in ["system", "user", "assistant"]:
+            _msgs.append(ChatMessage(
+                role=m["role"],
+                content=m["content"]
+            ))
+    resp = await OpenAI2(model=model, api_key=OPENAI_API_KEY).achat(_msgs)
+    return resp.message.content
 
 def merge_ref_and_input_text(ref, input_text, language='en'):
     if language == 'cn':

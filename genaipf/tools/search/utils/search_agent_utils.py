@@ -6,6 +6,10 @@ from genaipf.tools.search.metaphor.llamaindex_tools import tools
 from genaipf.utils.log_utils import logger
 from genaipf.utils.time_utils import get_format_time_YYYY_mm_dd
 from openai import OpenAI
+import asyncio
+from genaipf.dispatcher.prompts_common import LionPromptCommon
+from genaipf.dispatcher.utils import simple_achat
+
 client = OpenAI()
 
 # system_prompt = f"""
@@ -82,6 +86,35 @@ async def premise_search(newest_question, message_history, related_qa=None):
     logger.info(f'>>>>> 返回数据: {sources}, {related_questions}')
     return sources, related_qa, related_questions
 
+async def premise_search1(front_messages, message_history, related_qa=None):
+    data = {}
+    data['messages'] = front_messages
+    msgs1 = LionPromptCommon.get_prompted_messages("if_need_search", data)
+    msgs2 = LionPromptCommon.get_prompted_messages("enrich_question", data)
+    msgs3 = LionPromptCommon.get_prompted_messages("related_question", data)
+    t1 = asyncio.create_task(simple_achat(msgs1))
+    t2 = asyncio.create_task(simple_achat(msgs2))
+    t3 = asyncio.create_task(simple_achat(msgs3))
+    # t1t2t3 并发运行的；
+    # 另外如果不需要搜索（t1 的结果是 False），不用等待 t2 和 网络搜索
+    sources = []
+    await t1
+    need_search = t1.result()
+    if need_search in "True":
+        print(f"need search: {need_search}")
+        await t2
+        new_question = t2.result()
+        if new_question != "False":
+            sources, related_qa = await other_search(t2.result(), related_qa)
+        print(f"enriched question: {t2.result()}")
+    await t3
+    related_questions = t3.result()
+    if related_questions == 'False':
+        related_questions = []
+    else:
+        related_questions = t3.result().split(';')
+    print(f"related_question: {t3.result()}")
+    return sources, related_qa, related_questions
 
 # format content to str
 def get_contents(contents):

@@ -28,7 +28,7 @@ from genaipf.utils.redis_utils import RedisConnectionPool
 from genaipf.conf.server import IS_INNER_DEBUG, IS_UNLIMIT_USAGE
 from genaipf.utils.speech_utils import transcribe, textToSpeech
 from genaipf.tools.search.utils.search_agent_utils import other_search
-from genaipf.tools.search.utils.search_agent_utils import premise_search
+from genaipf.tools.search.utils.search_agent_utils import premise_search, premise_search1
 import os
 import base64
 from genaipf.conf.server import os
@@ -135,8 +135,9 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     logger.info(f'>>>>> newest_question: {newest_question}')
     related_qa = get_qa_vdb_topk(newest_question)
     # TODO 速度问题暂时注释掉
-    sources, related_qa, related_questions = await premise_search(newest_question, user_history_l, related_qa)
+    # sources, related_qa, related_questions = await premise_search(newest_question, user_history_l, related_qa)
     # sources, related_qa = await other_search(newest_question, related_qa)
+    sources, related_qa, related_questions = await premise_search1(front_messages, user_history_l, related_qa)
     logger.info(f'>>>>> other_search sources: {sources}')
     logger.info(f'>>>>> frist related_qa: {related_qa}')
     yield json.dumps(get_format_output("chatSerpResults", sources))
