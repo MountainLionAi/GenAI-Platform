@@ -17,3 +17,4 @@ class LionPromptCommon:
             return _get_related_question_prompted_messages(data)
         else:
             raise Exception("has not")
+
