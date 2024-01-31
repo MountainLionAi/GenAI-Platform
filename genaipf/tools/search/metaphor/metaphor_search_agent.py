@@ -1,7 +1,11 @@
 from genaipf.utils.log_utils import logger
 from metaphor_python import Metaphor
+from genaipf.utils.common_utils import sync_to_async
+
 from genaipf.conf.server import METAPHOR_API_KEY
 metaphor = Metaphor(api_key=METAPHOR_API_KEY)
+search_of_metaphor = sync_to_async(metaphor.search)
+aget_contents_of_metaphor = sync_to_async(metaphor.get_contents)
 
 def format_contents(contents):
     sources = []
@@ -29,9 +33,9 @@ async def metaphor_search2(question: str):
     sources = []
     content = ''
     try:
-        search_result = metaphor.search(question, type="keyword" ,num_results=5)
+        search_result = await search_of_metaphor(question, type="keyword", num_results=5)
         ids = [x.id for x in search_result.results]
-        get_contents_result = metaphor.get_contents(ids)
+        get_contents_result = await aget_contents_of_metaphor(ids)
         for result in search_result.results:
             sources.append({'title': result.title, 'url': result.url})
         content = format_contents(get_contents_result.contents)

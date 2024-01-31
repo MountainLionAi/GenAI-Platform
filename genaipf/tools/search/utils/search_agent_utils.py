@@ -1,15 +1,13 @@
 import ast
-from genaipf.tools.search.metaphor import metaphor_search_agent
 from genaipf.agent.llama_index import LlamaIndexAgent
+from genaipf.tools.search.metaphor.metaphor_search_agent import other_search
 from genaipf.tools.search.metaphor.llamaindex_tools import tools
-from genaipf.utils.common_utils import sync_to_async
 from genaipf.utils.log_utils import logger
 from genaipf.utils.time_utils import get_format_time_YYYY_mm_dd
 from openai import OpenAI
 import asyncio
 from genaipf.dispatcher.prompts_common import LionPromptCommon
 from genaipf.dispatcher.utils import simple_achat
-other_search = sync_to_async(metaphor_search_agent.other_search)
 
 client = OpenAI()
 
