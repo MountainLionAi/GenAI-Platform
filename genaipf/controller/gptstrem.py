@@ -137,7 +137,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     # TODO 速度问题暂时注释掉
     # sources, related_qa, related_questions = await premise_search(newest_question, user_history_l, related_qa)
     # sources, related_qa = await other_search(newest_question, related_qa)
-    sources, related_qa, related_questions = await premise_search1(front_messages, user_history_l, related_qa)
+    sources, related_qa, related_questions = await premise_search1(front_messages, related_qa)
     logger.info(f'>>>>> other_search sources: {sources}')
     logger.info(f'>>>>> frist related_qa: {related_qa}')
     yield json.dumps(get_format_output("chatSerpResults", sources))
