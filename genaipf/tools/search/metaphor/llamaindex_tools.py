@@ -12,7 +12,7 @@ aget_contents_of_metaphor = sync_to_async(metaphor.get_contents)
 
 
 # 利用metaphor搜索并检索相关内容
-async def search(self, one_line_user_question: str) -> List[str]:
+async def metaphor_search(self, one_line_user_question: str) -> List[str]:
     """Search for a webpage based on the one_line_user_question."""
     self.metaphor_query = one_line_user_question
     print(f'>>>>>search query: {one_line_user_question}')
@@ -35,4 +35,4 @@ async def show_related_questions(self, related_questions: List[str]) -> List[str
     return []
 
 
-tools = [search, show_related_questions]
+tools = [metaphor_search, show_related_questions]

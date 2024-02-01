@@ -28,7 +28,7 @@ from genaipf.utils.redis_utils import RedisConnectionPool
 from genaipf.conf.server import IS_INNER_DEBUG, IS_UNLIMIT_USAGE
 from genaipf.utils.speech_utils import transcribe, textToSpeech
 from genaipf.tools.search.utils.search_agent_utils import other_search
-from genaipf.tools.search.utils.search_agent_utils import premise_search
+from genaipf.tools.search.utils.search_agent_utils import premise_search, premise_search1
 import os
 import base64
 from genaipf.conf.server import os
@@ -137,10 +137,11 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     # TODO 速度问题暂时注释掉
     # sources, related_qa, related_questions = await premise_search(newest_question, user_history_l, related_qa)
     # sources, related_qa = await other_search(newest_question, related_qa)
-    # logger.info(f'>>>>> other_search sources: {sources}')
-    # logger.info(f'>>>>> frist related_qa: {related_qa}')
-    # yield json.dumps(get_format_output("chatSerpResults", sources))
-     #yield json.dumps(get_format_output("chatRelatedResults", related_questions))
+    sources, related_qa, related_questions = await premise_search1(front_messages, related_qa)
+    logger.info(f'>>>>> other_search sources: {sources}')
+    logger.info(f'>>>>> frist related_qa: {related_qa}')
+    yield json.dumps(get_format_output("chatSerpResults", sources))
+    yield json.dumps(get_format_output("chatRelatedResults", related_questions))
     _messages = [x for x in messages if x["role"] != "system"]
     msgs = _messages[::]
     # ^^^^^^^^ 在第一次 func gpt 就准备好数据 ^^^^^^^^
@@ -163,7 +164,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
                 yield json.dumps(chunk)
     elif chunk["content"] == "agent_routing":
         chunk = await resp1.__anext__()
-        stream_gen = convert_func_out_to_stream(chunk, messages, newest_question, model, language)
+        stream_gen = convert_func_out_to_stream(chunk, messages, newest_question, model, language, related_qa)
         async for item in stream_gen:
             if item["role"] == "inner_____gpt_whole_text":
                 _tmp_text = item["content"]
@@ -219,8 +220,8 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         if data['type'] == 'coin_swap':  # 如果是兑换类型，存库时候需要加一个过期字段，前端用于判断不再发起交易
             data['expired'] = True
         # TODO 速度问题暂时注释掉
-        # data['chatSerpResults'] = sources
-        # data['chatRelatedResults'] = related_questions
+        data['chatSerpResults'] = sources
+        data['chatRelatedResults'] = related_questions
         messageContent = json.dumps(data)
         gpt_message = (
             messageContent,
