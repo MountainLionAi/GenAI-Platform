@@ -79,7 +79,9 @@ async def premise_search1(front_messages, related_qa=None):
     data['messages'] = front_messages
     msgs1 = LionPromptCommon.get_prompted_messages("if_need_search", data)
     msgs2 = LionPromptCommon.get_prompted_messages("enrich_question", data)
-    msgs3 = LionPromptCommon.get_prompted_messages("related_question", data)
+    # 相关问题取最新的
+    newest_question_arr = {"messages": [data['messages'][-1]]}
+    msgs3 = LionPromptCommon.get_prompted_messages("related_question", newest_question_arr)
     t1 = asyncio.create_task(simple_achat(msgs1))
     t2 = asyncio.create_task(simple_achat(msgs2))
     t3 = asyncio.create_task(simple_achat(msgs3))
