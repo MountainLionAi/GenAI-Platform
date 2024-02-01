@@ -99,7 +99,8 @@ async def premise_search1(front_messages, related_qa=None):
     if questions_result != 'False':
         # for question in questions_result.split(';'):
         #     related_questions.append({"title": question})
-        related_questions = questions_result
+        for question in questions_result:
+            related_questions.append({"title": question})
     print(f"related_question: {t3.result()}")
     return sources, related_qa, related_questions
 
