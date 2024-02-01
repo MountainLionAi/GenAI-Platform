@@ -5,7 +5,7 @@ from genaipf.dispatcher.utils import get_qa_vdb_topk, merge_ref_and_input_text
 from genaipf.dispatcher.api import generate_unique_id, get_format_output, gpt_functions, afunc_gpt_generator, aref_answer_gpt_generator
 from genaipf.dispatcher.postprocess import posttext_mapping, PostTextParam
 
-async def convert_func_out_to_stream(chunk, messages, newest_question, model, language):
+async def convert_func_out_to_stream(chunk, messages, newest_question, model, language, related_qa):
     """
     chunk: afunc_gpt_generator return
     """
@@ -47,7 +47,6 @@ async def convert_func_out_to_stream(chunk, messages, newest_question, model, la
                 }
                 _data = {}
                 
-    related_qa = get_qa_vdb_topk(newest_question)
     _messages = [x for x in messages if x["role"] != "system"]
     msgs = _messages[::]
     resp2 = await aref_answer_gpt_generator(msgs, model, language, _type, str(picked_content), related_qa)
