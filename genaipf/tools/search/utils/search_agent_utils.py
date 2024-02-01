@@ -1,4 +1,6 @@
 import ast
+import json
+
 from genaipf.agent.llama_index import LlamaIndexAgent
 from genaipf.tools.search.metaphor.metaphor_search_agent import other_search
 from genaipf.tools.search.metaphor.llamaindex_tools import tools
@@ -99,7 +101,7 @@ async def premise_search1(front_messages, related_qa=None):
     if questions_result != 'False':
         # for question in questions_result.split(';'):
         #     related_questions.append({"title": question})
-        for question in questions_result:
+        for question in json.loads(questions_result):
             related_questions.append({"title": question})
     print(f"related_question: {t3.result()}")
     return sources, related_qa, related_questions
