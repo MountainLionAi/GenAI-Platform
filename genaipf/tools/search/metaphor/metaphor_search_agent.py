@@ -30,7 +30,7 @@ async def metaphor_search2(question: str):
     sources = []
     content = ''
     try:
-        search_result = await search_of_metaphor(question, type="keyword", num_results=5)
+        search_result = await search_of_metaphor(question, num_results=5, use_autoprompt=True)
         ids = [x.id for x in search_result.results]
         get_contents_result = await aget_contents_of_metaphor(ids[:3])
         for result in search_result.results:
