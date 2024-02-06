@@ -32,11 +32,11 @@ class MetaphorClient:
             return self._client
 
 
-    async def exa_search(self, question, type="keyword", num_results=5):
+    async def exa_search(self, question, num_results=5, use_autoprompt=True, type='neural'):
         search_of_metaphor = sync_to_async(self._client.search)
         search_result = []
         try:
-            search_result = await search_of_metaphor(question, type=type, num_results=num_results)
+            search_result = await search_of_metaphor(question, num_results=num_results, use_autoprompt=use_autoprompt, type=type)
         except Exception as e:
             set_api_key_unavaiable(self._api_key, CLIENT_TYPE)
             logger.error(f'metaphor search error: {str(e)}')
