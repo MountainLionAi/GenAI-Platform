@@ -3,9 +3,7 @@ from metaphor_python import Metaphor
 from genaipf.utils.common_utils import sync_to_async
 
 from genaipf.conf.server import METAPHOR_API_KEY
-metaphor = Metaphor(api_key=METAPHOR_API_KEY)
-search_of_metaphor = sync_to_async(metaphor.search)
-aget_contents_of_metaphor = sync_to_async(metaphor.get_contents)
+from genaipf.tools.search.metaphor.metaphor_client import MetaphorClient
 
 def format_contents(contents):
     formatted_string = ''
@@ -29,13 +27,13 @@ async def other_search(question: str, related_qa=[]):
 async def metaphor_search2(question: str):
     sources = []
     content = ''
+    metaphor_client = MetaphorClient()
     try:
-        search_result = await search_of_metaphor(question, type="keyword", num_results=5)
-        ids = [x.id for x in search_result.results]
-        get_contents_result = await aget_contents_of_metaphor(ids[:3])
+        search_result = await metaphor_client.exa_search(question, num_results=5, use_autoprompt=True)
         for result in search_result.results:
             sources.append({'title': result.title, 'url': result.url})
-        content = format_contents(get_contents_result.contents)
+        ids = [x.id for x in search_result.results]
+        content = await metaphor_client.exa_get_contents(ids[:3])
     except Exception as e:
         logger.error(f'metaphor search error: {str(e)}')
     return sources, content
