@@ -103,8 +103,11 @@ async def premise_search1(front_messages, related_qa=None):
     if questions_result != 'False':
         # for question in questions_result.split(';'):
         #     related_questions.append({"title": question})
-        for question in json.loads(questions_result):
-            related_questions.append({"title": question})
+        try:
+            for question in json.loads(questions_result):
+                related_questions.append({"title": question})
+        except Exception as e:
+            logger.error(e)
     print(f"related_question: {t3.result()}")
     return sources, related_qa, related_questions
 
