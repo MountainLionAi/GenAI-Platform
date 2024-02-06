@@ -5,6 +5,7 @@ from genaipf.dispatcher.utils import openai, OPENAI_PLUS_MODEL, openai_chat_comp
 from genaipf.utils.log_utils import logger
 from datetime import datetime
 from genaipf.dispatcher.prompts_v001 import LionPrompt
+import genaipf.dispatcher.prompts_v002 as prompts_v002
 # from openai.error import InvalidRequestError
 from openai import BadRequestError
 from genaipf.utils.redis_utils import RedisConnectionPool
@@ -78,7 +79,7 @@ async def awrap_gpt_generator(gpt_response):
         yield get_format_output("inner_____func_param", _param)
         
 
-async def afunc_gpt_generator(messages, functions=gpt_functions, language=LionPrompt.default_lang, model='', picked_content="", related_qa=[]):
+async def afunc_gpt_generator(messages, functions=gpt_functions, language=LionPrompt.default_lang, model='', picked_content="", related_qa=[], source='v001'):
     '''
     "messages": [
         {"role": "user", "content": "Hello"},
@@ -92,9 +93,13 @@ async def afunc_gpt_generator(messages, functions=gpt_functions, language=LionPr
     for i in range(5):
         mlength = len(messages)
         try:
+            if source == 'v002':
+                content = prompts_v002.LionPrompt.get_afunc_prompt(language, picked_content, related_qa, use_model)
+            else:
+                content = LionPrompt.get_afunc_prompt(language, picked_content, related_qa, use_model)
             system = {
                 "role": "system",
-                "content": LionPrompt.get_afunc_prompt(language, picked_content, related_qa, use_model)
+                "content": content
             }
             # messages.insert(0, system)
             _messages = [system] + messages
@@ -123,16 +128,20 @@ async def afunc_gpt_generator(messages, functions=gpt_functions, language=LionPr
     return aget_error_generator("error after retry many times")
 
 
-async def aref_answer_gpt_generator(messages, model='', language=LionPrompt.default_lang, preset_name=None, picked_content="", related_qa=[]):
+async def aref_answer_gpt_generator(messages, model='', language=LionPrompt.default_lang, preset_name=None, picked_content="", related_qa=[], source='v001'):
     use_model = 'gpt-3.5-turbo-16k'
     if model == 'ml-plus':
         use_model = OPENAI_PLUS_MODEL
     for i in range(5):
         mlength = len(messages)
         try:
+            if source == 'v002':
+                content = prompts_v002.LionPrompt.get_aref_answer_prompt(language, preset_name, picked_content, related_qa, use_model)
+            else:
+                content = LionPrompt.get_aref_answer_prompt(language, preset_name, picked_content, related_qa, use_model)
             system = {
                 "role": "system",
-                "content": LionPrompt.get_aref_answer_prompt(language, preset_name, picked_content, related_qa, use_model)
+                "content": content
             }
             # messages.insert(0, system)
             # print(f'>>>>>test 003 : {messages}')
