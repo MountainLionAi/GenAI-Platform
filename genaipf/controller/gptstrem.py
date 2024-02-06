@@ -124,6 +124,7 @@ async def send_chat(request: Request):
     device_no = request.remote_addr
     question_code = request_params.get('code', '')
     model = request_params.get('model', '')
+    source = request_params.get('source', 'v001')
     # messages = process_messages(messages)
     output_type = request_params.get('output_type', 'text') # text or voice; (voice is mp3)
     # messages = [{"role": msg["role"], "content": msg["content"]} for msg in process_messages(messages)]
@@ -141,7 +142,7 @@ async def send_chat(request: Request):
         logger.error(traceback.format_exc())
 
     try:
-        response = await getAnswerAndCallGptData(request_params.get('content'), userid, msggroup, language, messages, device_no, question_code, model, output_type)
+        response = await getAnswerAndCallGptData(request_params.get('content'), userid, msggroup, language, messages, device_no, question_code, model, output_type, source)
         return response
 
     except Exception as e:
@@ -154,6 +155,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     MAX_CH_LENGTH = 8000
     _ensure_ascii = False
     messages = []
+    source = 'v001'
     for x in front_messages:
         if x.get("code"):
             del x["code"]
@@ -191,7 +193,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         'type' : 'gpt',
         'content' : _tmp_text
     }
-    resp1 = await afunc_gpt_generator(msgs, used_gpt_functions, language, model, "", related_qa)
+    resp1 = await afunc_gpt_generator(msgs, used_gpt_functions, language, model, "", related_qa, source)
     chunk = await asyncio.wait_for(resp1.__anext__(), timeout=20)
     assert chunk["role"] == "step"
     if chunk["content"] == "llm_yielding":
@@ -202,7 +204,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
                 yield json.dumps(chunk)
     elif chunk["content"] == "agent_routing":
         chunk = await resp1.__anext__()
-        stream_gen = convert_func_out_to_stream(chunk, messages, newest_question, model, language, related_qa)
+        stream_gen = convert_func_out_to_stream(chunk, messages, newest_question, model, language, related_qa, source)
         async for item in stream_gen:
             if item["role"] == "inner_____gpt_whole_text":
                 _tmp_text = item["content"]
@@ -272,7 +274,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         await gpt_service.add_gpt_message_with_code(gpt_message)
 
 
-async def  getAnswerAndCallGptData(question, userid, msggroup, language, front_messages, device_no, question_code, model, output_type):
+async def  getAnswerAndCallGptData(question, userid, msggroup, language, front_messages, device_no, question_code, model, output_type, source):
     t0 = time.time()
     MAX_CH_LENGTH = 8000
     _ensure_ascii = False
@@ -310,7 +312,7 @@ async def  getAnswerAndCallGptData(question, userid, msggroup, language, front_m
         'type' : 'gpt',
         'content' : _tmp_text
     }
-    resp1 = await afunc_gpt_generator(msgs, used_gpt_functions, language, model, "", related_qa)
+    resp1 = await afunc_gpt_generator(msgs, used_gpt_functions, language, model, "", related_qa, source)
     chunk = await asyncio.wait_for(resp1.__anext__(), timeout=20)
     assert chunk["role"] == "step"
     if chunk["content"] == "llm_yielding":
@@ -319,7 +321,7 @@ async def  getAnswerAndCallGptData(question, userid, msggroup, language, front_m
                 _tmp_text = chunk["content"]
     elif chunk["content"] == "agent_routing":
         chunk = await resp1.__anext__()
-        stream_gen = convert_func_out_to_stream(chunk, messages, newest_question, model, language, related_qa)
+        stream_gen = convert_func_out_to_stream(chunk, messages, newest_question, model, language, related_qa, source)
         async for item in stream_gen:
             if item["role"] == "inner_____gpt_whole_text":
                 _tmp_text = item["content"]
