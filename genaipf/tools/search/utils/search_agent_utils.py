@@ -74,7 +74,7 @@ async def premise_search(newest_question, message_history, related_qa=None):
     logger.info(f'>>>>> 返回数据: {sources}, {related_questions}')
     return sources, related_qa, related_questions
 
-async def premise_search1(front_messages, related_qa=None):
+async def premise_search1(front_messages, related_qa=None, language=None):
     data = {}
     data['messages'] = front_messages
     msgs1 = LionPromptCommon.get_prompted_messages("if_need_search", data)
@@ -95,7 +95,7 @@ async def premise_search1(front_messages, related_qa=None):
         await t2
         new_question = t2.result()
         if new_question != "False":
-            sources, related_qa = await other_search(t2.result(), related_qa)
+            sources, related_qa = await other_search(t2.result(), related_qa, language)
         print(f"enriched question: {t2.result()}")
     await t3
     questions_result = t3.result()
