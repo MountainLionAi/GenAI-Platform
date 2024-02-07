@@ -5,7 +5,7 @@ from genaipf.dispatcher.utils import get_qa_vdb_topk, merge_ref_and_input_text
 from genaipf.dispatcher.api import generate_unique_id, get_format_output, gpt_functions, afunc_gpt_generator, aref_answer_gpt_generator
 from genaipf.dispatcher.postprocess import posttext_mapping, PostTextParam
 
-async def convert_func_out_to_stream(chunk, messages, newest_question, model, language, related_qa, source):
+async def convert_func_out_to_stream(chunk, messages, newest_question, model, language, related_qa, source, owner):
     """
     chunk: afunc_gpt_generator return
     """
@@ -49,7 +49,7 @@ async def convert_func_out_to_stream(chunk, messages, newest_question, model, la
                 
     _messages = [x for x in messages if x["role"] != "system"]
     msgs = _messages[::]
-    resp2 = await aref_answer_gpt_generator(msgs, model, language, _type, str(picked_content), related_qa, source)
+    resp2 = await aref_answer_gpt_generator(msgs, model, language, _type, str(picked_content), related_qa, source, owner)
     logger.info(f'>>>>> start->data done.')
     async for item in resp2:
         if item["role"] == "inner_____gpt_whole_text":
