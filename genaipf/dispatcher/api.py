@@ -79,7 +79,7 @@ async def awrap_gpt_generator(gpt_response):
         yield get_format_output("inner_____func_param", _param)
         
 
-async def afunc_gpt_generator(messages, functions=gpt_functions, language=LionPrompt.default_lang, model='', picked_content="", related_qa=[], source='v001'):
+async def afunc_gpt_generator(messages, functions=gpt_functions, language=LionPrompt.default_lang, model='', picked_content="", related_qa=[], source='v001', owner=''):
     '''
     "messages": [
         {"role": "user", "content": "Hello"},
@@ -96,7 +96,7 @@ async def afunc_gpt_generator(messages, functions=gpt_functions, language=LionPr
             if source == 'v002':
                 content = prompts_v002.LionPrompt.get_afunc_prompt(language, picked_content, related_qa, use_model)
             else:
-                content = LionPrompt.get_afunc_prompt(language, picked_content, related_qa, use_model)
+                content = LionPrompt.get_afunc_prompt(language, picked_content, related_qa, use_model, '', owner)
             system = {
                 "role": "system",
                 "content": content
@@ -128,7 +128,7 @@ async def afunc_gpt_generator(messages, functions=gpt_functions, language=LionPr
     return aget_error_generator("error after retry many times")
 
 
-async def aref_answer_gpt_generator(messages, model='', language=LionPrompt.default_lang, preset_name=None, picked_content="", related_qa=[], source='v001'):
+async def aref_answer_gpt_generator(messages, model='', language=LionPrompt.default_lang, preset_name=None, picked_content="", related_qa=[], source='v001', owner=''):
     use_model = 'gpt-3.5-turbo-16k'
     if model == 'ml-plus':
         use_model = OPENAI_PLUS_MODEL
@@ -138,7 +138,7 @@ async def aref_answer_gpt_generator(messages, model='', language=LionPrompt.defa
             if source == 'v002':
                 content = prompts_v002.LionPrompt.get_aref_answer_prompt(language, preset_name, picked_content, related_qa, use_model)
             else:
-                content = LionPrompt.get_aref_answer_prompt(language, preset_name, picked_content, related_qa, use_model)
+                content = LionPrompt.get_aref_answer_prompt(language, preset_name, picked_content, related_qa, use_model, owner)
             system = {
                 "role": "system",
                 "content": content
