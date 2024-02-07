@@ -8,9 +8,9 @@ include_domains_zh = ['https://www.chaincatcher.com/', 'https://www.techflowpost
 include_domains_en = ['https://defillama.com/', 'https://www.coindesk.com/', 'https://www.cryptoslate.com/', 'http://cointelegraph.com/', 'https://blockonomi.com/',
                       'https://bitcoinmagazine.com/', 'https://www.theblockcrypto.com/', 'https://decrypt.co/', 'https://www.newsbtc.com/', ' https://cryptobriefing.com/',
                       'https://www.blockchain.com/', 'https://nulltx.com/', 'https://bravenewcoin.com/', 'https://cn.cryptonews.com/', 'https://www.bloomberg.com/', 'https://www.ft.com/',
-                      'https://www.wsj.com/', 'https://www.cnbc.com/', 'https://www.reuters.com/finance', 'https://www.investopedia.com/', 'https://www.marketwatch.com/', ' https://techcrunch.com/',
-                      'https://www.wired.com/', 'https://www.reddit.com/', ' https://news.google.com/', 'https://flipboard.com/', 'https://feedly.com/', 'https://www.huffpost.com/', 'https://www.bbc.com/news',
-                      'https://www.nytimes.com/', 'https://www.theguardian.com/international', 'https://www.cnn.com/', 'https://www.buzzfeed.com/', 'https://www.vogue.com/', 'https://seekingalpha.com/']
+                      'https://www.wsj.com/', 'https://www.cnbc.com/', 'https://www.reuters.com/', 'https://www.investopedia.com/', 'https://www.marketwatch.com/', ' https://techcrunch.com/',
+                      'https://www.wired.com/', 'https://www.reddit.com/', ' https://news.google.com/', 'https://flipboard.com/', 'https://feedly.com/', 'https://www.huffpost.com/', 'https://www.bbc.com/',
+                      'https://www.nytimes.com/', 'https://www.theguardian.com/', 'https://www.cnn.com/', 'https://www.buzzfeed.com/', 'https://www.vogue.com/', 'https://seekingalpha.com/']
 class MetaphorClient:
     _api_key = None
     _instance = None
