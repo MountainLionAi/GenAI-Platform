@@ -5,7 +5,7 @@ from genaipf.utils.log_utils import logger
 
 CLIENT_TYPE = 'exa'
 include_domains_zh = ['https://www.chaincatcher.com/', 'https://www.techflowpost.com/', 'https://www.odaily.news/', 'https://www.theblockbeats.info/', 'https://coinmarketcap.com/', 'https://www.mytoken.io/', 'https://www.feixiaohao.com/']
-include_domains_en = ['https://defillama.com/', 'https://www.coindesk.com/', 'https://www.cryptoslate.com/', 'http://cointelegraph.com/', 'https://blockonomi.com/',
+include_domains_en = ['https://defillama.com/', 'https://www.coindesk.com/', 'https://www.cryptoslate.com/', 'https://cointelegraph.com/', 'https://blockonomi.com/',
                       'https://bitcoinmagazine.com/', 'https://www.theblockcrypto.com/', 'https://decrypt.co/', 'https://www.newsbtc.com/', ' https://cryptobriefing.com/',
                       'https://www.blockchain.com/', 'https://nulltx.com/', 'https://bravenewcoin.com/', 'https://cn.cryptonews.com/', 'https://www.bloomberg.com/', 'https://www.ft.com/',
                       'https://www.wsj.com/', 'https://www.cnbc.com/', 'https://www.reuters.com/', 'https://www.investopedia.com/', 'https://www.marketwatch.com/', ' https://techcrunch.com/',

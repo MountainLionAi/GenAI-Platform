@@ -28,10 +28,10 @@ async def metaphor_search2(question: str, language=None):
     try:
         include_domains = []
         if language == 'zh':
-            # random_three = random.sample(include_domains_en, 3)
-            # include_domains.extend(random_three)
             include_domains.extend(include_domains_zh)
-            include_domains.extend(include_domains_en)
+            random_three = random.sample(include_domains_en, 3)
+            include_domains.extend(random_three)
+            # include_domains.extend(include_domains_en)
         elif language == 'en':
             include_domains.extend(include_domains_en)
         search_result = await metaphor_client.exa_search(question, num_results=5, use_autoprompt=True, include_domains=include_domains)
