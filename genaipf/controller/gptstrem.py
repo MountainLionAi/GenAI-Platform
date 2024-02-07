@@ -177,12 +177,13 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     # vvvvvvvv 在第一次 func gpt 就准备好数据 vvvvvvvv
     logger.info(f'>>>>> newest_question: {newest_question}')
     related_qa = get_qa_vdb_topk(newest_question)
+    language_ = contains_chinese(newest_question)
     # 判断最新的问题中是否含有中文
-    yield json.dumps(get_format_output("systemLanguage", contains_chinese(newest_question)))
+    yield json.dumps(get_format_output("systemLanguage", language_))
     # TODO 速度问题暂时注释掉
     # sources, related_qa, related_questions = await premise_search(newest_question, user_history_l, related_qa)
     # sources, related_qa = await other_search(newest_question, related_qa)
-    sources, related_qa, related_questions = await premise_search1(front_messages, related_qa)
+    sources, related_qa, related_questions = await premise_search1(front_messages, related_qa, language_)
     logger.info(f'>>>>> other_search sources: {sources}')
     logger.info(f'>>>>> frist related_qa: {related_qa}')
     yield json.dumps(get_format_output("chatSerpResults", sources))
