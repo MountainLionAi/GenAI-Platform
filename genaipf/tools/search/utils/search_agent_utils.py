@@ -13,6 +13,7 @@ from genaipf.dispatcher.utils import simple_achat
 
 client = OpenAI()
 
+
 # system_prompt = f"""
 # 今天是 {get_format_time_YYYY_mm_dd()}，你是个工具人，你既能联网，也能给用户推荐其他感兴趣的问题，必须调用工具 function，有 2 种情况 SCENE_1 和 SCENE_2：
 # ### SCENE_1
@@ -74,6 +75,7 @@ async def premise_search(newest_question, message_history, related_qa=None):
     logger.info(f'>>>>> 返回数据: {sources}, {related_questions}')
     return sources, related_qa, related_questions
 
+
 async def premise_search1(front_messages, related_qa=None, language=None):
     data = {}
     data['messages'] = front_messages
@@ -81,7 +83,7 @@ async def premise_search1(front_messages, related_qa=None, language=None):
     msgs2 = LionPromptCommon.get_prompted_messages("enrich_question", data)
     # 相关问题取最新的
     newest_question_arr = {"messages": [data['messages'][-1]]}
-    msgs3 = LionPromptCommon.get_prompted_messages("related_question", newest_question_arr)
+    msgs3 = LionPromptCommon.get_prompted_messages("related_question", newest_question_arr, language)
     t1 = asyncio.create_task(simple_achat(msgs1))
     t2 = asyncio.create_task(simple_achat(msgs2))
     t3 = asyncio.create_task(simple_achat(msgs3))
@@ -110,6 +112,7 @@ async def premise_search1(front_messages, related_qa=None, language=None):
             logger.error(e)
     print(f"related_question: {t3.result()}")
     return sources, related_qa, related_questions
+
 
 # format content to str
 def get_contents(contents):
