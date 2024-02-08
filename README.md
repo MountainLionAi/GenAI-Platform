@@ -31,6 +31,22 @@
 [**简体中文**](README_zh.md)
 </div>
 
+## Contents
+- [Introduction to GenAI Platform](#introduction-to-genai-platform)
+- [Core Features](#core-features)
+- [Why Choose RAG?](#why-choose-rag)
+- [GenAI Platform RAG](#genai-platform-rag)
+- [Subsystems in the Project](#subsystems-in-the-project)
+- [Project Installation and Running](#project-installation-and-running)
+- [API Interface Introduction](#api-interface-introduction)
+- [Project Directory Structure](#project-directory-structure)
+- [Technology Stack Introduction](#technology-stack-introduction)
+- [Project Application Scenarios](#project-application-scenarios)
+- [Applications Developed Using GenAI Platform](#applications-developed-using-genai-platform)
+- [License Information](#license-information)
+- [Developer Advantages](#developer-advantages)
+- [Contact and Community](#contact-and-community)
+
 ## Introduction to GenAI-Platform
 
 `GenAI Platform` is an open-source project designed to offer a comprehensive backend solution based on the Retrieval-Augmented Generation (RAG) architecture, enabling developers to build and deploy intelligent chatbots for specific vertical domains. This platform integrates the latest large language model technologies, allowing developers to seamlessly merge various sources of information. With a carefully designed scheduling system, efficient query transformation, and routing mechanisms, it provides accurate and relevant responses to users.
@@ -76,7 +92,7 @@ This enables LLMs to utilize external knowledge bases without altering their par
 
 In the `GenAI Platform RAG` system, the entire query processing workflow is accomplished through a series of carefully designed components. Here are the main parts of the process and their functions:
 
-#### Dispatcher
+### Dispatcher
 
 - **Embedding Model**: Utilizes embedding models to process queries, converting queries and chat histories into vector form for subsequent retrieval and matching.
 
@@ -84,7 +100,7 @@ In the `GenAI Platform RAG` system, the entire query processing workflow is acco
 
 - **Function Choice**: At this stage, the system leverages GPT's function call capability, allowing interaction with the language model to determine the context and intent of user queries. Through this interaction, the system decides which specific function to call. This is a crucial step as it directly influences how a query is understood and processed. Choosing the correct function is vital for generating accurate and relevant answers later.
 
-#### Information Source
+### Information Source
 
 - **Web Search Tools**: Utilizing cloud technology, the system can perform internet searches to obtain a wide range of real-time information, providing rich data support for generated answers. Tools that may be used in this process include Bing, Metaphor, Preplexity, etc.
 
@@ -92,7 +108,7 @@ In the `GenAI Platform RAG` system, the entire query processing workflow is acco
 
 - **Vector Storage**: Stores feature vectors used for fast retrieval and comparison of information, accelerating the query processing process.
 
-#### Agent
+### Agent
 
 - **Agent Choice**: After determining the function to be executed, the agent selection step comes into play. This step is specifically designed for complex questions that require a deeper understanding and analysis. Agents in LlamaIndex interact with the language model to choose the correct tool for processing the question. The function of this agent is to interact multiple times with different information sources within the system, aggregating and synthesizing information to produce a more precise and in-depth answer.
 
@@ -104,7 +120,7 @@ Through multiple interactions between agent selection and tools, the system can 
 
 - **Fusion Retrieval**: Combines data from multiple information sources for query processing, enhancing the accuracy and relevance of the answers.
 
-#### Final Answer Generation
+### Final Answer Generation
 
 - **Match Prompt**: Matches an appropriate prompt template based on the results of function selection and information retrieval.
 
