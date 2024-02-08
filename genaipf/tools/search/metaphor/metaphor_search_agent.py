@@ -39,7 +39,6 @@ async def metaphor_search2(question: str, language=None):
             include_domains.extend(include_domains_en)
         search_result = await metaphor_client.exa_search(question, num_results=5, use_autoprompt=True)
         if search_result and len(search_result.results) != 0:
-            metaphor_client.filter_domains(search_result)
             for result in search_result.results:
                 sources.append({'title': result.title, 'url': result.url})
             ids = [x.id for x in search_result.results]
