@@ -2,11 +2,13 @@ import random
 from genaipf.utils.log_utils import logger
 from genaipf.tools.search.metaphor.metaphor_client import MetaphorClient, include_domains_zh, include_domains_en
 
+
 def format_contents(contents):
     formatted_string = ''
     for index, news_item in enumerate(contents):
         formatted_string += f"{news_item.extract}\n引用地址: {news_item.url}\n"
     return formatted_string
+
 
 # dict sources: [{'title': '', 'url': ''}]
 # str content
@@ -18,6 +20,7 @@ async def other_search(question: str, related_qa=[], language=None):
 
     # -------- other --------
     return sources, related_qa
+
 
 # dict sources: [{'title': '', 'url': ''}]
 # str content
@@ -36,6 +39,7 @@ async def metaphor_search2(question: str, language=None):
             include_domains.extend(include_domains_en)
         search_result = await metaphor_client.exa_search(question, num_results=5, use_autoprompt=True)
         if search_result and len(search_result.results) != 0:
+            metaphor_client.filter_domains(search_result)
             for result in search_result.results:
                 sources.append({'title': result.title, 'url': result.url})
             ids = [x.id for x in search_result.results]

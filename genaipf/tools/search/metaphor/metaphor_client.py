@@ -4,13 +4,24 @@ from genaipf.utils.common_utils import sync_to_async
 from genaipf.utils.log_utils import logger
 
 CLIENT_TYPE = 'exa'
-include_domains_zh = ['https://www.chaincatcher.com/', 'https://www.techflowpost.com/', 'https://www.odaily.news/', 'https://www.theblockbeats.info/', 'https://coinmarketcap.com/', 'https://www.mytoken.io/', 'https://www.feixiaohao.com/']
-include_domains_en = ['https://defillama.com/', 'https://www.coindesk.com/', 'https://www.cryptoslate.com/', 'https://cointelegraph.com/', 'https://blockonomi.com/',
-                      'https://bitcoinmagazine.com/', 'https://www.theblockcrypto.com/', 'https://decrypt.co/', 'https://www.newsbtc.com/', ' https://cryptobriefing.com/',
-                      'https://www.blockchain.com/', 'https://nulltx.com/', 'https://bravenewcoin.com/', 'https://cn.cryptonews.com/', 'https://www.bloomberg.com/', 'https://www.ft.com/',
-                      'https://www.wsj.com/', 'https://www.cnbc.com/', 'https://www.reuters.com/', 'https://www.investopedia.com/', 'https://www.marketwatch.com/', ' https://techcrunch.com/',
-                      'https://www.wired.com/', 'https://www.reddit.com/', ' https://news.google.com/', 'https://flipboard.com/', 'https://feedly.com/', 'https://www.huffpost.com/', 'https://www.bbc.com/',
-                      'https://www.nytimes.com/', 'https://www.theguardian.com/', 'https://www.cnn.com/', 'https://www.buzzfeed.com/', 'https://www.vogue.com/', 'https://seekingalpha.com/']
+include_domains_zh = ['https://www.chaincatcher.com/', 'https://www.techflowpost.com/', 'https://www.odaily.news/',
+                      'https://www.theblockbeats.info/', 'https://coinmarketcap.com/', 'https://www.mytoken.io/',
+                      'https://www.feixiaohao.com/']
+include_domains_en = ['https://defillama.com/', 'https://www.coindesk.com/', 'https://www.cryptoslate.com/',
+                      'https://cointelegraph.com/', 'https://blockonomi.com/',
+                      'https://bitcoinmagazine.com/', 'https://www.theblockcrypto.com/', 'https://decrypt.co/',
+                      'https://www.newsbtc.com/', ' https://cryptobriefing.com/',
+                      'https://www.blockchain.com/', 'https://nulltx.com/', 'https://bravenewcoin.com/',
+                      'https://cn.cryptonews.com/', 'https://www.bloomberg.com/', 'https://www.ft.com/',
+                      'https://www.wsj.com/', 'https://www.cnbc.com/', 'https://www.reuters.com/',
+                      'https://www.investopedia.com/', 'https://www.marketwatch.com/', ' https://techcrunch.com/',
+                      'https://www.wired.com/', 'https://www.reddit.com/', ' https://news.google.com/',
+                      'https://flipboard.com/', 'https://feedly.com/', 'https://www.huffpost.com/',
+                      'https://www.bbc.com/',
+                      'https://www.nytimes.com/', 'https://www.theguardian.com/', 'https://www.cnn.com/',
+                      'https://www.buzzfeed.com/', 'https://www.vogue.com/', 'https://seekingalpha.com/']
+
+
 class MetaphorClient:
     _api_key = None
     _instance = None
@@ -38,8 +49,7 @@ class MetaphorClient:
             self._client = Metaphor(api_key=self._api_key)
             return self._client
 
-
-    async def exa_search(self, question, num_results=5, use_autoprompt=True, include_domains=[] ,type='neural'):
+    async def exa_search(self, question, num_results=5, use_autoprompt=True, include_domains=[], type='magic'):
         logger.info(f'metaphor search current key is {self._api_key}')
         search_of_metaphor = sync_to_async(self._client.search)
         search_result = []
@@ -75,3 +85,8 @@ class MetaphorClient:
         for index, news_item in enumerate(contents):
             formatted_string += f"{news_item.extract}\n引用地址: {news_item.url}\n"
         return formatted_string
+
+    def filter_domains(self, search_result):
+        for index, result in search_result.results:
+            if 'jinse' in result.url:
+                del search_result.results[index]
