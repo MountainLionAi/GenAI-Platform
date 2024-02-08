@@ -21,6 +21,7 @@ include_domains_en = ['https://defillama.com/', 'https://www.coindesk.com/', 'ht
                       'https://www.nytimes.com/', 'https://www.theguardian.com/', 'https://www.cnn.com/',
                       'https://www.buzzfeed.com/', 'https://www.vogue.com/', 'https://seekingalpha.com/']
 
+exclude_domains = ['https://www.jinse.cn/', 'https://jinse.cn/']
 
 class MetaphorClient:
     _api_key = None
@@ -56,11 +57,13 @@ class MetaphorClient:
         try:
             if len(include_domains) == 0:
                 search_result = await search_of_metaphor(question, num_results=num_results,
-                                                         use_autoprompt=use_autoprompt, type=type)
+                                                         use_autoprompt=use_autoprompt, type=type,
+                                                         exclude_domains=exclude_domains)
             else:
                 search_result = await search_of_metaphor(question, num_results=num_results,
                                                          use_autoprompt=use_autoprompt,
-                                                         include_domains=include_domains, type=type)
+                                                         include_domains=include_domains, type=type,
+                                                         exclude_domains=exclude_domains)
         except Exception as e:
             if '429' in str(e):
                 set_api_key_unavaiable(self._api_key, CLIENT_TYPE)
@@ -85,8 +88,3 @@ class MetaphorClient:
         for index, news_item in enumerate(contents):
             formatted_string += f"{news_item.extract}\n引用地址: {news_item.url}\n"
         return formatted_string
-
-    def filter_domains(self, search_result):
-        for index, result in search_result.results:
-            if 'jinse' in result.url:
-                del search_result.results[index]
