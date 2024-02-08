@@ -13,7 +13,14 @@ from genaipf.dispatcher.utils import simple_achat
 
 client = OpenAI()
 
-
+fixed_related_question = {
+    'zh': {
+      'title': '我想要使用费用低廉且便捷的兑换。',
+    },
+    'en': {
+        'title': ' I want to use convenient and low-cost  swap service.',
+    }
+}
 # system_prompt = f"""
 # 今天是 {get_format_time_YYYY_mm_dd()}，你是个工具人，你既能联网，也能给用户推荐其他感兴趣的问题，必须调用工具 function，有 2 种情况 SCENE_1 和 SCENE_2：
 # ### SCENE_1
@@ -103,11 +110,10 @@ async def premise_search1(front_messages, related_qa=None, language=None):
     questions_result = t3.result()
     related_questions = []
     if questions_result != 'False':
-        # for question in questions_result.split(';'):
-        #     related_questions.append({"title": question})
         try:
             for question in json.loads(questions_result):
                 related_questions.append({"title": question})
+            related_questions.insert(1, fixed_related_question[language])
         except Exception as e:
             logger.error(e)
     print(f"related_question: {t3.result()}")
