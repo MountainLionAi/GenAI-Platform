@@ -6,4 +6,7 @@ REDIS_KEYS = {
         'EMAIL_LIMIT': 'EMAIL:{}:{}',
         'EMAIL_CONTINUE': 'EMAIL_CONTINUE_{}'
     },
+    'RAG_API_KEYS': {
+        'KEYS_STATUS': 'KEYS_STATUS_{}'
+    }
 }

@@ -1,192 +1,294 @@
-# GenAI-Platform
+# GenAI Platform: RAG-Based Intelligent Chatbot Backend Suite
 
-## GenAI-Platform简介
+<div align="center">
+  <img src="genaipf/static/GenAI%20Platform.jpg" alt="GenAI Platform Image" />
+</div>
 
-GenAI-Platform 是一个提供多种API功能的平台，包括但不限于chatbot交互、用户管理和支付处理。该平台使用Sanic为主框架，并提供了一套完整的API接口供开发者调用。
+<div align="center">
+  <p>
+    <a href="https://github.com/MountainLionAi/GenAI-Platform">
+        <img alt="stars" src="https://img.shields.io/github/stars/MountainLionAi/GenAI-Platform?style=social" />
+    </a>
+    <a href="https://github.com/MountainLionAi/GenAI-Platform">
+        <img alt="forks" src="https://img.shields.io/github/forks/MountainLionAi/GenAI-Platform?style=social" />
+    </a>
+    <a href="https://opensource.org/licenses/Apache-2.0">
+      <img alt="License: Apache-2.0" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" />
+    </a>
+    <a href="https://github.com/MountainLionAi/GenAI-Platform/releases">
+      <img alt="Release Notes" src="https://img.shields.io/github/release/MountainLionAi/GenAI-Platform.svg" />
+    </a>
+    <a href="https://github.com/MountainLionAi/GenAI-Platform/issues">
+      <img alt="Open Issues" src="https://img.shields.io/github/issues-raw/MountainLionAi/GenAI-Platform" />
+    </a>
+  </p>
+    <p>
+    <a href="https://codespaces.new/MountainLionAi/GenAI-Platform">
+      <img alt="Open in GitHub Codespaces" src="https://github.com/codespaces/badge.svg" />
+    </a>
+    </p>
 
-## 项目介绍
+[**简体中文**](README_zh.md)
+</div>
 
-`GenAI-Platform` 是一个基于 RAG（Retrieval Augmented Generation, 检索增强生成）框架的应用程序。RAG 是一个结合了大规模语言模型(LLM)与外部知识源的工程框架，目的是为了提升问答系统的能力。
+## Contents
+- [Introduction to GenAI Platform](#introduction-to-genai-platform)
+- [Core Features](#core-features)
+- [Why Choose RAG?](#why-choose-rag)
+- [GenAI Platform RAG](#genai-platform-rag)
+- [Subsystems in the Project](#subsystems-in-the-project)
+- [Project Installation and Running](#project-installation-and-running)
+- [API Interface Introduction](#api-interface-introduction)
+- [Project Directory Structure](#project-directory-structure)
+- [Technology Stack Introduction](#technology-stack-introduction)
+- [Project Application Scenarios](#project-application-scenarios)
+- [Applications Developed Using GenAI Platform](#applications-developed-using-genai-platform)
+- [License Information](#license-information)
+- [Developer Advantages](#developer-advantages)
+- [Contact and Community](#contact-and-community)
 
-![RAG架构示意图](genaipf/static/RAG.jpg)
+## Introduction to GenAI-Platform
 
-### 为什么选择 RAG?
+`GenAI Platform` is an open-source project designed to offer a comprehensive backend solution based on the Retrieval-Augmented Generation (RAG) architecture, enabling developers to build and deploy intelligent chatbots for specific vertical domains. This platform integrates the latest large language model technologies, allowing developers to seamlessly merge various sources of information. With a carefully designed scheduling system, efficient query transformation, and routing mechanisms, it provides accurate and relevant responses to users.
 
-#### LLM的知识更新难题
+## Core Features
 
-- LLM 的训练数据集是固定的，因此一旦训练完成，很难再通过继续训练来更新其知识。
-- LLM 参数量庞大，任何时候进行 fine-tuning 都需要消耗大量的资源且耗时。
-- 无法直接查询或编辑 LLM 中编码的数百亿参数中的知识。
+- **Integration of Diverse Information Sources**: `GenAI Platform` supports cloud-based internet searches, database storage, and vector storage, enabling chatbots to access and process data from multiple information sources.
+
+- **Intelligent Scheduler**: The platform's innovatively developed scheduler uses embedding models to process user queries, employing function filtering and matching to identify effective information sources and select the most appropriate functions to construct the final prompt for generating answers.
+
+- **Efficient Query Processing**: Through query transformation and routing, `GenAI Platform` can convert user queries into a list of queries, then choose the most suitable tool to provide answers.
+
+- **Flexible Agent Selection**: The platform's built-in agent selection mechanism supports various query processing agents, such as LlamaIndex and Langchain, offering more processing options for user queries.
+
+- **One-Stop Backend Services**: `GenAI Platform` provides comprehensive backend support, including user management, payment systems, message management, and system log management.
+
+- **Good Scalability**: Based on modular design, it is easy for developers to add new features and modules.
+
+- **Support for Web Asynchronous Response**: Using the sanic web framework, it supports asynchronous request processing, ensuring quick responses.
+
+`GenAI-Platform` is an application based on the RAG (Retrieval Augmented Generation) framework. RAG supports generating answers by retrieving data from sources beyond LLMs. RAG = search + LLM prompts, where LLMs use search algorithms to obtain contextual information from external data sources based on user queries. Finally, the query and retrieved context are combined and fed into LLM prompts.
+
+## Why Choose RAG?
+
+### The Knowledge Update Challenge of LLMs
+
+- The training dataset of an LLM is fixed, making it difficult to update its knowledge through further training once training is completed.
+- LLMs have a vast number of parameters, and fine-tuning at any time requires significant resources and is time-consuming.
+- It is impossible to directly query or edit the knowledge encoded in the billions of parameters of an LLM.
   
-因此,为了让 LLM 拥有持续学习和获取新知识的能力, RAG 应运而生。
+Therefore, to enable LLMs to continuously learn and acquire new knowledge, RAG was developed.
 
-#### RAG 的工作原理
+### How RAG Works
 
-1. **知识索引**: 对文本数据进行处理,通过词嵌入等技术进行向量化，并存入数据库中，形成可检索的向量索引。
-2. **知识检索**: 当有一个输入问题时, RAG 会检索知识库以找到与问题最相关的文档。
-3. **生成答案**: RAG 会提供问题和检索到的文档给 LLM，允许 LLM 融合这些外部知识，并生成答案。
+1. **Knowledge Indexing**: Text data is processed, vectorized through techniques such as word embedding, and stored in a database to create a searchable vector index.
+2. **Knowledge Retrieval**: When a question is inputted, RAG searches the knowledge base to find documents most relevant to the question.
+3. **Generating Answers**: RAG provides the question and retrieved documents to the LLM, allowing the LLM to integrate this external knowledge and generate answers.
 
-这使得 LLM 能够利用外部知识库，无需修改其参数。当知识库更新时，新知识也可以实时注入到 LLM 中。
+This enables LLMs to utilize external knowledge bases without altering their parameters. When the knowledge base is updated, new knowledge can also be injected into the LLM in real-time.
 
-#### RAG 的优点
+## GenAI-Platform RAG
+![RAG Architecture Diagram](genaipf/static/RAG.jpg)
 
-- 利用大规模外部知识增强 LLM 的推理和事实性。
-- 快速实现原型。
-- 知识索引阶段能做到知识的实时更新。
-- 生成的答案具有强大的可解释性。
+In the `GenAI Platform RAG` system, the entire query processing workflow is accomplished through a series of carefully designed components. Here are the main parts of the process and their functions:
 
-#### RAG 的缺点
+### Dispatcher
 
-- 知识检索阶段有可能检索到与问题不太相关的文档。
-- 在生成答案时，可能缺乏一些基本的世界知识。
-- 向量数据库在处理大量数据时面临挑战。
-- 推理时的预处理和向量化增加了计算成本。
-- 更新外部知识库需要大量资源。
+- **Embedding Model**: Utilizes embedding models to process queries, converting queries and chat histories into vector form for subsequent retrieval and matching.
 
-### 总结
+- **Function Filter**: This component filters possible GPT functions using a vector database, effectively addressing the potential limitation in the number of GPT functions.
 
-在这个 `GenAI-Platform` 项目中，我们使用 RAG 架构来构建一个强大、实时更新且具有高度可解释性的问答系统，虽然它也带有一些技术上的挑战，但其优势使得该项目能够提供更为智能和高效的服务。
+- **Function Choice**: At this stage, the system leverages GPT's function call capability, allowing interaction with the language model to determine the context and intent of user queries. Through this interaction, the system decides which specific function to call. This is a crucial step as it directly influences how a query is understood and processed. Choosing the correct function is vital for generating accurate and relevant answers later.
 
+### Information Source
 
-## 项目主要功能与特点
+- **Web Search Tools**: Utilizing cloud technology, the system can perform internet searches to obtain a wide range of real-time information, providing rich data support for generated answers. Tools that may be used in this process include Bing, Metaphor, Preplexity, etc.
 
-### 功能：
+- **DB Storage**: Stores structured data, providing necessary historical information and factual data for queries.
 
-1.**智能聊天机器人**: 基于OpenAI的GPT模型，结合qdrant-client向量数据库预处理为用户提供实时、准确的智能回复。
+- **Vector Storage**: Stores feature vectors used for fast retrieval and comparison of information, accelerating the query processing process.
 
-2.**用户管理**: 提供完整的用户注册、登录、注销功能，并支持验证码和邮箱验证。
+### Agent
 
-3.**消息管理**: 用户可以获取、分享、删除消息和消息组，支持流式处理。
+- **Agent Choice**: After determining the function to be executed, the agent selection step comes into play. This step is specifically designed for complex questions that require a deeper understanding and analysis. Agents in LlamaIndex interact with the language model to choose the correct tool for processing the question. The function of this agent is to interact multiple times with different information sources within the system, aggregating and synthesizing information to produce a more precise and in-depth answer.
 
-4.**支付系统**: 集成支付功能，用户可以查询支付卡信息、订单检查和账户查询。
+Through multiple interactions between agent selection and tools, the system can analyze questions deeply, combining multiple data points and considering different information sources to optimize the answer. This ensures that even in the face of complex queries, `GenAI Platform` can provide answers that are both deep and high-quality, reflecting not only the accuracy of data but also a profound understanding of the intent behind user queries.
 
-5.**多语言模型链接**: 通过langchain工具，链接不同的语言模型并将其集成到项目功能中。
+- **Query Transformation**: Transforms the original query into a form suitable for processing, which may include restructuring or expanding the query.
 
-### 特点：
+- **Query Routing**: Determines which information source or tool the transformed query should be sent to for processing.
 
-1.**高性能**: 使用sanic网络框架，支持异步请求处理，确保快速响应。
+- **Fusion Retrieval**: Combines data from multiple information sources for query processing, enhancing the accuracy and relevance of the answers.
 
-2.**安全性**: 集成了多种安全措施，如密码加密、验证码验证和令牌验证。
+### Final Answer Generation
 
-3.**扩展性**: 基于模块化设计，易于添加新功能和模块。
+- **Match Prompt**: Matches an appropriate prompt template based on the results of function selection and information retrieval.
 
-4.**跨平台**: 使用Python开发，支持多种操作系统和平台。
+- **Final Prompt**: Combines the matched prompt with retrieved information to generate the final prompt for the language model.
 
-5.**数据处理**: 强大的数据处理能力，结合pandas、numpy等工具进行数据清洗、分析和操作。
+- **Large Language Model (LLM)**: Uses the final prompt to generate the answer to the user's query through a large language model.
 
-6.**与区块链集成**: 通过web3库，实现与Ethereum区块链的交互，为未来的区块链应用提供可能。
+### Summary
 
-## 项目安装和运行
+The complete retrieval-enhanced process of `GenAI-Platform` ensures that the generation of answers is based not only on directly queried data but also on inputs from intelligently selected function processing and agent tools, thereby providing high-quality, personalized, and accurate answers.
 
-1. **安装项目**：
+## Subsystems in the Project
+![Subsystems in the Project](genaipf/static/System.jpg)
+
+1. **Intelligent Chatbot**: Based on OpenAI's GPT model, this subsystem is the core of `GenAI Platform`, providing users with an intelligent interactive chat experience. Through the `GenAI Platform RAG` system, it can handle large-scale and complex queries while maintaining quick response times and high accuracy.
+
+2. **User Management System**: This subsystem handles all functionalities related to user accounts. It supports basic user registration, login, and logout functions, along with security measures such as captcha and email verification, ensuring users can safely access their accounts and protecting the platform from unauthorized access.
+
+3. **Message Management System**: Allows users to manage their communications efficiently and orderly. Users can retrieve historical messages, share important information, and even delete conversations that are no longer needed. Additionally, the system supports streaming to ensure timely interaction of messages with the frontend.
+
+4. **Payment System**: Integrates payment functionalities, allowing users to inquire about payment card information, order checks, and account queries.
+
+5. **System Log Management System**: This subsystem is responsible for recording and managing system logs, crucial for monitoring system operation, debugging, and security auditing. It tracks user activities, system performance, and any potential anomalies or security events, providing valuable information for system administrators.
+
+## Project Installation and Running
+
+1. **Install the Project**:
 
 ```bash
 cd GenAI-Platform
 pip install -e .
 ```
 
-2. **加载向量数据库内容**：
+2. **Load Vector Database Content**:
 
 ```bash
 cd GenAI-Platform
 python app.py -a
 ```
 
-3. **运行平台**：
+3. **Run the Platform**:
 
 ```bash
 cd GenAI-Platform
 python app.py
 ```
 
-## API接口介绍
+## API Interface Introduction
 
-| 类别          | API路由             | 方法    | 功能描述                               |
-|--------------|--------------------|--------|--------------------------------------|
-| **Chatbot**  | `/mpcbot/sendchat_gpt4` | POST   | GPT-4版本的chatbot交互                     |
-| **GPT**      | `api/getMessageList`    | GET    | 获取消息列表                             |
-|              | `api/getMsgGroupList`   | GET    | 获取消息组列表                           |
-|              | `api/delMsgGroupList`   | POST   | 删除消息组                               |
-|              | `api/sendStremChat`     | POST   | 发送流式聊天内容                           |
-| **UserRate** | `api/userRate`          | POST   | 用户评价                                 |
-|              | `api/delMessages`       | POST   | 根据编码删除消息                           |
-|              | `api/shareMessages`     | POST   | 分享消息                                 |
-|              | `api/getShareMessages`  | POST   | 获取分享的消息                            |
-| **User**     | `api/userLogin`         | POST   | 用户登录                                 |
-|              | `api/checkLogin`        | GET    | 检查登录状态                              |
-|              | `api/register`          | POST   | 用户注册                                 |
-|              | `api/loginOut`          | GET    | 用户登出                                 |
-|              | `api/sendVerifyCode`    | POST   | 发送验证码                               |
-|              | `api/sendEmailCode`     | POST   | 发送电子邮件验证码                         |
-|              | `api/getCaptcha`        | GET    | 获取验证码图像                             |
-|              | `api/testVerifyCode`    | POST   | 验证验证码                                |
-|              | `api/modifyPassword`    | POST   | 修改密码                                 |
-| **Pay**      | `api/pay/cardInfo`      | GET    | 查询支付卡信息                            |
-|              | `api/pay/orderCheck`    | GET    | 检查订单                                 |
-|              | `api/pay/account`       | GET    | 查询用户账户                              |
-|              | `api/pay/callback`      | POST   | 支付成功回调                              |
+| Category      | API Route              | Method | Function Description                  |
+|---------------|------------------------|--------|---------------------------------------|
+| **Chatbot**   | `/mpcbot/sendchat_gpt4` | POST   | Interaction with the chatbot using GPT-4 version |
+| **GPT**       | `api/getMessageList`    | GET    | Retrieve message list                 |
+|               | `api/getMsgGroupList`   | GET    | Retrieve message group list           |
+|               | `api/delMsgGroupList`   | POST   | Delete message group                  |
+|               | `api/sendStremChat`     | POST   | Send streaming chat content           |
+| **UserRate**  | `api/userRate`          | POST   | User rating                           |
+|               | `api/delMessages`       | POST   | Delete messages by code               |
+|               | `api/shareMessages`     | POST   | Share messages                        |
+|               | `api/getShareMessages`  | POST   | Retrieve shared messages              |
+| **User**      | `api/userLogin`         | POST   | User login                            |
+|               | `api/checkLogin`        | GET    | Check login status                    |
+|               | `api/register`          | POST   | User registration                     |
+|               | `api/loginOut`          | GET    | User logout                           |
+|               | `api/sendVerifyCode`    | POST   | Send verification code                |
+|               | `api/sendEmailCode`     | POST   | Send email verification code          |
+|               | `api/getCaptcha`        | GET    | Retrieve captcha image                |
+|               | `api/testVerifyCode`    | POST   | Verify the verification code          |
+|               | `api/modifyPassword`    | POST   | Modify password                       |
+| **Pay**       | `api/pay/cardInfo`      | GET    | Query payment card information        |
+|               | `api/pay/orderCheck`    | GET    | Check orders                          |
+|               | `api/pay/account`       | GET    | Query user account                    |
+|               | `api/pay/callback`      | POST   | Callback for successful payment       |
 
-## 项目目录结构
+## Project Directory Structure
 
-以下是 `GenAI-Platform` 中 `genaipf` 主要目录结构和它们的功能描述：
+Here is the main directory structure of `GenAI-Platform` in `genaipf` and their function descriptions:
 
--**conf**: 包含项目的各种配置文件，如服务器端口、数据库连接等设置。
+- **conf**: Contains various configuration files of the project, such as server port, database connections, etc.
 
--**constant**: 存放项目中使用的常量定义，如错误代码、消息常量等。
+- **constant**: Stores constant definitions used in the project, such as error codes, message constants, etc.
 
--**controller**: 负责处理API请求，与前端的交互，以及返回响应。API接口定义如`sendchat_gpt4`和`userLogin`都在这里定义。
+- **controller**: Responsible for handling API requests, interacting with the frontend, and returning responses. API interface definitions like `sendchat_gpt4` and `userLogin` are defined here.
 
--**dispatcher**: 负责API的调度逻辑，如将特定请求路由到相应的控制器或处理器。
+- **dispatcher**: Handles the logic for API dispatching, routing specific requests to the corresponding controller or handler.
 
--**exception**: 该目录包含自定义的异常处理逻辑以及自定义异常类的定义。
+- **exception**: This directory contains custom exception handling logic and the definitions of custom exception classes.
 
--**interfaces**: 定义与外部系统或其他项目模块交互的接口。
+- **interfaces**: Defines interfaces for interaction with external systems or other project modules.
 
--**middlewares**: 用于处理API请求和响应的中间件。这些中间件可以执行诸如认证、日志记录等预处理和后处理任务。
+- **middlewares**: Middleware for processing API requests and responses. These middlewares can perform tasks such as authentication, logging, etc., for preprocessing and postprocessing.
 
--**routers**: 这里定义了所有API的路由，确保每个请求被正确地导向适当的控制器。
+- **routers**: Defines all API routes, ensuring each request is correctly directed to the appropriate controller.
 
--**services**: 包含项目的核心业务逻辑以及与数据库的交互代码。
+- **services**: Contains the core business logic of the project and the code for database interactions.
 
--**static**: 用于存放项目的静态资源，如CSS、JavaScript文件和图片等。
+- **static**: Stores the project's static resources, such as CSS, JavaScript files, and images.
 
--**utils**: 该目录提供了各种实用程序和辅助功能，如日期转换、字符串操作等。
+- **tools**: Provides various tools for internet information queries (currently includes Bing, Metaphor, Preplexity).
 
-以上就是 `genaipf` 的目录结构和它们的功能描述。
+- **utils**: Offers various utilities and helper functions, such as date conversion, string manipulation, etc.
 
-## 技术栈介绍
+## Technology Stack Introduction
 
-以下是`GenAI-Platform`的主要技术栈及其在项目中的作用：
+Here is the main technology stack of `GenAI-Platform` and their roles in the project:
 
--**sanic (23.3.0)**: 一个高效、轻量级的Web服务器框架，支持异步请求处理，为项目提供了主要的Web服务。
+- **sanic (23.3.0)**: An efficient, lightweight web server framework supporting asynchronous request processing, providing the main web services for the project.
 
--**qdrant-client (1.4.0)**: 向量数据库客户端，用于高效地存储和检索向量数据。
+- **qdrant-client (1.4.0)**: Vector database client for efficiently storing and retrieving vector data.
 
--**openai (0.27.4)**: OpenAI的Python客户端，用于调用GPT系列等模型来实现语言智能回复功能。
+- **openai (1.7.1)**: OpenAI's Python client for calling models like the GPT series for language intelligence reply functions.
 
--**langchain (0.0.314)**: 链接语言模型与项目功能的工具，为项目中的语言处理部分提供支持。
+- **langchain (0.0.314)**: A tool linking language models with project functionality, supporting the language processing part of the project.
 
--**pymysql (1.1.0)**: MySQL数据库的Python客户端，用于数据存储和检索。
+- **llama-index (0.9.30)**: Similarly, a tool linking language models with
 
--**redis (3.5.3)**: 高性能的键-值存储系统，用于缓存、会话管理等功能。
+ project functionality, providing powerful Agent-related features for the project.
 
--**web3 (6.2.0)**: Ethereum区块链的Python客户端，用于实现与区块链的交互。
+- **pymysql (1.1.0)**: A Python client for MySQL databases, used for data storage and retrieval.
 
--**aiohttp (3.8.4)**: 异步HTTP客户端/服务器框架，用于处理异步网络请求。
+- **redis (3.5.3)**: A high-performance key-value store system used for caching, session management, etc.
 
--**APScheduler (3.10.1)**: 一个任务调度库，用于定时执行任务或定期运行某些代码片段。
+- **web3 (6.2.0)**: Python client for Ethereum blockchain, for implementing interactions with the blockchain.
 
-其余的库和工具为项目提供了各种辅助功能和增强性能，确保项目的高效、稳定运行。
+- **aiohttp (3.8.4)**: Asynchronous HTTP client/server framework for handling asynchronous network requests.
 
-## 许可证信息
+- **APScheduler (3.10.1)**: A task scheduling library, for executing tasks at a scheduled time or periodically running certain code snippets.
 
-此项目使用 `Apache 2.0` 许可证，这意味着您可以自由地使用、修改和分发代码，但需要给出原始代码的适当归属。
+Other libraries and tools provide various auxiliary functions and enhance performance, ensuring the project's efficient and stable operation.
 
-## 联系方式与社区
+## Project Application Scenarios
 
-我们非常重视社区的反馈和建议。
+- **Chatbots for Vertical Domains**: For specific industries or fields such as law, healthcare, or customer support, the platform can provide deeply customized solutions.
 
-- **GitHub社区**: 如有任何疑问、建议或问题，欢迎在GitHub社区中提问或留言。
-- **电子邮件**: 如果您需要进一步的支持或有特殊的需求，可以直接发送电子邮件至：[contact@mountainlion.ai](mailto:contact@mountainlion.ai)
+- **Knowledge-Intensive Applications**: In scenarios that require handling vast amounts of information and providing knowledgeable answers, `GenAI Platform RAG` architecture offers robust support.
 
-我们会尽快回复并为您提供帮助。
+- **Multi-Channel Deployment**: Supports access via various communication channels, such as web, mobile apps, or third-party service platforms, offering flexible access options for users.
+
+## Applications Developed Using GenAI Platform
+### MountainLion: Your Personal GenAI Assistant for the Web3 Industry
+  ![moutainlion](genaipf/static/moutainlion.webp)
+
+  `MountainLion` is an intelligent assistant developed on the `GenAI Platform`, focusing on the in-depth exploration of the Web3 industry. Serving as your personal assistant, MountainLion harnesses the advanced AI analytical capabilities to provide extensive information on areas such as blockchain, cryptocurrencies, decentralized finance (DeFi), and non-fungible tokens (NFTs). Whether you are a beginner or an expert in the Web3 field, MountainLion aims to assist you in maintaining a leading edge in industry insights.
+
+  To learn more about MountainLion or to experience the product, please visit this [link](https://www.mlion.ai/#/).
+
+## Developer Advantages
+
+- **Open Source Collaboration**: As an open-source project, `GenAI Platform` encourages collaboration and contributions from the developer community, driving the platform's development and innovation.
+
+- **Customization and Scalability**: The platform's modular design allows developers to easily add or modify functionalities as needed.
+
+- **Documentation and Support**: Provides comprehensive documentation and community support to help developers quickly get started and resolve issues during development.
+
+### Contributors Wall
+<a href="https://github.com/MountainLionAi/GenAI-Platform/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=MountainLionAi/GenAI-Platform&max=200" />
+</a>
+
+## License Information
+
+This project is licensed under the `Apache 2.0` license, which means you can freely use, modify, and distribute the code, but you must give appropriate attribution to the original source.
+
+## Contact and Community
+
+We highly value feedback and suggestions from our community.
+
+- **GitHub Community**: If you have any questions, suggestions, or issues, you are welcome to ask or leave a message in the GitHub community.
+- **Email**: If you need further support or have specific requirements, you can directly email: [contact@mountainlion.ai](mailto:contact@mountainlion.ai)
+
+We will respond promptly and provide assistance.

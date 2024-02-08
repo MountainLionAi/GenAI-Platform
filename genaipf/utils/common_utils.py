@@ -74,3 +74,11 @@ def sync_to_async(fn):
         loop = asyncio.get_running_loop()
         return await loop.run_in_executor(None, lambda: fn(*args, **kwargs))
     return _async_wrapped_fn
+
+
+# 判断一段话中是否含有中文
+def contains_chinese(text):
+    if bool(re.search(r'[\u4e00-\u9fff]+', text)):
+        return 'zh'
+    else:
+        return 'en'

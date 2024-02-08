@@ -8,8 +8,8 @@ class LionPrompt:
     default_lang = _default_lang
     
     @classmethod
-    def get_afunc_prompt(cls, language=_default_lang, picked_content="", related_qa=[], model='', data={}, owner=''):
-        return _get_default_afunc_prompt(language, picked_content, related_qa, model, owner)
+    def get_afunc_prompt(cls, language=_default_lang, picked_content="", related_qa=[], model='', data={}):
+        return _get_default_afunc_prompt(language, picked_content, related_qa, model)
 
     @classmethod
     def get_aref_answer_prompt(cls, language=_default_lang, preset_name=None, picked_content="", related_qa=[], model='', data={}):
@@ -20,7 +20,7 @@ class LionPrompt:
         return _get_default_merge_ref_and_input_text(ref, related_qa, input_text, language)
             
 if PLUGIN_NAME:
-    plugin_submodule_name = f'{PLUGIN_NAME}.dispatcher.prompts_v001'
+    plugin_submodule_name = f'{PLUGIN_NAME}.dispatcher.prompts_v002'
     plugin_submodule = import_module(plugin_submodule_name)
     LionPrompt = plugin_submodule.LionPrompt
 
