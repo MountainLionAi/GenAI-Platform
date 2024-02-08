@@ -34,11 +34,12 @@ async def metaphor_search2(question: str, language=None):
             # include_domains.extend(include_domains_en)
         elif language == 'en':
             include_domains.extend(include_domains_en)
-        search_result = await metaphor_client.exa_search(question, num_results=5, use_autoprompt=True, include_domains=include_domains)
-        for result in search_result.results:
-            sources.append({'title': result.title, 'url': result.url})
-        ids = [x.id for x in search_result.results]
-        content = await metaphor_client.exa_get_contents(ids[:3])
+        search_result = await metaphor_client.exa_search(question, num_results=5, use_autoprompt=True)
+        if search_result and len(search_result.results) != 0:
+            for result in search_result.results:
+                sources.append({'title': result.title, 'url': result.url})
+            ids = [x.id for x in search_result.results]
+            content = await metaphor_client.exa_get_contents(ids[:3])
     except Exception as e:
         logger.error(f'metaphor search error: {str(e)}')
     return sources, content

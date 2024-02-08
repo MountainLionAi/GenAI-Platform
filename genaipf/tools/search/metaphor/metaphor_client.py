@@ -40,23 +40,33 @@ class MetaphorClient:
 
 
     async def exa_search(self, question, num_results=5, use_autoprompt=True, include_domains=[] ,type='neural'):
+        logger.info(f'metaphor search current key is {self._api_key}')
         search_of_metaphor = sync_to_async(self._client.search)
         search_result = []
         try:
-            search_result = await search_of_metaphor(question, num_results=num_results, use_autoprompt=use_autoprompt, include_domains=include_domains, type=type)
+            if len(include_domains) == 0:
+                search_result = await search_of_metaphor(question, num_results=num_results,
+                                                         use_autoprompt=use_autoprompt, type=type)
+            else:
+                search_result = await search_of_metaphor(question, num_results=num_results,
+                                                         use_autoprompt=use_autoprompt,
+                                                         include_domains=include_domains, type=type)
         except Exception as e:
-            set_api_key_unavaiable(self._api_key, CLIENT_TYPE)
+            if '429' in str(e):
+                set_api_key_unavaiable(self._api_key, CLIENT_TYPE)
             logger.error(f'metaphor search error: {str(e)}')
         return search_result
 
     async def exa_get_contents(self, ids):
+        logger.info(f'metaphor getContent current key is {self._api_key}')
         aget_contents_of_metaphor = sync_to_async(self._client.get_contents)
         content = ''
         try:
             search_contents = await aget_contents_of_metaphor(ids)
             content = self.format_contents(search_contents.contents)
         except Exception as e:
-            set_api_key_unavaiable(self._api_key, CLIENT_TYPE)
+            if '429' in str(e):
+                set_api_key_unavaiable(self._api_key, CLIENT_TYPE)
             logger.error(f'metaphor get content error: {str(e)}')
         return content
 
