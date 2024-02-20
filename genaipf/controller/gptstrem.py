@@ -217,7 +217,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
             sources_task.cancel()
         except asyncio.CancelledError as e:
             logger.info(f'任务已取消: {e}')
-        sources = ['https://www.mytoken.io/']
+        sources = [{'title': 'coin-price', 'url': 'https://www.mytoken.io/'}]
     yield json.dumps(get_format_output("chatSerpResults", sources))
     yield json.dumps(get_format_output("chatRelatedResults", related_questions))
 
