@@ -118,7 +118,29 @@ async def premise_search1(front_messages, related_qa=None, language=None):
             logger.error(e)
     print(f"related_question: {t3.result()}")
     return sources, related_qa, related_questions
+async def premise_search2(front_messages, language=None):
+    data = {}
+    data['messages'] = front_messages
+    msgs1 = LionPromptCommon.get_prompted_messages("if_need_search", data)
+    msgs2 = LionPromptCommon.get_prompted_messages("enrich_question", data)
+    # 相关问题取最新的
+    newest_question_arr = {"messages": [data['messages'][-1]]}
+    msgs3 = LionPromptCommon.get_prompted_messages("related_question", newest_question_arr, language)
+    t1 = asyncio.create_task(simple_achat(msgs1))
+    t2 = asyncio.create_task(simple_achat(msgs2))
+    t3 = asyncio.create_task(simple_achat(msgs3))
+    await t1
+    need_search = t1.result()
+    return need_search, t2, t3
 
+async def new_question_question(is_need_search: str, language: str, improve_question_task, related_qa):
+    sources = []
+    if is_need_search in "True":
+        await improve_question_task
+        new_question = improve_question_task.result()
+        if new_question != "False":
+            sources, related_qa = await other_search(new_question, related_qa, language)
+    return sources, related_qa
 
 # format content to str
 def get_contents(contents):
