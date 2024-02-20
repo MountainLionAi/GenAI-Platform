@@ -178,6 +178,8 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     logger.info(f'>>>>> newest_question: {newest_question}')
     related_qa = get_qa_vdb_topk(newest_question)
     language_ = contains_chinese(newest_question)
+    _code = generate_unique_id()
+    yield json.dumps(get_format_output("code", _code))
     # 判断最新的问题中是否含有中文
     yield json.dumps(get_format_output("systemLanguage", language_))
     # TODO 速度问题暂时注释掉
@@ -193,7 +195,6 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     # ^^^^^^^^ 在第一次 func gpt 就准备好数据 ^^^^^^^^
     used_gpt_functions = gpt_function_filter(gpt_functions_mapping, _messages)
     _tmp_text = ""
-    _code = generate_unique_id()
     isPresetTop = False
     data = {
         'type' : 'gpt',
