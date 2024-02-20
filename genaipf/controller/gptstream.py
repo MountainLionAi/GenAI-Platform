@@ -65,7 +65,7 @@ def process_messages(messages):
         })
     return processed_messages[-10:]
 
-async def send_strem_chat(request: Request):
+async def send_stream_chat(request: Request):
     logger.info("======start gptstream===========")
 
     request_params = request.json
