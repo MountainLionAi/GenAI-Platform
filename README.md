@@ -176,7 +176,7 @@ python app.py
 | **GPT**       | `api/getMessageList`    | GET    | Retrieve message list                 |
 |               | `api/getMsgGroupList`   | GET    | Retrieve message group list           |
 |               | `api/delMsgGroupList`   | POST   | Delete message group                  |
-|               | `api/sendStremChat`     | POST   | Send streaming chat content           |
+|               | `api/sendStreamChat`     | POST   | Send streaming chat content           |
 | **UserRate**  | `api/userRate`          | POST   | User rating                           |
 |               | `api/delMessages`       | POST   | Delete messages by code               |
 |               | `api/shareMessages`     | POST   | Share messages                        |

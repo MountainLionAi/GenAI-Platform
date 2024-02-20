@@ -13,7 +13,7 @@ PATH_WITHOUT_LOGIN = (
     '/v1/api/sendChat',
     '/v1/api/getMessageList',
     '/v1/api/getMsgGroupList',
-    '/v1/api/sendStremChat',
+    '/v1/api/sendStreamChat',
     '/v1/api/sendChat',
     '/v1/api/sendOneshotChat',
     '/v1/api/sendRawChatStream',

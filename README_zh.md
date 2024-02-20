@@ -178,7 +178,7 @@ python app.py
 | **GPT**      | `api/getMessageList`    | GET    | 获取消息列表                             |
 |              | `api/getMsgGroupList`   | GET    | 获取消息组列表                           |
 |              | `api/delMsgGroupList`   | POST   | 删除消息组                               |
-|              | `api/sendStremChat`     | POST   | 发送流式聊天内容                           |
+|              | `api/sendStreamChat`     | POST   | 发送流式聊天内容                           |
 | **UserRate** | `api/userRate`          | POST   | 用户评价                                 |
 |              | `api/delMessages`       | POST   | 根据编码删除消息                           |
 |              | `api/shareMessages`     | POST   | 分享消息                                 |
