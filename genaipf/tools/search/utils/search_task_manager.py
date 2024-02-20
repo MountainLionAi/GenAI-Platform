@@ -2,7 +2,6 @@ import json
 from genaipf.utils.log_utils import logger
 from genaipf.dispatcher.prompts_common import LionPromptCommon
 from genaipf.dispatcher.utils import simple_achat
-from genaipf.tools.search.utils.search_agent_utils import fixed_related_question
 from genaipf.tools.search.metaphor.metaphor_search_agent import other_search
 
 
@@ -20,7 +19,7 @@ async def get_is_need_search_task(front_messages):
 
 
 # 获取相关问题相关task
-async def get_related_question_task(newest_question_arr, language):
+async def get_related_question_task(newest_question_arr, fixed_related_question, language):
     msgs = LionPromptCommon.get_prompted_messages("related_question", newest_question_arr, language)
     questions_result = await simple_achat(msgs)
     related_questions = []
