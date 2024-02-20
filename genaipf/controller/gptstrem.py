@@ -188,7 +188,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     logger.info(f'>>>>> frist related_qa: {related_qa}')
     # yield json.dumps(get_format_output("chatSerpResults", sources))
     # yield json.dumps(get_format_output("chatRelatedResults", related_questions))
-    is_need_search, improve_question_task, related_questions_task = await premise_search2(front_messages, language_)
+    is_need_search, sources_task, related_questions_task = await premise_search2(front_messages, related_qa, language_)
     _messages = [x for x in messages if x["role"] != "system"]
     msgs = _messages[::]
     # ^^^^^^^^ 在第一次 func gpt 就准备好数据 ^^^^^^^^
@@ -208,12 +208,15 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
 
     if chunk["content"] == "llm_yielding":
         await resp1.aclose()
-        sources, related_qa = await new_question_question(is_need_search, language_, improve_question_task, related_qa)
+        sources, related_qa = await sources_task
         logger.info(f'>>>>> second related_qa: {related_qa}')
         resp1 = await afunc_gpt_generator(msgs, used_gpt_functions, language, model, "", related_qa, source, owner)
         chunk = await asyncio.wait_for(resp1.__anext__(), timeout=20)
     elif chunk["content"] == "agent_routing":
-        improve_question_task.cancel()
+        try:
+            related_questions_task.cancel()
+        except asyncio.CancelledError as e:
+            logger.info(f'任务已取消: {e}')
         sources = ['https://www.mytoken.io/']
     yield json.dumps(get_format_output("chatSerpResults", sources))
     yield json.dumps(get_format_output("chatRelatedResults", related_questions))
