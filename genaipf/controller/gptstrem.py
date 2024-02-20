@@ -214,7 +214,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         chunk = await asyncio.wait_for(resp1.__anext__(), timeout=20)
     elif chunk["content"] == "agent_routing":
         try:
-            related_questions_task.cancel()
+            sources_task.cancel()
         except asyncio.CancelledError as e:
             logger.info(f'任务已取消: {e}')
         sources = ['https://www.mytoken.io/']
