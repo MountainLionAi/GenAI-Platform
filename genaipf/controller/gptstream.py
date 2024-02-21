@@ -384,6 +384,8 @@ async def  getAnswerAndCallGptData(question, userid, msggroup, language, front_m
         data['chatSerpResults'] = sources
         data['chatRelatedResults'] = related_questions
     
+    if source == 'v003':
+        return data
     return success(data)
     
 
