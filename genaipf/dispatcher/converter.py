@@ -5,8 +5,9 @@ from genaipf.dispatcher.utils import get_qa_vdb_topk, merge_ref_and_input_text
 from genaipf.dispatcher.api import generate_unique_id, get_format_output, gpt_functions, afunc_gpt_generator, aref_answer_gpt_generator
 from genaipf.dispatcher.postprocess import posttext_mapping, PostTextParam
 from genaipf.tools.search.utils.search_agent_utils import not_need_search
+from genaipf.services.cmc_token import get_token_cmc_url
 
-async def convert_func_out_to_stream(chunk, messages, newest_question, model, language, related_qa, source, owner, is_need_search=False, sources_task=None):
+async def convert_func_out_to_stream(chunk, messages, newest_question, model, language, related_qa, source, owner, sources=[], is_need_search=False, sources_task=None):
     """
     chunk: afunc_gpt_generator return
     """
@@ -17,9 +18,16 @@ async def convert_func_out_to_stream(chunk, messages, newest_question, model, la
     func_name = _param["func_name"]
     sub_func_name = _param["subtype"]
     logger.info(f'>>>>> func_name: {func_name}, sub_func_name: {sub_func_name}, _param: {_param}')
-    sources = []
     if is_need_search and (func_name not in not_need_search):
         sources, related_qa = await sources_task
+    else:
+        if func_name == 'coin_price':
+            sources = [
+                {
+                    'title': 'coin_price',
+                    'url': get_token_cmc_url(_param['symbol'])
+                }
+            ]
     yield get_format_output("chatSerpResults", sources)
     content = ""
     _type = ""
