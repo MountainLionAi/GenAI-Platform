@@ -24,7 +24,7 @@ fixed_related_question = {
     }
 }
 
-not_need_search = ['coin_price']
+not_need_search = ['generate_report']
 
 
 # system_prompt = f"""
