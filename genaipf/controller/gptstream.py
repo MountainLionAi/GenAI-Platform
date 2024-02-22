@@ -81,6 +81,7 @@ async def send_stream_chat(request: Request):
     device_no = request.remote_addr
     question_code = request_params.get('code', '')
     model = request_params.get('model', '')
+    source = request_params.get('source', 'v001')
     owner = request_params.get('owner', 'MountainLion')
     # messages = process_messages(messages)
     output_type = request_params.get('output_type', 'text') # text or voice; (voice is mp3)
@@ -101,7 +102,7 @@ async def send_stream_chat(request: Request):
     try:
         async def event_generator(_response):
             # async for _str in getAnswerAndCallGpt(request_params['content'], userid, msggroup, language, messages):
-            async for _str in getAnswerAndCallGpt(request_params.get('content'), userid, msggroup, language, messages, device_no, question_code, model, output_type, owner):
+            async for _str in getAnswerAndCallGpt(request_params.get('content'), userid, msggroup, language, messages, device_no, question_code, model, output_type, source, owner):
                 await _response.write(f"data:{_str}\n\n")
                 await asyncio.sleep(0.01)
         return ResponseStream(event_generator, headers={"accept": "application/json"}, content_type="text/event-stream")
@@ -153,12 +154,11 @@ async def send_chat(request: Request):
         logger.error(traceback.format_exc())
    
 
-async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messages, device_no, question_code, model, output_type, owner):
+async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messages, device_no, question_code, model, output_type, source, owner):
     t0 = time.time()
     MAX_CH_LENGTH = 8000
     _ensure_ascii = False
     messages = []
-    source = 'v001'
     for x in front_messages:
         if x.get("code"):
             del x["code"]
