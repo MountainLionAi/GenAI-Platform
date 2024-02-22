@@ -1,5 +1,5 @@
 from sanic import Blueprint
-from genaipf.controller import gpt, user, gptstrem, gpt_oneshot, userRate, pay
+from genaipf.controller import gpt, user, gptstream, gpt_oneshot, userRate, pay
 from importlib import import_module
 from genaipf.conf.server import PLUGIN_NAME
 from genaipf.controller import assistant_api
@@ -18,8 +18,8 @@ blueprint_v1 = Blueprint(name="v1_versions", url_prefix="api", version=1)
 blueprint_v1.add_route(gpt.get_message_list, "getMessageList", methods=["GET"])
 blueprint_v1.add_route(gpt.get_msggroup_list, "getMsgGroupList", methods=["GET"])
 blueprint_v1.add_route(gpt.del_msggroup_list, "delMsgGroupList", methods=["POST"])
-blueprint_v1.add_route(gptstrem.send_strem_chat, "sendStremChat", methods=["POST"])
-blueprint_v1.add_route(gptstrem.send_chat, "sendChat", methods=["POST"])
+blueprint_v1.add_route(gptstream.send_stream_chat, "sendStreamChat", methods=["POST"])
+blueprint_v1.add_route(gptstream.send_chat, "sendChat", methods=["POST"])
 blueprint_v1.add_route(gpt_oneshot.send_oneshot_chat, "sendOneshotChat", methods=["POST"])
 blueprint_v1.add_route(gpt_oneshot.send_raw_chat_stream, "sendRawChatStream", methods=["POST"])
 blueprint_v1.add_route(userRate.user_rate, 'userRate', methods=["POST"])

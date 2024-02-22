@@ -28,7 +28,7 @@ from genaipf.utils.redis_utils import RedisConnectionPool
 from genaipf.conf.server import IS_INNER_DEBUG, IS_UNLIMIT_USAGE
 from genaipf.utils.speech_utils import transcribe, textToSpeech
 from genaipf.tools.search.utils.search_agent_utils import other_search
-from genaipf.tools.search.utils.search_agent_utils import premise_search, premise_search1
+from genaipf.tools.search.utils.search_agent_utils import premise_search, premise_search1, premise_search2, new_question_question
 from genaipf.utils.common_utils import contains_chinese
 import os
 import base64
@@ -65,7 +65,7 @@ def process_messages(messages):
         })
     return processed_messages[-10:]
 
-async def send_strem_chat(request: Request):
+async def send_stream_chat(request: Request):
     logger.info("======start gptstream===========")
 
     request_params = request.json
@@ -81,6 +81,7 @@ async def send_strem_chat(request: Request):
     device_no = request.remote_addr
     question_code = request_params.get('code', '')
     model = request_params.get('model', '')
+    source = request_params.get('source', 'v001')
     owner = request_params.get('owner', 'MountainLion')
     # messages = process_messages(messages)
     output_type = request_params.get('output_type', 'text') # text or voice; (voice is mp3)
@@ -101,7 +102,7 @@ async def send_strem_chat(request: Request):
     try:
         async def event_generator(_response):
             # async for _str in getAnswerAndCallGpt(request_params['content'], userid, msggroup, language, messages):
-            async for _str in getAnswerAndCallGpt(request_params.get('content'), userid, msggroup, language, messages, device_no, question_code, model, output_type, owner):
+            async for _str in getAnswerAndCallGpt(request_params.get('content'), userid, msggroup, language, messages, device_no, question_code, model, output_type, source, owner):
                 await _response.write(f"data:{_str}\n\n")
                 await asyncio.sleep(0.01)
         return ResponseStream(event_generator, headers={"accept": "application/json"}, content_type="text/event-stream")
@@ -153,12 +154,11 @@ async def send_chat(request: Request):
         logger.error(traceback.format_exc())
    
 
-async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messages, device_no, question_code, model, output_type, owner):
+async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messages, device_no, question_code, model, output_type, source, owner):
     t0 = time.time()
     MAX_CH_LENGTH = 8000
     _ensure_ascii = False
     messages = []
-    source = 'v001'
     for x in front_messages:
         if x.get("code"):
             del x["code"]
@@ -178,29 +178,44 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     logger.info(f'>>>>> newest_question: {newest_question}')
     related_qa = get_qa_vdb_topk(newest_question)
     language_ = contains_chinese(newest_question)
+    _code = generate_unique_id()
+    yield json.dumps(get_format_output("code", _code))
     # 判断最新的问题中是否含有中文
     yield json.dumps(get_format_output("systemLanguage", language_))
     # TODO 速度问题暂时注释掉
     # sources, related_qa, related_questions = await premise_search(newest_question, user_history_l, related_qa)
     # sources, related_qa = await other_search(newest_question, related_qa)
-    sources, related_qa, related_questions = await premise_search1(front_messages, related_qa, language_)
-    logger.info(f'>>>>> other_search sources: {sources}')
+    # sources, related_qa, related_questions = await premise_search1(front_messages, related_qa, language_)
+    # logger.info(f'>>>>> other_search sources: {sources}')
     logger.info(f'>>>>> frist related_qa: {related_qa}')
-    yield json.dumps(get_format_output("chatSerpResults", sources))
-    yield json.dumps(get_format_output("chatRelatedResults", related_questions))
+    # yield json.dumps(get_format_output("chatSerpResults", sources))
+    # yield json.dumps(get_format_output("chatRelatedResults", related_questions))
+    is_need_search, sources_task, related_questions_task = await premise_search2(front_messages, related_qa, language_)
     _messages = [x for x in messages if x["role"] != "system"]
     msgs = _messages[::]
     # ^^^^^^^^ 在第一次 func gpt 就准备好数据 ^^^^^^^^
     used_gpt_functions = gpt_function_filter(gpt_functions_mapping, _messages)
     _tmp_text = ""
-    _code = generate_unique_id()
     isPresetTop = False
     data = {
         'type' : 'gpt',
         'content' : _tmp_text
     }
+    sources = []
+    await related_questions_task
+    related_questions = related_questions_task.result()
     resp1 = await afunc_gpt_generator(msgs, used_gpt_functions, language, model, "", related_qa, source, owner)
     chunk = await asyncio.wait_for(resp1.__anext__(), timeout=20)
+
+    if chunk["content"] == "llm_yielding":
+        await resp1.aclose()
+        sources, related_qa = await sources_task
+        logger.info(f'>>>>> second related_qa: {related_qa}')
+        yield json.dumps(get_format_output("chatSerpResults", sources))
+        resp1 = await afunc_gpt_generator(msgs, used_gpt_functions, language, model, "", related_qa, source, owner)
+        chunk = await asyncio.wait_for(resp1.__anext__(), timeout=20)
+    yield json.dumps(get_format_output("chatRelatedResults", related_questions))
+
     assert chunk["role"] == "step"
     if chunk["content"] == "llm_yielding":
         async for chunk in resp1:
@@ -210,7 +225,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
                 yield json.dumps(chunk)
     elif chunk["content"] == "agent_routing":
         chunk = await resp1.__anext__()
-        stream_gen = convert_func_out_to_stream(chunk, messages, newest_question, model, language, related_qa, source, owner)
+        stream_gen = convert_func_out_to_stream(chunk, messages, newest_question, model, language, related_qa, source, owner, sources, is_need_search, sources_task)
         async for item in stream_gen:
             if item["role"] == "inner_____gpt_whole_text":
                 _tmp_text = item["content"]
@@ -383,6 +398,8 @@ async def  getAnswerAndCallGptData(question, userid, msggroup, language, front_m
         data['chatSerpResults'] = sources
         data['chatRelatedResults'] = related_questions
     
+    if source == 'v003':
+        return data
     return success(data)
     
 

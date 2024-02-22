@@ -87,7 +87,7 @@ async def user_login(email, password, signature, wallet_addr, timestamp, login_t
     jwt_token = jwt_manager.generate_token(user_info['id'], user_key)
     redis_client = RedisConnectionPool().get_connection()
     token_key = get_user_key(user_info['id'], user_key)
-    redis_client.set(token_key, jwt_token, 3600 * 24 * 15)  # 设置登陆态到redis
+    redis_client.set(token_key, jwt_token, 3600 * 24 * 30)  # 设置登陆态到redis
     await update_user_token(user_info['id'], jwt_token)
     return {'user_token': jwt_token, 'account': account, 'user_id': user_id}
 
