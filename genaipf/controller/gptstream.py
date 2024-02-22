@@ -214,11 +214,6 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         yield json.dumps(get_format_output("chatSerpResults", sources))
         resp1 = await afunc_gpt_generator(msgs, used_gpt_functions, language, model, "", related_qa, source, owner)
         chunk = await asyncio.wait_for(resp1.__anext__(), timeout=20)
-    elif chunk["content"] == "agent_routing":
-        try:
-            sources_task.cancel()
-        except asyncio.CancelledError as e:
-            logger.info(f'任务已取消: {e}')
     yield json.dumps(get_format_output("chatRelatedResults", related_questions))
 
     assert chunk["role"] == "step"
