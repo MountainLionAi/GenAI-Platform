@@ -210,6 +210,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         await resp1.aclose()
         sources, related_qa = await sources_task
         logger.info(f'>>>>> second related_qa: {related_qa}')
+        yield json.dumps(get_format_output("chatSerpResults", sources))
         resp1 = await afunc_gpt_generator(msgs, used_gpt_functions, language, model, "", related_qa, source, owner)
         chunk = await asyncio.wait_for(resp1.__anext__(), timeout=20)
     elif chunk["content"] == "agent_routing":
@@ -217,8 +218,6 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
             sources_task.cancel()
         except asyncio.CancelledError as e:
             logger.info(f'任务已取消: {e}')
-        sources = [{'title': 'coin-price', 'url': 'https://www.mytoken.io/'}]
-    yield json.dumps(get_format_output("chatSerpResults", sources))
     yield json.dumps(get_format_output("chatRelatedResults", related_questions))
 
     assert chunk["role"] == "step"
@@ -230,7 +229,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
                 yield json.dumps(chunk)
     elif chunk["content"] == "agent_routing":
         chunk = await resp1.__anext__()
-        stream_gen = convert_func_out_to_stream(chunk, messages, newest_question, model, language, related_qa, source, owner)
+        stream_gen = convert_func_out_to_stream(chunk, messages, newest_question, model, language, related_qa, source, is_need_search, sources_task, owner)
         async for item in stream_gen:
             if item["role"] == "inner_____gpt_whole_text":
                 _tmp_text = item["content"]

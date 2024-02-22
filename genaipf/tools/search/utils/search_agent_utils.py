@@ -24,6 +24,8 @@ fixed_related_question = {
     }
 }
 
+not_need_search = []
+
 
 # system_prompt = f"""
 # 今天是 {get_format_time_YYYY_mm_dd()}，你是个工具人，你既能联网，也能给用户推荐其他感兴趣的问题，必须调用工具 function，有 2 种情况 SCENE_1 和 SCENE_2：
