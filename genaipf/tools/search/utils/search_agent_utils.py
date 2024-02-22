@@ -24,7 +24,7 @@ fixed_related_question = {
     }
 }
 
-not_need_search = []
+not_need_search = ['coin_price']
 
 
 # system_prompt = f"""
