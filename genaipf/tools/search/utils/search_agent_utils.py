@@ -10,17 +10,23 @@ from openai import OpenAI
 import asyncio
 from genaipf.dispatcher.prompts_common import LionPromptCommon
 from genaipf.dispatcher.utils import simple_achat
+from genaipf.tools.search.utils.search_task_manager import get_related_question_task, get_sources_tasks, \
+    get_is_need_search_task
 
 client = OpenAI()
 
 fixed_related_question = {
     'zh': {
-      'title': '我想要使用费用低廉且便捷的兑换。',
+        'title': '我想要使用费用低廉且便捷的兑换。',
     },
     'en': {
         'title': ' I want to use convenient and low-cost  swap service.',
     }
 }
+
+not_need_search = []
+
+
 # system_prompt = f"""
 # 今天是 {get_format_time_YYYY_mm_dd()}，你是个工具人，你既能联网，也能给用户推荐其他感兴趣的问题，必须调用工具 function，有 2 种情况 SCENE_1 和 SCENE_2：
 # ### SCENE_1
@@ -118,6 +124,28 @@ async def premise_search1(front_messages, related_qa=None, language=None):
             logger.error(e)
     print(f"related_question: {t3.result()}")
     return sources, related_qa, related_questions
+
+
+async def premise_search2(front_messages, related_qa=None, language=None):
+    data = {'messages': front_messages}
+    # 相关问题取最新的
+    newest_question_arr = {"messages": [data['messages'][-1]]}
+    t1 = asyncio.create_task(get_is_need_search_task(data))
+    t2 = asyncio.create_task(get_sources_tasks(data, related_qa, language))
+    t3 = asyncio.create_task(get_related_question_task(newest_question_arr, fixed_related_question, language))
+    await t1
+    need_search = t1.result()
+    return need_search, t2, t3
+
+
+async def new_question_question(is_need_search: str, language: str, improve_question_task, related_qa):
+    sources = []
+    if is_need_search in "True":
+        await improve_question_task
+        new_question = improve_question_task.result()
+        if new_question != "False":
+            sources, related_qa = await other_search(new_question, related_qa, language)
+    return sources, related_qa
 
 
 # format content to str

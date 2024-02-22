@@ -28,7 +28,7 @@ from genaipf.utils.redis_utils import RedisConnectionPool
 from genaipf.conf.server import IS_INNER_DEBUG, IS_UNLIMIT_USAGE
 from genaipf.utils.speech_utils import transcribe, textToSpeech
 from genaipf.tools.search.utils.search_agent_utils import other_search
-from genaipf.tools.search.utils.search_agent_utils import premise_search, premise_search1
+from genaipf.tools.search.utils.search_agent_utils import premise_search, premise_search1, premise_search2, new_question_question
 from genaipf.utils.common_utils import contains_chinese
 import os
 import base64
@@ -185,11 +185,12 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     # TODO 速度问题暂时注释掉
     # sources, related_qa, related_questions = await premise_search(newest_question, user_history_l, related_qa)
     # sources, related_qa = await other_search(newest_question, related_qa)
-    sources, related_qa, related_questions = await premise_search1(front_messages, related_qa, language_)
-    logger.info(f'>>>>> other_search sources: {sources}')
+    # sources, related_qa, related_questions = await premise_search1(front_messages, related_qa, language_)
+    # logger.info(f'>>>>> other_search sources: {sources}')
     logger.info(f'>>>>> frist related_qa: {related_qa}')
-    yield json.dumps(get_format_output("chatSerpResults", sources))
-    yield json.dumps(get_format_output("chatRelatedResults", related_questions))
+    # yield json.dumps(get_format_output("chatSerpResults", sources))
+    # yield json.dumps(get_format_output("chatRelatedResults", related_questions))
+    is_need_search, sources_task, related_questions_task = await premise_search2(front_messages, related_qa, language_)
     _messages = [x for x in messages if x["role"] != "system"]
     msgs = _messages[::]
     # ^^^^^^^^ 在第一次 func gpt 就准备好数据 ^^^^^^^^
@@ -200,8 +201,26 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         'type' : 'gpt',
         'content' : _tmp_text
     }
+    sources = []
+    await related_questions_task
+    related_questions = related_questions_task.result()
     resp1 = await afunc_gpt_generator(msgs, used_gpt_functions, language, model, "", related_qa, source, owner)
     chunk = await asyncio.wait_for(resp1.__anext__(), timeout=20)
+
+    if chunk["content"] == "llm_yielding":
+        await resp1.aclose()
+        sources, related_qa = await sources_task
+        logger.info(f'>>>>> second related_qa: {related_qa}')
+        yield json.dumps(get_format_output("chatSerpResults", sources))
+        resp1 = await afunc_gpt_generator(msgs, used_gpt_functions, language, model, "", related_qa, source, owner)
+        chunk = await asyncio.wait_for(resp1.__anext__(), timeout=20)
+    elif chunk["content"] == "agent_routing":
+        try:
+            sources_task.cancel()
+        except asyncio.CancelledError as e:
+            logger.info(f'任务已取消: {e}')
+    yield json.dumps(get_format_output("chatRelatedResults", related_questions))
+
     assert chunk["role"] == "step"
     if chunk["content"] == "llm_yielding":
         async for chunk in resp1:
@@ -211,7 +230,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
                 yield json.dumps(chunk)
     elif chunk["content"] == "agent_routing":
         chunk = await resp1.__anext__()
-        stream_gen = convert_func_out_to_stream(chunk, messages, newest_question, model, language, related_qa, source, owner)
+        stream_gen = convert_func_out_to_stream(chunk, messages, newest_question, model, language, related_qa, source, owner, is_need_search, sources_task)
         async for item in stream_gen:
             if item["role"] == "inner_____gpt_whole_text":
                 _tmp_text = item["content"]
