@@ -17,6 +17,7 @@ async def convert_func_out_to_stream(chunk, messages, newest_question, model, la
     func_name = _param["func_name"]
     sub_func_name = _param["subtype"]
     logger.info(f'>>>>> func_name: {func_name}, sub_func_name: {sub_func_name}, _param: {_param}')
+    sources = []
     if is_need_search and (func_name not in not_need_search):
         sources, related_qa = await sources_task
     yield get_format_output("chatSerpResults", sources)
