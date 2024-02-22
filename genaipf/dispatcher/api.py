@@ -7,6 +7,7 @@ from datetime import datetime
 from genaipf.dispatcher.prompts_v001 import LionPrompt
 import genaipf.dispatcher.prompts_v002 as prompts_v002
 import genaipf.dispatcher.prompts_v003 as prompts_v003
+import genaipf.dispatcher.prompts_v004 as prompts_v004
 # from openai.error import InvalidRequestError
 from openai import BadRequestError
 from genaipf.utils.redis_utils import RedisConnectionPool
@@ -101,6 +102,8 @@ async def afunc_gpt_generator(messages, functions=gpt_functions, language=LionPr
                     'format' : owner
                 }
                 content = prompts_v003.LionPrompt.get_afunc_prompt(language, picked_content, related_qa, use_model, data)
+            elif source == 'v004':
+                content = prompts_v004.LionPrompt.get_afunc_prompt(language, picked_content, related_qa, use_model)
             else:
                 content = LionPrompt.get_afunc_prompt(language, picked_content, related_qa, use_model, '', owner)
             system = {
@@ -148,6 +151,8 @@ async def aref_answer_gpt_generator(messages, model='', language=LionPrompt.defa
                     'format' : owner
                 }
                 content = prompts_v003.LionPrompt.get_aref_answer_prompt(language, preset_name, picked_content, related_qa, use_model, data)
+            elif source == 'v004':
+                content = prompts_v004.LionPrompt.get_aref_answer_prompt(language, preset_name, picked_content, related_qa, use_model)
             else:
                 content = LionPrompt.get_aref_answer_prompt(language, preset_name, picked_content, related_qa, use_model, '', owner)
             system = {
