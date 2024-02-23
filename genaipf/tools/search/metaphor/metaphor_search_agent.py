@@ -14,7 +14,7 @@ def format_contents(contents):
 # str content
 async def other_search(question: str, related_qa=[], language=None, is_web3_related=False):
     # -------- metaphor --------
-    sources, metaphor_result = await metaphor_search2(question, language)
+    sources, metaphor_result = await metaphor_search2(question, language, is_web3_related)
     if len(sources) > 0:
         related_qa.append(question + ' : ' + metaphor_result)
 
