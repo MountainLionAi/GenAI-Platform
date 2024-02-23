@@ -198,7 +198,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     # 判断是分析还是回答
     yield json.dumps(get_format_output("responseType", responseType))
     if used_rag:
-        is_need_search, sources_task, related_questions_task = await premise_search2(front_messages, related_qa, language_)
+        is_need_search, sources_task, related_questions_task, is_web3_related = await premise_search2(front_messages, related_qa, language_)
     else:
         is_need_search = False
         sources_task = None
@@ -221,7 +221,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     resp1 = await afunc_gpt_generator(msgs, used_gpt_functions, language, model, "", related_qa, source, owner)
     chunk = await asyncio.wait_for(resp1.__anext__(), timeout=20)
 
-    if chunk["content"] == "llm_yielding" and used_rag:
+    if chunk["content"] == "llm_yielding" and used_rag and is_need_search:
         await resp1.aclose()
         sources, related_qa = await sources_task
         logger.info(f'>>>>> second related_qa: {related_qa}')
