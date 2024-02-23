@@ -31,14 +31,10 @@ async def metaphor_search2(question: str, language=None, is_web3_related=False):
     try:
         include_domains = []
         if is_web3_related:
+            include_domains.extend(include_domains_en)
             if language == 'zh':
                 include_domains.extend(include_domains_zh)
-                random_three = random.sample(include_domains_en, 3)
-                include_domains.extend(random_three)
-                # include_domains.extend(include_domains_en)
-            elif language == 'en':
-                include_domains.extend(include_domains_en)
-        search_result = await metaphor_client.exa_search(question, include_domains, num_results=5, use_autoprompt=True)
+        search_result = await metaphor_client.exa_search(question, num_results=5, use_autoprompt=True, include_domains=include_domains)
         if search_result and len(search_result.results) != 0:
             for result in search_result.results:
                 sources.append({'title': result.title, 'url': result.url})

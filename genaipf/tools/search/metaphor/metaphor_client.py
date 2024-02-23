@@ -50,7 +50,7 @@ class MetaphorClient:
             self._client = Metaphor(api_key=self._api_key)
             return self._client
 
-    async def exa_search(self, question, include_domains=[], num_results=5, use_autoprompt=True, type='magic'):
+    async def exa_search(self, question, num_results=5, use_autoprompt=True, include_domains=[], type='neural'):
         logger.info(f'metaphor search current key is {self._api_key}')
         search_of_metaphor = sync_to_async(self._client.search)
         search_result = []
