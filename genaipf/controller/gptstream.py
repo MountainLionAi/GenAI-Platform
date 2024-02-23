@@ -192,7 +192,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     logger.info(f'>>>>> frist related_qa: {related_qa}')
     # yield json.dumps(get_format_output("chatSerpResults", sources))
     # yield json.dumps(get_format_output("chatRelatedResults", related_questions))
-    if source == 'v004':
+    if source == 'v004' or source == 'v003':
         used_rag = False
         responseType = 1
     # 判断是分析还是回答
