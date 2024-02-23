@@ -62,8 +62,7 @@ class MetaphorClient:
             else:
                 search_result = await search_of_metaphor(question, num_results=num_results,
                                                          use_autoprompt=use_autoprompt,
-                                                         include_domains=include_domains, type=type,
-                                                         exclude_domains=exclude_domains)
+                                                         include_domains=include_domains, type=type)
         except Exception as e:
             if '429' in str(e):
                 set_api_key_unavaiable(self._api_key, CLIENT_TYPE)
