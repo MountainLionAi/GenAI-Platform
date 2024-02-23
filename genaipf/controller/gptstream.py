@@ -158,6 +158,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     t0 = time.time()
     MAX_CH_LENGTH = 8000
     _ensure_ascii = False
+    used_rag = True
     messages = []
     for x in front_messages:
         if x.get("code"):
@@ -179,6 +180,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     related_qa = get_qa_vdb_topk(newest_question)
     language_ = contains_chinese(newest_question)
     _code = generate_unique_id()
+    responseType = 0
     yield json.dumps(get_format_output("code", _code))
     # 判断最新的问题中是否含有中文
     yield json.dumps(get_format_output("systemLanguage", language_))
@@ -190,7 +192,17 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     logger.info(f'>>>>> frist related_qa: {related_qa}')
     # yield json.dumps(get_format_output("chatSerpResults", sources))
     # yield json.dumps(get_format_output("chatRelatedResults", related_questions))
-    is_need_search, sources_task, related_questions_task, is_web3_related = await premise_search2(front_messages, related_qa, language_)
+    if source == 'v004':
+        used_rag = False
+        responseType = 1
+    # 判断是分析还是回答
+    yield json.dumps(get_format_output("responseType", responseType))
+    if used_rag:
+        is_need_search, sources_task, related_questions_task = await premise_search2(front_messages, related_qa, language_)
+    else:
+        is_need_search = False
+        sources_task = None
+        related_questions_task = None
     _messages = [x for x in messages if x["role"] != "system"]
     msgs = _messages[::]
     # ^^^^^^^^ 在第一次 func gpt 就准备好数据 ^^^^^^^^
@@ -202,12 +214,14 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         'content' : _tmp_text
     }
     sources = []
-    await related_questions_task
-    related_questions = related_questions_task.result()
+    related_questions = []
+    if used_rag:
+        await related_questions_task
+        related_questions = related_questions_task.result()
     resp1 = await afunc_gpt_generator(msgs, used_gpt_functions, language, model, "", related_qa, source, owner)
     chunk = await asyncio.wait_for(resp1.__anext__(), timeout=20)
 
-    if chunk["content"] == "llm_yielding" and is_need_search:
+    if chunk["content"] == "llm_yielding" and used_rag:
         await resp1.aclose()
         sources, related_qa = await sources_task
         logger.info(f'>>>>> second related_qa: {related_qa}')
@@ -281,8 +295,10 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         if data['type'] == 'coin_swap':  # 如果是兑换类型，存库时候需要加一个过期字段，前端用于判断不再发起交易
             data['expired'] = True
         # TODO 速度问题暂时注释掉
-        data['chatSerpResults'] = sources
-        data['chatRelatedResults'] = related_questions
+        if used_rag:
+            data['chatSerpResults'] = sources
+            data['chatRelatedResults'] = related_questions
+        data['responseType'] = responseType
         messageContent = json.dumps(data)
         gpt_message = (
             messageContent,
@@ -321,9 +337,9 @@ async def  getAnswerAndCallGptData(question, userid, msggroup, language, front_m
     # TODO 速度问题暂时注释掉
     # sources, related_qa, related_questions = await premise_search(newest_question, user_history_l, related_qa)
     # sources, related_qa = await other_search(newest_question, related_qa)
-    sources, related_qa, related_questions = await premise_search1(front_messages, related_qa, language_)
-    logger.info(f'>>>>> other_search sources: {sources}')
-    logger.info(f'>>>>> frist related_qa: {related_qa}')
+    # sources, related_qa, related_questions = await premise_search1(front_messages, related_qa, language_)
+    # logger.info(f'>>>>> other_search sources: {sources}')
+    # logger.info(f'>>>>> frist related_qa: {related_qa}')
     _messages = [x for x in messages if x["role"] != "system"]
     msgs = _messages[::]
     # ^^^^^^^^ 在第一次 func gpt 就准备好数据 ^^^^^^^^
@@ -382,8 +398,8 @@ async def  getAnswerAndCallGptData(question, userid, msggroup, language, front_m
         if data['type'] == 'coin_swap':  # 如果是兑换类型，存库时候需要加一个过期字段，前端用于判断不再发起交易
             data['expired'] = True
         # TODO 速度问题暂时注释掉
-        data['chatSerpResults'] = sources
-        data['chatRelatedResults'] = related_questions
+        # data['chatSerpResults'] = sources
+        # data['chatRelatedResults'] = related_questions
         messageContent = json.dumps(data)
         gpt_message = (
             messageContent,
@@ -394,9 +410,9 @@ async def  getAnswerAndCallGptData(question, userid, msggroup, language, front_m
             device_no
         )
         await gpt_service.add_gpt_message_with_code(gpt_message)
-    else :
-        data['chatSerpResults'] = sources
-        data['chatRelatedResults'] = related_questions
+    # else :
+    #     data['chatSerpResults'] = sources
+    #     data['chatRelatedResults'] = related_questions
     
     if source == 'v003':
         return data
