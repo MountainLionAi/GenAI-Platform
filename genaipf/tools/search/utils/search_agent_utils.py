@@ -10,8 +10,7 @@ from openai import OpenAI
 import asyncio
 from genaipf.dispatcher.prompts_common import LionPromptCommon
 from genaipf.dispatcher.utils import simple_achat
-from genaipf.tools.search.utils.search_task_manager import get_related_question_task, get_sources_tasks, \
-    get_is_need_search_task
+from genaipf.tools.search.utils.search_task_manager import get_related_question_task, get_sources_tasks, get_is_need_search_task, get_is_web3_related
 
 client = OpenAI()
 
@@ -131,11 +130,14 @@ async def premise_search2(front_messages, related_qa=None, language=None):
     # 相关问题取最新的
     newest_question_arr = {"messages": [data['messages'][-1]]}
     t1 = asyncio.create_task(get_is_need_search_task(data))
-    t2 = asyncio.create_task(get_sources_tasks(data, related_qa, language))
     t3 = asyncio.create_task(get_related_question_task(newest_question_arr, fixed_related_question, language))
+    t4 = asyncio.create_task(get_is_web3_related(data))
     await t1
+    await t4
     need_search = t1.result()
-    return need_search, t2, t3
+    is_web3_related = t4.result()
+    t2 = asyncio.create_task(get_sources_tasks(data, related_qa, language, is_web3_related))
+    return need_search, t2, t3, is_web3_related
 
 
 async def new_question_question(is_need_search: str, language: str, improve_question_task, related_qa):

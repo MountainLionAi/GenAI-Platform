@@ -12,7 +12,7 @@ def format_contents(contents):
 
 # dict sources: [{'title': '', 'url': ''}]
 # str content
-async def other_search(question: str, related_qa=[], language=None):
+async def other_search(question: str, related_qa=[], language=None, is_web3_related=False):
     # -------- metaphor --------
     sources, metaphor_result = await metaphor_search2(question, language)
     if len(sources) > 0:
@@ -24,20 +24,21 @@ async def other_search(question: str, related_qa=[], language=None):
 
 # dict sources: [{'title': '', 'url': ''}]
 # str content
-async def metaphor_search2(question: str, language=None):
+async def metaphor_search2(question: str, language=None, is_web3_related=False):
     sources = []
     content = ''
     metaphor_client = MetaphorClient()
     try:
         include_domains = []
-        if language == 'zh':
-            include_domains.extend(include_domains_zh)
-            random_three = random.sample(include_domains_en, 3)
-            include_domains.extend(random_three)
-            # include_domains.extend(include_domains_en)
-        elif language == 'en':
-            include_domains.extend(include_domains_en)
-        search_result = await metaphor_client.exa_search(question, num_results=5, use_autoprompt=True)
+        if is_web3_related:
+            if language == 'zh':
+                include_domains.extend(include_domains_zh)
+                random_three = random.sample(include_domains_en, 3)
+                include_domains.extend(random_three)
+                # include_domains.extend(include_domains_en)
+            elif language == 'en':
+                include_domains.extend(include_domains_en)
+        search_result = await metaphor_client.exa_search(question, include_domains, num_results=5, use_autoprompt=True)
         if search_result and len(search_result.results) != 0:
             for result in search_result.results:
                 sources.append({'title': result.title, 'url': result.url})

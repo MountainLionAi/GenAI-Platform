@@ -34,7 +34,7 @@ async def get_related_question_task(newest_question_arr, fixed_related_question,
 
 
 # 获取相关source和content的task
-async def get_sources_tasks(front_messages, related_qa, language):
+async def get_sources_tasks(front_messages, related_qa, language, is_web3_related):
     enrich_question = 'False'
     msgs = LionPromptCommon.get_prompted_messages("enrich_question", front_messages)
     try:
@@ -45,5 +45,18 @@ async def get_sources_tasks(front_messages, related_qa, language):
     sources = []
     final_related_qa = related_qa
     if enrich_question != 'False':
-        sources, content = await other_search(enrich_question, related_qa, language)
+        sources, content = await other_search(enrich_question, related_qa, language, is_web3_related)
     return sources, final_related_qa
+
+
+async def get_is_web3_related(front_messages):
+    is_web3_related = False
+    msgs = LionPromptCommon.get_prompted_messages("is_web3_related", front_messages)
+    try:
+        res = await simple_achat(msgs)
+        if res in 'True':
+            is_web3_related = True
+    except Exception as e:
+        logger.error(f'获取是否web3关联失败: {str(e)}')
+    return is_web3_related
+
