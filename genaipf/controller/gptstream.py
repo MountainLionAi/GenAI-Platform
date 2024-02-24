@@ -215,29 +215,45 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     }
     sources = []
     related_questions = []
-    if used_rag:
-        await related_questions_task
-        related_questions = related_questions_task.result()
+    # if used_rag:
+    #     await related_questions_task
+    #     related_questions = related_questions_task.result()
     resp1 = await afunc_gpt_generator(msgs, used_gpt_functions, language, model, "", related_qa, source, owner)
     chunk = await asyncio.wait_for(resp1.__anext__(), timeout=20)
 
-    if chunk["content"] == "llm_yielding" and used_rag:
-        await resp1.aclose()
-        sources, related_qa = await sources_task
-        logger.info(f'>>>>> second related_qa: {related_qa}')
-        yield json.dumps(get_format_output("chatSerpResults", sources))
-        resp1 = await afunc_gpt_generator(msgs, used_gpt_functions, language, model, "", related_qa, source, owner)
-        chunk = await asyncio.wait_for(resp1.__anext__(), timeout=20)
-    yield json.dumps(get_format_output("chatRelatedResults", related_questions))
+    # if chunk["content"] == "llm_yielding" and used_rag:
+    #     await resp1.aclose()
+    #     sources, related_qa = await sources_task
+    #     logger.info(f'>>>>> second related_qa: {related_qa}')
+    #     yield json.dumps(get_format_output("chatSerpResults", sources))
+    #     resp1 = await afunc_gpt_generator(msgs, used_gpt_functions, language, model, "", related_qa, source, owner)
+    #     chunk = await asyncio.wait_for(resp1.__anext__(), timeout=20)
+    # yield json.dumps(get_format_output("chatRelatedResults", related_questions))
 
     assert chunk["role"] == "step"
     if chunk["content"] == "llm_yielding":
+        # if used_rag and is_need_search:
+        if used_rag:
+            await related_questions_task
+            related_questions = related_questions_task.result()
+            await resp1.aclose()
+            sources, related_qa = await sources_task
+            logger.info(f'>>>>> second related_qa: {related_qa}')
+            yield json.dumps(get_format_output("chatSerpResults", sources))
+            resp1 = await aref_answer_gpt_generator(msgs, model, language, None, "", related_qa, source, owner)
+        yield json.dumps(get_format_output("chatRelatedResults", related_questions))
         async for chunk in resp1:
             if chunk["role"] == "inner_____gpt_whole_text":
                 _tmp_text = chunk["content"]
+            elif chunk["role"] == "step" and chunk["content"] == "llm_yielding":
+                pass
             else:
                 yield json.dumps(chunk)
     elif chunk["content"] == "agent_routing":
+        if used_rag:
+            await related_questions_task
+            related_questions = related_questions_task.result()
+        yield json.dumps(get_format_output("chatRelatedResults", related_questions))
         chunk = await resp1.__anext__()
         stream_gen = convert_func_out_to_stream(chunk, messages, newest_question, model, language, related_qa, source, owner, sources, is_need_search, sources_task)
         async for item in stream_gen:
