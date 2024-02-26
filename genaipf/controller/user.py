@@ -130,12 +130,12 @@ async def get_news(request: Request):
     if len(res) > 0:
         for id, content in enumerate(res):
             renews.append(content['content'])
-            # CollectionPool().update(update_sql, content['id'])
+            await CollectionPool().update(update_sql, content['id'])
     else:
         logger.info("开始发送快讯定时消息")
-        msg += "Mountain Lion AI助手快讯播报\n\n"
+        msg = "Mountain Lion AI助手快讯播报\n\n"
         news = get_news_by_api()
         msg += news
         msg += "最新最全币圈资讯，尽在 Mountain Lion，欢迎使用 Mountain Lion AI 助手——您的 Web3 专属专家投资顾问，让投资交易更简单！\n使用链接：https://www.mountainlion.ai/"
-        renews = [msg]
-    return success(res)
+        renews.append(msg)
+    return success(renews)
