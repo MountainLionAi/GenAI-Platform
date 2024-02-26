@@ -7,6 +7,7 @@ import genaipf.services.user_service as user_service
 from genaipf.utils.common_utils import mask_email
 # import lib.hcaptcha as hcaptcha
 import genaipf.utils.hcaptcha_utils as hcaptcha
+from genaipf.utils.bot_utils import CollectionPool, get_news_by_api
 
 
 # 用户登陆
@@ -118,4 +119,23 @@ async def get_captcha(request: Request):
 async def verify_captcha_code(request: Request):
     captcha_res = request.form.get('g-recaptcha-response')
     res = hcaptcha.verify_hcaptcha(captcha_res)
+    return success(res)
+
+
+async def get_news(request: Request):
+    sql = "SELECT id, content from total_news where is_sent != 1"
+    update_sql = "UPDATE total_news set is_sent = 1 where id=%s"
+    res = await CollectionPool().query(sql)
+    renews = []
+    if len(res) > 0:
+        for id, content in enumerate(res):
+            renews.append(content['content'])
+            # CollectionPool().update(update_sql, content['id'])
+    else:
+        logger.info("开始发送快讯定时消息")
+        msg += "Mountain Lion AI助手快讯播报\n\n"
+        news = get_news_by_api()
+        msg += news
+        msg += "最新最全币圈资讯，尽在 Mountain Lion，欢迎使用 Mountain Lion AI 助手——您的 Web3 专属专家投资顾问，让投资交易更简单！\n使用链接：https://www.mountainlion.ai/"
+        renews = [msg]
     return success(res)
