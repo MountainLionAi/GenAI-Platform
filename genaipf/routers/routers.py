@@ -42,6 +42,7 @@ blueprint_v1.add_route(user.send_verify_code_new, "sendEmailCode", methods=["POS
 blueprint_v1.add_route(user.get_captcha, "getCaptcha", methods=["GET"])
 blueprint_v1.add_route(user.verify_captcha_code, "testVerifyCode", methods=["POST"])
 blueprint_v1.add_route(user.modify_password, "modifyPassword", methods=["POST"])
+blueprint_v1.add_route(user.get_news, "newsbot", methods=["GET"])
 
 # 支付相关接口
 blueprint_v1.add_route(pay.query_pay_card, "pay/cardInfo", methods=["GET"])
