@@ -57,8 +57,9 @@ async def awrap_gpt_generator(gpt_response):
         yield get_format_output("step", "llm_yielding")
         c0 = chunk.choices[0].delta.content
         _tmp_text = ""
-        _tmp_text += c0
-        yield get_format_output("gpt", c0)
+        if c0:
+            _tmp_text += c0
+            yield get_format_output("gpt", c0)
         async for chunk in resp:
             _gpt_letter = chunk.choices[0].delta.content
             if _gpt_letter:

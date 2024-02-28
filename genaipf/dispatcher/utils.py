@@ -56,20 +56,35 @@ async def openai_chat_completion_acreate(
 ):
     try:
         # print(f'>>>>>>>>>test001.1 async_openai_client.chat.completions.create')
-        response = await asyncio.wait_for(
-            async_openai_client.chat.completions.create(
-                model=model,
-                messages=messages,
-                functions=functions if functions else NOT_GIVEN,
-                temperature=temperature,  # 值在[0,1]之间，越大表示回复越具有不确定性
-                max_tokens=max_tokens, # 输出的最大 token 数
-                top_p=top_p, # 过滤掉低于阈值的 token 确保结果不散漫
-                frequency_penalty=frequency_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
-                presence_penalty=presence_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
-                stream=stream
-            ),
-            timeout=60.0  # 设置超时时间为180秒
-        )
+        if functions:
+            response = await asyncio.wait_for(
+                async_openai_client.chat.completions.create(
+                    model=model,
+                    messages=messages,
+                    functions=functions if functions else NOT_GIVEN,
+                    temperature=temperature,  # 值在[0,1]之间，越大表示回复越具有不确定性
+                    max_tokens=max_tokens, # 输出的最大 token 数
+                    top_p=top_p, # 过滤掉低于阈值的 token 确保结果不散漫
+                    frequency_penalty=frequency_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
+                    presence_penalty=presence_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
+                    stream=stream
+                ),
+                timeout=60.0  # 设置超时时间为180秒
+            )
+        else:
+            response = await asyncio.wait_for(
+                async_openai_client.chat.completions.create(
+                    model=model,
+                    messages=messages,
+                    temperature=temperature,  # 值在[0,1]之间，越大表示回复越具有不确定性
+                    max_tokens=max_tokens, # 输出的最大 token 数
+                    top_p=top_p, # 过滤掉低于阈值的 token 确保结果不散漫
+                    frequency_penalty=frequency_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
+                    presence_penalty=presence_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
+                    stream=stream
+                ),
+                timeout=60.0  # 设置超时时间为180秒
+            )
         # print(f'>>>>>>>>>test001 async_openai_client.chat.completions.create, response: {response}')
     except asyncio.TimeoutError as e:
         print(f'>>>>>>>>>test002 async_openai_client.chat.completions.create, e: {e}')

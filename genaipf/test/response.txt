@@ -1,0 +1,1614 @@
+data:{"role": "code", "type": "text", "format": "text", "version": "v001", "content": 23513}
+
+data:{"role": "systemLanguage", "type": "text", "format": "text", "version": "v001", "content": "zh"}
+
+data:{"role": "responseType", "type": "text", "format": "text", "version": "v001", "content": 0}
+
+data:{"role": "chatRelatedResults", "type": "text", "format": "text", "version": "v001", "content": [{"title": "NFT\u5e02\u573a\u4e0a\u6709\u54ea\u4e9b\u70ed\u95e8\u9879\u76ee\uff1f"}, {"title": "\u6211\u60f3\u8981\u4f7f\u7528\u8d39\u7528\u4f4e\u5ec9\u4e14\u4fbf\u6377\u7684\u5151\u6362\u3002"}, {"title": "\u5982\u4f55\u6311\u9009\u9002\u5408\u5973\u670b\u53cb\u7684NFT\u4f5c\u54c1\uff1f"}, {"title": "NFT\u4f5c\u54c1\u7684\u672a\u6765\u53d1\u5c55\u8d8b\u52bf\u5982\u4f55\uff1f"}, {"title": "NFT\u4ea4\u6613\u5e73\u53f0\u54ea\u4e2a\u66f4\u9002\u5408\u8d2d\u4e70\u793c\u7269\uff1f"}]}
+
+data:{"role": "chatSerpResults", "type": "text", "format": "text", "version": "v001", "content": [{"title": "\u5e2b\u5712\u9e7d\u9165\u96deShiyun fried chicken shop", "url": "https://www.oursong.com/@Jimmy123"}, {"title": "NFT\u9879\u76ee", "url": "https://nft.vip/"}, {"title": "\u85cd\u65b0\u91d1\u6d41\u5e73\u53f0\uff0c\u5168\u65b9\u4f4d\u6536\u4ed8\u6b3e\u5925\u4f34", "url": "https://core.newebpay.com/EPG/100PortraitsNFT/ErEJQ1"}, {"title": "\u679c\u4ec1\u602a", "url": "https://t.me/BabyMini/_Nuke"}, {"title": "xiajiaoshou - Profile | OpenSea", "url": "https://opensea.io/xiajiaoshou"}]}
+
+data:{"role": "step", "type": "text", "format": "text", "version": "v001", "content": "llm_yielding"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u60a8"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u7684"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u9884"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u7b97"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5f88"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u9002"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5408"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u6295"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u8d44"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4e00"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4e9b"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u6709"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u6f5c"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u529b"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u7684"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "N"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "FT"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u9879\u76ee"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u3002"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4ee5\u4e0b"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u662f"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u6211"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4e3a"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u60a8"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u7cbe"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5fc3"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u6311"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u9009"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u7684"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u51e0"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4e2a"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "N"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "FT"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u63a8"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u8350"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\uff0c"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5b83"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4eec"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4e0d"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4ec5"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5177"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u6709"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u72ec"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u7279"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u7684"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u827a"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u672f"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4ef7"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u503c"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\uff0c"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u8fd8"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5177"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5907"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4e00"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5b9a"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u7684"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u793e"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u533a"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u6d3b"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u8dc3"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5ea6"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u548c"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u589e"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u503c"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u6f5c"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u529b"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\uff1a\n\n"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "1"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "."}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": " **"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "B"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "ored"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": " A"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "pe"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": " Y"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "acht"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": " Club"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": " ("}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "B"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "AY"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "C"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": ")**"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": " -"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": " \u8fd9"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u662f"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4e00\u4e2a"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u975e"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5e38"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u8457"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u540d"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u7684"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "N"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "FT"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u7cfb"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5217"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\uff0c"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u7531"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "Y"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "uga"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": " Labs"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4e8e"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "202"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "1"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5e74"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "4"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u6708"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u521b"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u7acb"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u3002"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "B"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "AY"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "C"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5305"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u542b"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "10"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": ","}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "000"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4e2a"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u72ec"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u7279"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u7684"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5361"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u901a"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u733f"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5934"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u50cf"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\uff0c"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u8fd9"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4e9b"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5934"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u50cf"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u56e0"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5176"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u7279"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u6709"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u7684"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u65e0"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u804a"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u8868"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u60c5"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u548c"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u591a"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u6837"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5316"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u7279"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5f81"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u800c"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u51fa"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u540d"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u3002"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u6301"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u6709"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "B"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "AY"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "C"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": " N"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "FT"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4e0d"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4ec5"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4ee3"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u8868"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u8eab"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4efd"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5730"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4f4d"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\uff0c"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u8fd8"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u53ef\u4ee5"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u83b7"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5f97"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u8fdb"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5165"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "B"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "ored"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": " A"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "pe"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": " Y"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "acht"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": " Club"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u793e"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u533a"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u7684"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4e13"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5c5e"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u901a"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u884c"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u6743"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\uff0c"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u8fd9"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4e2a"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u793e"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u533a"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5305"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u62ec"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u72ec"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u7279"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u7684"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u6570\u5b57"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u7a7a"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u95f4"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u548c"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u989d"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5916"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u7684"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "N"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "FT"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5956"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u52b1"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u3002"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5f53\u524d"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5730"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u677f"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4ef7\u683c"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4e3a"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "23"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "."}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "1"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": " ETH"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u3002\n\n"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "2"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "."}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": " **"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "Mut"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "ant"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": " A"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "pe"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": " Y"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "acht"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": " Club"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": " ("}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "M"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "AY"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "C"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": ")**"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": " -"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": " "}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4f5c"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4e3a"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "B"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "ored"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": " A"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "pe"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": " Y"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "acht"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": " Club"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": " ("}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "B"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "AY"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "C"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": ")"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": " \u7684"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u6269"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5c55"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u7cfb"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5217"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\uff0c"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "Mut"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "ant"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": " A"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "pe"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": " Y"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "acht"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": " Club"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": " ("}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "M"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "AY"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "C"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": ")"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": " "}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4e8e"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "202"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "1"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5e74"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "8"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u6708"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "28"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u65e5"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u7531"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "Y"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "uga"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": " Labs"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u63a8"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u51fa"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\uff0c"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5171"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "20"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": ","}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "000"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4ef6"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4f5c"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u54c1"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u3002"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "M"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "AY"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "C"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": " N"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "FT"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u53ef\u4ee5"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u901a\u8fc7"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u516c"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5f00"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u94f8"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u9020"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u6216"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4f7f\u7528"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u7a7a"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u6295"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u8840"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u6e05"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u6539"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u9020"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "B"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "ored"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": " Ap"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "es"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u83b7"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5f97"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\uff0c"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4fdd"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u7559"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4e86"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u539f"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u59cb"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "B"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "ored"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": " A"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "pe"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u7684"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u7cbe"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u9ad3"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u3002"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u8be5"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u7cfb"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5217"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u56e0"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5176"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u521b"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u65b0"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u6027"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u548c"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5e02"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u573a"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u8868"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u73b0"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u800c"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u9700"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u6c42"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u65fa"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u76db"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u3002"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5f53\u524d"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5730"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u677f"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4ef7\u683c"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4e3a"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "4"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "."}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "06"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": " ETH"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u3002\n\n"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "3"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "."}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": " **"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "B"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "ored"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": " A"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "pe"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": " Kenn"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "el"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": " Club"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": " ("}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "BA"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "KC"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": ")**"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": " -"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": " \u8fd9"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u662f"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4e00\u4e2a"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4e0e"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u539f"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u59cb"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "B"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "ored"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": " A"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "pe"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": " Y"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "acht"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": " Club"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": " ("}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "B"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "AY"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "C"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": ")"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": " N"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "FT"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u7cfb"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5217"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u76f8"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u914d"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5957"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u7684"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "9"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": ","}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "602"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4e2a"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5361"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u901a"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u72d7"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5f62"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u8c61"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u96c6"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5408"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u3002"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5b83"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4eec"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4ee3"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u8868"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u7740"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4e0e"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "B"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "ored"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": " A"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "pe"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u62e5"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u6709"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u8005"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u76f8"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4f34"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u7684"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5ba0"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u7269"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u72d7"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\uff0c\u5e76"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4e14"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5c55"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u793a"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4e86"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4ece"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5e73"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u51e1"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5230"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u79bb"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5947"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5404"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u79cd"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u7279"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5f81"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u3002"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "BA"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "KC"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5f3a"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u8c03"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4e86"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5728"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "B"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "AY"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "C"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u751f"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u6001"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u7cfb\u7edf"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4e2d"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u793e"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u533a"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u6210"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5458"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4e4b"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u95f4"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u7684"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u60c5"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u8c0a"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u548c"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u966a"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4f34"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u611f"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u3002"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5f53\u524d"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5730"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u677f"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4ef7\u683c"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4e3a"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "1"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "."}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "137"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "5"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": " ETH"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u3002\n\n"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u6839"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u636e"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u60a8"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u63d0"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4f9b"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u7684"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u9884"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u7b97"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\uff08"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "100"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "00"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "U"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\uff09\uff0c"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5728"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u76ee"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u524d"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "1"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "ETH"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u7b49"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4e8e"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "325"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "8"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "."}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "4"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "U"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u7684"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u6c47"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u7387"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4e0b"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\uff0c"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u8003"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u8651"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5230"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u53ef\u80fd"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5b58\u5728"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u7684"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4ea4"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u6613"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u8d39"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u7528"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u548c"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5e02"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u573a"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u6ce2"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u52a8"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u6027"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\uff0c"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u6211\u4eec"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u53ef\u4ee5"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u8003"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u8651"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u9009\u62e9"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5730"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u677f"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4ef7\u683c"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u8f83"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4f4e"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4e14"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5177"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u6709"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u827a"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u672f"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4ef7"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u503c"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u548c"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u793e"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u533a"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u610f"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4e49"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u7684"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "N"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "FT"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u3002"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u57fa"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4e8e"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4ee5\u4e0a"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4fe1\u606f"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\uff0c"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4ee5\u4e0b"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u662f"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u6211\u7684"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u63a8"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u8350"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u7406"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u7531"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\uff1a\n\n"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "-"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": " **"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u827a"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u672f"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u98ce"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u683c"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4e0e"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u793e"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u533a"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u6d3b"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u8dc3"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5ea6"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "**"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\uff1a"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "B"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "ored"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": " A"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "pe"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u7cfb"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5217"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4ee5"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5176"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u72ec"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u7279"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u827a"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u672f"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u98ce"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u683c"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u6df1"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u53d7"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u793e"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u533a"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u559c"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u7231"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\uff0c"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u62e5"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u6709"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4e00\u4e2a"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u6d3b"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u8dc3"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5e76"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4e14"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5fe0"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5b9e"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5ea6"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u9ad8"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u7684"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u793e"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u533a"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u7fa4"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4f53"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u3002\n"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "-"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": " **"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u72ec"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u7279"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u6027"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4e0e"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u7a00"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u7f3a"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u6027"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "**"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\uff1a"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u6bcf"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4e2a"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "N"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "FT"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u90fd"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u662f"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u552f"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4e00"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4e14"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4e0d"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u53ef"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u66ff"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4ee3"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u7684"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\uff0c\u5728"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5e02"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u573a"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4e0a"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5177"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u6709"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u8f83"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u9ad8"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u7a00"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u7f3a"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4ef7"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u503c"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u3002\n"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "-"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": " **"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u9644"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u52a0"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4ef7"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u503c"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "**"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\uff1a"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4f5c"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4e3a"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u6301"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u6709"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u8005"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\uff0c"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u60a8"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4e0d"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4ec5"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u62e5"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u6709"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u8fd9"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4e9b"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u7f8e"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u89c2"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u72ec"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u7279"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u7684"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u6570\u5b57"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u827a"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u672f"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u54c1"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\uff0c"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u8fd8"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u80fd"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4eab"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u53d7"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5230"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u8be5"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u9879\u76ee"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u6240"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u63d0"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4f9b"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u7684"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u989d"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5916"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u798f"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5229"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5982"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4e13"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5c5e"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u6d3b"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u52a8"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5165"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u573a"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u6743"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u7b49"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u3002\n\n"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u63a8"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u8350"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u60a8"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u901a\u8fc7"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u77e5"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u540d"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5e73"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u53f0"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "Open"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "Sea"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u6d4f"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u89c8"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5e76"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u8d2d"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4e70"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4e0a"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u8ff0"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "N"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "FT"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4f5c"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u54c1"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u3002"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5728"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u8d2d"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4e70"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u65f6"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\uff0c\u8bf7"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u786e"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4fdd"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u60a8"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5df2"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u7ecf"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u505a"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u597d"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u8db3"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u591f"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u8c03"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u67e5"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\uff0c\u5e76"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u7406"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u89e3"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4efb"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4f55"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u6295"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u8d44"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u90fd"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5b58\u5728"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u98ce"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u9669"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u3002"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u795d"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u60a8"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5728"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u8d60"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u9001"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5973"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u670b"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u53cb"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u65f6"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u80fd"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u591f"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u627e"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5230"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u90a3"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4ef6"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5b8c"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u7f8e"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5339"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u914d"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5979"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4e2a"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u4eba"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u54c1"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u5473"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u548c"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u98ce"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u683c"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\u7684"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "N"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "FT"}
+
+data:{"role": "gpt", "type": "text", "format": "text", "version": "v001", "content": "\uff01"}
+
+data:{"role": "preset", "type": "purchase_recommendation", "format": "nft", "version": "v001", "content": {"type": "purchase_recommendation", "content": "\u60a8\u7684\u9884\u7b97\u5f88\u9002\u5408\u6295\u8d44\u4e00\u4e9b\u6709\u6f5c\u529b\u7684NFT\u9879\u76ee\u3002\u4ee5\u4e0b\u662f\u6211\u4e3a\u60a8\u7cbe\u5fc3\u6311\u9009\u7684\u51e0\u4e2aNFT\u63a8\u8350\uff0c\u5b83\u4eec\u4e0d\u4ec5\u5177\u6709\u72ec\u7279\u7684\u827a\u672f\u4ef7\u503c\uff0c\u8fd8\u5177\u5907\u4e00\u5b9a\u7684\u793e\u533a\u6d3b\u8dc3\u5ea6\u548c\u589e\u503c\u6f5c\u529b\uff1a\n\n1. **Bored Ape Yacht Club (BAYC)** - \u8fd9\u662f\u4e00\u4e2a\u975e\u5e38\u8457\u540d\u7684NFT\u7cfb\u5217\uff0c\u7531Yuga Labs\u4e8e2021\u5e744\u6708\u521b\u7acb\u3002BAYC\u5305\u542b10,000\u4e2a\u72ec\u7279\u7684\u5361\u901a\u733f\u5934\u50cf\uff0c\u8fd9\u4e9b\u5934\u50cf\u56e0\u5176\u7279\u6709\u7684\u65e0\u804a\u8868\u60c5\u548c\u591a\u6837\u5316\u7279\u5f81\u800c\u51fa\u540d\u3002\u6301\u6709BAYC NFT\u4e0d\u4ec5\u4ee3\u8868\u8eab\u4efd\u5730\u4f4d\uff0c\u8fd8\u53ef\u4ee5\u83b7\u5f97\u8fdb\u5165Bored Ape Yacht Club\u793e\u533a\u7684\u4e13\u5c5e\u901a\u884c\u6743\uff0c\u8fd9\u4e2a\u793e\u533a\u5305\u62ec\u72ec\u7279\u7684\u6570\u5b57\u7a7a\u95f4\u548c\u989d\u5916\u7684NFT\u5956\u52b1\u3002\u5f53\u524d\u5730\u677f\u4ef7\u683c\u4e3a23.1 ETH\u3002\n\n2. **Mutant Ape Yacht Club (MAYC)** - \u4f5c\u4e3aBored Ape Yacht Club (BAYC) \u7684\u6269\u5c55\u7cfb\u5217\uff0cMutant Ape Yacht Club (MAYC) \u4e8e2021\u5e748\u670828\u65e5\u7531Yuga Labs\u63a8\u51fa\uff0c\u517120,000\u4ef6\u4f5c\u54c1\u3002MAYC NFT\u53ef\u4ee5\u901a\u8fc7\u516c\u5f00\u94f8\u9020\u6216\u4f7f\u7528\u7a7a\u6295\u8840\u6e05\u6539\u9020Bored Apes\u83b7\u5f97\uff0c\u4fdd\u7559\u4e86\u539f\u59cbBored Ape\u7684\u7cbe\u9ad3\u3002\u8be5\u7cfb\u5217\u56e0\u5176\u521b\u65b0\u6027\u548c\u5e02\u573a\u8868\u73b0\u800c\u9700\u6c42\u65fa\u76db\u3002\u5f53\u524d\u5730\u677f\u4ef7\u683c\u4e3a4.06 ETH\u3002\n\n3. **Bored Ape Kennel Club (BAKC)** - \u8fd9\u662f\u4e00\u4e2a\u4e0e\u539f\u59cbBored Ape Yacht Club (BAYC) NFT\u7cfb\u5217\u76f8\u914d\u5957\u76849,602\u4e2a\u5361\u901a\u72d7\u5f62\u8c61\u96c6\u5408\u3002\u5b83\u4eec\u4ee3\u8868\u7740\u4e0eBored Ape\u62e5\u6709\u8005\u76f8\u4f34\u7684\u5ba0\u7269\u72d7\uff0c\u5e76\u4e14\u5c55\u793a\u4e86\u4ece\u5e73\u51e1\u5230\u79bb\u5947\u5404\u79cd\u7279\u5f81\u3002BAKC\u5f3a\u8c03\u4e86\u5728BAYC\u751f\u6001\u7cfb\u7edf\u4e2d\u793e\u533a\u6210\u5458\u4e4b\u95f4\u7684\u60c5\u8c0a\u548c\u966a\u4f34\u611f\u3002\u5f53\u524d\u5730\u677f\u4ef7\u683c\u4e3a1.1375 ETH\u3002\n\n\u6839\u636e\u60a8\u63d0\u4f9b\u7684\u9884\u7b97\uff0810000U\uff09\uff0c\u5728\u76ee\u524d1ETH\u7b49\u4e8e3258.4U\u7684\u6c47\u7387\u4e0b\uff0c\u8003\u8651\u5230\u53ef\u80fd\u5b58\u5728\u7684\u4ea4\u6613\u8d39\u7528\u548c\u5e02\u573a\u6ce2\u52a8\u6027\uff0c\u6211\u4eec\u53ef\u4ee5\u8003\u8651\u9009\u62e9\u5730\u677f\u4ef7\u683c\u8f83\u4f4e\u4e14\u5177\u6709\u827a\u672f\u4ef7\u503c\u548c\u793e\u533a\u610f\u4e49\u7684NFT\u3002\u57fa\u4e8e\u4ee5\u4e0a\u4fe1\u606f\uff0c\u4ee5\u4e0b\u662f\u6211\u7684\u63a8\u8350\u7406\u7531\uff1a\n\n- **\u827a\u672f\u98ce\u683c\u4e0e\u793e\u533a\u6d3b\u8dc3\u5ea6**\uff1aBored Ape\u7cfb\u5217\u4ee5\u5176\u72ec\u7279\u827a\u672f\u98ce\u683c\u6df1\u53d7\u793e\u533a\u559c\u7231\uff0c\u62e5\u6709\u4e00\u4e2a\u6d3b\u8dc3\u5e76\u4e14\u5fe0\u5b9e\u5ea6\u9ad8\u7684\u793e\u533a\u7fa4\u4f53\u3002\n- **\u72ec\u7279\u6027\u4e0e\u7a00\u7f3a\u6027**\uff1a\u6bcf\u4e2aNFT\u90fd\u662f\u552f\u4e00\u4e14\u4e0d\u53ef\u66ff\u4ee3\u7684\uff0c\u5728\u5e02\u573a\u4e0a\u5177\u6709\u8f83\u9ad8\u7a00\u7f3a\u4ef7\u503c\u3002\n- **\u9644\u52a0\u4ef7\u503c**\uff1a\u4f5c\u4e3a\u6301\u6709\u8005\uff0c\u60a8\u4e0d\u4ec5\u62e5\u6709\u8fd9\u4e9b\u7f8e\u89c2\u72ec\u7279\u7684\u6570\u5b57\u827a\u672f\u54c1\uff0c\u8fd8\u80fd\u4eab\u53d7\u5230\u8be5\u9879\u76ee\u6240\u63d0\u4f9b\u7684\u989d\u5916\u798f\u5229\u5982\u4e13\u5c5e\u6d3b\u52a8\u5165\u573a\u6743\u7b49\u3002\n\n\u63a8\u8350\u60a8\u901a\u8fc7\u77e5\u540d\u5e73\u53f0OpenSea\u6d4f\u89c8\u5e76\u8d2d\u4e70\u4e0a\u8ff0NFT\u4f5c\u54c1\u3002\u5728\u8d2d\u4e70\u65f6\uff0c\u8bf7\u786e\u4fdd\u60a8\u5df2\u7ecf\u505a\u597d\u8db3\u591f\u8c03\u67e5\uff0c\u5e76\u7406\u89e3\u4efb\u4f55\u6295\u8d44\u90fd\u5b58\u5728\u98ce\u9669\u3002\u795d\u60a8\u5728\u8d60\u9001\u5973\u670b\u53cb\u65f6\u80fd\u591f\u627e\u5230\u90a3\u4ef6\u5b8c\u7f8e\u5339\u914d\u5979\u4e2a\u4eba\u54c1\u5473\u548c\u98ce\u683c\u7684NFT\uff01", "subtype": "nft", "presetContent": [{"floorPrice": "23.1", "vol": "394.47", "volPercent": "0.05598854251716603", "paymentToken": "ETH", "mainnet": "ETH", "imageUrl": "https://lh3.googleusercontent.com/Ju9CkWtV-1Okvf45wo8UctR-M9He2PjILP0oOvxE89AyiPPGtrR3gysu1Zgy0hjd2xKIgjJJtWIc0ybj4Vd7wv8t3pxDGHoJBzDB=s130", "name": "Bored Ape Yacht Club", "owners": 5372, "description": "The Bored Ape Yacht Club is a collection of 10,000 unique Bored Ape NFTs\u2014 unique digital collectibles living on the Ethereum blockchain. Your Bored Ape doubles as your Yacht Club membership card, and grants access to members-only benefits, the first of which is access to THE BATHROOM, a collaborative graffiti board. Future areas and perks can be unlocked by the community through roadmap activation. Visit www.BoredApeYachtClub.com for more details.", "supply": 9998, "collectionId": "386412091616028672", "nums": "160", "24h-increase": "0.05598854251716603"}, {"floorPrice": "4.06", "vol": "294.13", "volPercent": "-0.26393788046865385", "paymentToken": "ETH", "mainnet": "ETH", "imageUrl": "https://lh3.googleusercontent.com/lHexKRMpw-aoSyB1WdFBff5yfANLReFxHzt1DOj_sg7mS14yARpuvYcUtsyyx-Nkpk6WTcUPFoG53VnLJezYi8hAs0OxNZwlw6Y-dmI=s130", "name": "Mutant Ape Yacht Club", "owners": 11156, "description": "The MUTANT APE YACHT CLUB is a collection of up to 20,000 Mutant Apes that can only be created by exposing an existing Bored Ape to a vial of MUTANT SERUM or by minting a Mutant Ape in the public sale.", "supply": 19488, "collectionId": "386412091616028695", "nums": "22", "24h-increase": "-0.26393788046865385"}, {"floorPrice": "1.1375", "vol": "31.57", "volPercent": "0.31261215444805235", "paymentToken": "ETH", "mainnet": "ETH", "imageUrl": "https://i.seadn.io/gcs/files/c4dfc6be4d9c5d4f073de2efe181416a.jpg?auto=format&w=384", "name": "Bored Ape Kennel Club", "owners": 5054, "description": "It gets lonely in the swamp sometimes. That's why every ape should have a four-legged companion. To curl up at your feet. To bring you a beer. To fire a missile launcher at that bastard Jimmy the Monkey.\r\n\r\nThat's why we've started the Bored Ape Kennel Club, and why we're offering up a dog NFT for adoption to every single member of the BAYC \u2013 for free (you only pay gas).\r\n\r\nAny royalties we accrue on secondary sales will be donated to charity. Learn more at: http://boredapeyachtclub.com/#/kennel-club", "supply": 9602, "collectionId": "386412091616028697", "nums": "171", "24h-increase": "0.31261215444805235"}], "code": 23513}}
+
+data:{"role": "step", "type": "text", "format": "text", "version": "v001", "content": "done"}
+

@@ -60,6 +60,7 @@ def process_messages(messages):
             need_whisper = True
         elif message.get('type') == 'image':
             shadow_message['base64content'] = message.get('base64content')
+            content = message['content']
         else:
             content = message['content']
             need_whisper = False
@@ -232,6 +233,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         if last_front_msg.get('type') == 'image' and last_front_msg.get('base64content') is not None:
             msgs = msgs[:-1] + buildVisionMessage(last_front_msg)
             isvision = True
+            used_gpt_functions = None
         resp1 = await afunc_gpt_generator(msgs, used_gpt_functions, language, model, "", related_qa, source, owner, isvision)
         chunk = await asyncio.wait_for(resp1.__anext__(), timeout=20)
     yield json.dumps(get_format_output("chatRelatedResults", related_questions))
@@ -447,12 +449,11 @@ def buildVisionMessage(_type_message):
             "url": base64_image
         }
     }
-    _message.get('content').append(_content_image_url)
     if _type_message.get('content') is not None and _type_message.get('content') != '':
         _message_question = {
-            "role": "user",
-            "content": _type_message.get('content')
+            "type": "text",
+            "text": _type_message.get('content')
         }
-        return [_message_question, _message]
-    else:
-        return [_message]
+        _message.get('content').append(_message_question)
+    _message.get('content').append(_content_image_url)
+    return [_message]
