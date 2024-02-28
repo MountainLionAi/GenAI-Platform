@@ -61,6 +61,7 @@ def process_messages(messages):
         elif message.get('type') == 'image':
             shadow_message['base64content'] = message.get('base64content')
             content = message['content']
+            need_whisper = False
         else:
             content = message['content']
             need_whisper = False
