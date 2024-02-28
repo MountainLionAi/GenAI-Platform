@@ -21,7 +21,7 @@ async def get_gpt_message(userid, msggroup):
 
 # 获取用户消息列表用作上下文
 async def get_gpt_message_limit(userid, msggroup, limit):
-    sql = 'SELECT id, content, type, msggroup, create_time, code, base64_type, base64_content, file_type FROM gpt_messages WHERE ' \
+    sql = 'SELECT id, content, type, msggroup, create_time, code, base64_type, base64_content as base64Content, file_type FROM gpt_messages WHERE ' \
           'userid=%s AND msggroup=%s and deleted=0 ORDER BY id DESC LIMIT %s'
     result = await CollectionPool().query(sql, (userid, msggroup, limit))
     if len(result) > 0 :
