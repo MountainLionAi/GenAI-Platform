@@ -36,8 +36,10 @@ async def get_message_list(request: Request):
         else:
             message['content'] = {
                 'type': 'user',
-                'content': message['content']
+                'content': message['content'],
+                'base64content': message.get('base64content')
             }
+            del message
     data = {
         "messageList" : messageList
     }
