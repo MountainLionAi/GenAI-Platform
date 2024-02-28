@@ -39,7 +39,7 @@ async def get_message_list(request: Request):
                 'content': message['content'],
                 'base64content': message.get('base64content')
             }
-            del message
+            del message['base64content']
     data = {
         "messageList" : messageList
     }
