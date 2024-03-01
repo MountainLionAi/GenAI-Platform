@@ -48,7 +48,19 @@ async def http4gpt4(request: Request):
 
 def process_messages(messages):
     processed_messages = []
+    previousIsUser = False
     for message in messages:
+        if previousIsUser and message['role'] == 'user':
+            shadow_message_temp = {
+                "role": 'assistant',
+                "type": 'text',
+                "format": 'text',
+                "version": 'v001',
+                "content": '内容......',
+                "need_whisper": False
+            }
+            processed_messages.append(shadow_message_temp)
+        previousIsUser = message['role'] == 'user'
         shadow_message = {
             "role": message['role'],
             "type": message.get('type', 'text'),
