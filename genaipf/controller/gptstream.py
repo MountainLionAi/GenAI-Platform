@@ -51,15 +51,7 @@ def process_messages(messages):
     previousIsUser = False
     for message in messages:
         if previousIsUser and message['role'] == 'user':
-            shadow_message_temp = {
-                "role": 'assistant',
-                "type": 'text',
-                "format": 'text',
-                "version": 'v001',
-                "content": '内容......',
-                "need_whisper": False
-            }
-            processed_messages.append(shadow_message_temp)
+            processed_messages = processed_messages[:-1]
         previousIsUser = message['role'] == 'user'
         shadow_message = {
             "role": message['role'],
