@@ -51,6 +51,10 @@ async def convert_func_out_to_stream(chunk, messages, newest_question, model, la
                 'presetContent' : presetContent
             })
             if func_name in preset_entry_top_mapping:
+                if func_name == 'generate_report':
+                    _data.update({
+                        'coin': _param.get('coin')
+                    })
                 yield {
                     "role": "inner_____preset_top", 
                     "type": "inner_____preset_top", 
