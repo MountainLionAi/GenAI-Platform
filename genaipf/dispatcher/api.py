@@ -57,8 +57,9 @@ async def awrap_gpt_generator(gpt_response):
         yield get_format_output("step", "llm_yielding")
         c0 = chunk.choices[0].delta.content
         _tmp_text = ""
-        _tmp_text += c0
-        yield get_format_output("gpt", c0)
+        if c0:
+            _tmp_text += c0
+            yield get_format_output("gpt", c0)
         async for chunk in resp:
             _gpt_letter = chunk.choices[0].delta.content
             if _gpt_letter:
@@ -81,7 +82,7 @@ async def awrap_gpt_generator(gpt_response):
         yield get_format_output("inner_____func_param", _param)
         
 
-async def afunc_gpt_generator(messages, functions=gpt_functions, language=LionPrompt.default_lang, model='', picked_content="", related_qa=[], source='v001', owner=''):
+async def afunc_gpt_generator(messages, functions=gpt_functions, language=LionPrompt.default_lang, model='', picked_content="", related_qa=[], source='v001', owner='', isvision=False):
     '''
     "messages": [
         {"role": "user", "content": "Hello"},
@@ -92,6 +93,8 @@ async def afunc_gpt_generator(messages, functions=gpt_functions, language=LionPr
     use_model = 'gpt-3.5-turbo-16k'
     if model == 'ml-plus':
         use_model = OPENAI_PLUS_MODEL
+    if isvision:
+        use_model = 'gpt-4-vision-preview'
     for i in range(5):
         mlength = len(messages)
         try:

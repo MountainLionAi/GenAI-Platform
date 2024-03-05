@@ -51,6 +51,10 @@ async def convert_func_out_to_stream(chunk, messages, newest_question, model, la
                 'presetContent' : presetContent
             })
             if func_name in preset_entry_top_mapping:
+                if func_name == 'generate_report':
+                    _data.update({
+                        'coin': _param.get('coin')
+                    })
                 yield {
                     "role": "inner_____preset_top", 
                     "type": "inner_____preset_top", 
@@ -59,7 +63,7 @@ async def convert_func_out_to_stream(chunk, messages, newest_question, model, la
                     "content": _data
                 }
                 _data = {}
-    if func_name != 'generate_report':
+    if func_name != 'generate_report' or (func_name == 'generate_report' and presetContent == {}):
         _messages = [x for x in messages if x["role"] != "system"]
         msgs = _messages[::]
         resp2 = await aref_answer_gpt_generator(msgs, model, language, _type, str(picked_content), related_qa, source, owner)

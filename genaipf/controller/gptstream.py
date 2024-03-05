@@ -39,6 +39,8 @@ proxy = { 'https' : '127.0.0.1:8001'}
 
 executor = ThreadPoolExecutor(max_workers=10)
 
+redis_client = RedisConnectionPool().get_connection()
+
 async def http(request: Request):
     return response.json({"http": "sendchat"})
 
@@ -48,21 +50,30 @@ async def http4gpt4(request: Request):
 
 def process_messages(messages):
     processed_messages = []
+    previousIsUser = False
     for message in messages:
+        if previousIsUser and message['role'] == 'user':
+            processed_messages = processed_messages[:-1]
+        previousIsUser = message['role'] == 'user'
+        shadow_message = {
+            "role": message['role'],
+            "type": message.get('type', 'text'),
+            "format": message.get('format', 'text'),
+            "version": message.get('version', 'v001')
+        }
         if message.get('type') == 'voice':
             content = transcribe(message['content'])
             need_whisper = True
+        elif message.get('type') == 'image':
+            shadow_message['base64content'] = message.get('base64content')
+            content = message['content']
+            need_whisper = False
         else:
             content = message['content']
             need_whisper = False
-        processed_messages.append({
-            "role": message['role'],
-            "content": content,
-            "type": message.get('type', 'text'),
-            "format": message.get('format', 'text'),
-            "version": message.get('version', 'v001'),
-            "need_whisper": need_whisper
-        })
+        shadow_message['need_whisper'] = need_whisper
+        shadow_message['content'] = content
+        processed_messages.append(shadow_message)
     return processed_messages[-10:]
 
 async def send_stream_chat(request: Request):
@@ -220,13 +231,17 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         related_questions = related_questions_task.result()
     resp1 = await afunc_gpt_generator(msgs, used_gpt_functions, language, model, "", related_qa, source, owner)
     chunk = await asyncio.wait_for(resp1.__anext__(), timeout=20)
-
+    isvision = False
     if chunk["content"] == "llm_yielding" and used_rag:
         await resp1.aclose()
         sources, related_qa = await sources_task
         logger.info(f'>>>>> second related_qa: {related_qa}')
         yield json.dumps(get_format_output("chatSerpResults", sources))
-        resp1 = await afunc_gpt_generator(msgs, used_gpt_functions, language, model, "", related_qa, source, owner)
+        if last_front_msg.get('type') == 'image' and last_front_msg.get('base64content') is not None:
+            msgs = msgs[:-1] + buildVisionMessage(last_front_msg)
+            isvision = True
+            used_gpt_functions = None
+        resp1 = await afunc_gpt_generator(msgs, used_gpt_functions, language, model, "", related_qa, source, owner, isvision)
         chunk = await asyncio.wait_for(resp1.__anext__(), timeout=20)
     yield json.dumps(get_format_output("chatRelatedResults", related_questions))
 
@@ -259,6 +274,29 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
                     "content": data
                 }
                 yield json.dumps(_tmp)
+                if data["subtype"] == 'generate_report':
+                    preset7Content = {}
+                    symbol = data["coin"]
+                    analysis = redis_client.get('reportdata_analysis_' + symbol)
+                    dynamics = redis_client.get('reportdata_analysis_' + symbol)
+                    advice = redis_client.get('reportdata_analysis_' + symbol)
+                    if analysis is None or analysis == '':
+                        tasks = [
+                            getAnswerAndCallGptData('', 0, '', 'cn', [{"role":"user", "content":symbol+"多维度分析, 切记不要出现json格式回复", "type":"text", "format":"text", "version":"v001", "need_whisper":False}], '', '', 'ml-plus', 'text', 'v003', '1.基础面分析；2.信息面分析；3.技术分析'),
+                            getAnswerAndCallGptData('', 0, '', 'cn', [{"role":"user", "content":symbol+"市场动态及关注, 切记不要出现json格式回复", "type":"text", "format":"text", "version":"v001", "need_whisper":False}], '', '', 'ml-plus', 'text', 'v003', '1.市场定位和预测；2.市场发展；3.应用场景；4.风险与挑战；5.未来展望'),
+                            getAnswerAndCallGptData('', 0, '', 'cn', [{"role":"user", "content":symbol+"投资建议, 切记不要出现json格式回复", "type":"text", "format":"text", "version":"v001", "need_whisper":False}], '', '', 'ml-plus', 'text', 'v003', '从各方面分析的投资建议')
+                        ]
+                        analysis, dynamics, advice = await asyncio.gather(*tasks)
+                        analysis = analysis.get('content','')
+                        dynamics = dynamics.get('content','')
+                        advice = advice.get('content','')
+                        redis_client.set('reportdata_analysis_' + symbol, analysis, 60 * 60)
+                        redis_client.set('reportdata_dynamics_' + symbol, dynamics, 60 * 60)
+                        redis_client.set('reportdata_advice_' + symbol, advice, 60 * 60)
+                    preset7Content['analysis'] = analysis
+                    preset7Content['dynamics'] = dynamics
+                    preset7Content['advice'] = advice
+                    yield json.dumps(get_format_output("preset7Content", preset7Content))
             else:
                 yield json.dumps(item)
 
@@ -281,7 +319,11 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         yield json.dumps(_tmp)
     yield json.dumps(get_format_output("step", "done"))
     logger.info(f'>>>>> func & ref _tmp_text & output_type: {output_type}: {_tmp_text}')
-
+    base64_type = 0
+    if last_front_msg.get('type') == 'image':
+        base64_type = 1
+    base64_content = last_front_msg.get('base64content')
+    file_type = last_front_msg.get('format')
     if question and msggroup :
         gpt_message = (
         question,
@@ -289,7 +331,10 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         userid,
         msggroup,
         question_code,
-        device_no
+        device_no,
+        base64_type,
+        base64_content,
+        file_type
         )
         await gpt_service.add_gpt_message_with_code(gpt_message)
         if data['type'] == 'coin_swap':  # 如果是兑换类型，存库时候需要加一个过期字段，前端用于判断不再发起交易
@@ -306,7 +351,10 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
             userid,
             msggroup,
             data['code'],
-            device_no
+            device_no,
+            None,
+            None,
+            None
         )
         await gpt_service.add_gpt_message_with_code(gpt_message)
 
@@ -419,3 +467,23 @@ async def  getAnswerAndCallGptData(question, userid, msggroup, language, front_m
     return success(data)
     
 
+def buildVisionMessage(_type_message):
+    base64_image = _type_message.get('base64content')
+    _message = {
+        "role": "user",
+        "content": []
+    }
+    _content_image_url = {
+        "type": "image_url",
+        "image_url": {
+            "url": base64_image
+        }
+    }
+    if _type_message.get('content') is not None and _type_message.get('content') != '':
+        _message_question = {
+            "type": "text",
+            "text": _type_message.get('content')
+        }
+        _message.get('content').append(_message_question)
+    _message.get('content').append(_content_image_url)
+    return [_message]
