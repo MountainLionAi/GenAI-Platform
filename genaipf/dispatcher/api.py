@@ -28,7 +28,7 @@ def generate_unique_id():
     redis_client = RedisConnectionPool().get_connection()
     return redis_client.incr('unique_id')
 
-def get_format_output(role, content, mode=None):
+def get_format_output(role, content, mode=None, type=None):
     if mode == "voice_mp3_v001":
         return {
             "role": role, 
@@ -37,6 +37,8 @@ def get_format_output(role, content, mode=None):
             "version": "v001", 
             "content": content
         }
+    elif type == "preset7Content":
+        return {"role": role, "type": "preset7Content", "format": "text", "version": "v001", "content": content}
     else:
         return {"role": role, "type": "text", "format": "text", "version": "v001", "content": content}
 
