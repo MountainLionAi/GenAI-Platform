@@ -296,7 +296,14 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
                     preset7Content['analysis'] = analysis
                     preset7Content['dynamics'] = dynamics
                     preset7Content['advice'] = advice
-                    yield json.dumps(get_format_output("preset", preset7Content, type="preset7Content"))
+                    _tmp = {
+                        "role": "preset", 
+                        "type": "preset7Content", 
+                        "format": data["subtype"], 
+                        "version": "v001", 
+                        "content": preset7Content
+                    }
+                    yield json.dumps(_tmp)
             else:
                 yield json.dumps(item)
 
