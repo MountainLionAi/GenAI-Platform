@@ -278,20 +278,26 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
                     preset7Content = {}
                     symbol = data["coin"]
                     analysis = redis_client.get('reportdata_analysis_' + language + '_' + symbol)
-                    dynamics = redis_client.get('reportdata_analysis_' + language + '_' + symbol)
-                    advice = redis_client.get('reportdata_analysis_' + language + '_' + symbol)
+                    dynamics = redis_client.get('reportdata_dynamics_' + language + '_' + symbol)
+                    advice = redis_client.get('reportdata_advice_' + language + '_' + symbol)
                     if analysis is None or analysis == '':
                         analysis_question = '多维度分析, 切记不要出现json格式回复'
                         dynamics_question = '市场动态及关注, 切记不要出现json格式回复'
                         advice_question = '投资建议, 切记不要出现json格式回复'
+                        analysis_format = '1.基础面分析；2.信息面分析；3.技术分析'
+                        dynamics_format = '1.市场定位和预测；2.市场发展；3.应用场景；4.风险与挑战；5.未来展望'
+                        advice_format = '从各方面分析的投资建议'
                         if language == 'en':
                             analysis_question = ' multi-dimensional analysis, please refrain from providing responses in JSON format.'
                             dynamics_question = ' market dynamics and focus, please refrain from providing responses in JSON format.'
                             advice_question = ' investment advice, please refrain from providing responses in JSON format.'
+                            analysis_format = '1. Fundamental analysis; 2. Informational analysis; 3. Technical analysis.'
+                            dynamics_format = '1. Market positioning and forecasting; 2. Market development; 3. Application scenarios; 4. Risks and challenges;5. Future prospects.'
+                            advice_format = 'Investment advice analyzed from various aspects.'
                         tasks = [
-                            getAnswerAndCallGptData('', 0, '', 'cn', [{"role":"user", "content":symbol + analysis_question, "type":"text", "format":"text", "version":"v001", "need_whisper":False}], '', '', 'ml-plus', 'text', 'v003', '1.基础面分析；2.信息面分析；3.技术分析'),
-                            getAnswerAndCallGptData('', 0, '', 'cn', [{"role":"user", "content":symbol + dynamics_question, "type":"text", "format":"text", "version":"v001", "need_whisper":False}], '', '', 'ml-plus', 'text', 'v003', '1.市场定位和预测；2.市场发展；3.应用场景；4.风险与挑战；5.未来展望'),
-                            getAnswerAndCallGptData('', 0, '', 'cn', [{"role":"user", "content":symbol + advice_question, "type":"text", "format":"text", "version":"v001", "need_whisper":False}], '', '', 'ml-plus', 'text', 'v003', '从各方面分析的投资建议')
+                            getAnswerAndCallGptData('', 0, '', 'cn', [{"role":"user", "content":symbol + analysis_question, "type":"text", "format":"text", "version":"v001", "need_whisper":False}], '', '', 'ml-plus', 'text', 'v003', analysis_format),
+                            getAnswerAndCallGptData('', 0, '', 'cn', [{"role":"user", "content":symbol + dynamics_question, "type":"text", "format":"text", "version":"v001", "need_whisper":False}], '', '', 'ml-plus', 'text', 'v003', dynamics_format),
+                            getAnswerAndCallGptData('', 0, '', 'cn', [{"role":"user", "content":symbol + advice_question, "type":"text", "format":"text", "version":"v001", "need_whisper":False}], '', '', 'ml-plus', 'text', 'v003', advice_format)
                         ]
                         analysis, dynamics, advice = await asyncio.gather(*tasks)
                         analysis = analysis.get('content','')
