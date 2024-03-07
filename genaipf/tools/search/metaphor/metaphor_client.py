@@ -64,6 +64,7 @@ class MetaphorClient:
                                                          use_autoprompt=use_autoprompt,
                                                          include_domains=include_domains, type=type,
                                                          exclude_domains=exclude_domains)
+            logger.info(f'metaphor search success')
         except Exception as e:
             if '429' in str(e):
                 set_api_key_unavaiable(self._api_key, CLIENT_TYPE)
@@ -77,6 +78,7 @@ class MetaphorClient:
         try:
             search_contents = await aget_contents_of_metaphor(ids)
             content = self.format_contents(search_contents.contents)
+            logger.info(f'metaphor contents success')
         except Exception as e:
             if '429' in str(e):
                 set_api_key_unavaiable(self._api_key, CLIENT_TYPE)
