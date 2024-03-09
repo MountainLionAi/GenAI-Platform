@@ -30,6 +30,7 @@ from genaipf.utils.speech_utils import transcribe, textToSpeech
 from genaipf.tools.search.utils.search_agent_utils import other_search
 from genaipf.tools.search.utils.search_agent_utils import premise_search, premise_search1, premise_search2, new_question_question
 from genaipf.utils.common_utils import contains_chinese
+from genaipf.dispatcher.callgpt import DispatcherCallGpt
 import os
 import base64
 from genaipf.conf.server import os
@@ -274,11 +275,10 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
                     "content": data
                 }
                 yield json.dumps(_tmp)
-                if data["subtype"] == 'generate_report':
-                    preset7Content = {}
-                    symbol = data["coin"]
-                    from genaipf.dispatcher.callgpt import DispatcherCallGpt
-                    subtype_task_result = await DispatcherCallGpt.get_subtype_task_result('generate_report', language, {"symbol": symbol})
+                if DispatcherCallGpt.need_call_gpt(data):
+                    # preset7Content = {}
+                    # symbol = data["coin"]
+                    subtype_task_result = await DispatcherCallGpt.get_subtype_task_result(data["subtype"], language, data)
                     # analysis = redis_client.get('reportdata_analysis_' + language + '_' + symbol)
                     # dynamics = redis_client.get('reportdata_dynamics_' + language + '_' + symbol)
                     # advice = redis_client.get('reportdata_advice_' + language + '_' + symbol)
@@ -308,11 +308,13 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
                     #     redis_client.set('reportdata_analysis_' + language + '_' + symbol, analysis, 60 * 60)
                     #     redis_client.set('reportdata_dynamics_' + language + '_' + symbol, dynamics, 60 * 60)
                     #     redis_client.set('reportdata_advice_' + language + '_' + symbol, advice, 60 * 60)
-                    preset7Content['analysis'] = subtype_task_result["analysis"]
-                    preset7Content['dynamics'] = subtype_task_result["dynamics"]
-                    preset7Content['advice'] = subtype_task_result["advice"]
-                    data['preset7Content'] = preset7Content
-                    yield json.dumps(get_format_output("preset", preset7Content, type="preset7Content"))
+                    # preset7Content['analysis'] = subtype_task_result["analysis"].get('content','')
+                    # preset7Content['dynamics'] = subtype_task_result["dynamics"].get('content','')
+                    # preset7Content['advice'] = subtype_task_result["advice"].get('content','')
+                    # data['preset7Content'] = preset7Content
+                    # yield json.dumps(get_format_output("preset", preset7Content, type="preset7Content"))
+                    preset_type, preset_content, data = DispatcherCallGpt.gen_preset_content(data["subtype"], subtype_task_result, data)
+                    yield json.dumps(get_format_output("preset", preset_content, type=preset_type))
             else:
                 yield json.dumps(item)
 

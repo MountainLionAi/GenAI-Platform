@@ -14,7 +14,13 @@ class DispatcherCallGpt:
     async def get_specific_gpt_result(cls, name: str, language: str, data: Mapping[str, Any]):
         ...
         
+    @classmethod
+    def need_call_gpt(cls, data: Mapping[str, Any]):
+        ...
 
+    @classmethod
+    def gen_preset_content(cls, subtype: str, subtype_task_result: Mapping[str, Any], data: Mapping[str, Any]):
+        ...
 
 if PLUGIN_NAME:
     plugin_submodule_name = f'{PLUGIN_NAME}.dispatcher.callgpt'
