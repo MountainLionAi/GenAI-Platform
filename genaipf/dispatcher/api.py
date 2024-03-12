@@ -92,10 +92,11 @@ async def afunc_gpt_generator(messages, functions=gpt_functions, language=LionPr
         {"role": "user", "content": "Where is Tokyo?"},
     ]
     '''
-    use_model = 'gpt-3.5-turbo-16k'
+    use_model = 'gpt-3.5-turbo-0125'
     if model == 'ml-plus':
         use_model = OPENAI_PLUS_MODEL
     if isvision:
+        # 图片处理专用模型
         use_model = 'gpt-4-vision-preview'
     for i in range(5):
         mlength = len(messages)
@@ -143,7 +144,7 @@ async def afunc_gpt_generator(messages, functions=gpt_functions, language=LionPr
 
 
 async def aref_answer_gpt_generator(messages, model='', language=LionPrompt.default_lang, preset_name=None, picked_content="", related_qa=[], source='v001', owner=''):
-    use_model = 'gpt-3.5-turbo-16k'
+    use_model = 'gpt-3.5-turbo-0125'
     if model == 'ml-plus':
         use_model = OPENAI_PLUS_MODEL
     for i in range(5):
@@ -193,7 +194,7 @@ async def aref_answer_gpt_generator(messages, model='', language=LionPrompt.defa
 async def aref_oneshot_gpt_generator(messages, model='', language=LionPrompt.default_lang, preset_name=None, picked_content="", related_qa=[], data=None, stream=False, mode=None):
     front_messages = messages
     gpt_prams = data.get("gpt_prams", {})
-    use_model = 'gpt-3.5-turbo-16k'
+    use_model = 'gpt-3.5-turbo-0125'
     if model == 'ml-plus':
         use_model = OPENAI_PLUS_MODEL
     try:

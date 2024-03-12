@@ -26,9 +26,9 @@ def _get_default_merge_ref_and_input_text(picked_content, related_qa, input_text
     ref = merge_ref_and_qa(picked_content, related_qa, language)
     if language == 'cn':
         return f"""可能相关的资料：
-```
+=====
 {ref}
-```
+=====
 
 Human:
 {input_text}？
@@ -37,9 +37,9 @@ AI:
 """
     else:
         return f"""Possible related materials:
-```
+=====
 {ref}
-```
+=====
 
 Human:
 {input_text}？
