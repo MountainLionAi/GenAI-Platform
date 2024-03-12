@@ -28,7 +28,7 @@ class LlamaIndexAgent:
         self.traceable_tools: List[FunctionTool] = list()
         self.tools_to_traceable_tools(async_tools)
         llm = OpenAI(
-            model="gpt-4-1106-preview", 
+            model="gpt-4-0125-preview", 
             api_key=OPENAI_API_KEY, 
             temperature=temperature,
             max_tokens=max_tokens
