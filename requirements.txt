@@ -7,7 +7,7 @@ aiohttp~=3.8.4
 pycryptodomex==3.17
 pymysql==1.1.0
 sanic_cors==2.2.0
-redis~=3.5.3
+redis~=5.0.2
 web3~=6.2.0
 pandas~=1.5.3
 setuptools~=67.6.1
@@ -40,3 +40,4 @@ aiomysql==0.2.0
 metaphor-python==0.1.23
 tenacity==8.2.3
 langchain_openai==0.0.2
+aiocache==0.12.2

@@ -274,30 +274,11 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
                     "content": data
                 }
                 yield json.dumps(_tmp)
-                if data["subtype"] == 'generate_report':
-                    preset7Content = {}
-                    symbol = data["coin"]
-                    analysis = redis_client.get('reportdata_analysis_' + symbol)
-                    dynamics = redis_client.get('reportdata_analysis_' + symbol)
-                    advice = redis_client.get('reportdata_analysis_' + symbol)
-                    if analysis is None or analysis == '':
-                        tasks = [
-                            getAnswerAndCallGptData('', 0, '', 'cn', [{"role":"user", "content":symbol+"多维度分析, 切记不要出现json格式回复", "type":"text", "format":"text", "version":"v001", "need_whisper":False}], '', '', 'ml-plus', 'text', 'v003', '1.基础面分析；2.信息面分析；3.技术分析'),
-                            getAnswerAndCallGptData('', 0, '', 'cn', [{"role":"user", "content":symbol+"市场动态及关注, 切记不要出现json格式回复", "type":"text", "format":"text", "version":"v001", "need_whisper":False}], '', '', 'ml-plus', 'text', 'v003', '1.市场定位和预测；2.市场发展；3.应用场景；4.风险与挑战；5.未来展望'),
-                            getAnswerAndCallGptData('', 0, '', 'cn', [{"role":"user", "content":symbol+"投资建议, 切记不要出现json格式回复", "type":"text", "format":"text", "version":"v001", "need_whisper":False}], '', '', 'ml-plus', 'text', 'v003', '从各方面分析的投资建议')
-                        ]
-                        analysis, dynamics, advice = await asyncio.gather(*tasks)
-                        analysis = analysis.get('content','')
-                        dynamics = dynamics.get('content','')
-                        advice = advice.get('content','')
-                        redis_client.set('reportdata_analysis_' + symbol, analysis, 60 * 60)
-                        redis_client.set('reportdata_dynamics_' + symbol, dynamics, 60 * 60)
-                        redis_client.set('reportdata_advice_' + symbol, advice, 60 * 60)
-                    preset7Content['analysis'] = analysis
-                    preset7Content['dynamics'] = dynamics
-                    preset7Content['advice'] = advice
-                    data['preset7Content'] = preset7Content
-                    yield json.dumps(get_format_output("preset", preset7Content, type="preset7Content"))
+                from genaipf.dispatcher.callgpt import DispatcherCallGpt
+                if DispatcherCallGpt.need_call_gpt(data):
+                    subtype_task_result = await DispatcherCallGpt.get_subtype_task_result(data["subtype"], language, data)
+                    preset_type, preset_content, data = DispatcherCallGpt.gen_preset_content(data["subtype"], subtype_task_result, data)
+                    yield json.dumps(get_format_output("preset", preset_content, type=preset_type))
             else:
                 yield json.dumps(item)
 

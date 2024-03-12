@@ -46,4 +46,5 @@ async def get_sources_tasks(front_messages, related_qa, language):
     final_related_qa = related_qa
     if enrich_question != 'False':
         sources, content = await other_search(enrich_question, related_qa, language)
+        final_related_qa = content
     return sources, final_related_qa
