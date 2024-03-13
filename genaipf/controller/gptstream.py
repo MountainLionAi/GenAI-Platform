@@ -301,6 +301,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         yield json.dumps(_tmp)
     yield json.dumps(get_format_output("step", "done"))
     logger.info(f'>>>>> func & ref _tmp_text & output_type: {output_type}: {_tmp_text}')
+    agent_id = last_front_msg.get('agent_id', None)
     base64_type = 0
     if last_front_msg.get('type') == 'image':
         base64_type = 1
@@ -316,7 +317,8 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         device_no,
         base64_type,
         base64_content,
-        file_type
+        file_type,
+        agent_id
         )
         await gpt_service.add_gpt_message_with_code(gpt_message)
         if data['type'] == 'coin_swap':  # 如果是兑换类型，存库时候需要加一个过期字段，前端用于判断不再发起交易
@@ -336,7 +338,8 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
             device_no,
             None,
             None,
-            None
+            None,
+            agent_id
         )
         await gpt_service.add_gpt_message_with_code(gpt_message)
 
@@ -415,6 +418,7 @@ async def  getAnswerAndCallGptData(question, userid, msggroup, language, front_m
     })
     logger.info(f'>>>>> func & ref _tmp_text & output_type: {output_type}: {_tmp_text}')
 
+    agent_id = last_front_msg.get('agent_id', None)
     if question and msggroup :
         gpt_message = (
         question,
@@ -422,7 +426,8 @@ async def  getAnswerAndCallGptData(question, userid, msggroup, language, front_m
         userid,
         msggroup,
         question_code,
-        device_no
+        device_no,
+        agent_id
         )
         await gpt_service.add_gpt_message_with_code(gpt_message)
         if data['type'] == 'coin_swap':  # 如果是兑换类型，存库时候需要加一个过期字段，前端用于判断不再发起交易
@@ -437,7 +442,8 @@ async def  getAnswerAndCallGptData(question, userid, msggroup, language, front_m
             userid,
             msggroup,
             data['code'],
-            device_no
+            device_no,
+            agent_id
         )
         await gpt_service.add_gpt_message_with_code(gpt_message)
     # else :
