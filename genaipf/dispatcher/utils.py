@@ -19,7 +19,7 @@ MAX_CH_LENGTH_GPT3 = 8000
 MAX_CH_LENGTH_GPT4 = 3000
 MAX_CH_LENGTH_QA_GPT3 = 3000
 MAX_CH_LENGTH_QA_GPT4 = 1500
-OPENAI_PLUS_MODEL = "gpt-4-1106-preview"
+OPENAI_PLUS_MODEL = "gpt-4-0125-preview"
 qdrant_url = "http://localhost:6333"
 
 openai_client = OpenAI(
