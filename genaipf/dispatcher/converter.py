@@ -43,7 +43,7 @@ async def convert_func_out_to_stream(chunk, messages, newest_question, model, la
             presetContent, picked_content = reslt
         elif len(reslt) == 3:
             presetContent, picked_content, _type = reslt
-        if preset_conf.get("has_preset_content") and (_param.get("need_chart") or preset_conf.get("need_preset")):
+        if preset_conf.get("has_preset_content") and (_param.get("need_chart") or preset_conf.get("need_preset")) and presetContent != {}:
             _data.update({
                 'type' : _type,
                 'subtype': sub_func_name,
