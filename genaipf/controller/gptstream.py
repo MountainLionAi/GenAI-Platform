@@ -94,6 +94,7 @@ async def send_stream_chat(request: Request):
     model = request_params.get('model', '')
     source = request_params.get('source', 'v001')
     owner = request_params.get('owner', 'MountainLion')
+    agent_id = request_params.get('agent_id', None)
     # messages = process_messages(messages)
     output_type = request_params.get('output_type', 'text') # text or voice; (voice is mp3)
     # messages = [{"role": msg["role"], "content": msg["content"]} for msg in process_messages(messages)]
@@ -113,7 +114,7 @@ async def send_stream_chat(request: Request):
     try:
         async def event_generator(_response):
             # async for _str in getAnswerAndCallGpt(request_params['content'], userid, msggroup, language, messages):
-            async for _str in getAnswerAndCallGpt(request_params.get('content'), userid, msggroup, language, messages, device_no, question_code, model, output_type, source, owner):
+            async for _str in getAnswerAndCallGpt(request_params.get('content'), userid, msggroup, language, messages, device_no, question_code, model, output_type, source, owner, agent_id):
                 await _response.write(f"data:{_str}\n\n")
                 await asyncio.sleep(0.01)
         return ResponseStream(event_generator, headers={"accept": "application/json"}, content_type="text/event-stream")
@@ -140,6 +141,7 @@ async def send_chat(request: Request):
     model = request_params.get('model', '')
     source = request_params.get('source', 'v001')
     owner = request_params.get('owner', 'MountainLion')
+    agent_id = request_params.get('agent_id', None)
     # messages = process_messages(messages)
     output_type = request_params.get('output_type', 'text') # text or voice; (voice is mp3)
     # messages = [{"role": msg["role"], "content": msg["content"]} for msg in process_messages(messages)]
@@ -157,7 +159,7 @@ async def send_chat(request: Request):
         logger.error(traceback.format_exc())
 
     try:
-        response = await getAnswerAndCallGptData(request_params.get('content'), userid, msggroup, language, messages, device_no, question_code, model, output_type, source, owner)
+        response = await getAnswerAndCallGptData(request_params.get('content'), userid, msggroup, language, messages, device_no, question_code, model, output_type, source, owner, agent_id)
         return response
 
     except Exception as e:
@@ -165,7 +167,7 @@ async def send_chat(request: Request):
         logger.error(traceback.format_exc())
    
 
-async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messages, device_no, question_code, model, output_type, source, owner):
+async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messages, device_no, question_code, model, output_type, source, owner, agent_id):
     t0 = time.time()
     MAX_CH_LENGTH = 8000
     _ensure_ascii = False
@@ -301,7 +303,6 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         yield json.dumps(_tmp)
     yield json.dumps(get_format_output("step", "done"))
     logger.info(f'>>>>> func & ref _tmp_text & output_type: {output_type}: {_tmp_text}')
-    agent_id = last_front_msg.get('agent_id', None)
     base64_type = 0
     if last_front_msg.get('type') == 'image':
         base64_type = 1
@@ -344,7 +345,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         await gpt_service.add_gpt_message_with_code(gpt_message)
 
 
-async def  getAnswerAndCallGptData(question, userid, msggroup, language, front_messages, device_no, question_code, model, output_type, source, owner):
+async def  getAnswerAndCallGptData(question, userid, msggroup, language, front_messages, device_no, question_code, model, output_type, source, owner, agent_id):
     t0 = time.time()
     MAX_CH_LENGTH = 8000
     _ensure_ascii = False
@@ -418,7 +419,6 @@ async def  getAnswerAndCallGptData(question, userid, msggroup, language, front_m
     })
     logger.info(f'>>>>> func & ref _tmp_text & output_type: {output_type}: {_tmp_text}')
 
-    agent_id = last_front_msg.get('agent_id', None)
     if question and msggroup :
         gpt_message = (
         question,
