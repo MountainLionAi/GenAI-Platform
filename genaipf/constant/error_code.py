@@ -16,7 +16,10 @@ ERROR_CODE = {
     "NOT_AUTHORIZED": 4001,
     "TOKEN_NOT_SUPPORTED": 5001,
     "PLATFORM_NOT_SUPPORTED": 5003,
-    "NO_REMAINING_TIMES": 5004
+    "NO_REMAINING_TIMES": 5004,
+    "PATH_API_ERROR": 6001,
+    "SWAP_OUT_OF_RANGE": 6002,
+    "SWAP_ADDRESS_ERROR": 6003
 }
 
 # 错误信息
@@ -37,5 +40,8 @@ ERROR_MESSAGE = {
     4001: 'User Not Authorized',
     5001: 'The token you mentioned not supported',
     5003: 'The platform not supported swap',
-    5004: 'No remaining times'
+    5004: 'No remaining times',
+    6001: 'Path Api Request Error',
+    6002: 'Exchange Out of Range',
+    6003: 'Swap From or To Address Error'
 }
