@@ -28,6 +28,10 @@ async def convert_func_out_to_stream(chunk, messages, newest_question, model, la
                     'url': get_token_cmc_url(_param['symbol'])
                 }
             ]
+    yield {
+        "role": "sources", 
+        "content": sources
+    }
     yield get_format_output("chatSerpResults", sources)
     content = ""
     _type = ""
