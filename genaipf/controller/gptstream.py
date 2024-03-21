@@ -281,6 +281,8 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
                     subtype_task_result = await DispatcherCallGpt.get_subtype_task_result(data["subtype"], language, data)
                     preset_type, preset_content, data = DispatcherCallGpt.gen_preset_content(data["subtype"], subtype_task_result, data)
                     yield json.dumps(get_format_output("preset", preset_content, type=preset_type))
+            elif item["role"] == "sources":
+                sources = item["content"]
             else:
                 yield json.dumps(item)
 
