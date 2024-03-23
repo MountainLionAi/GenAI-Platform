@@ -49,7 +49,7 @@ async def aget_error_generator(msg="ERROR"):
         yield get_format_output("error", c)
 
 async def awrap_claude_generator(lc_response):
-    resp = gpt_response
+    resp = lc_response
     yield get_format_output("step", "llm_yielding")
     _tmp_text = ""
     async for c in resp:
@@ -209,13 +209,16 @@ async def aref_answer_gpt_generator(messages, model='', language=LionPrompt.defa
             from langchain_anthropic import ChatAnthropic
             from langchain_core.prompts import ChatPromptTemplate
             from langchain_core.output_parsers import StrOutputParser
+            content = content.replace('{', '(')
+            content = content.replace('}', ')')
             lc_msgs = [("system", content)]
             for _m in messages:
                 if _m["role"] == "user":
                     lc_msgs.append(("human", _m["content"]))
                 else:
                     lc_msgs.append(("ai", _m["content"]))
-            prompt = ChatPromptTemplate.from_messages([("system", system), ("human", human)])
+            chat = ChatAnthropic(temperature=0, anthropic_api_key=anthropic_api_key, model_name="claude-3-opus-20240229")
+            prompt = ChatPromptTemplate.from_messages(lc_msgs)
             parser = StrOutputParser()
             chain = prompt | chat | parser
             response = chain.astream({})
