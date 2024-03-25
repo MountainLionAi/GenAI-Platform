@@ -53,7 +53,7 @@ async def get_sources_tasks(front_messages, related_qa, language):
 # 获取相关 url 摘要
 async def get_web_summary_of_msg(front_messages):
     is_need_search = False
-    msgs = LionPromptCommon.get_prompted_messages("if_need_search", front_messages)
+    msgs = LionPromptCommon.get_prompted_messages("related_url", front_messages)
     urls_str = await simple_achat(msgs)
     related_urls = []
     if urls_str != 'False':
