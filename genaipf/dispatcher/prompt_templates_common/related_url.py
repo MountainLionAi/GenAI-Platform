@@ -28,6 +28,15 @@ assistant: 你好
 user: 你叫什么？
 输出：
 False
+
+
+例 3：
+输入：
+user: 这个网站 qq.com
+输出：
+[
+    "https://qq.org",
+]
     """
     msg_l = []
     for m in messages:
