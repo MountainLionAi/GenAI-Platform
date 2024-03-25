@@ -35,7 +35,7 @@ False
 user: 这个网站 qq.com
 输出：
 [
-    "https://qq.org",
+    "https://qq.org"
 ]
     """
     msg_l = []
