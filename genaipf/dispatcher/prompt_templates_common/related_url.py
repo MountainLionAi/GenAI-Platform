@@ -1,13 +1,7 @@
 
-def _get_related_url_prompted_messages(data, language):
-    prompt_language = '英文'
-    if language == 'zh':
-        prompt_language = '中文'
-    messages = data["messages"]
-    system_text = f"""
-你是一个善于沟通总结的专家，你可以根据用户的历史对话上下文提取涉及到的 url，并以数组的形式返回。
-切记如果用户对话历史没有涉及任何 url，你只需回答 False
+'''
 
+以下是一些例子：
 例 1：
 输入：
 user: eth 的官网是什么？
@@ -16,27 +10,23 @@ user: 微软的官网是什么？
 assistant: https://www.microsoft.com
 user: 它的创始人是谁？
 输出：
-[
-    "https://ethereum.org",
-    "https://www.microsoft.com",
-]
+https://ethereum.org;https://www.microsoft.com
+
 
 例 2：
 输入：
-user: 你好
-assistant: 你好
-user: 你叫什么？
-输出：
-False
-
-
-例 3：
-输入：
 user: 这个网站 qq.com
 输出：
-[
-    "https://qq.org"
-]
+https://qq.org
+'''
+
+def _get_related_url_prompted_messages(data, language):
+    prompt_language = '英文'
+    if language == 'zh':
+        prompt_language = '中文'
+    messages = data["messages"]
+    system_text = f"""
+你是一个善于从对话中提取网址的专家，你可以根据多人的历史对话提取涉及到的网址, 并以 ";" 分割多个网址. 不论网址有没有意义，只要任何人提到了任何网址都提取出来. 如果你不能提取任何网址，就返回 "None"
     """
     msg_l = []
     for m in messages:
@@ -44,7 +34,7 @@ user: 这个网站 qq.com
             msg_l.append(f'{m["role"]}: {m["content"]}')
     ref = "\n".join(msg_l)
     last_msg = f"""
-user 和 assistant 的对话中提到了哪些网址 url?
+列出 user 和 assistant 的对话中提到了哪些网址，并以 ; 分割多个 url
 ```
 {ref}
 ```
