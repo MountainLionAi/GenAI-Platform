@@ -4,7 +4,8 @@ from genaipf.utils.log_utils import logger
 import traceback
 from genaipf.exception.customer_exception import CustomerError
 from genaipf.constant.error_code import ERROR_CODE
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup,Comment
+from genaipf.utils.rendered_html_util import get_rendered_html
 
 
 async def google_search(search_content: str, num: int = 5):
@@ -34,16 +35,43 @@ async def google_search(search_content: str, num: int = 5):
         logger.error(f"call google search api error: \n{e}")
         logger.error(traceback.format_exc())
         return None
-    
+
 
 async def get_content_by_url(url):
-    headers = {"Content-Type": "text/html; charset=utf-8"}
-    client = AsyncHTTPClient()
     try:
-        html_str = await client.get_html(url, None, headers)
+        html_str = await get_rendered_html(url)
         if html_str:
             soup = BeautifulSoup(html_str, 'html.parser')
             body = soup.body
+            body.attrs = {}
+            # 移除不需要的标签
+            for tag in body.find_all(['svg', 'img', 'a', 'button', 'script', 'audio', 'video', 'iframe', 'object', 'embed', 'footer', 'header', 'noscript', 'style']):
+                tag.decompose()
+            # 移除空标签
+            for tag in body.find_all(['span', 'div', 'li', 'p', 'i']):
+                if not tag.text.strip():
+                    tag.decompose()
+            # # 移除含有特定词汇的标签
+            # keywords = ['breadcrumb', 'footer', 'header', 'download']
+            # for tag in body.find_all(True):
+            #     if tag is not None and tag.has_attr('class') and tag['class'] is not None:
+            #         if any(keyword in ' '.join(tag['class']) for keyword in keywords):
+            #             tag.decompose()
+            #         else:
+            #             for attr in list(tag.attrs) if tag.attrs else []:
+            #                 if any(keyword in attr for keyword in keywords) or any(keyword in str(tag.attrs[attr] if tag.attrs else "") for keyword in keywords):
+            #                     tag.decompose()
+            #                     break
+            # 移除所有标签的属性
+            for tag in body.find_all(True):  # True匹配所有的tag
+                tag.attrs = {}
+            # 移除所有注释
+            comments = soup.find_all(string=lambda text: isinstance(text, Comment))
+            for comment in comments:
+                comment.extract()
+            logger.info('--------------------------')
+            logger.info(body.prettify())
+            logger.info('--------------------------')
             return body.decode_contents()
     except Exception as e:
         logger.error(f"call get_content_by_url error, url={url}, {e}")
