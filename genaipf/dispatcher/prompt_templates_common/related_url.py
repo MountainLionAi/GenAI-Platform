@@ -44,6 +44,7 @@ user: 这个网站 qq.com
             msg_l.append(f'{m["role"]}: {m["content"]}')
     ref = "\n".join(msg_l)
     last_msg = f"""
+user 和 assistant 的对话中提到了哪些网址 url?
 ```
 {ref}
 ```
