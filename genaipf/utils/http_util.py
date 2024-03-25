@@ -72,10 +72,29 @@ class AsyncHTTPClient:
         :return: JSON响应数据
         """
         async with aiohttp.ClientSession(timeout=self.timeout) as session:
-            proxy = 'http://127.0.0.1:7890'
-            async with session.get(url, params=params, headers=headers, proxy=proxy) as response:
+            async with session.get(url, params=params, headers=headers) as response:
                 response.raise_for_status()
                 return await response.json()
+    
+    
+    async def get_html(self, url: str, params: Dict[str, Any] = None, headers: Dict[str, str] = None) -> str:
+        """
+        异步发起GET请求并获取HTML响应。
+
+        :param url: 请求的URL
+        :param params: URL的查询参数
+        :param headers: 请求头
+        :return: HTML响应数据
+        """
+        async with aiohttp.ClientSession(timeout=self.timeout) as session:
+            async with session.get(url, params=params, headers=headers) as response:
+                response.raise_for_status()  # 如果响应状态码不是200，将抛出异常
+                # 确保响应内容类型为text/html
+                if "text/html" in response.headers.get("Content-Type", ""):
+                    return await response.text()
+                else:
+                    raise ValueError("Unexpected content type in response")
+                
 
 # 使用示例
 async def main():
