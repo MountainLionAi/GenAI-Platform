@@ -1,6 +1,7 @@
 from genaipf.dispatcher.prompt_templates_common.enrich_question import _get_enrich_question_prompted_messages
 from genaipf.dispatcher.prompt_templates_common.if_need_search import _get_if_need_search_prompted_messages
 from genaipf.dispatcher.prompt_templates_common.related_question import _get_related_question_prompted_messages
+from genaipf.dispatcher.prompt_templates_common.related_url import _get_related_url_prompted_messages
 import typing
 
 _default_lang = "en"
@@ -15,6 +16,8 @@ class LionPromptCommon:
             return _get_if_need_search_prompted_messages(data)
         elif preset_name=="related_question":
             return _get_related_question_prompted_messages(data, language)
+        elif preset_name=="related_url":
+            return _get_related_url_prompted_messages(data, language)
         else:
             raise Exception("has not")
 

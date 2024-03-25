@@ -48,3 +48,20 @@ async def get_sources_tasks(front_messages, related_qa, language):
         sources, content = await other_search(enrich_question, related_qa, language)
         final_related_qa = content
     return sources, final_related_qa
+
+
+# 获取相关 url 摘要
+async def get_web_summary_of_msg(front_messages):
+    is_need_search = False
+    msgs = LionPromptCommon.get_prompted_messages("if_need_search", front_messages)
+    urls_str = await simple_achat(msgs)
+    related_urls = []
+    if urls_str != 'False':
+        try:
+            for u in json.loads(urls_str):
+                related_urls.append("https://" + u.strip("https://"))
+        except Exception as e:
+            logger.error(f'解析相关问题失败: {e}')
+    return related_urls
+        
+        
