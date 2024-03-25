@@ -6,6 +6,21 @@ from genaipf.exception.customer_exception import CustomerError
 from genaipf.constant.error_code import ERROR_CODE
 from bs4 import BeautifulSoup,Comment
 from genaipf.utils.rendered_html_util import get_rendered_html
+import asyncio
+
+
+class AsyncSafeList:
+    def __init__(self):
+        self.lock = asyncio.Lock()
+        self.list = []
+
+    async def append(self, item):
+        async with self.lock:
+            self.list.append(item)
+
+    async def pop(self):
+        async with self.lock:
+            return self.list.pop()
 
 
 async def google_search(search_content: str, num: int = 5):
@@ -16,28 +31,24 @@ async def google_search(search_content: str, num: int = 5):
     if url is None or url == "" or key is None or key == "" or cx is None or cx == "":
         raise CustomerError(status_code=ERROR_CODE['RAG_CONFIG_ERROR'])
     try:
-        search_details = []
+        search_details = AsyncSafeList()
         client = AsyncHTTPClient()
         params = {"key": key, "cx": cx, "q": search_content, "num": num}
         headers = {"Content-Type": "application/json; charset=UTF-8"}
         result = await client.get_json(url, params, headers)
         if result and result.get('items') and len(result.get('items')) > 0:
             items = result.get('items')
-            for item in items:
-                link = item.get("link")
-                content = await get_content_by_url(link)
-                if content:
-                    detail = {"url": link}
-                    detail['content'] = content
-                    search_details.append(detail)
-        return search_details
+            tasks = [get_content_by_url(item.get("link"), search_details) for item in items]
+            await asyncio.gather(*tasks)
+        final_details = [await search_details.pop() for _ in range(len(search_details.list))]
+        return final_details
     except Exception as e:
         logger.error(f"call google search api error: \n{e}")
         logger.error(traceback.format_exc())
         return None
 
 
-async def get_content_by_url(url):
+async def get_content_by_url(url, _search_details: AsyncSafeList):
     try:
         html_str = await get_rendered_html(url)
         if html_str:
@@ -69,11 +80,13 @@ async def get_content_by_url(url):
             comments = soup.find_all(string=lambda text: isinstance(text, Comment))
             for comment in comments:
                 comment.extract()
-            logger.info('--------------------------')
-            logger.info(body.prettify())
-            logger.info('--------------------------')
-            return body.decode_contents()
+            content = body.decode_contents()
+            if content:
+                detail = {"url": url}
+                detail['content'] = content
+                await _search_details.append(detail)
     except Exception as e:
         logger.error(f"call get_content_by_url error, url={url}, {e}")
         logger.error(traceback.format_exc())
-    return ""
+
+
