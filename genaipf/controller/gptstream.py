@@ -94,6 +94,7 @@ async def send_stream_chat(request: Request):
     model = request_params.get('model', '')
     source = request_params.get('source', 'v001')
     owner = request_params.get('owner', 'MountainLion')
+    agent_id = request_params.get('agent_id', None)
     # messages = process_messages(messages)
     output_type = request_params.get('output_type', 'text') # text or voice; (voice is mp3)
     # messages = [{"role": msg["role"], "content": msg["content"]} for msg in process_messages(messages)]
@@ -113,7 +114,7 @@ async def send_stream_chat(request: Request):
     try:
         async def event_generator(_response):
             # async for _str in getAnswerAndCallGpt(request_params['content'], userid, msggroup, language, messages):
-            async for _str in getAnswerAndCallGpt(request_params.get('content'), userid, msggroup, language, messages, device_no, question_code, model, output_type, source, owner):
+            async for _str in getAnswerAndCallGpt(request_params.get('content'), userid, msggroup, language, messages, device_no, question_code, model, output_type, source, owner, agent_id):
                 await _response.write(f"data:{_str}\n\n")
                 await asyncio.sleep(0.01)
         return ResponseStream(event_generator, headers={"accept": "application/json"}, content_type="text/event-stream")
@@ -140,6 +141,7 @@ async def send_chat(request: Request):
     model = request_params.get('model', '')
     source = request_params.get('source', 'v001')
     owner = request_params.get('owner', 'MountainLion')
+    agent_id = request_params.get('agent_id', None)
     # messages = process_messages(messages)
     output_type = request_params.get('output_type', 'text') # text or voice; (voice is mp3)
     # messages = [{"role": msg["role"], "content": msg["content"]} for msg in process_messages(messages)]
@@ -157,7 +159,7 @@ async def send_chat(request: Request):
         logger.error(traceback.format_exc())
 
     try:
-        response = await getAnswerAndCallGptData(request_params.get('content'), userid, msggroup, language, messages, device_no, question_code, model, output_type, source, owner)
+        response = await getAnswerAndCallGptData(request_params.get('content'), userid, msggroup, language, messages, device_no, question_code, model, output_type, source, owner, agent_id)
         return response
 
     except Exception as e:
@@ -165,7 +167,7 @@ async def send_chat(request: Request):
         logger.error(traceback.format_exc())
    
 
-async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messages, device_no, question_code, model, output_type, source, owner):
+async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messages, device_no, question_code, model, output_type, source, owner, agent_id):
     t0 = time.time()
     MAX_CH_LENGTH = 8000
     _ensure_ascii = False
@@ -279,6 +281,8 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
                     subtype_task_result = await DispatcherCallGpt.get_subtype_task_result(data["subtype"], language, data)
                     preset_type, preset_content, data = DispatcherCallGpt.gen_preset_content(data["subtype"], subtype_task_result, data)
                     yield json.dumps(get_format_output("preset", preset_content, type=preset_type))
+            elif item["role"] == "sources":
+                sources = item["content"]
             else:
                 yield json.dumps(item)
 
@@ -316,7 +320,8 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         device_no,
         base64_type,
         base64_content,
-        file_type
+        file_type,
+        agent_id
         )
         await gpt_service.add_gpt_message_with_code(gpt_message)
         if data['type'] == 'coin_swap':  # 如果是兑换类型，存库时候需要加一个过期字段，前端用于判断不再发起交易
@@ -336,12 +341,13 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
             device_no,
             None,
             None,
-            None
+            None,
+            agent_id
         )
         await gpt_service.add_gpt_message_with_code(gpt_message)
 
 
-async def  getAnswerAndCallGptData(question, userid, msggroup, language, front_messages, device_no, question_code, model, output_type, source, owner):
+async def  getAnswerAndCallGptData(question, userid, msggroup, language, front_messages, device_no, question_code, model, output_type, source, owner, agent_id):
     t0 = time.time()
     MAX_CH_LENGTH = 8000
     _ensure_ascii = False
@@ -422,7 +428,8 @@ async def  getAnswerAndCallGptData(question, userid, msggroup, language, front_m
         userid,
         msggroup,
         question_code,
-        device_no
+        device_no,
+        agent_id
         )
         await gpt_service.add_gpt_message_with_code(gpt_message)
         if data['type'] == 'coin_swap':  # 如果是兑换类型，存库时候需要加一个过期字段，前端用于判断不再发起交易
@@ -437,7 +444,8 @@ async def  getAnswerAndCallGptData(question, userid, msggroup, language, front_m
             userid,
             msggroup,
             data['code'],
-            device_no
+            device_no,
+            agent_id
         )
         await gpt_service.add_gpt_message_with_code(gpt_message)
     # else :
