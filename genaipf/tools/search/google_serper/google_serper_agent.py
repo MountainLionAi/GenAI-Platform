@@ -47,9 +47,8 @@ def parse_snippets(results, type, k):
             )
         for attribute, value in result.get("attributes", {}).items():
             snippets.append(f"{attribute}: {value}.")
-    if results.get("organic"):
-        resp["organic"] = results.get("organic")
     if len(snippets) == 0:
         snippets = ""
     resp["snippets"] = snippets
     return resp
+
