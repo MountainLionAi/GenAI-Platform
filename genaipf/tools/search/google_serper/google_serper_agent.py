@@ -2,13 +2,21 @@ import os
 from genaipf.conf.server import GOOGLE_SERPER_API_KEY
 os.environ["SERPER_API_KEY"] = GOOGLE_SERPER_API_KEY 
 from langchain_community.utilities import GoogleSerperAPIWrapper
+from typing_extensions import Literal
 
-def google_serper(question, type="search", k=5):
+async def google_serper(question, type="search", k=5):
+    type: Literal["news", "search", "places", "images"] = "search"
     search = GoogleSerperAPIWrapper(type=type)
     results = search.results(question)
-    return  parse_snippets(results, k)   
+    return parse_snippets(results, type, k)   
 
-def parse_snippets(results, k):
+def parse_snippets(results, type, k):
+    result_key_for_type = {
+        "news": "news",
+        "places": "places",
+        "images": "images",
+        "search": "organic",
+    }
     resp = {}
     snippets = []
     if results.get("answerBox"):
@@ -32,7 +40,7 @@ def parse_snippets(results, k):
         for attribute, value in kg.get("attributes", {}).items():
             snippets.append(f"{title} {attribute}: {value}.")
 
-    for result in results[type][: k]:
+    for result in results[result_key_for_type[type]][: k]:
         if "snippet" in result:
             snippets.append(
                 f"Title:{result['title']}\nSnippet:{result['snippet']}\nLink:{result['link']}\n"
