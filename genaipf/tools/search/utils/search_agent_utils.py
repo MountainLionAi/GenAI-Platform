@@ -24,7 +24,7 @@ fixed_related_question = {
     }
 }
 
-not_need_search = ['generate_report']
+not_need_search = ['generate_report', 'qrcode_address']
 
 
 # system_prompt = f"""
