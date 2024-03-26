@@ -1,5 +1,5 @@
 from sanic import Blueprint
-from genaipf.controller import gpt, user, gptstream, gpt_oneshot, userRate, pay
+from genaipf.controller import gpt, user, gptstream, gpt_oneshot, userRate, pay, feedback
 from importlib import import_module
 from genaipf.conf.server import PLUGIN_NAME
 from genaipf.controller import assistant_api
@@ -43,6 +43,7 @@ blueprint_v1.add_route(user.get_captcha, "getCaptcha", methods=["GET"])
 blueprint_v1.add_route(user.verify_captcha_code, "testVerifyCode", methods=["POST"])
 blueprint_v1.add_route(user.modify_password, "modifyPassword", methods=["POST"])
 blueprint_v1.add_route(user.get_news, "newsbot", methods=["GET"])
+blueprint_v1.add_route(feedback.add_feedback, "addFeedback", methods=["POST"])
 
 # 支付相关接口
 blueprint_v1.add_route(pay.query_pay_card, "pay/cardInfo", methods=["GET"])

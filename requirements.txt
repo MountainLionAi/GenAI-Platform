@@ -42,3 +42,4 @@ metaphor-python==0.1.23
 tenacity==8.2.3
 langchain_openai==0.0.2
 aiocache==0.12.2
+pyppeteer==2.0.0

@@ -82,3 +82,29 @@ def contains_chinese(text):
         return 'zh'
     else:
         return 'en'
+
+
+async def aget_multi_coro(afunc, args_l, batch_size=10, timeout=None):
+    from tqdm.asyncio import tqdm
+    pbar = tqdm(total=len(args_l))
+    res_l = []
+    # 将任务分批处理
+    async def _afunc(*args):
+        try:
+            # 使用 asyncio.wait_for 设置超时
+            v = await asyncio.wait_for(afunc(*args), timeout)
+            return args, v
+        except asyncio.TimeoutError:
+            return args, None  # 根据需要处理超时情况
+    for i in range(0, len(args_l), batch_size):
+        batch = args_l[i:i + batch_size]
+        tasks = []
+        for args in batch:
+            tasks.append(asyncio.create_task(_afunc(*args)))
+        # 等待当前批次的所有任务完成
+        for t in asyncio.as_completed(tasks):
+            res = await t
+            res_l.append(res)
+            pbar.update(1)
+    pbar.close()
+    return res_l
