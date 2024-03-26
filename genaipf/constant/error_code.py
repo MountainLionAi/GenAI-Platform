@@ -19,7 +19,8 @@ ERROR_CODE = {
     "NO_REMAINING_TIMES": 5004,
     "PATH_API_ERROR": 6001,
     "SWAP_OUT_OF_RANGE": 6002,
-    "SWAP_ADDRESS_ERROR": 6003
+    "SWAP_ADDRESS_ERROR": 6003,
+    "RAG_CONFIG_ERROR": 6004,
 }
 
 # 错误信息
@@ -43,5 +44,6 @@ ERROR_MESSAGE = {
     5004: 'No remaining times',
     6001: 'Path Api Request Error',
     6002: 'Exchange Out of Range',
-    6003: 'Swap From or To Address Error'
+    6003: 'Swap From or To Address Error',
+    6004: 'Rag config error'
 }
