@@ -21,6 +21,7 @@ ERROR_CODE = {
     "SWAP_OUT_OF_RANGE": 6002,
     "SWAP_ADDRESS_ERROR": 6003,
     "RAG_CONFIG_ERROR": 6004,
+    "CHAIN_NOT_SUPPORTED": 7001,
 }
 
 # 错误信息
@@ -45,5 +46,6 @@ ERROR_MESSAGE = {
     6001: 'Path Api Request Error',
     6002: 'Exchange Out of Range',
     6003: 'Swap From or To Address Error',
-    6004: 'Rag config error'
+    6004: 'Rag config error',
+    7001: 'The Chain Not Supported'
 }
