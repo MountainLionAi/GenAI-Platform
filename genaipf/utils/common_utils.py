@@ -108,3 +108,20 @@ async def aget_multi_coro(afunc, args_l, batch_size=10, timeout=None):
             pbar.update(1)
     pbar.close()
     return res_l
+
+
+def convert_token_amount(amount, decimals, to_standard_unit=True):
+    """
+    转换代币的数量单位。
+
+    :param amount: 要转换的数量。
+    :param decimals: 代币的精度。
+    :param to_standard_unit: 如果为True，则将从最小单位转换到标准单位。如果为False，则反之。
+    :return: 转换后的数量。
+    """
+    if to_standard_unit:
+        # 从最小单位转换到标准单位
+        return amount / (10 ** decimals)
+    else:
+        # 从标准单位转换到最小单位
+        return int(amount * (10 ** decimals))
