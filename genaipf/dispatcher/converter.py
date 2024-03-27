@@ -28,7 +28,7 @@ async def convert_func_out_to_stream(chunk, messages, newest_question, model, la
                     'url': get_token_cmc_url(_param['symbol'])
                 }
             ]
-    if func_name != 'qrcode_address':
+    if func_name not in not_need_search:
         yield {
             "role": "sources", 
             "content": sources
@@ -69,7 +69,7 @@ async def convert_func_out_to_stream(chunk, messages, newest_question, model, la
                 }
                 _data = {}
     if func_name != 'generate_report' or (func_name == 'generate_report' and presetContent == {}):
-        if func_name != 'qrcode_address':
+        if func_name not in not_need_search:
             _messages = [x for x in messages if x["role"] != "system"]
             msgs = _messages[::]
             resp2 = await aref_answer_gpt_generator(msgs, model, language, _type, str(picked_content), related_qa, source, owner)
