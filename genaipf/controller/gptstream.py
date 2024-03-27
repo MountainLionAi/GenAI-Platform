@@ -205,7 +205,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     logger.info(f'>>>>> frist related_qa: {related_qa}')
     # yield json.dumps(get_format_output("chatSerpResults", sources))
     # yield json.dumps(get_format_output("chatRelatedResults", related_questions))
-    if source == 'v004' or source == 'v003':
+    if source == 'v003':
         used_rag = False
         responseType = 1
     # 判断是分析还是回答
@@ -238,6 +238,8 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         await resp1.aclose()
         sources, related_qa = await sources_task
         logger.info(f'>>>>> second related_qa: {related_qa}')
+        if source == 'v004':
+            sources = []
         yield json.dumps(get_format_output("chatSerpResults", sources))
         if last_front_msg.get('type') == 'image' and last_front_msg.get('base64content') is not None:
             msgs = msgs[:-1] + buildVisionMessage(last_front_msg)
@@ -290,6 +292,15 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         # 对于语音输出，将文本转换为语音并编码
         base64_encoded_voice = textToSpeech(_tmp_text)
         yield json.dumps(get_format_output("tts", base64_encoded_voice, "voice_mp3_v001"))
+    if source == 'v004':
+        resp2 = await aref_answer_gpt_generator(msgs, model, language, "attitude", "", related_qa, source, owner)
+        async for item in resp2:
+            if item["role"] == "inner_____gpt_whole_text":
+                # _tmp_text = item["content"]
+                _tmp_attitude = item["content"]
+            else:
+                _tmp_attitude = item["content"]
+        data['attitude'] = _tmp_attitude
     data.update({
         'content' : _tmp_text,
         'code' : _code
