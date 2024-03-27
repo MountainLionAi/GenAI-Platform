@@ -73,6 +73,24 @@ async def get_web_urls_of_msg(front_messages):
     return related_urls
         
 
+
+# 获取相关文章摘要
+async def get_article_summary(front_messages):
+    '''
+    {
+        "messages": [],
+        "article_text": "xxx"
+    }
+    '''
+    try:
+        msgs = LionPromptCommon.get_prompted_messages("summary_page_by_msg", front_messages)
+        # summary_str = await simple_achat(msgs, model="gpt-4-1106-preview")
+        summary_str = await simple_achat(msgs)
+        return summary_str
+    except Exception as e:
+        logger.error(f'解析相关问题失败: {e}')
+        return None
+
 async def aload_web(url):
     try:
         # print(f"url: {url}")
@@ -100,4 +118,29 @@ async def get_web_summary_of_msg(front_messages, timeout=10.1):
     urls = await get_web_urls_of_msg(front_messages)
     urls = [[u] for u in urls]
     res = await summarize_urls(urls, timeout)
+    return res
+
+async def aload_web_by_msgs(url, msgs):
+    """
+    msgs: {"messages": [
+            {"role": "user", "content": "swftc 最新价格"},
+        ]}
+    """
+    try:
+        # print(f"url: {url}")
+        from langchain.chains.summarize import load_summarize_chain
+        from langchain_community.document_loaders import WebBaseLoader
+        from langchain_openai import ChatOpenAI
+        loader = WebBaseLoader(url)
+        aload = sync_to_async(loader.load)
+        res = await aload()
+        data = {"messages": msgs["messages"], "article_text": res}
+        res = await get_article_summary(data)
+        return res
+    except Exception as e:
+        logger.error(f'aload_web: {e}')
+        return None
+
+async def summarize_urls_by_msg(urls_and_msgs, timeout=10.1):
+    res = await aget_multi_coro(aload_web_by_msgs, urls_and_msgs, 10, timeout)
     return res
