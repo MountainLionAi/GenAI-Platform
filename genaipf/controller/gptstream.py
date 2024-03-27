@@ -193,6 +193,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     related_qa = get_qa_vdb_topk(newest_question)
     language_ = contains_chinese(newest_question)
     _code = generate_unique_id()
+    # responseType （0是回答，1是分析）
     responseType = 0
     yield json.dumps(get_format_output("code", _code))
     # 判断最新的问题中是否含有中文

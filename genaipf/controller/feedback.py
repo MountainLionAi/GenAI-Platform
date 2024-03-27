@@ -15,7 +15,7 @@ async def add_feedback(request: Request):
     seriousness = request_params.get('seriousness')
     type = request_params.get('type')
     content = request_params.get('content')
-    bug_location = request_params.get('tbug_locationype', '')
+    bug_location = request_params.get('bug_location', '')
     base64_content = request_params.get('base64_content', '')
     userid = request_params.get('userid', 0)
     info = [seriousness, type, bug_location, content, base64_content, userid]
