@@ -1,9 +1,11 @@
+import asyncio
 import json
 from genaipf.conf.server import OPENAI_API_KEY
 from genaipf.utils.log_utils import logger
 from genaipf.dispatcher.prompts_common import LionPromptCommon
 from genaipf.dispatcher.utils import simple_achat
-from genaipf.tools.search.metaphor.metaphor_search_agent import other_search
+from genaipf.tools.search.metaphor.metaphor_search_agent import other_search, metaphor_search2
+from genaipf.tools.search.google_serper.goole_serper_client import GoogleSerperClient
 from genaipf.utils.common_utils import aget_multi_coro, sync_to_async
 
 # 获取是否需要查询task
@@ -46,7 +48,8 @@ async def get_sources_tasks(front_messages, related_qa, language):
     sources = []
     final_related_qa = related_qa
     if enrich_question != 'False':
-        sources, content = await other_search(enrich_question, related_qa, language)
+        # sources, content = await other_search(enrich_question, related_qa, language)
+        sources, content = await multi_search(enrich_question, related_qa, language)
         final_related_qa = content
     return sources, final_related_qa
 
@@ -144,3 +147,13 @@ async def aload_web_by_msgs(url, msgs):
 async def summarize_urls_by_msg(urls_and_msgs, timeout=10.1):
     res = await aget_multi_coro(aload_web_by_msgs, urls_and_msgs, 10, timeout)
     return res
+
+
+async def multi_search(questions: str, related_qa=[], language=None):
+    multi_search_task = []
+    google_serper_client = GoogleSerperClient()
+    multi_search_task.append(google_serper_client.search(questions))
+    multi_search_task.append(metaphor_search2(questions, language))
+    result = await asyncio.gather(*multi_search_task)
+    print(result)
+    return True
