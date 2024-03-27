@@ -46,6 +46,8 @@ async def convert_func_out_to_stream(chunk, messages, newest_question, model, la
         reslt = await preset_conf["get_and_pick"](*_args)
         if len(reslt) == 2:
             presetContent, picked_content = reslt
+            if func_name == 'coin_swap' and presetContent.get('preset_type') == 'coin_swap1':
+                sub_func_name = 'coin_swap1'
         elif len(reslt) == 3:
             presetContent, picked_content, _type = reslt
         if preset_conf.get("has_preset_content") and (_param.get("need_chart") or preset_conf.get("need_preset")) and presetContent != {}:
@@ -69,7 +71,7 @@ async def convert_func_out_to_stream(chunk, messages, newest_question, model, la
                 }
                 _data = {}
     if func_name != 'generate_report' or (func_name == 'generate_report' and presetContent == {}):
-        if func_name not in not_need_search:
+        if func_name not in not_need_search and sub_func_name is not 'coin_swap1':
             _messages = [x for x in messages if x["role"] != "system"]
             msgs = _messages[::]
             resp2 = await aref_answer_gpt_generator(msgs, model, language, _type, str(picked_content), related_qa, source, owner)
