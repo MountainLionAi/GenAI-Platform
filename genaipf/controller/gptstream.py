@@ -303,6 +303,8 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
             else:
                 _tmp_attitude = item["content"]
         yield json.dumps(get_format_output("attitude", _tmp_attitude))
+        # _relate_news = await get_related_news(msgs)
+        # yield json.dumps(get_format_output("chatRelatedNews", _relate_news))
     data.update({
         'content' : _tmp_text,
         'code' : _code
