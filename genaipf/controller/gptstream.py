@@ -28,7 +28,7 @@ from genaipf.utils.redis_utils import RedisConnectionPool
 from genaipf.conf.server import IS_INNER_DEBUG, IS_UNLIMIT_USAGE
 from genaipf.utils.speech_utils import transcribe, textToSpeech
 from genaipf.tools.search.utils.search_agent_utils import other_search
-from genaipf.tools.search.utils.search_agent_utils import premise_search, premise_search1, premise_search2, new_question_question
+from genaipf.tools.search.utils.search_agent_utils import premise_search, premise_search1, premise_search2, new_question_question, get_related_news
 from genaipf.utils.common_utils import contains_chinese
 import os
 import base64
@@ -303,8 +303,8 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
             else:
                 _tmp_attitude = item["content"]
         yield json.dumps(get_format_output("attitude", _tmp_attitude))
-        # _relate_news = await get_related_news(msgs)
-        # yield json.dumps(get_format_output("chatRelatedNews", _relate_news))
+        _relate_news = await get_related_news(msgs, language)
+        yield json.dumps(get_format_output("chatRelatedNews", _relate_news))
     data.update({
         'content' : _tmp_text,
         'code' : _code
