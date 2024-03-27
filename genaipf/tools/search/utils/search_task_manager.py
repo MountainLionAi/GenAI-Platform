@@ -91,13 +91,13 @@ async def aload_web(url):
         logger.error(f'aload_web: {e}')
         return None
     
-async def summarize_urls(urls):
-    res = await aget_multi_coro(aload_web, urls, 10, 10.1)
+async def summarize_urls(urls, timeout=10.1):
+    res = await aget_multi_coro(aload_web, urls, 10, timeout)
     return res
 
 
-async def get_web_summary_of_msg(front_messages):
+async def get_web_summary_of_msg(front_messages, timeout=10.1):
     urls = await get_web_urls_of_msg(front_messages)
     urls = [[u] for u in urls]
-    res = await summarize_urls(urls)
+    res = await summarize_urls(urls, timeout)
     return res
