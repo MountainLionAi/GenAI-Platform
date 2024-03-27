@@ -302,7 +302,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
                 _tmp_attitude = item["content"]
             else:
                 _tmp_attitude = item["content"]
-        data['attitude'] = _tmp_attitude
+        yield json.dumps(get_format_output("attitude", _tmp_attitude))
     data.update({
         'content' : _tmp_text,
         'code' : _code
