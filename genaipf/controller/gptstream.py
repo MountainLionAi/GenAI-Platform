@@ -28,7 +28,7 @@ from genaipf.utils.redis_utils import RedisConnectionPool
 from genaipf.conf.server import IS_INNER_DEBUG, IS_UNLIMIT_USAGE
 from genaipf.utils.speech_utils import transcribe, textToSpeech
 from genaipf.tools.search.utils.search_agent_utils import other_search
-from genaipf.tools.search.utils.search_agent_utils import premise_search, premise_search1, premise_search2, new_question_question
+from genaipf.tools.search.utils.search_agent_utils import premise_search, premise_search1, premise_search2, new_question_question, get_related_news
 from genaipf.utils.common_utils import contains_chinese
 import os
 import base64
@@ -303,7 +303,9 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
                 _tmp_attitude = item["content"]
             else:
                 _tmp_attitude = item["content"]
-        data['attitude'] = _tmp_attitude
+        yield json.dumps(get_format_output("attitude", _tmp_attitude))
+        _relate_news = await get_related_news(msgs, language)
+        yield json.dumps(get_format_output("chatRelatedNews", _relate_news))
     data.update({
         'content' : _tmp_text,
         'code' : _code
@@ -338,7 +340,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         agent_id
         )
         await gpt_service.add_gpt_message_with_code(gpt_message)
-        if data['type'] == 'coin_swap':  # 如果是兑换类型，存库时候需要加一个过期字段，前端用于判断不再发起交易
+        if data['type'] in ['coin_swap', 'wallet_balance', 'token_transfer']:  # 如果是兑换类型，存库时候需要加一个过期字段，前端用于判断不再发起交易
             data['expired'] = True
         # TODO 速度问题暂时注释掉
         if used_rag:

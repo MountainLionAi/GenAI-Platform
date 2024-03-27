@@ -7,6 +7,7 @@ from genaipf.constant.error_code import ERROR_CODE
 from bs4 import BeautifulSoup,Comment
 from genaipf.utils.rendered_html_util import get_rendered_html
 import asyncio
+from genaipf.tools.search.utils.search_task_manager import summarize_urls
 
 
 class AsyncSafeList:
@@ -21,6 +22,33 @@ class AsyncSafeList:
     async def pop(self):
         async with self.lock:
             return self.list.pop()
+
+
+
+async def google_search_summarize_by_llm(search_content: str, num: int=5):
+    logger.info(f'call google_search_summarize_by_llm search_content={search_content}, num={num}')
+    url = rag_conf.GOOGLE_SEARCH_URL
+    key = rag_conf.API_KEY
+    cx = rag_conf.CX
+    if url is None or url == "" or key is None or key == "" or cx is None or cx == "":
+        raise CustomerError(status_code=ERROR_CODE['RAG_CONFIG_ERROR'])
+    try:
+        client = AsyncHTTPClient()
+        params = {"key": key, "cx": cx, "q": search_content, "num": num}
+        headers = {"Content-Type": "application/json; charset=UTF-8"}
+        result = await client.get_json(url, params, headers)
+        if result and result.get('items') and len(result.get('items')) > 0:
+            items = result.get('items')
+            urls = [[item.get("link")] for item in items]
+            summary = await summarize_urls(urls)
+            if len(summary) > 0:
+                details = [{"url": su[0][0], "content": su[1]} for su in summary]
+                return details
+            return []
+    except Exception as e:
+        logger.error(f"call google_search_summarize_by_llm error: \n{e}")
+        logger.error(traceback.format_exc())
+        return None
 
 
 async def google_search(search_content: str, num: int = 5):
@@ -43,7 +71,7 @@ async def google_search(search_content: str, num: int = 5):
         final_details = [await search_details.pop() for _ in range(len(search_details.list))]
         return final_details
     except Exception as e:
-        logger.error(f"call google search api error: \n{e}")
+        logger.error(f"call google_search error: \n{e}")
         logger.error(traceback.format_exc())
         return None
 
