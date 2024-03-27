@@ -209,6 +209,8 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         used_rag = False
         responseType = 1
     # 判断是分析还是回答
+    if source == 'v004':
+        responseType = 1
     yield json.dumps(get_format_output("responseType", responseType))
     if used_rag:
         is_need_search, sources_task, related_questions_task = await premise_search2(front_messages, related_qa, language_)
