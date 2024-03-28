@@ -18,12 +18,27 @@ from genaipf.utils.redis_utils import RedisConnectionPool
 # top_p=0.9 # 过滤掉低于阈值的 token 确保结果不散漫
 # frequency_penalty=0.1 # [-2,2]之间，该值越大则更倾向于产生不同的内容
 # presence_penalty=0.1 # [-2,2]之间，该值越大则更倾向于产生不同的内容
+
+# 240201
+# temperature=0.8 # 值在[0,1]之间，越大表示回复越具有不确定性
+# max_tokens=2000 # 输出的最大 token 数
+# top_p=0.85 # 过滤掉低于阈值的 token 确保结果不散漫
+# frequency_penalty=0.3 # [-2,2]之间，该值越大则更倾向于产生不同的内容
+# presence_penalty=0.2 # [-2,2]之间，该值越大则更倾向于产生不同的内容
+
+# 240327
 temperature=0.8 # 值在[0,1]之间，越大表示回复越具有不确定性
-max_tokens=2000 # 输出的最大 token 数
+max_tokens=4000 # 输出的最大 token 数
 top_p=0.85 # 过滤掉低于阈值的 token 确保结果不散漫
 frequency_penalty=0.3 # [-2,2]之间，该值越大则更倾向于产生不同的内容
 presence_penalty=0.2 # [-2,2]之间，该值越大则更倾向于产生不同的内容
 
+# typingmind 默认参数，gpt4-0125 最多补全 4096
+# max_tokens=4000 # 输出的最大 token 数
+# temperature=0.7 # 值在[0,1]之间，越大表示回复越具有不确定性
+# top_p=1.0 # 过滤掉低于阈值的 token 确保结果不散漫
+# frequency_penalty=0 # [-2,2]之间，该值越大则更倾向于产生不同的内容
+# presence_penalty=0 # [-2,2]之间，该值越大则更倾向于产生不同的内容
 
 def generate_unique_id():
     redis_client = RedisConnectionPool().get_connection()

@@ -193,6 +193,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     related_qa = get_qa_vdb_topk(newest_question)
     language_ = contains_chinese(newest_question)
     _code = generate_unique_id()
+    # responseType （0是回答，1是分析）
     responseType = 0
     yield json.dumps(get_format_output("code", _code))
     # 判断最新的问题中是否含有中文
@@ -339,7 +340,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         agent_id
         )
         await gpt_service.add_gpt_message_with_code(gpt_message)
-        if data['type'] == 'coin_swap':  # 如果是兑换类型，存库时候需要加一个过期字段，前端用于判断不再发起交易
+        if data['type'] in ['coin_swap', 'wallet_balance', 'token_transfer']:  # 如果是兑换类型，存库时候需要加一个过期字段，前端用于判断不再发起交易
             data['expired'] = True
         # TODO 速度问题暂时注释掉
         if used_rag:
