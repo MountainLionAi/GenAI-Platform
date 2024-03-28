@@ -252,6 +252,12 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         resp1 = await afunc_gpt_generator(msgs, used_gpt_functions, language, model, "", related_qa, source, owner, isvision)
         chunk = await asyncio.wait_for(resp1.__anext__(), timeout=20)
     yield json.dumps(get_format_output("chatRelatedResults", related_questions))
+    if source == 'v004':
+        from genaipf.dispatcher.callgpt import DispatcherCallGpt
+        _data = {"msgs":msgs, "model":model, "preset_name":"attitude", "source":source, "owner":owner}
+        _tmp_attitude, _related_news = await DispatcherCallGpt.get_subtype_task_result(source, language, _data)
+        yield json.dumps(get_format_output("attitude", _tmp_attitude))
+        yield json.dumps(get_format_output("chatRelatedNews", _related_news))
 
     assert chunk["role"] == "step"
     if chunk["content"] == "llm_yielding":
@@ -296,12 +302,6 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         # 对于语音输出，将文本转换为语音并编码
         base64_encoded_voice = textToSpeech(_tmp_text)
         yield json.dumps(get_format_output("tts", base64_encoded_voice, "voice_mp3_v001"))
-    if source == 'v004':
-        from genaipf.dispatcher.callgpt import DispatcherCallGpt
-        _data = {"msgs":msgs, "model":model, "preset_name":"attitude", "source":source, "owner":owner}
-        _tmp_attitude, _related_news = await DispatcherCallGpt.get_subtype_task_result(source, language, _data)
-        yield json.dumps(get_format_output("attitude", _tmp_attitude))
-        yield json.dumps(get_format_output("chatRelatedNews", _related_news))
     data.update({
         'content' : _tmp_text,
         'code' : _code
