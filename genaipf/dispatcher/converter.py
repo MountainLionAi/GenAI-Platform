@@ -7,7 +7,7 @@ from genaipf.dispatcher.postprocess import posttext_mapping, PostTextParam
 from genaipf.tools.search.utils.search_agent_utils import not_need_search
 from genaipf.services.cmc_token import get_token_cmc_url
 
-async def convert_func_out_to_stream(chunk, messages, newest_question, model, language, related_qa, source, owner, sources=[], is_need_search=False, sources_task=None):
+async def convert_func_out_to_stream(chunk, messages, newest_question, model, language, related_qa, source, owner, sources=[], is_need_search=False, sources_task=None, chain_id=''):
     """
     chunk: afunc_gpt_generator return
     """
@@ -15,6 +15,7 @@ async def convert_func_out_to_stream(chunk, messages, newest_question, model, la
     assert chunk["role"] == "inner_____func_param"
     _param = chunk["content"]
     _param["language"] = language
+    _param["chain_id"] = chain_id
     func_name = _param["func_name"]
     sub_func_name = _param["subtype"]
     logger.info(f'>>>>> func_name: {func_name}, sub_func_name: {sub_func_name}, _param: {_param}')

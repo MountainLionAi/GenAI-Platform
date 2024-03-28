@@ -93,6 +93,7 @@ async def send_stream_chat(request: Request):
     question_code = request_params.get('code', '')
     model = request_params.get('model', '')
     source = request_params.get('source', 'v001')
+    chain_id = request_params.get('chain_id', '')
     owner = request_params.get('owner', 'MountainLion')
     agent_id = request_params.get('agent_id', None)
     # messages = process_messages(messages)
@@ -114,7 +115,7 @@ async def send_stream_chat(request: Request):
     try:
         async def event_generator(_response):
             # async for _str in getAnswerAndCallGpt(request_params['content'], userid, msggroup, language, messages):
-            async for _str in getAnswerAndCallGpt(request_params.get('content'), userid, msggroup, language, messages, device_no, question_code, model, output_type, source, owner, agent_id):
+            async for _str in getAnswerAndCallGpt(request_params.get('content'), userid, msggroup, language, messages, device_no, question_code, model, output_type, source, owner, agent_id, chain_id):
                 await _response.write(f"data:{_str}\n\n")
                 await asyncio.sleep(0.01)
         return ResponseStream(event_generator, headers={"accept": "application/json"}, content_type="text/event-stream")
@@ -167,7 +168,7 @@ async def send_chat(request: Request):
         logger.error(traceback.format_exc())
    
 
-async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messages, device_no, question_code, model, output_type, source, owner, agent_id):
+async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messages, device_no, question_code, model, output_type, source, owner, agent_id, chain_id):
     t0 = time.time()
     MAX_CH_LENGTH = 8000
     _ensure_ascii = False
@@ -261,7 +262,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
                 yield json.dumps(chunk)
     elif chunk["content"] == "agent_routing":
         chunk = await resp1.__anext__()
-        stream_gen = convert_func_out_to_stream(chunk, messages, newest_question, model, language, related_qa, source, owner, sources, is_need_search, sources_task)
+        stream_gen = convert_func_out_to_stream(chunk, messages, newest_question, model, language, related_qa, source, owner, sources, is_need_search, sources_task, chain_id)
         async for item in stream_gen:
             if item["role"] == "inner_____gpt_whole_text":
                 _tmp_text = item["content"]
