@@ -28,7 +28,7 @@ from genaipf.utils.redis_utils import RedisConnectionPool
 from genaipf.conf.server import IS_INNER_DEBUG, IS_UNLIMIT_USAGE
 from genaipf.utils.speech_utils import transcribe, textToSpeech
 from genaipf.tools.search.utils.search_agent_utils import other_search
-from genaipf.tools.search.utils.search_agent_utils import premise_search, premise_search1, premise_search2, new_question_question
+from genaipf.tools.search.utils.search_agent_utils import premise_search, premise_search1, premise_search2, new_question_question, get_related_news
 from genaipf.utils.common_utils import contains_chinese
 import os
 import base64
@@ -93,6 +93,7 @@ async def send_stream_chat(request: Request):
     question_code = request_params.get('code', '')
     model = request_params.get('model', '')
     source = request_params.get('source', 'v001')
+    chain_id = request_params.get('chain_id', '')
     owner = request_params.get('owner', 'MountainLion')
     agent_id = request_params.get('agent_id', None)
     # messages = process_messages(messages)
@@ -114,7 +115,7 @@ async def send_stream_chat(request: Request):
     try:
         async def event_generator(_response):
             # async for _str in getAnswerAndCallGpt(request_params['content'], userid, msggroup, language, messages):
-            async for _str in getAnswerAndCallGpt(request_params.get('content'), userid, msggroup, language, messages, device_no, question_code, model, output_type, source, owner, agent_id):
+            async for _str in getAnswerAndCallGpt(request_params.get('content'), userid, msggroup, language, messages, device_no, question_code, model, output_type, source, owner, agent_id, chain_id):
                 await _response.write(f"data:{_str}\n\n")
                 await asyncio.sleep(0.01)
         return ResponseStream(event_generator, headers={"accept": "application/json"}, content_type="text/event-stream")
@@ -167,7 +168,7 @@ async def send_chat(request: Request):
         logger.error(traceback.format_exc())
    
 
-async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messages, device_no, question_code, model, output_type, source, owner, agent_id):
+async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messages, device_no, question_code, model, output_type, source, owner, agent_id, chain_id):
     t0 = time.time()
     MAX_CH_LENGTH = 8000
     _ensure_ascii = False
@@ -193,6 +194,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     related_qa = get_qa_vdb_topk(newest_question)
     language_ = contains_chinese(newest_question)
     _code = generate_unique_id()
+    # responseType （0是回答，1是分析）
     responseType = 0
     yield json.dumps(get_format_output("code", _code))
     # 判断最新的问题中是否含有中文
@@ -205,10 +207,12 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     logger.info(f'>>>>> frist related_qa: {related_qa}')
     # yield json.dumps(get_format_output("chatSerpResults", sources))
     # yield json.dumps(get_format_output("chatRelatedResults", related_questions))
-    if source == 'v004' or source == 'v003':
+    if source == 'v003':
         used_rag = False
         responseType = 1
     # 判断是分析还是回答
+    if source == 'v004':
+        responseType = 1
     yield json.dumps(get_format_output("responseType", responseType))
     if used_rag:
         is_need_search, sources_task, related_questions_task = await premise_search2(front_messages, related_qa, language_)
@@ -238,6 +242,8 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         await resp1.aclose()
         sources, related_qa = await sources_task
         logger.info(f'>>>>> second related_qa: {related_qa}')
+        if source == 'v004':
+            sources = []
         yield json.dumps(get_format_output("chatSerpResults", sources))
         if last_front_msg.get('type') == 'image' and last_front_msg.get('base64content') is not None:
             msgs = msgs[:-1] + buildVisionMessage(last_front_msg)
@@ -246,6 +252,12 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         resp1 = await afunc_gpt_generator(msgs, used_gpt_functions, language, model, "", related_qa, source, owner, isvision)
         chunk = await asyncio.wait_for(resp1.__anext__(), timeout=20)
     yield json.dumps(get_format_output("chatRelatedResults", related_questions))
+    if source == 'v004':
+        from genaipf.dispatcher.callgpt import DispatcherCallGpt
+        _data = {"msgs":msgs, "model":model, "preset_name":"attitude", "source":source, "owner":owner}
+        _tmp_attitude, _related_news = await DispatcherCallGpt.get_subtype_task_result(source, language, _data)
+        yield json.dumps(get_format_output("attitude", _tmp_attitude))
+        yield json.dumps(get_format_output("chatRelatedNews", _related_news))
 
     assert chunk["role"] == "step"
     if chunk["content"] == "llm_yielding":
@@ -256,7 +268,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
                 yield json.dumps(chunk)
     elif chunk["content"] == "agent_routing":
         chunk = await resp1.__anext__()
-        stream_gen = convert_func_out_to_stream(chunk, messages, newest_question, model, language, related_qa, source, owner, sources, is_need_search, sources_task)
+        stream_gen = convert_func_out_to_stream(chunk, messages, newest_question, model, language, related_qa, source, owner, sources, is_need_search, sources_task, chain_id)
         async for item in stream_gen:
             if item["role"] == "inner_____gpt_whole_text":
                 _tmp_text = item["content"]
@@ -324,7 +336,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         agent_id
         )
         await gpt_service.add_gpt_message_with_code(gpt_message)
-        if data['type'] == 'coin_swap':  # 如果是兑换类型，存库时候需要加一个过期字段，前端用于判断不再发起交易
+        if data['type'] in ['coin_swap', 'wallet_balance', 'token_transfer']:  # 如果是兑换类型，存库时候需要加一个过期字段，前端用于判断不再发起交易
             data['expired'] = True
         # TODO 速度问题暂时注释掉
         if used_rag:

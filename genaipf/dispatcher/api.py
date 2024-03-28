@@ -1,7 +1,8 @@
 import json
 import asyncio
+from genaipf.conf.server import os
 from genaipf.dispatcher.functions import gpt_functions
-from genaipf.dispatcher.utils import openai, OPENAI_PLUS_MODEL, openai_chat_completion_acreate
+from genaipf.dispatcher.utils import openai, OPENAI_PLUS_MODEL, CLAUDE_MODEL, openai_chat_completion_acreate
 from genaipf.utils.log_utils import logger
 from datetime import datetime
 from genaipf.dispatcher.prompts_v001 import LionPrompt
@@ -17,12 +18,27 @@ from genaipf.utils.redis_utils import RedisConnectionPool
 # top_p=0.9 # 过滤掉低于阈值的 token 确保结果不散漫
 # frequency_penalty=0.1 # [-2,2]之间，该值越大则更倾向于产生不同的内容
 # presence_penalty=0.1 # [-2,2]之间，该值越大则更倾向于产生不同的内容
+
+# 240201
+# temperature=0.8 # 值在[0,1]之间，越大表示回复越具有不确定性
+# max_tokens=2000 # 输出的最大 token 数
+# top_p=0.85 # 过滤掉低于阈值的 token 确保结果不散漫
+# frequency_penalty=0.3 # [-2,2]之间，该值越大则更倾向于产生不同的内容
+# presence_penalty=0.2 # [-2,2]之间，该值越大则更倾向于产生不同的内容
+
+# 240327
 temperature=0.8 # 值在[0,1]之间，越大表示回复越具有不确定性
-max_tokens=2000 # 输出的最大 token 数
+max_tokens=4000 # 输出的最大 token 数
 top_p=0.85 # 过滤掉低于阈值的 token 确保结果不散漫
 frequency_penalty=0.3 # [-2,2]之间，该值越大则更倾向于产生不同的内容
 presence_penalty=0.2 # [-2,2]之间，该值越大则更倾向于产生不同的内容
 
+# typingmind 默认参数，gpt4-0125 最多补全 4096
+# max_tokens=4000 # 输出的最大 token 数
+# temperature=0.7 # 值在[0,1]之间，越大表示回复越具有不确定性
+# top_p=1.0 # 过滤掉低于阈值的 token 确保结果不散漫
+# frequency_penalty=0 # [-2,2]之间，该值越大则更倾向于产生不同的内容
+# presence_penalty=0 # [-2,2]之间，该值越大则更倾向于产生不同的内容
 
 def generate_unique_id():
     redis_client = RedisConnectionPool().get_connection()
@@ -47,6 +63,16 @@ async def aget_error_generator(msg="ERROR"):
         await asyncio.sleep(0.02)
         yield get_format_output("error", c)
 
+async def awrap_claude_generator(lc_response):
+    resp = lc_response
+    yield get_format_output("step", "llm_yielding")
+    _tmp_text = ""
+    async for c in resp:
+        if c is not None:
+            _tmp_text += c
+            yield get_format_output("gpt", c)
+    yield get_format_output("inner_____gpt_whole_text", _tmp_text)
+    
 async def awrap_gpt_generator(gpt_response):
     resp = gpt_response
     chunk = await resp.__anext__()
@@ -147,47 +173,75 @@ async def aref_answer_gpt_generator(messages, model='', language=LionPrompt.defa
     use_model = 'gpt-3.5-turbo-0125'
     if model == 'ml-plus':
         use_model = OPENAI_PLUS_MODEL
-    for i in range(5):
-        mlength = len(messages)
+    else:
+        use_model = CLAUDE_MODEL
+    if source == 'v002':
+        content = prompts_v002.LionPrompt.get_aref_answer_prompt(language, preset_name, picked_content, related_qa, use_model)
+    elif source == 'v003':
+        data = {
+            'format' : owner
+        }
+        content = prompts_v003.LionPrompt.get_aref_answer_prompt(language, preset_name, picked_content, related_qa, use_model, data)
+    elif source == 'v004':
+        content = prompts_v004.LionPrompt.get_aref_answer_prompt(language, preset_name, picked_content, related_qa, use_model)
+    else:
+        content = LionPrompt.get_aref_answer_prompt(language, preset_name, picked_content, related_qa, use_model, '', owner)
+    system = {
+        "role": "system",
+        "content": content
+    }
+    if use_model.startswith("gpt"):
+        for i in range(5):
+            mlength = len(messages)
+            try:
+                # messages.insert(0, system)
+                # print(f'>>>>>test 003 : {messages}')
+                _messages = [system] + messages
+                response = await openai_chat_completion_acreate(
+                    model=use_model,
+                    messages=_messages,
+                    functions=None,
+                    temperature=temperature,  # 值在[0,1]之间，越大表示回复越具有不确定性
+                    max_tokens=max_tokens, # 输出的最大 token 数
+                    top_p=top_p, # 过滤掉低于阈值的 token 确保结果不散漫
+                    frequency_penalty=frequency_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
+                    presence_penalty=presence_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
+                    stream=True
+                )
+                logger.info(f'aref_answer_gpt called')
+                return awrap_gpt_generator(response)
+            except BadRequestError as e:
+                print(e)
+                logger.error(f'aref_answer_gpt_generator BadRequestError {e}', e)
+                messages = messages[mlength // 2:]
+            except Exception as e:
+                print(e)
+                logger.error(f'aref_answer_gpt_generator question_JSON call gpt4 error {e}', e)
+                return aget_error_generator(str(e))
+    elif use_model.startswith("claude"):
         try:
-            if source == 'v002':
-                content = prompts_v002.LionPrompt.get_aref_answer_prompt(language, preset_name, picked_content, related_qa, use_model)
-            elif source == 'v003':
-                data = {
-                    'format' : owner
-                }
-                content = prompts_v003.LionPrompt.get_aref_answer_prompt(language, preset_name, picked_content, related_qa, use_model, data)
-            elif source == 'v004':
-                content = prompts_v004.LionPrompt.get_aref_answer_prompt(language, preset_name, picked_content, related_qa, use_model)
-            else:
-                content = LionPrompt.get_aref_answer_prompt(language, preset_name, picked_content, related_qa, use_model, '', owner)
-            system = {
-                "role": "system",
-                "content": content
-            }
-            # messages.insert(0, system)
-            # print(f'>>>>>test 003 : {messages}')
-            _messages = [system] + messages
-            response = await openai_chat_completion_acreate(
-                model=use_model,
-                messages=_messages,
-                functions=None,
-                temperature=temperature,  # 值在[0,1]之间，越大表示回复越具有不确定性
-                max_tokens=max_tokens, # 输出的最大 token 数
-                top_p=top_p, # 过滤掉低于阈值的 token 确保结果不散漫
-                frequency_penalty=frequency_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
-                presence_penalty=presence_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
-                stream=True
-            )
-            logger.info(f'aref_answer_gpt called')
-            return awrap_gpt_generator(response)
-        except BadRequestError as e:
-            print(e)
-            logger.error(f'aref_answer_gpt_generator BadRequestError {e}', e)
-            messages = messages[mlength // 2:]
+            anthropic_api_key = os.getenv("ANTHROPIC_API_KEY")
+            from langchain_anthropic import ChatAnthropic
+            from langchain_core.prompts import ChatPromptTemplate
+            from langchain_core.output_parsers import StrOutputParser
+            content = content.replace('{', '(')
+            content = content.replace('}', ')')
+            lc_msgs = [("system", content)]
+            for _m in messages:
+                if _m["role"] == "user":
+                    lc_msgs.append(("human", _m["content"]))
+                else:
+                    lc_msgs.append(("ai", _m["content"]))
+            chat = ChatAnthropic(temperature=0, anthropic_api_key=anthropic_api_key, model_name="claude-3-opus-20240229")
+            prompt = ChatPromptTemplate.from_messages(lc_msgs)
+            parser = StrOutputParser()
+            chain = prompt | chat | parser
+            response = chain.astream({})
+            logger.info(f'aref_answer_gpt claude called')
+            return awrap_claude_generator(response)
         except Exception as e:
             print(e)
-            logger.error(f'aref_answer_gpt_generator question_JSON call gpt4 error {e}', e)
+            logger.error(f'aref_answer_gpt_generator claude error {e}', e)
             return aget_error_generator(str(e))
     return aget_error_generator("error after retry many times")
 

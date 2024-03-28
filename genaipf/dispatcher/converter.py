@@ -7,7 +7,7 @@ from genaipf.dispatcher.postprocess import posttext_mapping, PostTextParam
 from genaipf.tools.search.utils.search_agent_utils import not_need_search
 from genaipf.services.cmc_token import get_token_cmc_url
 
-async def convert_func_out_to_stream(chunk, messages, newest_question, model, language, related_qa, source, owner, sources=[], is_need_search=False, sources_task=None):
+async def convert_func_out_to_stream(chunk, messages, newest_question, model, language, related_qa, source, owner, sources=[], is_need_search=False, sources_task=None, chain_id=''):
     """
     chunk: afunc_gpt_generator return
     """
@@ -15,6 +15,7 @@ async def convert_func_out_to_stream(chunk, messages, newest_question, model, la
     assert chunk["role"] == "inner_____func_param"
     _param = chunk["content"]
     _param["language"] = language
+    _param["chain_id"] = chain_id
     func_name = _param["func_name"]
     sub_func_name = _param["subtype"]
     logger.info(f'>>>>> func_name: {func_name}, sub_func_name: {sub_func_name}, _param: {_param}')
@@ -28,11 +29,12 @@ async def convert_func_out_to_stream(chunk, messages, newest_question, model, la
                     'url': get_token_cmc_url(_param['symbol'])
                 }
             ]
-    yield {
-        "role": "sources", 
-        "content": sources
-    }
-    yield get_format_output("chatSerpResults", sources)
+    if func_name not in not_need_search:
+        yield {
+            "role": "sources", 
+            "content": sources
+        }
+        yield get_format_output("chatSerpResults", sources)
     content = ""
     _type = ""
     presetContent = {}
@@ -45,6 +47,8 @@ async def convert_func_out_to_stream(chunk, messages, newest_question, model, la
         reslt = await preset_conf["get_and_pick"](*_args)
         if len(reslt) == 2:
             presetContent, picked_content = reslt
+            if func_name == 'coin_swap' and presetContent.get('preset_type') == 'coin_swap1':
+                sub_func_name = 'coin_swap1'
         elif len(reslt) == 3:
             presetContent, picked_content, _type = reslt
         if preset_conf.get("has_preset_content") and (_param.get("need_chart") or preset_conf.get("need_preset")) and presetContent != {}:
@@ -68,21 +72,22 @@ async def convert_func_out_to_stream(chunk, messages, newest_question, model, la
                 }
                 _data = {}
     if func_name != 'generate_report' or (func_name == 'generate_report' and presetContent == {}):
-        _messages = [x for x in messages if x["role"] != "system"]
-        msgs = _messages[::]
-        resp2 = await aref_answer_gpt_generator(msgs, model, language, _type, str(picked_content), related_qa, source, owner)
-        logger.info(f'>>>>> start->data done.')
-        async for item in resp2:
-            if item["role"] == "inner_____gpt_whole_text":
-                # _tmp_text = item["content"]
-                yield item
-            else:
-                yield item
-        posttexter = posttext_mapping.get(func_name)
-        if posttexter is not None:
-            async for _gpt_letter in posttexter.get_text_agenerator(PostTextParam(language, sub_func_name)):
-                _tmp_text += _gpt_letter
-                yield get_format_output("gpt", _gpt_letter)
+        if func_name not in not_need_search and sub_func_name != 'coin_swap1':
+            _messages = [x for x in messages if x["role"] != "system"]
+            msgs = _messages[::]
+            resp2 = await aref_answer_gpt_generator(msgs, model, language, _type, str(picked_content), related_qa, source, owner)
+            logger.info(f'>>>>> start->data done.')
+            async for item in resp2:
+                if item["role"] == "inner_____gpt_whole_text":
+                    # _tmp_text = item["content"]
+                    yield item
+                else:
+                    yield item
+            posttexter = posttext_mapping.get(func_name)
+            if posttexter is not None:
+                async for _gpt_letter in posttexter.get_text_agenerator(PostTextParam(language, sub_func_name)):
+                    _tmp_text += _gpt_letter
+                    yield get_format_output("gpt", _gpt_letter)
         if _data:
             yield {
                 "role": "inner_____preset", 
