@@ -1,10 +1,13 @@
+import asyncio
 import json
 from genaipf.conf.server import OPENAI_API_KEY
 from genaipf.utils.log_utils import logger
 from genaipf.dispatcher.prompts_common import LionPromptCommon
 from genaipf.dispatcher.utils import simple_achat
-from genaipf.tools.search.metaphor.metaphor_search_agent import other_search
+from genaipf.tools.search.metaphor.metaphor_search_agent import other_search, metaphor_search2
+from genaipf.tools.search.google_serper.goole_serper_client import GoogleSerperClient
 from genaipf.utils.common_utils import aget_multi_coro, sync_to_async
+
 
 # 获取是否需要查询task
 async def get_is_need_search_task(front_messages):
@@ -46,7 +49,8 @@ async def get_sources_tasks(front_messages, related_qa, language):
     sources = []
     final_related_qa = related_qa
     if enrich_question != 'False':
-        sources, content = await other_search(enrich_question, related_qa, language)
+        # sources, content = await other_search(enrich_question, related_qa, language)
+        sources, content = await multi_search(enrich_question, related_qa, language)
         final_related_qa = content
     return sources, final_related_qa
 
@@ -61,7 +65,7 @@ async def get_web_urls_of_msg(front_messages):
         return related_urls
     try:
         urls = urls_str.strip().strip("https://").split(";")
-        related_urls = ["https://" + u for u in urls if u ]
+        related_urls = ["https://" + u for u in urls if u]
     except Exception as e:
         logger.error(f'解析相关问题失败: {e}')
     # if urls_str != 'False':
@@ -71,7 +75,6 @@ async def get_web_urls_of_msg(front_messages):
     #     except Exception as e:
     #         logger.error(f'解析相关问题失败: {e}')
     return related_urls
-        
 
 
 # 获取相关文章摘要
@@ -91,6 +94,7 @@ async def get_article_summary(front_messages):
         logger.error(f'解析相关问题失败: {e}')
         return None
 
+
 async def aload_web(url):
     try:
         # print(f"url: {url}")
@@ -108,7 +112,8 @@ async def aload_web(url):
     except Exception as e:
         logger.error(f'aload_web: {e}')
         return None
-    
+
+
 async def summarize_urls(urls, timeout=10.1):
     res = await aget_multi_coro(aload_web, urls, 10, timeout)
     return res
@@ -119,6 +124,7 @@ async def get_web_summary_of_msg(front_messages, timeout=10.1):
     urls = [[u] for u in urls]
     res = await summarize_urls(urls, timeout)
     return res
+
 
 async def aload_web_by_msgs(url, msgs):
     """
@@ -141,6 +147,25 @@ async def aload_web_by_msgs(url, msgs):
         logger.error(f'aload_web: {e}')
         return None
 
+
 async def summarize_urls_by_msg(urls_and_msgs, timeout=10.1):
     res = await aget_multi_coro(aload_web_by_msgs, urls_and_msgs, 10, timeout)
     return res
+
+
+async def multi_search(questions: str, related_qa=[], language=None):
+    multi_search_task = []
+    google_serper_client = GoogleSerperClient()
+    multi_search_task.append(google_serper_client.search(questions))
+    multi_search_task.append(metaphor_search2(questions, language))
+    results = await asyncio.gather(*multi_search_task)
+
+    final_sources = []
+    final_content = ''
+    if len(results) != 0:
+        for result in results:
+            final_sources = final_sources + result[0]
+            final_content += result[1]
+    if len(final_sources) > 0:
+        related_qa.append(questions + ' : ' + final_content)
+    return final_sources, related_qa
