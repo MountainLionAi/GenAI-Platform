@@ -297,16 +297,11 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         base64_encoded_voice = textToSpeech(_tmp_text)
         yield json.dumps(get_format_output("tts", base64_encoded_voice, "voice_mp3_v001"))
     if source == 'v004':
-        resp2 = await aref_answer_gpt_generator(msgs, model, language, "attitude", "", related_qa, source, owner)
-        async for item in resp2:
-            if item["role"] == "inner_____gpt_whole_text":
-                # _tmp_text = item["content"]
-                _tmp_attitude = item["content"]
-            else:
-                _tmp_attitude = item["content"]
+        from genaipf.dispatcher.callgpt import DispatcherCallGpt
+        _data = {"msgs":msgs, "model":model, "preset_name":"attitude", "source":source, "owner":owner}
+        _tmp_attitude, _related_news = await DispatcherCallGpt.get_subtype_task_result(source, language, _data)
         yield json.dumps(get_format_output("attitude", _tmp_attitude))
-        _relate_news = await get_related_news(msgs, language)
-        yield json.dumps(get_format_output("chatRelatedNews", _relate_news))
+        yield json.dumps(get_format_output("chatRelatedNews", _related_news))
     data.update({
         'content' : _tmp_text,
         'code' : _code
