@@ -257,6 +257,8 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         _tmp_attitude, _related_news = await DispatcherCallGpt.get_subtype_task_result(source, language, _data)
         yield json.dumps(get_format_output("attitude", _tmp_attitude))
         yield json.dumps(get_format_output("chatRelatedNews", _related_news))
+        data["attitude"] = _tmp_attitude
+        data["chatRelatedNews"] = _related_news
 
     assert chunk["role"] == "step"
     if chunk["content"] == "llm_yielding":
