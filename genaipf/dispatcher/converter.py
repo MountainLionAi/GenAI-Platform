@@ -18,6 +18,9 @@ async def convert_func_out_to_stream(chunk, messages, newest_question, model, la
     func_name = _param["func_name"]
     sub_func_name = _param["subtype"]
     logger.info(f'>>>>> func_name: {func_name}, sub_func_name: {sub_func_name}, _param: {_param}')
+    already_sources = False
+    if sources:
+        already_sources = True
     if is_need_search and (func_name not in not_need_search):
         sources, related_qa = await sources_task
     else:
@@ -28,12 +31,14 @@ async def convert_func_out_to_stream(chunk, messages, newest_question, model, la
                     'url': get_token_cmc_url(_param['symbol'])
                 }
             ]
-    if func_name not in not_need_search:
+    if func_name not in not_need_search and not already_sources:
         yield {
             "role": "sources", 
             "content": sources
         }
         yield get_format_output("chatSerpResults", sources)
+    elif func_name in not_need_search and already_sources:
+        yield get_format_output("chatSerpResultsHide", 1)
     content = ""
     _type = ""
     presetContent = {}
