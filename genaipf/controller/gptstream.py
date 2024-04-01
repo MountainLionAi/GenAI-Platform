@@ -173,6 +173,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     _ensure_ascii = False
     used_rag = True
     messages = []
+    picked_content = ""
     for x in front_messages:
         if x.get("code"):
             del x["code"]
@@ -206,6 +207,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     logger.info(f'>>>>> frist related_qa: {related_qa}')
     # yield json.dumps(get_format_output("chatSerpResults", sources))
     # yield json.dumps(get_format_output("chatRelatedResults", related_questions))
+
     if source == 'v003':
         used_rag = False
         responseType = 1
@@ -234,7 +236,16 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     if used_rag:
         await related_questions_task
         related_questions = related_questions_task.result()
-    resp1 = await afunc_gpt_generator(msgs, used_gpt_functions, language, model, "", related_qa, source, owner)
+    if source == 'v004':
+        from genaipf.dispatcher.callgpt import DispatcherCallGpt
+        _data = {"msgs":msgs, "model":model, "preset_name":"attitude", "source":source, "owner":owner}
+        _tmp_attitude, _related_news = await DispatcherCallGpt.get_subtype_task_result(source, language, _data)
+        yield json.dumps(get_format_output("attitude", _tmp_attitude))
+        yield json.dumps(get_format_output("chatRelatedNews", _related_news))
+        data["attitude"] = _tmp_attitude
+        data["chatRelatedNews"] = _related_news
+        picked_content = _tmp_attitude
+    resp1 = await afunc_gpt_generator(msgs, used_gpt_functions, language, model, picked_content, related_qa, source, owner)
     chunk = await asyncio.wait_for(resp1.__anext__(), timeout=20)
     isvision = False
     if chunk["content"] == "llm_yielding" and used_rag:
@@ -248,17 +259,9 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
             msgs = msgs[:-1] + buildVisionMessage(last_front_msg)
             isvision = True
             used_gpt_functions = None
-        resp1 = await afunc_gpt_generator(msgs, used_gpt_functions, language, model, "", related_qa, source, owner, isvision)
+        resp1 = await afunc_gpt_generator(msgs, used_gpt_functions, language, model, picked_content, related_qa, source, owner, isvision)
         chunk = await asyncio.wait_for(resp1.__anext__(), timeout=20)
     yield json.dumps(get_format_output("chatRelatedResults", related_questions))
-    if source == 'v004':
-        from genaipf.dispatcher.callgpt import DispatcherCallGpt
-        _data = {"msgs":msgs, "model":model, "preset_name":"attitude", "source":source, "owner":owner}
-        _tmp_attitude, _related_news = await DispatcherCallGpt.get_subtype_task_result(source, language, _data)
-        yield json.dumps(get_format_output("attitude", _tmp_attitude))
-        yield json.dumps(get_format_output("chatRelatedNews", _related_news))
-        data["attitude"] = _tmp_attitude
-        data["chatRelatedNews"] = _related_news
 
     assert chunk["role"] == "step"
     if chunk["content"] == "llm_yielding":
