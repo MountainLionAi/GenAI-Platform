@@ -54,6 +54,8 @@ async def convert_func_out_to_stream(chunk, messages, newest_question, model, la
             presetContent, picked_content = reslt
             if func_name == 'coin_swap' and presetContent.get('preset_type') == 'coin_swap1':
                 sub_func_name = 'coin_swap1'
+            if func_name == 'url_search':
+                related_qa.append(f'相关问题: {picked_content}')
         elif len(reslt) == 3:
             presetContent, picked_content, _type = reslt
         if preset_conf.get("has_preset_content") and (_param.get("need_chart") or preset_conf.get("need_preset")) and presetContent != {}:
