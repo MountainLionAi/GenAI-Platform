@@ -1,6 +1,8 @@
 import json
 import re
 import asyncio
+from urllib.parse import urlparse
+
 
 
 # 判断一个对象是不是json
@@ -125,3 +127,34 @@ def convert_token_amount(amount, decimals, to_standard_unit=True):
     else:
         # 从标准单位转换到最小单位
         return int(amount * (10 ** decimals))
+
+
+def complete_url(url: str) -> str:
+    """
+    This function checks if the passed URL contains the HTTP or HTTPS protocol.
+    If not, it prepends 'http://' to the URL.
+
+    Parameters:
+    url (str): The URL to check and possibly complete.
+
+    Returns:
+    str: The completed URL with the HTTP protocol if it was missing.
+    """
+    if not url.startswith(('http://', 'https://')):
+        return 'https://' + url
+    return url
+
+
+
+def is_valid_url(url: str) -> bool:
+    """
+    Validates a URL by checking its scheme and netloc.
+
+    Parameters:
+    url (str): The URL to validate.
+
+    Returns:
+    bool: True if the URL is valid, False otherwise.
+    """
+    parsed_url = urlparse(url)
+    return bool(parsed_url.scheme) and bool(parsed_url.netloc)

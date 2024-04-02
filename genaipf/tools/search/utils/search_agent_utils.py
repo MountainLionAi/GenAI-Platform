@@ -25,7 +25,7 @@ fixed_related_question = {
     }
 }
 
-not_need_search = ['generate_report', 'qrcode_address', 'wallet_balance', 'token_transfer', 'coin_swap']
+not_need_search = ['generate_report', 'qrcode_address', 'wallet_balance', 'token_transfer', 'coin_swap', 'url_search']
 
 
 # system_prompt = f"""
