@@ -27,11 +27,23 @@ class RedisConnectionPool:
             self.redis_client = redis.Redis(connection_pool=self.pool)
             return self.redis_client
 
+async def get_from_cache(cache, key):
+    return await cache.get(key)
+
+async def set_to_cache(cache, key, value, ttl):
+    await cache.set(key, value, ttl=ttl)
+
 def generate_cache_key(func, *args, **kwargs):
     # 生成基于函数名、位置参数和关键字参数的缓存键
     args_str = ','.join([str(arg) for arg in args])
     kwargs_str = ','.join([f"{k}={v}" for k, v in kwargs.items()])
     return f"{func.__module__}.{func.__name__}:{args_str}:{kwargs_str}"
+
+# 初始化 Redis 缓存实例
+__cache = Cache(
+    Cache.REDIS, serializer=PickleSerializer(), namespace="main",
+    endpoint=redis_conf.HOST, port=redis_conf.PORT, password=redis_conf.PASSWORD
+)
 
 def async_redis_cache(ttl, key_prefix=""):
     def decorator(func):
@@ -40,16 +52,15 @@ def async_redis_cache(ttl, key_prefix=""):
             # 使用 generate_cache_key 函数生成基于函数参数的动态键
             dynamic_key = f"{key_prefix}:{generate_cache_key(func, *args, **kwargs)}"
             print(f"dynamic_key: {dynamic_key}")
-            return await cached(
-                ttl=ttl, 
-                cache=Cache.REDIS, 
-                key=dynamic_key, 
-                serializer=PickleSerializer(), 
-                port=redis_conf.PORT,  # 你的 Redis 端口，如果默认就是 6379 则这个不需要改
-                endpoint=redis_conf.HOST,  # 用你的 Redis 服务器 IP 地址替换 "your_redis_ip"
-                password=redis_conf.PASSWORD,  # 用你的 Redis 密码替换 "your_redis_password"
-                namespace="main"
-            )(func)(*args, **kwargs)
+            result = await get_from_cache(__cache, dynamic_key)
+            if result is None:
+                print(f"not hit dynamic_key: {dynamic_key}")
+                # 缓存未命中，调用原函数并将结果保存到缓存
+                result = await func(*args, **kwargs)
+                await set_to_cache(__cache, dynamic_key, result, ttl)
+            else:
+                print(f"hit dynamic_key: {dynamic_key}")
+            return result
         return wrapper
     return decorator
 

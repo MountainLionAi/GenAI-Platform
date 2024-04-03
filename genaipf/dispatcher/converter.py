@@ -4,7 +4,7 @@ from genaipf.controller.preset_entry import preset_entry_mapping, preset_entry_t
 from genaipf.dispatcher.utils import get_qa_vdb_topk, merge_ref_and_input_text
 from genaipf.dispatcher.api import generate_unique_id, get_format_output, gpt_functions, afunc_gpt_generator, aref_answer_gpt_generator
 from genaipf.dispatcher.postprocess import posttext_mapping, PostTextParam
-from genaipf.tools.search.utils.search_agent_utils import not_need_search
+from genaipf.tools.search.utils.search_agent_utils import not_need_search, not_need_sources
 from genaipf.services.cmc_token import get_token_cmc_url
 
 async def convert_func_out_to_stream(chunk, messages, newest_question, model, language, related_qa, source, owner, sources=[], is_need_search=False, sources_task=None, chain_id=''):
@@ -19,7 +19,10 @@ async def convert_func_out_to_stream(chunk, messages, newest_question, model, la
     func_name = _param["func_name"]
     sub_func_name = _param["subtype"]
     logger.info(f'>>>>> func_name: {func_name}, sub_func_name: {sub_func_name}, _param: {_param}')
-    if is_need_search and (func_name not in not_need_search):
+    already_sources = False
+    if sources:
+        already_sources = True
+    if is_need_search and (func_name not in not_need_sources):
         sources, related_qa = await sources_task
     else:
         if func_name == 'coin_price':
@@ -29,12 +32,14 @@ async def convert_func_out_to_stream(chunk, messages, newest_question, model, la
                     'url': get_token_cmc_url(_param['symbol'])
                 }
             ]
-    if func_name not in not_need_search:
+    if func_name not in not_need_search and not already_sources:
         yield {
             "role": "sources", 
             "content": sources
         }
         yield get_format_output("chatSerpResults", sources)
+    elif func_name in not_need_search and already_sources:
+        yield get_format_output("chatSerpResultsHide", 1)
     content = ""
     _type = ""
     presetContent = {}
@@ -49,6 +54,8 @@ async def convert_func_out_to_stream(chunk, messages, newest_question, model, la
             presetContent, picked_content = reslt
             if func_name == 'coin_swap' and presetContent.get('preset_type') == 'coin_swap1':
                 sub_func_name = 'coin_swap1'
+            if func_name == 'url_search':
+                related_qa.append(f'相关问题: {picked_content}')
         elif len(reslt) == 3:
             presetContent, picked_content, _type = reslt
         if preset_conf.get("has_preset_content") and (_param.get("need_chart") or preset_conf.get("need_preset")) and presetContent != {}:

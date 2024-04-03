@@ -68,6 +68,19 @@ class CollectionPool:
             self.release_connection(conn)
             return False
 
+    # 批量插入数据
+    async def insert_batch(self, sql, params=None):
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        try:
+            cursor.executemany(sql, params)
+            conn.commit()
+            self.release_connection(conn)
+        except Exception as e:
+            logger.error(f"InsertDataError: {e}")
+            self.release_connection(conn)
+            return False
+
     # 删除数据
     async def delete(self, sql, params=None):
         conn = self.get_connection()
