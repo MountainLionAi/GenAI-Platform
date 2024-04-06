@@ -78,23 +78,22 @@ async def convert_func_out_to_stream(chunk, messages, newest_question, model, la
                     "content": _data
                 }
                 _data = {}
-    if func_name != 'generate_report' or (func_name == 'generate_report' and presetContent == {}):
-        if func_name not in not_need_search and sub_func_name != 'coin_swap1':
-            _messages = [x for x in messages if x["role"] != "system"]
-            msgs = _messages[::]
-            resp2 = await aref_answer_gpt_generator(msgs, model, language, _type, str(picked_content), related_qa, source, owner)
-            logger.info(f'>>>>> start->data done.')
-            async for item in resp2:
-                if item["role"] == "inner_____gpt_whole_text":
-                    # _tmp_text = item["content"]
-                    yield item
-                else:
-                    yield item
-            posttexter = posttext_mapping.get(func_name)
-            if posttexter is not None:
-                async for _gpt_letter in posttexter.get_text_agenerator(PostTextParam(language, sub_func_name)):
-                    _tmp_text += _gpt_letter
-                    yield get_format_output("gpt", _gpt_letter)
+    if (func_name not in not_need_search and sub_func_name != 'coin_swap1') or (func_name == 'generate_report' and presetContent == {}):
+        _messages = [x for x in messages if x["role"] != "system"]
+        msgs = _messages[::]
+        resp2 = await aref_answer_gpt_generator(msgs, model, language, _type, str(picked_content), related_qa, source, owner)
+        logger.info(f'>>>>> start->data done.')
+        async for item in resp2:
+            if item["role"] == "inner_____gpt_whole_text":
+                # _tmp_text = item["content"]
+                yield item
+            else:
+                yield item
+        posttexter = posttext_mapping.get(func_name)
+        if posttexter is not None:
+            async for _gpt_letter in posttexter.get_text_agenerator(PostTextParam(language, sub_func_name)):
+                _tmp_text += _gpt_letter
+                yield get_format_output("gpt", _gpt_letter)
         if _data:
             yield {
                 "role": "inner_____preset", 
