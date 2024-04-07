@@ -94,11 +94,11 @@ async def convert_func_out_to_stream(chunk, messages, newest_question, model, la
             async for _gpt_letter in posttexter.get_text_agenerator(PostTextParam(language, sub_func_name)):
                 _tmp_text += _gpt_letter
                 yield get_format_output("gpt", _gpt_letter)
-        if _data:
-            yield {
-                "role": "inner_____preset", 
-                "type": "inner_____preset", 
-                "format": "inner_____preset", 
-                "version": "v001", 
-                "content": _data
-            }
+    if _data:
+        yield {
+            "role": "inner_____preset", 
+            "type": "inner_____preset", 
+            "format": "inner_____preset", 
+            "version": "v001", 
+            "content": _data
+        }
