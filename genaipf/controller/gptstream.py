@@ -274,6 +274,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     elif chunk["content"] == "agent_routing":
         chunk = await resp1.__anext__()
         stream_gen = convert_func_out_to_stream(chunk, messages, newest_question, model, language, related_qa, source, owner, sources, is_need_search, sources_task, chain_id)
+        await resp1.aclose()
         async for item in stream_gen:
             if item["role"] == "inner_____gpt_whole_text":
                 _tmp_text = item["content"]
@@ -432,6 +433,7 @@ async def  getAnswerAndCallGptData(question, userid, msggroup, language, front_m
                     "version": "v001", 
                     "content": data
                 }
+    await resp1.aclose()
     data.update({
         'content' : _tmp_text,
         'code' : _code
