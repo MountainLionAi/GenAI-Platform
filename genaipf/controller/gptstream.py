@@ -254,7 +254,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         await resp1.aclose()
         sources, related_qa = await sources_task
         logger.info(f'>>>>> second related_qa: {related_qa}')
-        if source == 'v004':
+        if source != 'v004':
             yield json.dumps(get_format_output("chatSerpResults", sources))
         else:
             yield json.dumps(get_format_output("chatSerpResults", []))
