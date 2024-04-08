@@ -28,7 +28,7 @@ from genaipf.utils.redis_utils import RedisConnectionPool
 from genaipf.conf.server import IS_INNER_DEBUG, IS_UNLIMIT_USAGE
 from genaipf.utils.speech_utils import transcribe, textToSpeech
 from genaipf.tools.search.utils.search_agent_utils import other_search
-from genaipf.tools.search.utils.search_agent_utils import premise_search, premise_search1, premise_search2, new_question_question, get_related_news
+from genaipf.tools.search.utils.search_agent_utils import premise_search, premise_search1, premise_search2, new_question_question
 from genaipf.utils.common_utils import contains_chinese
 import os
 import base64
@@ -254,8 +254,10 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         sources, related_qa = await sources_task
         logger.info(f'>>>>> second related_qa: {related_qa}')
         if source == 'v004':
-            sources = []
-        yield json.dumps(get_format_output("chatSerpResults", sources))
+            yield json.dumps(get_format_output("chatSerpResults", sources))
+        else:
+            yield json.dumps(get_format_output("chatSerpResults", []))
+            sources.append(_related_news)
         if last_front_msg.get('type') == 'image' and last_front_msg.get('base64content') is not None:
             msgs = msgs[:-1] + buildVisionMessage(last_front_msg)
             isvision = True
