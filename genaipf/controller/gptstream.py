@@ -234,6 +234,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     }
     sources = []
     related_questions = []
+    _related_news = []
     if used_rag:
         await related_questions_task
         related_questions = related_questions_task.result()
@@ -258,6 +259,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         else:
             yield json.dumps(get_format_output("chatSerpResults", []))
             sources.append(_related_news)
+            related_qa[0] += '\n'.join([str(i) for i in sources])
         if last_front_msg.get('type') == 'image' and last_front_msg.get('base64content') is not None:
             msgs = msgs[:-1] + buildVisionMessage(last_front_msg)
             isvision = True
