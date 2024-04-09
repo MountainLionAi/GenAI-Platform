@@ -27,13 +27,24 @@ def cleanout(html_str):
         # 移除所有标签的属性
         for tag in body.find_all(True):  # True匹配所有的tag
             tag.attrs = {}
+        remove_empty_tags(body)
         # 移除所有注释
-        comments = soup.find_all(string=lambda text: isinstance(text, Comment))
+        comments = body.find_all(string=lambda text: isinstance(text, Comment))
         for comment in comments:
             comment.extract()
         content = body.decode_contents()
         return content
     return html_str
 
+
+def remove_empty_tags(tag):
+    # 遍历所有子标签
+    for child in tag.find_all(recursive=False):
+        # 如果子标签没有文本内容且没有子标签，则移除该标签
+        if not child.text.strip() and len(child.find_all(recursive=False)) == 0:
+            child.decompose()
+        else:
+            # 递归处理非空标签，以清理嵌套的空标签
+            remove_empty_tags(child)
 
 
