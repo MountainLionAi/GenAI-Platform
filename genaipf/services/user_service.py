@@ -338,6 +338,8 @@ async def check_user_continue_send_email(email):
 # 清除用户相关登陆态
 async def clear_user_status(user_id, email):
     redis_client = RedisConnectionPool().get_connection()
-    token_key = get_user_key(user_id, email)
-    redis_client.delete(token_key)
+    token_key = get_user_key(user_id, email) + '*'
+    keys_all = redis_client.keys(token_key)
+    for key in keys_all:
+        redis_client.delete(key)
     return True
