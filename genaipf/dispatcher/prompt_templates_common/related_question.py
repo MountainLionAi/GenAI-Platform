@@ -17,7 +17,7 @@ def _get_related_question_prompted_messages(data, language):
 # """
     system_text = f"""
     你是一个善于沟通总结的专家，你可以根据用户的历史对话上下文生成九个类似问题，并以数组的形式返回。确保这些问题与原问题相关，但略有不同。
-    切记如果用户问题涉及违法操作，你只需回答 False，并且你回答的语言必须是{prompt_language}。
+    切记如果用户问题涉及违法操作，你只需回答 False，并且你回答的语言必须是{prompt_language}，一定不要输出```等其他符号。
     例如：
     输入：
     user: 推荐买什么币？

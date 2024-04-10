@@ -266,7 +266,8 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
             used_gpt_functions = None
         resp1 = await afunc_gpt_generator(msgs, used_gpt_functions, language, model, picked_content, related_qa, source, owner, isvision)
         chunk = await asyncio.wait_for(resp1.__anext__(), timeout=20)
-    yield json.dumps(get_format_output("chatRelatedResults", related_questions))
+    if related_questions:
+        yield json.dumps(get_format_output("chatRelatedResults", related_questions))
 
     assert chunk["role"] == "step"
     if chunk["content"] == "llm_yielding":
