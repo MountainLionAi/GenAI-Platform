@@ -49,7 +49,10 @@ async def convert_func_out_to_stream(chunk, messages, newest_question, model, la
         preset_conf = preset_entry_mapping[func_name]
         _type = preset_conf["type"]
         _args = [_param.get(x) for x in preset_conf["param_names"]]
-        reslt = await preset_conf["get_and_pick"](*_args)
+        if func_name == 'richer_prompt':
+            reslt = await preset_conf["get_and_pick"](messages, language)
+        else:
+            reslt = await preset_conf["get_and_pick"](*_args)
         if len(reslt) == 2:
             presetContent, picked_content = reslt
             if func_name == 'coin_swap' and presetContent.get('preset_type') == 'coin_swap1':
