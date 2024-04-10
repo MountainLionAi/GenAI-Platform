@@ -87,16 +87,18 @@ async def user_login(email, password, signature, wallet_addr, timestamp, login_t
     jwt_token = jwt_manager.generate_token(user_info['id'], user_key)
     redis_client = RedisConnectionPool().get_connection()
     token_key = get_user_key(user_info['id'], user_key)
-    redis_client.set(token_key, jwt_token, 3600 * 24 * 30)  # 设置登陆态到redis
+    token_key_final = token_key + ':' + jwt_token
+    redis_client.set(token_key_final, jwt_token, 3600 * 24 * 30)  # 设置登陆态到redis
     await update_user_token(user_info['id'], jwt_token)
     return {'user_token': jwt_token, 'account': account, 'user_id': user_id}
 
 
 # 用户登出相关操作
-async def user_login_out(email, user_id):
+async def user_login_out(email, user_id, token):
     try:
         redis_client = RedisConnectionPool().get_connection()
         user_token_key = get_user_key(user_id, email)
+        user_token_key = user_token_key + ':' + token
         redis_client.delete(user_token_key)
         await update_user_token(user_id, '')
         return True

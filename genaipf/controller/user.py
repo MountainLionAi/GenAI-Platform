@@ -62,7 +62,7 @@ async def modify_password(request: Request):
             not request_params['verifyCode']:
         raise CustomerError(status_code=ERROR_CODE['PARAMS_ERROR'])
     modify_res = await user_service.user_modify_password(request_params['email'], request_params['password'],
-                                                         request_params['verifyCode'])
+                                                         request_params['verifyCode'], )
     return success(modify_res)
 
 
@@ -70,7 +70,8 @@ async def modify_password(request: Request):
 async def login_out(request: Request):
     logger.info('user login out')
     user = request.ctx.user
-    login_out_res = await user_service.user_login_out(user['email'], user['id'])
+    token = request.ctx.token
+    login_out_res = await user_service.user_login_out(user['email'], user['id'], token)
     return success(login_out_res)
 
 
