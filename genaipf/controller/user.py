@@ -70,7 +70,8 @@ async def modify_password(request: Request):
 async def login_out(request: Request):
     logger.info('user login out')
     user = request.ctx.user
-    login_out_res = await user_service.user_login_out(user['email'], user['id'])
+    token = request.ctx.token
+    login_out_res = await user_service.user_login_out(user['email'], user['id'], token)
     return success(login_out_res)
 
 

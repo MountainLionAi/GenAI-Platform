@@ -39,7 +39,8 @@ async def check_user(request: Request):
             return fail(ERROR_CODE["NOT_AUTHORIZED"])
         redis_client = RedisConnectionPool().get_connection()
         user_token_key = user_service.get_user_key(check_res[1], check_res[2])
-        user = redis_client.get(user_token_key)
+        user_token_key_final = user_token_key + ':' + token
+        user = redis_client.get(user_token_key_final)
         if user is None:
             return fail(ERROR_CODE["NOT_AUTHORIZED"])
         user = {
