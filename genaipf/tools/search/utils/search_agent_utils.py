@@ -25,8 +25,8 @@ fixed_related_question = {
     }
 }
 
-not_need_search = ['generate_report', 'qrcode_address', 'wallet_balance', 'token_transfer', 'coin_swap']
-not_need_sources = ['generate_report', 'qrcode_address', 'wallet_balance', 'token_transfer', 'coin_swap', 'url_search']
+not_need_search = ['generate_report', 'qrcode_address', 'wallet_balance', 'token_transfer', 'coin_swap', 'richer_prompt']
+not_need_sources = ['generate_report', 'qrcode_address', 'wallet_balance', 'token_transfer', 'coin_swap', 'richer_prompt', 'url_search']
 
 
 # system_prompt = f"""
@@ -184,15 +184,3 @@ async def related_search(question: str, language=None):
         return python_object
     except (SyntaxError, ValueError) as e:
         return []
-
-async def get_related_news(news, language):
-    _tmp_news = news[0].get("content")
-    if language == 'cn':
-        msg = f"提炼如下新闻：{_tmp_news} 给出2-3个词作为新闻标签"
-    else:
-        msg = f"Summarize the following news:{_tmp_news}, give 2-3 words as tags"
-    new_news = news
-    new_news[0]["content"]= msg
-    tags = await simple_achat(news)
-    source, content = await google_serper(tags, 'news', 5)
-    return source

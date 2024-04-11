@@ -12,5 +12,5 @@ async def get_rendered_html(url):
         await browser.close()
         return rendered_html
     except Exception as e:
-        logger.error('call get_rendered_html error, url={url}, {e}')
-        logger.error(traceback.format_exec())
+        logger.error(f'call get_rendered_html error, url={url}, {e}')
+        logger.error(traceback.format_exc())

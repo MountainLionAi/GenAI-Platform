@@ -28,7 +28,7 @@ from genaipf.utils.redis_utils import RedisConnectionPool
 from genaipf.conf.server import IS_INNER_DEBUG, IS_UNLIMIT_USAGE
 from genaipf.utils.speech_utils import transcribe, textToSpeech
 from genaipf.tools.search.utils.search_agent_utils import other_search
-from genaipf.tools.search.utils.search_agent_utils import premise_search, premise_search1, premise_search2, new_question_question, get_related_news
+from genaipf.tools.search.utils.search_agent_utils import premise_search, premise_search1, premise_search2, new_question_question
 from genaipf.utils.common_utils import contains_chinese
 import os
 import base64
@@ -234,6 +234,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     }
     sources = []
     related_questions = []
+    _related_news = []
     if used_rag:
         await related_questions_task
         related_questions = related_questions_task.result()
@@ -249,31 +250,36 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     resp1 = await afunc_gpt_generator(msgs, used_gpt_functions, language, model, picked_content, related_qa, source, owner)
     chunk = await asyncio.wait_for(resp1.__anext__(), timeout=20)
     isvision = False
-    if chunk["content"] == "llm_yielding" and used_rag:
-        await resp1.aclose()
-        sources, related_qa = await sources_task
-        logger.info(f'>>>>> second related_qa: {related_qa}')
-        if source == 'v004':
-            sources = []
-        yield json.dumps(get_format_output("chatSerpResults", sources))
-        if last_front_msg.get('type') == 'image' and last_front_msg.get('base64content') is not None:
-            msgs = msgs[:-1] + buildVisionMessage(last_front_msg)
-            isvision = True
-            used_gpt_functions = None
-        resp1 = await afunc_gpt_generator(msgs, used_gpt_functions, language, model, picked_content, related_qa, source, owner, isvision)
-        chunk = await asyncio.wait_for(resp1.__anext__(), timeout=20)
     yield json.dumps(get_format_output("chatRelatedResults", related_questions))
-
-    assert chunk["role"] == "step"
+    func_chunk = None
     if chunk["content"] == "llm_yielding":
+        route_mode = "text"
+    else:
+        func_chunk = await resp1.__anext__()
+        route_mode = "function"
+    await resp1.aclose()
+    if route_mode == "text":
+        if used_rag:
+            sources, related_qa = await sources_task
+            logger.info(f'>>>>> second related_qa: {related_qa}')
+            if source != 'v004':
+                yield json.dumps(get_format_output("chatSerpResults", sources))
+            else:
+                yield json.dumps(get_format_output("chatSerpResults", []))
+                related_qa[0] = '\n'.join([str(i) for i in _related_news])
+                model = "claude"
+            if last_front_msg.get('type') == 'image' and last_front_msg.get('base64content') is not None:
+                msgs = msgs[:-1] + buildVisionMessage(last_front_msg)
+                isvision = True
+                used_gpt_functions = None
+        resp1 = await aref_answer_gpt_generator(msgs, model, language, None, picked_content, related_qa, source, owner, isvision) 
         async for chunk in resp1:
             if chunk["role"] == "inner_____gpt_whole_text":
                 _tmp_text = chunk["content"]
             else:
-                yield json.dumps(chunk)
-    elif chunk["content"] == "agent_routing":
-        chunk = await resp1.__anext__()
-        stream_gen = convert_func_out_to_stream(chunk, messages, newest_question, model, language, related_qa, source, owner, sources, is_need_search, sources_task, chain_id)
+                yield json.dumps(chunk) 
+    else:
+        stream_gen = convert_func_out_to_stream(func_chunk , messages, newest_question, model, language, related_qa, source, owner, sources, is_need_search, sources_task)
         await resp1.aclose()
         async for item in stream_gen:
             if item["role"] == "inner_____gpt_whole_text":

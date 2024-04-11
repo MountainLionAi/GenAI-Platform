@@ -7,6 +7,8 @@ from genaipf.dispatcher.utils import simple_achat
 from genaipf.tools.search.metaphor.metaphor_search_agent import other_search, metaphor_search2
 from genaipf.tools.search.google_serper.goole_serper_client import GoogleSerperClient
 from genaipf.utils.common_utils import aget_multi_coro, sync_to_async
+from genaipf.tools.search.google.google_search import google_search
+from genaipf.conf.rag_conf import RAG_SEARCH_CLIENT
 
 
 # 获取是否需要查询task
@@ -40,7 +42,7 @@ async def get_related_question_task(newest_question_arr, fixed_related_question,
 # 获取相关source和content的task
 async def get_sources_tasks(front_messages, related_qa, language):
     enrich_question = 'False'
-    msgs = LionPromptCommon.get_prompted_messages("enrich_question", front_messages)
+    msgs = LionPromptCommon.get_prompted_messages("enrich_question", front_messages, language)
     try:
         enrich_question = await simple_achat(msgs)
         logger.info(f'丰富后的问题是: {enrich_question}')
@@ -155,8 +157,15 @@ async def summarize_urls_by_msg(urls_and_msgs, timeout=10.1):
 
 async def multi_search(questions: str, related_qa=[], language=None):
     multi_search_task = []
-    google_serper_client = GoogleSerperClient()
-    multi_search_task.append(google_serper_client.search(questions))
+    if RAG_SEARCH_CLIENT == 'SERPER':
+        google_serper_client = GoogleSerperClient()
+        multi_search_task.append(google_serper_client.search(questions))
+    elif RAG_SEARCH_CLIENT == 'GOOGLE_SEARCH':
+        multi_search_task.append(google_search(questions, 5, language))
+    elif RAG_SEARCH_CLIENT == 'ALL':
+        google_serper_client = GoogleSerperClient()
+        multi_search_task.append(google_serper_client.search(questions))
+        multi_search_task.append(google_search(questions))
     multi_search_task.append(metaphor_search2(questions, language))
     results = await asyncio.gather(*multi_search_task)
 
