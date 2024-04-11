@@ -169,12 +169,15 @@ async def afunc_gpt_generator(messages, functions=gpt_functions, language=LionPr
     return aget_error_generator("error after retry many times")
 
 
-async def aref_answer_gpt_generator(messages, model='', language=LionPrompt.default_lang, preset_name=None, picked_content="", related_qa=[], source='v001', owner=''):
+async def aref_answer_gpt_generator(messages, model='', language=LionPrompt.default_lang, preset_name=None, picked_content="", related_qa=[], source='v001', owner='', isvision=False):
     use_model = 'gpt-3.5-turbo-0125'
     if model == 'ml-plus':
         use_model = OPENAI_PLUS_MODEL
     else:
         use_model = CLAUDE_MODEL
+    if isvision:
+        # 图片处理专用模型
+        use_model = 'gpt-4-vision-preview'
     if source == 'v002':
         content = prompts_v002.LionPrompt.get_aref_answer_prompt(language, preset_name, picked_content, related_qa, use_model)
     elif source == 'v003':
@@ -228,6 +231,7 @@ async def aref_answer_gpt_generator(messages, model='', language=LionPrompt.defa
             content = content.replace('}', ')')
             lc_msgs = [("system", content)]
             for _m in messages:
+                _m["content"] = _m["content"].replace('{', '(').replace('}', ')')
                 if _m["role"] == "user":
                     lc_msgs.append(("human", _m["content"]))
                 else:
