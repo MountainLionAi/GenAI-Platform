@@ -51,7 +51,7 @@ class AsyncSafeList:
 #         return None
 
 
-async def google_search(search_content: str, num: int = 5):
+async def google_search(search_content: str, num: int = 5, language = None):
     logger.info(f'call google_search search_content={search_content}, num={num}')
     url = rag_conf.GOOGLE_SEARCH_URL
     key = rag_conf.API_KEY
@@ -64,6 +64,8 @@ async def google_search(search_content: str, num: int = 5):
         search_details = AsyncSafeList()
         client = AsyncHTTPClient()
         params = {"key": key, "cx": cx, "q": search_content, "num": num}
+        if language:
+            params["lr"] = language
         headers = {"Content-Type": "application/json; charset=UTF-8"}
         result = await client.get_json(url, params, headers)
         if result and result.get('items') and len(result.get('items')) > 0:
