@@ -13,7 +13,7 @@ class LionPromptCommon:
     @classmethod
     def get_prompted_messages(cls, preset_name: str, data=typing.Mapping[str, typing.Any], language=None):
         if preset_name=="enrich_question":
-            return _get_enrich_question_prompted_messages(data)
+            return _get_enrich_question_prompted_messages(data, language)
         elif preset_name=="if_need_search":
             return _get_if_need_search_prompted_messages(data)
         elif preset_name=="related_question":
