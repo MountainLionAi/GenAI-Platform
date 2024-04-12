@@ -1,11 +1,15 @@
 from pyppeteer import launch
 from genaipf.utils.log_utils import logger
 import traceback
+from genaipf.conf.rag_conf import CHROMIUM_EXECUTABLEPATH
 
 
 async def get_rendered_html(url):
     try:
-        browser = await launch()
+        if CHROMIUM_EXECUTABLEPATH:
+            browser = await launch(executablePath=CHROMIUM_EXECUTABLEPATH)
+        else:
+            browser = await launch()
         page = await browser.newPage()
         await page.goto(url)
         rendered_html = await page.content()  # 获取页面内容
