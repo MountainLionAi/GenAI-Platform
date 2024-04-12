@@ -1,21 +1,75 @@
 import json
-def _choose_hot_question_prompted_messages(data, language):
-    prompt_language = '英文'
-    if language == 'cn':
-        prompt_language = '中文'
-    system_text = f"""
-你是一个精通数字货币的web3热点问题筛选专家，你可以根据给定的数组中对象的"text"字段的描述，筛选出属于数字货币相关的问题、炒币用户关注的信息、热点新闻等。
-要求：
-    1.你的回答语言必须是{prompt_language},如果对象中text对应的值不是{prompt_language}语言，使用{prompt_language}语言把对象中text对应的值进行翻译。
-    2.对于重复或者相近的问题只保留一个
-    3.筛选完成后以数组形式返回。
-例如:
-输入:
-[{{"text": "what is the difference between btc and other cryptocurrencies", "type": "question"}}, {{"text": "你好", "type": "question"}}, {{"text": "what is the difference between btc and other cryptocurrencies", "type": "question"}}, {{"text": "BTC核心要点、持币信息以及市场情况\n", "type": "question"}}, {{"text": "btc预测价格", "type": "question"}}, {{"text": "BTC核心要点、持币信息以及市场情况\n", "type": "question"}}, {{"text": "what is the difference between btc and other cryptocurrencies", "type": "question"}}, {{"text": "牛市适合购买BNB吗？", "type": "question"}}, {{"text": "bnb最近有什么消息", "type": "question"}}, {{"text": "BTC核心要点、持币信息以及市场情况\n", "type": "question"}}, {{"text": "bnb最近有什么消息", "type": "question"}}, {{"text": "我想要使用费用低廉且便捷的兑换", "type": "question"}}, {{"text": "I want to use a cheap and easy swap service", "type": "question"}}, {{"text": "我想要使用费用低廉且便捷的兑换", "type": "question"}}, {{"text": "我想要使用费用低廉且便捷的兑换", "type": "question"}}, {{"text": "Solana最新价格预测是多少？", "type": "question"}}, {{"text": "BTC research report", "type": "question"}}, {{"text": "我想要使用费用低廉且便捷的兑换。", "type": "question"}}, {{"text": "你好", "type": "question"}}, {{"text": "Coin price predict", "type": "question"}}, {{"text": "BTC研报", "type": "question"}}, {{"text": "BTC核心要点、持币信息以及市场情况\n", "type": "question"}}, {{"text": "BTC核心要点、持币信息以及市场情况\n", "type": "question"}}, {{"text": "BTC核心要点、持币信息以及市场情况\n", "type": "question"}}, {{"text": "对比两种nft，Bored Ape Yacht Club跟azuki / Azkui和企鹅那个NFT更有潜力。", "type": "question"}}, {{"text": "Pudgy Penguins", "type": "question"}}, {{"text": "把0.02个BNB换成USDT", "type": "question"}}, {{"text": "把0.2个BNB换成USDT", "type": "question"}}, {{"text": "我要兑换", "type": "question"}}, {{"text": "我想要使用费用低廉且便捷的兑换。", "type": "question"}}, {{"text": "你好", "type": "question"}}, {{"text": "我想要使用费用低廉且便捷的兑换。", "type": "question"}}, {{"text": "你好", "type": "question"}}, {{"text": "我想要使用费用低廉且便捷的兑换。", "type": "question"}}, {{"text": "你好", "type": "question"}}, {{"text": "BTC核心要点、持币信息以及市场情况\n", "type": "question"}}, {{"text": "BTC核心要点、持币信息以及市场情况\n", "type": "question"}}, {{"text": "BNB核心要点、持币信息以及市场情况\n", "type": "question"}}, {{"text": "ETH核心要点、持币信息以及市场情况\n", "type": "question"}}, {{"text": "BTC核心要点、持币信息以及市场情况\n", "type": "question"}}, {{"text": "我想要使用费用低廉且便捷的兑换。", "type": "question"}}, {{"text": "你好", "type": "question"}}, {{"text": "我想要使用费用低廉且便捷的兑换。", "type": "question"}}, {{"text": "你好", "type": "question"}}, {{"text": "我要兑换", "type": "question"}}, {{"text": "我想要使用费用低廉且便捷的兑换。", "type": "question"}}, {{"text": "你好", "type": "question"}}, {{"text": "我想要使用费用低廉且便捷的兑换。", "type": "question"}}, {{"text": "你好", "type": "question"}}, {{"text": "BTC 研报", "type": "question"}}, {{"text": "BTC", "type": "question"}}, {{"text": "BTC 研报", "type": "question"}}, {{"text": "XRP 研报", "type": "question"}}, {{"text": "我想要使用费用低廉且便捷的兑换", "type": "question"}}, {{"text": "BTC兑换USDT", "type": "question"}}, {{"text": "我有1000USDT，帮我推荐合集", "type": "question"}}, {{"text": "Bored Ape Yacht Club#3294", "type": "question"}}, {{"text": "Bored Ape Yacht Club", "type": "question"}}, {{"text": "BTC", "type": "question"}}, {{"text": "How does mining cost affect the price of BTC?", "type": "question"}}, {{"text": "ETH", "type": "question"}}, {{"text": "BTC兑换USDT", "type": "question"}}, {{"text": "BTC的最近重大事件", "type": "question"}}, {{"text": "BTC行情数据分析\n", "type": "question"}}, {{"text": "BTC 研报", "type": "question"}}, {{"text": "BTC兑换USDT", "type": "question"}}, {{"text": "如何评估一个加密货币项目的潜力和风险？", "type": "question"}}, {{"text": "如何评估一个加密货币项目的潜力和风险？", "type": "question"}}, {{"text": "btc预测价格", "type": "question"}}, {{"text": "BTC行情数据分析\n", "type": "question"}}, {{"text": "排名前5的数字货币交易所", "type": "question"}}, {{"text": "帮我挑选5个最具投资价值的数组火币", "type": "question"}}, {{"text": "数字货币在中国合法吗", "type": "question"}}, {{"text": "Coinbase将上架Tensor(TNSR)", "type": "question"}}, {{"text": "btc奖励减半日期", "type": "question"}}, {{"text": "CME美联储观察：美联储5月维持利率不变概率为100%", "type": "question"}}, {{"text": "CME美联储观察：美联储5月维持利率不变概率为100%", "type": "question"}}, {{"text": "你好", "type": "question"}}, {{"text": "你好", "type": "question"}}, {{"text": "你好", "type": "question"}}, {{"text": "你好", "type": "question"}}, {{"text": "CME美联储观察：美联储5月维持利率不变概率为100%", "type": "question"}}, {{"text": "你好", "type": "question"}}, {{"text": "香港", "type": "question"}}, {{"text": "香港", "type": "question"}}, {{"text": "比特币未来的发展趋势如何？", "type": "question"}}, {{"text": "比特币最新价格预测是多少？", "type": "question"}}, {{"text": "哪些因素会影响ETH的价格波动？", "type": "question"}}, {{"text": "比特币当前价格", "type": "question"}}, {{"text": "马斯克最近有什么新闻", "type": "question"}}, {{"text": "TON未来一周的走势如何？", "type": "question"}}, {{"text": "TON突破6美元，日内上涨12.4%", "type": "question"}}]
-输出:
-[{{"text":"what is the difference between btc and other cryptocurrencies","type":"question"}},{{"text":"BTC核心要点、持币信息以及市场情况\n","type":"question"}},{{"text":"牛市适合购买BNB吗？","type":"question"}},{{"text":"bnb最近有什么消息","type":"question"}},{{"text":"我想要使用费用低廉且便捷的兑换","type":"question"}},{{"text":"Solana最新价格预测是多少？","type":"question"}},{{"text":"BTC研报","type":"question"}},{{"text":"对比两种nft，Bored Ape Yacht Club跟azuki / Azkui和企鹅那个NFT更有潜力。","type":"question"}},{{"text":"Pudgy Penguins","type":"question"}},{{"text":"把0.02个BNB换成USDT","type":"question"}},{{"text":"XRP 研报","type":"question"}},{{"text":"BTC兑换USDT","type":"question"}},{{"text":"我有1000USDT，帮我推荐合集","type":"question"}},{{"text":"How does mining cost affect the price of BTC?","type":"question"}},{{"text":"BTC的最近重大事件","type":"question"}},{{"text":"BTC行情数据分析\n","type":"question"}},{{"text":"如何评估一个加密货币项目的潜力和风险？","type":"question"}},{{"text":"排名前5的数字货币交易所","type":"question"}},{{"text":"帮我挑选5个最具投资价值的数组火币","type":"question"}},{{"text":"Coinbase将上架Tensor(TNSR)","type":"question"}},{{"text":"btc奖励减半日期","type":"question"}},{{"text":"CME美联储观察：美联储5月维持利率不变概率为100%","type":"question"}},{{"text":"比特币未来的发展趋势如何？","type":"question"}},{{"text":"比特币最新价格预测是多少？","type":"question"}},{{"text":"哪些因素会影响ETH的价格波动？","type":"question"}},{{"text":"比特币当前价格","type":"question"}},{{"text":"马斯克最近有什么新闻","type":"question"}},{{"text":"TON未来一周的走势如何？","type":"question"}},{{"text":"TON突破6美元，日内上涨12.4%","type":"question"}}]
+def _choose_hot_question_prompted_messages(language):
+    if language == 'en':
+        system_text = f"""
+Starting now, you will be a question recommendation master, primarily recommending related questions from the following areas: current price, coin research reports, AI exchange, crypto news, price prediction, coin-to-coin swap, NFT recommendation, project introduction, core features, ecosystem, market position, development potential, historical highest and lowest prices. Based on the questions below and the above areas, recommend 10 related WEB3.0 questions. Ensure the randomness of the recommended questions, and present them in different structures if the same question appears.
+
+Questions:
+
+1. Generate a comparison data report for Azuki and Moonbirds.
+2. What are the risks of investing in NFTs?
+3. How to evaluate the value of an NFT?
+4. What is the latest price prediction for BTC?
+5. What are the differences between short-term and long-term cryptocurrency price predictions?
+6. What security issues should users be aware of when using an exchange?
+7. How to store wallet private keys more securely?
+8. What are the main contents of the BTC whitepaper?
+9. What factors affect the trading volume of BTC?
+10. How is the market performance of Azuki?
+11. How to assess the potential and risks of a cryptocurrency project?
+12. What factors affect the price volatility of XX?
+13. What are the future prospects of BTC?
+14. How does mining cost affect the price of BTC?
+15. Generate a research report for BTC.
+16. What is the current price of BTC?
+17. What are the latest news about BTC?
+18. What are the price predictions for BTC?
+19. I want to use BTC for exchange.
+20. What is the project introduction for BTC?
+21. What are the core features of BTC?
+22. What is the historical highest price of BTC?
+23. What is the historical lowest price of BTC?
+(The names of the cryptocurrencies and NFTs mentioned above can be randomly generated.)
+
+Output format requirements:
+Return the randomly recommended 10 questions as a JSON array.
 """
+        user_text = "please recommend 10 hot questions"
+    else:
+        system_text = f"""
+从现在开始，你将是一位问题推荐大师，优先从以下几点范围进行相关问题推荐：当前价格、币种研报、AI兑换、币圈新闻、币价预测、币币兑换swap、NFT推荐、项目简介、核心特点、生态系统、市场地位、发展潜力、历史最高价和最低价。在下面的问题和上述范围的基础上进行推荐10个相关WEB3.0相关问题。必须确保推荐问题的随机性，在出现相同问题的情况下以不同的结构进行展示。
+
+问题：
+1、帮我生成一份Azuki和Moonbirds对比数据。
+2、NFT作为投资方式有哪些风险？
+3、如何评估NFT的价值？
+4、BTC的最新价格预测是多少？
+5、短期和长期加密货币价格预测有什么不同？
+6、在使用兑换时，用户需要注意哪些安全问题？
+7、如何保存钱包私钥更加安全？
+8、BTC白皮书的主要内容是什么？
+9、BTC的交易量受哪些因素的影响？
+10、Azuki的市场表现如何？
+11、如何评估一个加密货币项目的潜力和风险？
+12、哪些因素会影响XX的价格波动？
+13、BTC的未来发展前景如何？
+14、挖矿成本如何影响BTC的价格？
+15、帮我生成一份BTC研报。
+17、BTC当前价格是多少？
+18、BTC最新新闻有哪些？
+19、BTC币价预测如何？
+20、我想使用BTC进行兑换？
+21、BTC项目简介是什么？
+22、BTC核心特点是什么？
+23、BTC历史最高价是多少？
+24、BTC历史最低价是多少？
+（上述币种名称和NFT名称可随机生成）
+
+输出格式的要求：
+1.把随机推荐的10个问题以json数组字符串的形式返回，例如：["BTC历史最高价是多少？", "BTC历史最低价是多少？"]
+"""
+        user_text="请帮我推荐10个热点问题"        
     return [
         {"role": "system", "content": system_text},
-        {"role": "user", "content": json.dumps(data["questions"], ensure_ascii=False)},
+        {"role": "user", "content": user_text},
     ]

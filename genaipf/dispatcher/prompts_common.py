@@ -26,7 +26,7 @@ class LionPromptCommon:
         elif preset_name=="richer_prompt":
             return _get_richer_prompt_prompted_messages(data, language)
         elif preset_name=="choose_hot_question":
-            return _choose_hot_question_prompted_messages(data, language)
+            return _choose_hot_question_prompted_messages(language)
         else:
             raise Exception("has not")
 
