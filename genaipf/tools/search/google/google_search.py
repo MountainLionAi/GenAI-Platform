@@ -51,17 +51,21 @@ class AsyncSafeList:
 #         return None
 
 
-async def google_search(search_content: str, num: int = 5):
+async def google_search(search_content: str, num: int = 5, language = None):
     logger.info(f'call google_search search_content={search_content}, num={num}')
     url = rag_conf.GOOGLE_SEARCH_URL
     key = rag_conf.API_KEY
     cx = rag_conf.CX
     if url is None or url == "" or key is None or key == "" or cx is None or cx == "":
         raise CustomerError(status_code=ERROR_CODE['RAG_CONFIG_ERROR'])
+    sources = []
+    content = ""
     try:
         search_details = AsyncSafeList()
         client = AsyncHTTPClient()
         params = {"key": key, "cx": cx, "q": search_content, "num": num}
+        if language:
+            params["lr"] = language
         headers = {"Content-Type": "application/json; charset=UTF-8"}
         result = await client.get_json(url, params, headers)
         if result and result.get('items') and len(result.get('items')) > 0:
@@ -69,8 +73,6 @@ async def google_search(search_content: str, num: int = 5):
             tasks = [get_content_by_url(item.get("link"), item.get("title"), search_details) for item in items]
             await asyncio.gather(*tasks)
         final_details = [await search_details.pop() for _ in range(len(search_details.list))]
-        sources = []
-        content = ""
         for result in final_details:
             sources.append({"title": result.get("title"), "url": result.get("url")})
             content += result.get("content") + "\n引用地址" + result.get("url") + "\n"
@@ -78,7 +80,7 @@ async def google_search(search_content: str, num: int = 5):
     except Exception as e:
         logger.error(f"call google_search error: \n{e}")
         logger.error(traceback.format_exc())
-        return None
+        return sources, content
 
 
 async def get_content_by_url(url, title, _search_details: AsyncSafeList):
