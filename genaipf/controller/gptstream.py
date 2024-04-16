@@ -235,7 +235,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     sources = []
     related_questions = []
     _related_news = []
-    if used_rag:
+    if used_rag and is_need_search:
         await related_questions_task
         related_questions = related_questions_task.result()
     if source == 'v004':
