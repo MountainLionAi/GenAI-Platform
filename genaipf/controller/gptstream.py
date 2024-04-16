@@ -21,9 +21,9 @@ from genaipf.dispatcher.api import generate_unique_id, get_format_output, gpt_fu
 from genaipf.dispatcher.utils import get_qa_vdb_topk, merge_ref_and_input_text
 from genaipf.dispatcher.prompts_v001 import LionPrompt
 # from dispatcher.gptfunction import unfiltered_gpt_functions, gpt_function_filter
-from genaipf.dispatcher.functions import gpt_functions_mapping, gpt_function_filter
+from genaipf.dispatcher.functions import gpt_functions_mapping, gpt_function_filter, need_tool_agent_l
 from genaipf.dispatcher.postprocess import posttext_mapping, PostTextParam
-from genaipf.dispatcher.converter import convert_func_out_to_stream
+from genaipf.dispatcher.converter import convert_func_out_to_stream, run_tool_agent
 from genaipf.utils.redis_utils import RedisConnectionPool
 from genaipf.conf.server import IS_INNER_DEBUG, IS_UNLIMIT_USAGE
 from genaipf.utils.speech_utils import transcribe, textToSpeech
@@ -279,7 +279,10 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
             else:
                 yield json.dumps(chunk) 
     else:
-        stream_gen = convert_func_out_to_stream(func_chunk , messages, newest_question, model, language, related_qa, source, owner, sources, is_need_search, sources_task)
+        if func_chunk["content"]["func_name"] in need_tool_agent_l:
+            stream_gen = run_tool_agent(func_chunk , messages, newest_question, model, language, related_qa, source, owner, sources, is_need_search, sources_task)
+        else:
+            stream_gen = convert_func_out_to_stream(func_chunk , messages, newest_question, model, language, related_qa, source, owner, sources, is_need_search, sources_task)
         await resp1.aclose()
         async for item in stream_gen:
             if item["role"] == "inner_____gpt_whole_text":
