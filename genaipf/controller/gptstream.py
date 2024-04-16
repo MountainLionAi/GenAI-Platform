@@ -11,7 +11,7 @@ import requests
 import json
 # import snowflake.client
 import genaipf.services.gpt_service as gpt_service
-from genaipf.controller.preset_entry import preset_entry_mapping
+from genaipf.controller.preset_entry import preset_entry_mapping, get_swap_preset_info
 import genaipf.services.user_account_service_wrapper as user_account_service_wrapper
 from datetime import datetime
 from genaipf.utils.log_utils import logger
@@ -258,6 +258,14 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         func_chunk = await resp1.__anext__()
         route_mode = "function"
     await resp1.aclose()
+    # 特殊处理swap前置问题
+    if source == 'v101':
+        v101_content = await get_swap_preset_info(language)
+        # 输出swap图表相关内容
+        yield json.dumps(v101_content)
+        # 不匹配function
+        route_mode = "text"
+        source = 'v001'
     if route_mode == "text":
         if used_rag and is_need_search:
             sources, related_qa = await sources_task
