@@ -259,7 +259,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         route_mode = "function"
     await resp1.aclose()
     if route_mode == "text":
-        if used_rag:
+        if used_rag and is_need_search:
             sources, related_qa = await sources_task
             logger.info(f'>>>>> second related_qa: {related_qa}')
             if source != 'v004':
@@ -268,10 +268,10 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
                 yield json.dumps(get_format_output("chatSerpResults", []))
                 related_qa[0] = '\n'.join([str(i) for i in _related_news])
                 model = "claude"
-            if last_front_msg.get('type') == 'image' and last_front_msg.get('base64content') is not None:
-                msgs = msgs[:-1] + buildVisionMessage(last_front_msg)
-                isvision = True
-                used_gpt_functions = None
+        if last_front_msg.get('type') == 'image' and last_front_msg.get('base64content') is not None:
+            msgs = msgs[:-1] + buildVisionMessage(last_front_msg)
+            isvision = True
+            used_gpt_functions = None
         resp1 = await aref_answer_gpt_generator(msgs, model, language, None, picked_content, related_qa, source, owner, isvision) 
         async for chunk in resp1:
             if chunk["role"] == "inner_____gpt_whole_text":
