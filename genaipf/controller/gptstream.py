@@ -346,6 +346,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
             }
         )
         yield json.dumps(v101_content)
+        data = v101_content['content']
     yield json.dumps(get_format_output("step", "done"))
     logger.info(f'>>>>> func & ref _tmp_text & output_type: {output_type}: {_tmp_text}')
     base64_type = 0
