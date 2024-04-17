@@ -228,6 +228,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     used_gpt_functions = gpt_function_filter(gpt_functions_mapping, _messages)
     _tmp_text = ""
     isPresetTop = False
+    isPreSwap = False
     data = {
         'type' : 'gpt',
         'content' : _tmp_text
@@ -260,12 +261,10 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     await resp1.aclose()
     # 特殊处理swap前置问题
     if source == 'v101':
-        v101_content = await get_swap_preset_info(language)
-        # 输出swap图表相关内容
-        yield json.dumps(v101_content)
         # 不匹配function
         route_mode = "text"
         source = 'v001'
+        isPreSwap = True
     if route_mode == "text":
         if used_rag and is_need_search:
             sources, related_qa = await sources_task
@@ -338,6 +337,15 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
             "content": data
         }
         yield json.dumps(_tmp)
+    if isPreSwap:
+        v101_content = await get_swap_preset_info(language)
+        v101_content['content'].update(
+            {
+                'content' : _tmp_text,
+                'code' : _code
+            }
+        )
+        yield json.dumps(v101_content)
     yield json.dumps(get_format_output("step", "done"))
     logger.info(f'>>>>> func & ref _tmp_text & output_type: {output_type}: {_tmp_text}')
     base64_type = 0
