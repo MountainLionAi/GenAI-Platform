@@ -367,7 +367,8 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         file_type,
         agent_id
         )
-        await gpt_service.add_gpt_message_with_code(gpt_message)
+        if not isPreSwap:
+            await gpt_service.add_gpt_message_with_code(gpt_message)
         if data['type'] in ['coin_swap', 'wallet_balance', 'token_transfer']:  # 如果是兑换类型，存库时候需要加一个过期字段，前端用于判断不再发起交易
             data['expired'] = True
         # TODO 速度问题暂时注释掉
