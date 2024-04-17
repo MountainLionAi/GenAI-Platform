@@ -338,10 +338,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         }
         yield json.dumps(_tmp)
     if isPreSwap:
-        print('-------------')
-        
         v101_content = await get_swap_preset_info(language)
-        print(v101_content['content'])
         v101_content['content'].update(
             {
                 'content' : _tmp_text,
