@@ -210,8 +210,8 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     # yield json.dumps(get_format_output("chatSerpResults", sources))
     # yield json.dumps(get_format_output("chatRelatedResults", related_questions))
 
-    if len(related_qa) > 0:
-        used_rag = False
+    # if len(related_qa) > 0:
+    #     used_rag = False
     if source == 'v003':
         used_rag = False
         responseType = 1
