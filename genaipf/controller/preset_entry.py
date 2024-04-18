@@ -41,3 +41,4 @@ if PLUGIN_NAME:
     plugin_submodule = import_module(plugin_submodule_name)
     preset_entry_mapping = plugin_submodule.preset_entry_mapping
     preset_entry_top_mapping = plugin_submodule.preset_entry_top_mapping
+    get_swap_preset_info = plugin_submodule.get_swap_preset_info

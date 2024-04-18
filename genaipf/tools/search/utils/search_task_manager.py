@@ -50,7 +50,7 @@ async def get_sources_tasks(front_messages, related_qa, language):
         logger.error(f'获取丰富后的问题失败: {str(e)}')
     sources = []
     final_related_qa = related_qa
-    if enrich_question != 'False':
+    if enrich_question not in['False', 'False.'] :
         # sources, content = await other_search(enrich_question, related_qa, language)
         sources, content = await multi_search(enrich_question, related_qa, language)
         final_related_qa = content
