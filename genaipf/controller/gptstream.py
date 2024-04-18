@@ -218,6 +218,8 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     # 判断是分析还是回答
     if source == 'v004':
         responseType = 1
+    if source == 'v005':
+        used_rag = False
     # 特殊处理swap前置问题
     if source == 'v101':
         source = 'v001'
