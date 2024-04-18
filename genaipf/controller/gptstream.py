@@ -175,6 +175,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     used_rag = True
     messages = []
     picked_content = ""
+    isPreSwap = False
     for x in front_messages:
         if x.get("code"):
             del x["code"]
@@ -209,12 +210,19 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     # yield json.dumps(get_format_output("chatSerpResults", sources))
     # yield json.dumps(get_format_output("chatRelatedResults", related_questions))
 
+    if len(related_qa) > 0:
+        used_rag = False
     if source == 'v003':
         used_rag = False
         responseType = 1
     # 判断是分析还是回答
     if source == 'v004':
         responseType = 1
+    # 特殊处理swap前置问题
+    if source == 'v101':
+        source = 'v001'
+        isPreSwap = True
+        used_rag = False
     yield json.dumps(get_format_output("responseType", responseType))
     if used_rag:
         is_need_search, sources_task, related_questions_task = await premise_search2(front_messages, related_qa, language_)
@@ -228,7 +236,6 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     used_gpt_functions = gpt_function_filter(gpt_functions_mapping, _messages)
     _tmp_text = ""
     isPresetTop = False
-    isPreSwap = False
     data = {
         'type' : 'gpt',
         'content' : _tmp_text
@@ -260,11 +267,9 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         route_mode = "function"
     await resp1.aclose()
     # 特殊处理swap前置问题
-    if source == 'v101':
+    if isPreSwap:
         # 不匹配function
         route_mode = "text"
-        source = 'v001'
-        isPreSwap = True
     if route_mode == "text":
         if used_rag and is_need_search:
             sources, related_qa = await sources_task
