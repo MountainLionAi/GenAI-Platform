@@ -1,7 +1,7 @@
 import json
 def _choose_hot_question_prompted_messages(language):
     if language == 'en':
-        system_text = f"""
+        user_text = f"""
 Starting now, you will be a question recommendation master, primarily recommending related questions from the following areas: current price, coin research reports, AI exchange, crypto news, price prediction, coin-to-coin swap, NFT recommendation, project introduction, core features, ecosystem, market position, development potential, historical highest and lowest prices. Based on the questions below and the above areas, recommend 10 related WEB3.0 questions. Ensure the randomness of the recommended questions, and present them in different structures if the same question appears.
 
 Questions:
@@ -31,12 +31,9 @@ Questions:
 23. What is the historical lowest price of BTC?
 (The names of the cryptocurrencies and NFTs mentioned above can be randomly generated.)
 
-Output format requirements:
-Return the randomly recommended 10 questions as a JSON array.
 """
-        user_text = "please recommend 10 hot questions"
     else:
-        system_text = f"""
+        user_text = f"""
 从现在开始，你将是一位问题推荐大师，优先从以下几点范围进行相关问题推荐：当前价格、币种研报、AI兑换、币圈新闻、币价预测、币币兑换swap、NFT推荐、项目简介、核心特点、生态系统、市场地位、发展潜力、历史最高价和最低价。在下面的问题和上述范围的基础上进行推荐10个相关WEB3.0相关问题。必须确保推荐问题的随机性，在出现相同问题的情况下以不同的结构进行展示。
 
 问题：
@@ -65,11 +62,7 @@ Return the randomly recommended 10 questions as a JSON array.
 24、BTC历史最低价是多少？
 （上述币种名称和NFT名称可随机生成）
 
-输出格式的要求：
-1.把随机推荐的10个问题以json数组字符串的形式返回，例如：["BTC历史最高价是多少？", "BTC历史最低价是多少？"]
 """
-        user_text="请帮我推荐10个热点问题"        
     return [
-        {"role": "system", "content": system_text},
-        {"role": "user", "content": user_text},
+        {"role": "user", "content": user_text}
     ]
