@@ -11,7 +11,7 @@ import requests
 import json
 # import snowflake.client
 import genaipf.services.gpt_service as gpt_service
-from genaipf.controller.preset_entry import preset_entry_mapping
+from genaipf.controller.preset_entry import preset_entry_mapping, get_swap_preset_info
 import genaipf.services.user_account_service_wrapper as user_account_service_wrapper
 from datetime import datetime
 from genaipf.utils.log_utils import logger
@@ -21,9 +21,9 @@ from genaipf.dispatcher.api import generate_unique_id, get_format_output, gpt_fu
 from genaipf.dispatcher.utils import get_qa_vdb_topk, merge_ref_and_input_text
 from genaipf.dispatcher.prompts_v001 import LionPrompt
 # from dispatcher.gptfunction import unfiltered_gpt_functions, gpt_function_filter
-from genaipf.dispatcher.functions import gpt_functions_mapping, gpt_function_filter
+from genaipf.dispatcher.functions import gpt_functions_mapping, gpt_function_filter, need_tool_agent_l
 from genaipf.dispatcher.postprocess import posttext_mapping, PostTextParam
-from genaipf.dispatcher.converter import convert_func_out_to_stream
+from genaipf.dispatcher.converter import convert_func_out_to_stream, run_tool_agent
 from genaipf.utils.redis_utils import RedisConnectionPool
 from genaipf.conf.server import IS_INNER_DEBUG, IS_UNLIMIT_USAGE
 from genaipf.utils.speech_utils import transcribe, textToSpeech
@@ -175,6 +175,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     used_rag = True
     messages = []
     picked_content = ""
+    isPreSwap = False
     for x in front_messages:
         if x.get("code"):
             del x["code"]
@@ -209,12 +210,21 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     # yield json.dumps(get_format_output("chatSerpResults", sources))
     # yield json.dumps(get_format_output("chatRelatedResults", related_questions))
 
+    # if len(related_qa) > 0:
+    #     used_rag = False
     if source == 'v003':
         used_rag = False
         responseType = 1
     # 判断是分析还是回答
     if source == 'v004':
         responseType = 1
+    if source == 'v005':
+        used_rag = False
+    # 特殊处理swap前置问题
+    if source == 'v101':
+        source = 'v001'
+        isPreSwap = True
+        used_rag = False
     yield json.dumps(get_format_output("responseType", responseType))
     if used_rag:
         is_need_search, sources_task, related_questions_task = await premise_search2(front_messages, related_qa, language_)
@@ -235,7 +245,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     sources = []
     related_questions = []
     _related_news = []
-    if used_rag:
+    if used_rag and is_need_search:
         await related_questions_task
         related_questions = related_questions_task.result()
     if source == 'v004':
@@ -258,8 +268,12 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         func_chunk = await resp1.__anext__()
         route_mode = "function"
     await resp1.aclose()
+    # 特殊处理swap前置问题
+    if isPreSwap:
+        # 不匹配function
+        route_mode = "text"
     if route_mode == "text":
-        if used_rag:
+        if used_rag and is_need_search:
             sources, related_qa = await sources_task
             logger.info(f'>>>>> second related_qa: {related_qa}')
             if source != 'v004':
@@ -268,10 +282,10 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
                 yield json.dumps(get_format_output("chatSerpResults", []))
                 related_qa[0] = '\n'.join([str(i) for i in _related_news])
                 model = "claude"
-            if last_front_msg.get('type') == 'image' and last_front_msg.get('base64content') is not None:
-                msgs = msgs[:-1] + buildVisionMessage(last_front_msg)
-                isvision = True
-                used_gpt_functions = None
+        if last_front_msg.get('type') == 'image' and last_front_msg.get('base64content') is not None:
+            msgs = msgs[:-1] + buildVisionMessage(last_front_msg)
+            isvision = True
+            used_gpt_functions = None
         resp1 = await aref_answer_gpt_generator(msgs, model, language, None, picked_content, related_qa, source, owner, isvision) 
         async for chunk in resp1:
             if chunk["role"] == "inner_____gpt_whole_text":
@@ -279,7 +293,10 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
             else:
                 yield json.dumps(chunk) 
     else:
-        stream_gen = convert_func_out_to_stream(func_chunk , messages, newest_question, model, language, related_qa, source, owner, sources, is_need_search, sources_task)
+        if func_chunk["content"]["func_name"] in need_tool_agent_l:
+            stream_gen = run_tool_agent(func_chunk , messages, newest_question, model, language, related_qa, source, owner, sources, is_need_search, sources_task, chain_id)
+        else:
+            stream_gen = convert_func_out_to_stream(func_chunk , messages, newest_question, model, language, related_qa, source, owner, sources, is_need_search, sources_task, chain_id)
         await resp1.aclose()
         async for item in stream_gen:
             if item["role"] == "inner_____gpt_whole_text":
@@ -327,6 +344,16 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
             "content": data
         }
         yield json.dumps(_tmp)
+    if isPreSwap:
+        v101_content = await get_swap_preset_info(language)
+        v101_content['content'].update(
+            {
+                'content' : _tmp_text,
+                'code' : _code
+            }
+        )
+        yield json.dumps(v101_content)
+        data = v101_content['content']
     yield json.dumps(get_format_output("step", "done"))
     logger.info(f'>>>>> func & ref _tmp_text & output_type: {output_type}: {_tmp_text}')
     base64_type = 0
@@ -347,7 +374,8 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         file_type,
         agent_id
         )
-        await gpt_service.add_gpt_message_with_code(gpt_message)
+        if not isPreSwap:
+            await gpt_service.add_gpt_message_with_code(gpt_message)
         if data['type'] in ['coin_swap', 'wallet_balance', 'token_transfer']:  # 如果是兑换类型，存库时候需要加一个过期字段，前端用于判断不再发起交易
             data['expired'] = True
         # TODO 速度问题暂时注释掉

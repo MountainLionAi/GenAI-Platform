@@ -10,6 +10,17 @@ from genaipf.utils.common_utils import aget_multi_coro, sync_to_async
 from genaipf.tools.search.google.google_search import google_search
 from genaipf.conf.rag_conf import RAG_SEARCH_CLIENT
 
+WHITE_LIST_URL = [
+    "trustwallet.com",
+    "tokenpocket.pro",
+    "tpwallet.io",
+    "google.com",
+    "binance.com",
+    "medium.com",
+    "coindesk.com",
+    "techflowpost.com",
+    "chaincatcher.com"
+]
 
 # 获取是否需要查询task
 async def get_is_need_search_task(front_messages):
@@ -50,9 +61,31 @@ async def get_sources_tasks(front_messages, related_qa, language):
         logger.error(f'获取丰富后的问题失败: {str(e)}')
     sources = []
     final_related_qa = related_qa
-    if enrich_question != 'False':
+    if enrich_question not in['False', 'False.'] :
         # sources, content = await other_search(enrich_question, related_qa, language)
         sources, content = await multi_search(enrich_question, related_qa, language)
+        need_white_list = False
+        try:
+            for message in front_messages['messages']:
+                if message.get('role', '') == 'user' and ('trustwallet' in message.get('content', '').lower() or 'trust wallet' in message.get('content', '').lower()):
+                    need_white_list = True
+                    break
+            if need_white_list:
+                new_sources = []
+                for i,source in enumerate(sources):
+                    url = source['url']
+                    url = url[url.find('//')+2:]
+                    url = url[0:url.find('/'):]
+                    if url.count('.') > 1:
+                        url1 = url[url.rindex('.')+1:len(url)]
+                        tmp = url[ 0:url.rindex('.')]
+                        url = tmp[tmp.rindex('.')+1:]
+                        url = url+'.'+url1
+                    if url in WHITE_LIST_URL:
+                        new_sources.append(source)
+                sources = new_sources
+        except Exception as e:
+            logger.error(f'白名单识别失败: {e}')
         final_related_qa = content
     return sources, final_related_qa
 

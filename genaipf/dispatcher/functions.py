@@ -23,11 +23,28 @@ gpt_functions_mapping = {
             },
             "required": ["location"]
         }
+    },
+    "medical_____treatment": {
+        "name": "medical_____treatment",
+        "description": "if user want surgery or medicine, call this",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "treatment": {
+                    "type": "string",
+                    "description": "surgery or medicine"
+                }
+            },
+            "required": ["treatment"]
+        }
     }
 }
 
 
 gpt_functions = list(gpt_functions_mapping.values())
+need_tool_agent_l = [
+    "medical_____treatment",
+]
 
 def gpt_function_filter(gpt_functions_mapping, messages, msg_k=5, v_n=5, per_n=2):
     try:
@@ -52,3 +69,4 @@ if PLUGIN_NAME:
     plugin_submodule = import_module(plugin_submodule_name)
     gpt_functions_mapping = plugin_submodule.gpt_functions_mapping
     gpt_functions = list(gpt_functions_mapping.values())
+    need_tool_agent_l = getattr(plugin_submodule, "need_tool_agent_l", list())
