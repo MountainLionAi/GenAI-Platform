@@ -268,6 +268,8 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         func_chunk = await resp1.__anext__()
         route_mode = "function"
     await resp1.aclose()
+    # 是在gpt输出之前输出function type还是在gpt输出之后输出function type
+    _function_type_before_gpt_output = False
     # 特殊处理swap前置问题
     if isPreSwap:
         # 不匹配function
@@ -303,6 +305,16 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
                 _tmp_text = item["content"]
             elif item["role"] == "inner_____preset":
                 data.update(item["content"])
+                if item["content"] and item["content"]["type"] in ['buy_but_not_receive', 'why_can_not_transfer_out']:
+                    _tmp = {
+                        "role": "preset", 
+                        "type": data["type"], 
+                        "format": data["subtype"], 
+                        "version": "v001", 
+                        "content": data
+                    }
+                    yield json.dumps(_tmp)
+                    _function_type_before_gpt_output = True
             elif item["role"] == "inner_____preset_top":
                 isPresetTop = True
                 data.update(item["content"])
@@ -335,7 +347,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         'content' : _tmp_text,
         'code' : _code
     })
-    if data["type"] != "gpt" and not isPresetTop:
+    if data["type"] != "gpt" and not isPresetTop and not _function_type_before_gpt_output:
         _tmp = {
             "role": "preset", 
             "type": data["type"], 
