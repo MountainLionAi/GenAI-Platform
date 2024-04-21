@@ -305,7 +305,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
                 _tmp_text = item["content"]
             elif item["role"] == "inner_____preset":
                 data.update(item["content"])
-                if item["content"] and item["content"]["type"] in ['buy_but_not_receive', 'why_can_not_transfer_out']:
+                if item["content"] and item["content"]["type"] in ['buy_but_not_receive', 'why_can_not_transfer_out', 'transfer_only']:
                     _tmp = {
                         "role": "preset", 
                         "type": data["type"], 
