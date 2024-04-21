@@ -81,6 +81,15 @@ async def convert_func_out_to_stream(chunk, messages, newest_question, model, la
                     "content": _data
                 }
                 _data = {}
+    if func_name in ['buy_but_not_receive', 'why_can_not_transfer_out']:
+        if _data:
+            yield {
+                "role": "inner_____preset", 
+                "type": "inner_____preset", 
+                "format": "inner_____preset", 
+                "version": "v001", 
+                "content": _data
+            }
     if (func_name not in not_need_search and sub_func_name != 'coin_swap1') or (func_name == 'generate_report' and presetContent == {}):
         _messages = [x for x in messages if x["role"] != "system"]
         msgs = _messages[::]
@@ -97,14 +106,15 @@ async def convert_func_out_to_stream(chunk, messages, newest_question, model, la
             async for _gpt_letter in posttexter.get_text_agenerator(PostTextParam(language, sub_func_name)):
                 _tmp_text += _gpt_letter
                 yield get_format_output("gpt", _gpt_letter)
-    if _data:
-        yield {
-            "role": "inner_____preset", 
-            "type": "inner_____preset", 
-            "format": "inner_____preset", 
-            "version": "v001", 
-            "content": _data
-        }
+    if func_name not in ['buy_but_not_receive', 'why_can_not_transfer_out']:
+        if _data:
+            yield {
+                "role": "inner_____preset", 
+                "type": "inner_____preset", 
+                "format": "inner_____preset", 
+                "version": "v001", 
+                "content": _data
+            }
         
         
         
