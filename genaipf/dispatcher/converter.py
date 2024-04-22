@@ -90,6 +90,12 @@ async def convert_func_out_to_stream(chunk, messages, newest_question, model, la
                 "version": "v001", 
                 "content": _data
             }
+            if func_name == 'transfer_only':
+                transfer_only_content = """
+                好的，为了确保您的资金安全，我们需要对您提供的转账地址进行合规性检测。请您提供您想要检查的转账地址。
+            一旦您提供了地址，我们将尽快回复您检测结果。如果任何问题或需要进一步的协助，请随时联系我们。我们在这里为您提供支持！
+                """
+                yield get_format_output("gpt", transfer_only_content)
     if (func_name not in not_need_search and sub_func_name != 'coin_swap1') or (func_name == 'generate_report' and presetContent == {}):
         _messages = [x for x in messages if x["role"] != "system"]
         msgs = _messages[::]
