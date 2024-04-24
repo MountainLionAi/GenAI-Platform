@@ -12,7 +12,7 @@ user: 推荐买什么币？
 assistant: BTC
 user: 它最近有什么新闻
 输出：
-BTC最近有什么新闻，政策，市场，经济等方面的重要新闻
+BTC最近有什么新闻
 """
     if language == 'en':
         system_text = """
