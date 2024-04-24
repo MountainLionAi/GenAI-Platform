@@ -30,6 +30,15 @@ async def login(request: Request):
                                               request_params.get('timestamp', ''), login_type)
     return success(login_res)
 
+# 用户三方登陆
+async def login_other(request: Request):
+    logger.info('user_login_other')
+    request_params = request.json
+    if not request_params:
+        raise CustomerError(status_code=ERROR_CODE['PARAMS_ERROR'])
+    login_res = await user_service.user_login_other(request_params.get('email', ''), request_params.get('wallet_address', ''))
+    return success(login_res)
+
 
 # 判断用户是否登陆
 async def check_login(request: Request):
