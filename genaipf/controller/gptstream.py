@@ -260,6 +260,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     related_questions = []
     _related_news = []
     if need_qa:
+        related_questions_task_start_time = time.perf_counter()
         await related_questions_task
         related_questions = related_questions_task.result()
         related_questions_task_end_time = time.perf_counter()
