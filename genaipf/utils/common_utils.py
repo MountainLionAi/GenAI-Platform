@@ -81,7 +81,7 @@ def sync_to_async(fn):
 # 判断一段话中是否含有中文
 def contains_chinese(text):
     if bool(re.search(r'[\u4e00-\u9fff]+', text)):
-        return 'zh'
+        return 'cn'
     else:
         return 'en'
 
