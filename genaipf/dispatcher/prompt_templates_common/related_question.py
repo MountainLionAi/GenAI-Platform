@@ -1,7 +1,7 @@
 
 def _get_related_question_prompted_messages(data, language):
     prompt_language = '英文'
-    if language == 'zh':
+    if language == 'zh' or language == 'cn':
         prompt_language = '中文'
     messages = data["messages"]
 #     system_text = """

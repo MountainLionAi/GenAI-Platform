@@ -5,6 +5,7 @@ from genaipf.conf.server import PLUGIN_NAME
 PATH_WITHOUT_LOGIN = (
     '/v1/api/sendVerifyCode',
     '/v1/api/userLogin',
+    '/v1/api/userLoginOther',
     '/v1/api/register',
     '/v1/api/getCaptcha',
     '/v1/api/testVerifyCode',
