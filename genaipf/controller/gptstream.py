@@ -194,7 +194,11 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     
     # vvvvvvvv 在第一次 func gpt 就准备好数据 vvvvvvvv
     logger.info(f'>>>>> newest_question: {newest_question}')
+    start_time1 = time.perf_counter()
     related_qa = get_qa_vdb_topk(newest_question)
+    end_time1 = time.perf_counter()
+    elapsed_time1 = (end_time1 - start_time1) * 1000
+    logger.info(f'=====================>get_qa_vdb_topk耗时：{elapsed_time1:.3f}毫秒')
     language_ = contains_chinese(newest_question)
     _code = generate_unique_id()
     # responseType （0是回答，1是分析）
@@ -229,7 +233,11 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         used_rag = False
     yield json.dumps(get_format_output("responseType", responseType))
     if used_rag:
+        premise_search2_start_time = time.perf_counter()
         is_need_search, sources_task, related_questions_task = await premise_search2(front_messages, related_qa, language_)
+        premise_search2_end_time = time.perf_counter()
+        elapsed_premise_search2 = (premise_search2_end_time - premise_search2_start_time) * 1000
+        logger.info(f'=====================>premise_search2耗时：{elapsed_premise_search2:.3f}毫秒')
     else:
         is_need_search = False
         sources_task = None
@@ -237,7 +245,11 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     _messages = [x for x in messages if x["role"] != "system"]
     msgs = _messages[::]
     # ^^^^^^^^ 在第一次 func gpt 就准备好数据 ^^^^^^^^
+    gpt_function_filter_start_time = time.perf_counter()
     used_gpt_functions = gpt_function_filter(gpt_functions_mapping, _messages)
+    gpt_function_filter_end_time = time.perf_counter()
+    elapsed_gpt_function_filter_time = (gpt_function_filter_end_time - gpt_function_filter_start_time) * 1000
+    logger.info(f'=====================>gpt_function_filter耗时：{elapsed_gpt_function_filter_time:.3f}毫秒')
     _tmp_text = ""
     isPresetTop = False
     data = {
@@ -247,9 +259,6 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     sources = []
     related_questions = []
     _related_news = []
-    if need_qa:
-        await related_questions_task
-        related_questions = related_questions_task.result()
     if source == 'v004':
         from genaipf.dispatcher.callgpt import DispatcherCallGpt
         _data = {"msgs":msgs, "model":model, "preset_name":"attitude", "source":source, "owner":owner}
@@ -259,10 +268,13 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         data["attitude"] = _tmp_attitude
         data["chatRelatedNews"] = _related_news
         picked_content = _tmp_attitude
+    afunc_gpt_generator_start_time = time.perf_counter()
     resp1 = await afunc_gpt_generator(msgs, used_gpt_functions, language_, model, picked_content, related_qa, source, owner)
+    afunc_gpt_generator_end_time = time.perf_counter()
+    elapsed_afunc_gpt_generator_time = (afunc_gpt_generator_end_time - afunc_gpt_generator_start_time) * 1000
+    logger.info(f'=====================>afunc_gpt_generator耗时：{elapsed_afunc_gpt_generator_time:.3f}毫秒')
     chunk = await asyncio.wait_for(resp1.__anext__(), timeout=20)
     isvision = False
-    yield json.dumps(get_format_output("chatRelatedResults", related_questions))
     func_chunk = None
     if chunk["content"] == "llm_yielding":
         route_mode = "text"
@@ -276,7 +288,11 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         route_mode = "text"
     if route_mode == "text":
         if used_rag and is_need_search:
+            sources_task_start_time = time.perf_counter()
             sources, related_qa = await sources_task
+            sources_task_end_time = time.perf_counter()
+            elapsed_sources_task_time = (sources_task_end_time - sources_task_start_time) * 1000
+            logger.info(f'=====================>sources_task耗时：{elapsed_sources_task_time:.3f}毫秒')
             logger.info(f'>>>>> second related_qa: {related_qa}')
             if source != 'v004':
                 yield json.dumps(get_format_output("chatSerpResults", sources))
@@ -288,7 +304,11 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
             msgs = msgs[:-1] + buildVisionMessage(last_front_msg)
             isvision = True
             used_gpt_functions = None
-        resp1 = await aref_answer_gpt_generator(msgs, model, language_, None, picked_content, related_qa, source, owner, isvision) 
+        aref_answer_gpt_generator_start_time = time.perf_counter()
+        resp1 = await aref_answer_gpt_generator(msgs, model, language_, None, picked_content, related_qa, source, owner, isvision)
+        aref_answer_gpt_generator_end_time = time.perf_counter()
+        elapsed_aref_answer_gpt_generator_time = (aref_answer_gpt_generator_end_time - aref_answer_gpt_generator_start_time) * 1000
+        logger.info(f'=====================>aref_answer_gpt_generator耗时：{elapsed_aref_answer_gpt_generator_time:.3f}毫秒')
         async for chunk in resp1:
             if chunk["role"] == "inner_____gpt_whole_text":
                 _tmp_text = chunk["content"]
@@ -296,9 +316,17 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
                 yield json.dumps(chunk) 
     else:
         if func_chunk["content"]["func_name"] in need_tool_agent_l:
+            run_tool_agent_start_time = time.perf_counter()
             stream_gen = run_tool_agent(func_chunk , messages, newest_question, model, language_, related_qa, source, owner, sources, is_need_search, sources_task, chain_id)
+            run_tool_agent_end_time = time.perf_counter()
+            elapsed_run_tool_agent_time = (run_tool_agent_end_time - run_tool_agent_start_time) * 1000
+            logger.info(f'=====================>run_tool_agent耗时：{elapsed_run_tool_agent_time:.3f}毫秒')
         else:
+            convert_func_out_to_stream_start_time = time.perf_counter()
             stream_gen = convert_func_out_to_stream(func_chunk , messages, newest_question, model, language_, related_qa, source, owner, sources, is_need_search, sources_task, chain_id)
+            convert_func_out_to_stream_time_end_time = time.perf_counter()
+            elapsed_convert_func_out_to_stream_time = (convert_func_out_to_stream_time_end_time - convert_func_out_to_stream_start_time) * 1000
+            logger.info(f'=====================>convert_func_out_to_stream耗时：{elapsed_convert_func_out_to_stream_time:.3f}毫秒')
         await resp1.aclose()
         async for item in stream_gen:
             if item["role"] == "inner_____gpt_whole_text":
@@ -356,6 +384,16 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         )
         yield json.dumps(v101_content)
         data = v101_content['content']
+
+    # 把相关问题放到这里 节省执行时间
+    if need_qa:
+        related_questions_task_start_time = time.perf_counter()
+        await related_questions_task
+        related_questions = related_questions_task.result()
+        related_questions_task_end_time = time.perf_counter()
+        elapsed_related_questions_task_time = (related_questions_task_end_time - related_questions_task_start_time) * 1000
+        logger.info(f'=====================>related_questions_task耗时：{elapsed_related_questions_task_time:.3f}毫秒')
+    yield json.dumps(get_format_output("chatRelatedResults", related_questions))
     yield json.dumps(get_format_output("step", "done"))
     logger.info(f'>>>>> func & ref _tmp_text & output_type: {output_type}: {_tmp_text}')
     base64_type = 0
