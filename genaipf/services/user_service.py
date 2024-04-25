@@ -135,7 +135,6 @@ async def user_login_other(email, wallet_addr, source):
     user_info = user[0]
     user_id = user_info['id']
     jwt_manager = JWTManager()
-    print(str(user_info['id'])+'----'+user_key)
     jwt_token = jwt_manager.generate_token(user_info['id'], user_key)
     redis_client = RedisConnectionPool().get_connection()
     token_key = get_user_key(user_info['id'], user_key)
