@@ -259,13 +259,6 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     sources = []
     related_questions = []
     _related_news = []
-    if need_qa:
-        related_questions_task_start_time = time.perf_counter()
-        await related_questions_task
-        related_questions = related_questions_task.result()
-        related_questions_task_end_time = time.perf_counter()
-        elapsed_related_questions_task_time = (related_questions_task_end_time - related_questions_task_start_time) * 1000
-        logger.info(f'=====================>related_questions_task耗时：{elapsed_related_questions_task_time:.3f}毫秒')
     if source == 'v004':
         from genaipf.dispatcher.callgpt import DispatcherCallGpt
         _data = {"msgs":msgs, "model":model, "preset_name":"attitude", "source":source, "owner":owner}
@@ -282,7 +275,6 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     logger.info(f'=====================>afunc_gpt_generator耗时：{elapsed_afunc_gpt_generator_time:.3f}毫秒')
     chunk = await asyncio.wait_for(resp1.__anext__(), timeout=20)
     isvision = False
-    yield json.dumps(get_format_output("chatRelatedResults", related_questions))
     func_chunk = None
     if chunk["content"] == "llm_yielding":
         route_mode = "text"
@@ -392,6 +384,16 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         )
         yield json.dumps(v101_content)
         data = v101_content['content']
+
+    # 把相关问题放到这里 节省执行时间
+    if need_qa:
+        related_questions_task_start_time = time.perf_counter()
+        await related_questions_task
+        related_questions = related_questions_task.result()
+        related_questions_task_end_time = time.perf_counter()
+        elapsed_related_questions_task_time = (related_questions_task_end_time - related_questions_task_start_time) * 1000
+        logger.info(f'=====================>related_questions_task耗时：{elapsed_related_questions_task_time:.3f}毫秒')
+    yield json.dumps(get_format_output("chatRelatedResults", related_questions))
     yield json.dumps(get_format_output("step", "done"))
     logger.info(f'>>>>> func & ref _tmp_text & output_type: {output_type}: {_tmp_text}')
     base64_type = 0
