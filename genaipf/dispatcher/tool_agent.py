@@ -115,6 +115,13 @@ async def fake_example_func(messages, newest_question, model, language, related_
 
 
 tool_agent_mapping = {
+    "medical": {
+        "name": "medical",
+        "func": fake_example_func
+    }
+}
+
+tool_agent_sub_mapping = {
     "medical_____treatment": {
         "name": "medical_____treatment",
         "func": fake_example_func
@@ -126,4 +133,5 @@ if PLUGIN_NAME:
     plugin_submodule_name = f'{PLUGIN_NAME}.dispatcher.tool_agent'
     plugin_submodule = import_module(plugin_submodule_name)
     tool_agent_mapping = getattr(plugin_submodule, "tool_agent_mapping", dict())
+    tool_agent_sub_mapping = getattr(plugin_submodule, "tool_agent_sub_mapping", dict())
     # assert set(need_tool_agent_l) == set(tool_agent_mapping.key())

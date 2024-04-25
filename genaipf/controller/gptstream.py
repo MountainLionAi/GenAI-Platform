@@ -293,7 +293,10 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
             else:
                 yield json.dumps(chunk) 
     else:
-        if func_chunk["content"]["func_name"] in need_tool_agent_l:
+        func_name = func_chunk["content"]["func_name"]
+        sub_func_name = func_chunk["content"]["sub_func_name"]
+        whole_func_name = f"{func_name}_____{sub_func_name}"
+        if func_name in need_tool_agent_l or whole_func_name in need_tool_agent_l:
             stream_gen = run_tool_agent(func_chunk , messages, newest_question, model, language, related_qa, source, owner, sources, is_need_search, sources_task, chain_id)
         else:
             stream_gen = convert_func_out_to_stream(func_chunk , messages, newest_question, model, language, related_qa, source, owner, sources, is_need_search, sources_task, chain_id)
