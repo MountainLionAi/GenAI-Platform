@@ -55,7 +55,7 @@ async def fake_example_func(messages, newest_question, model, language, related_
 
     chat_history = []
     _last_input = ""
-    # XXX: _last_input 保留用户问的最后一个问题
+    # _last_input 保留用户问的最后一个问题
     for _m in messages:
         _m["content"] = _m["content"].replace('{', '(').replace('}', ')')
         if _m["role"] == "user":
@@ -63,9 +63,9 @@ async def fake_example_func(messages, newest_question, model, language, related_
             _last_input = _m["content"]
         else:
             chat_history.append(AIMessage(content=_m["content"]))
-    chat_history.pop() # XXX: 去掉最后一条，最后一条在 _last_input
+    chat_history.pop() # 去掉最后一条，最后一条在 _last_input
 
-    # XXX: 重点是 kind == "on_chat_model_stream" 这个分支是输出 gpt 的最终结果
+    # 重点是 kind == "on_chat_model_stream" 这个分支是输出 gpt 的最终结果
     # 其他分支是调用工具等中间环节
     _tmp_text = ""
     async for event in agent_executor.astream_events(
