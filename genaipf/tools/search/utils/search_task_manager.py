@@ -199,7 +199,7 @@ async def multi_search(questions: str, related_qa=[], language=None):
         google_serper_client = GoogleSerperClient()
         multi_search_task.append(google_serper_client.search(questions))
         multi_search_task.append(google_search(questions))
-    multi_search_task.append(metaphor_search2(questions, language))
+    #multi_search_task.append(metaphor_search2(questions, language))
     results = await asyncio.gather(*multi_search_task)
 
     final_sources = []
