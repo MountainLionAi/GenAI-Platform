@@ -253,13 +253,13 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     if source == 'v004':
         from genaipf.dispatcher.callgpt import DispatcherCallGpt
         _data = {"msgs":msgs, "model":model, "preset_name":"attitude", "source":source, "owner":owner}
-        _tmp_attitude, _related_news = await DispatcherCallGpt.get_subtype_task_result(source, language, _data)
+        _tmp_attitude, _related_news = await DispatcherCallGpt.get_subtype_task_result(source, language_, _data)
         yield json.dumps(get_format_output("attitude", _tmp_attitude))
         yield json.dumps(get_format_output("chatRelatedNews", _related_news))
         data["attitude"] = _tmp_attitude
         data["chatRelatedNews"] = _related_news
         picked_content = _tmp_attitude
-    resp1 = await afunc_gpt_generator(msgs, used_gpt_functions, language, model, picked_content, related_qa, source, owner)
+    resp1 = await afunc_gpt_generator(msgs, used_gpt_functions, language_, model, picked_content, related_qa, source, owner)
     chunk = await asyncio.wait_for(resp1.__anext__(), timeout=20)
     isvision = False
     yield json.dumps(get_format_output("chatRelatedResults", related_questions))
@@ -288,7 +288,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
             msgs = msgs[:-1] + buildVisionMessage(last_front_msg)
             isvision = True
             used_gpt_functions = None
-        resp1 = await aref_answer_gpt_generator(msgs, model, language, None, picked_content, related_qa, source, owner, isvision) 
+        resp1 = await aref_answer_gpt_generator(msgs, model, language_, None, picked_content, related_qa, source, owner, isvision) 
         async for chunk in resp1:
             if chunk["role"] == "inner_____gpt_whole_text":
                 _tmp_text = chunk["content"]
@@ -296,9 +296,9 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
                 yield json.dumps(chunk) 
     else:
         if func_chunk["content"]["func_name"] in need_tool_agent_l:
-            stream_gen = run_tool_agent(func_chunk , messages, newest_question, model, language, related_qa, source, owner, sources, is_need_search, sources_task, chain_id)
+            stream_gen = run_tool_agent(func_chunk , messages, newest_question, model, language_, related_qa, source, owner, sources, is_need_search, sources_task, chain_id)
         else:
-            stream_gen = convert_func_out_to_stream(func_chunk , messages, newest_question, model, language, related_qa, source, owner, sources, is_need_search, sources_task, chain_id)
+            stream_gen = convert_func_out_to_stream(func_chunk , messages, newest_question, model, language_, related_qa, source, owner, sources, is_need_search, sources_task, chain_id)
         await resp1.aclose()
         async for item in stream_gen:
             if item["role"] == "inner_____gpt_whole_text":
@@ -321,7 +321,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
                 yield json.dumps(_tmp)
                 from genaipf.dispatcher.callgpt import DispatcherCallGpt
                 if DispatcherCallGpt.need_call_gpt(data):
-                    subtype_task_result = await DispatcherCallGpt.get_subtype_task_result(data["subtype"], language, data)
+                    subtype_task_result = await DispatcherCallGpt.get_subtype_task_result(data["subtype"], language_, data)
                     preset_type, preset_content, data = DispatcherCallGpt.gen_preset_content(data["subtype"], subtype_task_result, data)
                     yield json.dumps(get_format_output("preset", preset_content, type=preset_type))
             elif item["role"] == "sources":
@@ -347,7 +347,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         }
         yield json.dumps(_tmp)
     if isPreSwap:
-        v101_content = await get_swap_preset_info(language)
+        v101_content = await get_swap_preset_info(language_)
         v101_content['content'].update(
             {
                 'content' : _tmp_text,
@@ -441,7 +441,7 @@ async def  getAnswerAndCallGptData(question, userid, msggroup, language, front_m
         'type' : 'gpt',
         'content' : _tmp_text
     }
-    resp1 = await afunc_gpt_generator(msgs, used_gpt_functions, language, model, "", related_qa, source, owner)
+    resp1 = await afunc_gpt_generator(msgs, used_gpt_functions, language_, model, "", related_qa, source, owner)
     chunk = await asyncio.wait_for(resp1.__anext__(), timeout=20)
     assert chunk["role"] == "step"
     if chunk["content"] == "llm_yielding":
@@ -450,7 +450,7 @@ async def  getAnswerAndCallGptData(question, userid, msggroup, language, front_m
                 _tmp_text = chunk["content"]
     elif chunk["content"] == "agent_routing":
         chunk = await resp1.__anext__()
-        stream_gen = convert_func_out_to_stream(chunk, messages, newest_question, model, language, related_qa, source, owner)
+        stream_gen = convert_func_out_to_stream(chunk, messages, newest_question, model, language_, related_qa, source, owner)
         async for item in stream_gen:
             if item["role"] == "inner_____gpt_whole_text":
                 _tmp_text = item["content"]
