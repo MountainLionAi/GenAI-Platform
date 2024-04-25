@@ -30,7 +30,7 @@ async def metaphor_search2(question: str, language=None):
     metaphor_client = MetaphorClient()
     try:
         include_domains = []
-        if language == 'zh':
+        if language == 'zh' or language == 'cn':
             include_domains.extend(include_domains_zh)
             random_three = random.sample(include_domains_en, 3)
             include_domains.extend(random_three)

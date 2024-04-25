@@ -28,7 +28,8 @@ from genaipf.utils.redis_utils import RedisConnectionPool
 from genaipf.conf.server import IS_INNER_DEBUG, IS_UNLIMIT_USAGE
 from genaipf.utils.speech_utils import transcribe, textToSpeech
 from genaipf.tools.search.utils.search_agent_utils import other_search
-from genaipf.tools.search.utils.search_agent_utils import premise_search, premise_search1, premise_search2, new_question_question
+from genaipf.tools.search.utils.search_agent_utils import premise_search, premise_search1, premise_search2, new_question_question, fixed_related_question
+from genaipf.tools.search.utils.search_task_manager import get_related_question_task
 from genaipf.utils.common_utils import contains_chinese
 import os
 import base64
@@ -216,6 +217,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
 
     # if len(related_qa) > 0:
     #     used_rag = False
+    need_qa = True
     if source == 'v003':
         used_rag = False
         responseType = 1
@@ -239,7 +241,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     else:
         is_need_search = False
         sources_task = None
-        related_questions_task = None
+        related_questions_task = asyncio.create_task(get_related_question_task({"messages": [front_messages[-1]]}, fixed_related_question, language_))
     _messages = [x for x in messages if x["role"] != "system"]
     msgs = _messages[::]
     # ^^^^^^^^ 在第一次 func gpt 就准备好数据 ^^^^^^^^
@@ -257,8 +259,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     sources = []
     related_questions = []
     _related_news = []
-    if used_rag and is_need_search:
-        related_questions_task_start_time = time.perf_counter()
+    if need_qa:
         await related_questions_task
         related_questions = related_questions_task.result()
         related_questions_task_end_time = time.perf_counter()
@@ -311,7 +312,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
             isvision = True
             used_gpt_functions = None
         aref_answer_gpt_generator_start_time = time.perf_counter()
-        resp1 = await aref_answer_gpt_generator(msgs, model, language, None, picked_content, related_qa, source, owner, isvision) 
+        resp1 = await aref_answer_gpt_generator(msgs, model, language, None, picked_content, related_qa, source, owner, isvision)
         aref_answer_gpt_generator_end_time = time.perf_counter()
         elapsed_aref_answer_gpt_generator_time = (aref_answer_gpt_generator_end_time - aref_answer_gpt_generator_start_time) * 1000
         logger.info(f'=====================>aref_answer_gpt_generator耗时：{elapsed_aref_answer_gpt_generator_time:.3f}毫秒')
