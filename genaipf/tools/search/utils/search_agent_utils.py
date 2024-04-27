@@ -20,6 +20,9 @@ fixed_related_question = {
     'zh': {
         'title': '我想要使用费用低廉且便捷的兑换。',
     },
+    'cn': {
+        'title': '我想要使用费用低廉且便捷的兑换。',
+    },
     'en': {
         'title': ' I want to use convenient and low-cost  swap service.',
     }
