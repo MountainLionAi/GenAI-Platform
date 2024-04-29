@@ -36,7 +36,7 @@ def _get_related_question_prompted_messages(data, language):
         "问题9",
         "问题10",
         "问题11",
-        "问题12",
+        "问题12"
     ]
     """
     msg_l = []
