@@ -116,9 +116,14 @@ async def convert_func_out_to_stream(chunk, messages, newest_question, model, la
 async def run_tool_agent(chunk, messages, newest_question, model, language, related_qa, source, owner, sources=[], is_need_search=False, sources_task=None, chain_id=''):
     _param = chunk["content"]
     func_name = _param["func_name"]
-    from genaipf.dispatcher.tool_agent import tool_agent_mapping
-    tool_agent_func = tool_agent_mapping[func_name]["func"]
-    resp = await tool_agent_func(messages, newest_question, model, language, related_qa, source, owner, sources=[], is_need_search=False, sources_task=None, chain_id='')
+    sub_func_name = _param["sub_func_name"]
+    whole_func_name = f"{func_name}_____{sub_func_name}"
+    from genaipf.dispatcher.tool_agent import tool_agent_mapping, tool_agent_sub_mapping
+    if whole_func_name in tool_agent_sub_mapping:
+        tool_agent_func = tool_agent_sub_mapping[whole_func_name]["func"]
+    else:
+        tool_agent_func = tool_agent_mapping[func_name]["func"]
+    resp = tool_agent_func(messages, newest_question, model, language, related_qa, source, owner, sources=[], is_need_search=False, sources_task=None, chain_id='')
     async for item in resp:
         yield item
     
