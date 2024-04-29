@@ -108,7 +108,7 @@ async def simple_achat(messages: typing.List[typing.Mapping[str, str]], model: s
     return resp.message.content
 
 def merge_ref_and_input_text(ref, input_text, language='en'):
-    if language == 'cn':
+    if language == 'zh' or language == 'cn':
         return f"""可能相关的资料：
 ```
 {ref}
