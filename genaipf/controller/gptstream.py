@@ -315,18 +315,25 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
             else:
                 yield json.dumps(chunk) 
     else:
-        if func_chunk["content"]["func_name"] in need_tool_agent_l:
-            run_tool_agent_start_time = time.perf_counter()
-            stream_gen = run_tool_agent(func_chunk , messages, newest_question, model, language_, related_qa, source, owner, sources, is_need_search, sources_task, chain_id)
-            run_tool_agent_end_time = time.perf_counter()
-            elapsed_run_tool_agent_time = (run_tool_agent_end_time - run_tool_agent_start_time) * 1000
-            logger.info(f'=====================>run_tool_agent耗时：{elapsed_run_tool_agent_time:.3f}毫秒')
-        else:
-            convert_func_out_to_stream_start_time = time.perf_counter()
-            stream_gen = convert_func_out_to_stream(func_chunk , messages, newest_question, model, language_, related_qa, source, owner, sources, is_need_search, sources_task, chain_id)
-            convert_func_out_to_stream_time_end_time = time.perf_counter()
-            elapsed_convert_func_out_to_stream_time = (convert_func_out_to_stream_time_end_time - convert_func_out_to_stream_start_time) * 1000
-            logger.info(f'=====================>convert_func_out_to_stream耗时：{elapsed_convert_func_out_to_stream_time:.3f}毫秒')
+        try:
+            func_name = func_chunk["content"]["func_name"]
+            sub_func_name = func_chunk["content"]["sub_func_name"]
+            whole_func_name = f"{func_name}_____{sub_func_name}"
+            if func_name in need_tool_agent_l or whole_func_name in need_tool_agent_l:
+                run_tool_agent_start_time = time.perf_counter()
+                stream_gen = run_tool_agent(func_chunk , messages, newest_question, model, language_, related_qa, source, owner, sources, is_need_search, sources_task, chain_id)
+                run_tool_agent_end_time = time.perf_counter()
+                elapsed_run_tool_agent_time = (run_tool_agent_end_time - run_tool_agent_start_time) * 1000
+                logger.info(f'=====================>run_tool_agent耗时：{elapsed_run_tool_agent_time:.3f}毫秒')
+            else:
+                convert_func_out_to_stream_start_time = time.perf_counter()
+                stream_gen = convert_func_out_to_stream(func_chunk , messages, newest_question, model, language_, related_qa, source, owner, sources, is_need_search, sources_task, chain_id)
+                convert_func_out_to_stream_time_end_time = time.perf_counter()
+                elapsed_convert_func_out_to_stream_time = (convert_func_out_to_stream_time_end_time - convert_func_out_to_stream_start_time) * 1000
+                logger.info(f'=====================>convert_func_out_to_stream耗时：{elapsed_convert_func_out_to_stream_time:.3f}毫秒')
+        except Exception as e:
+            logger.error(f'error: {e} \n func_chunk: {func_chunk}')
+            raise e
         await resp1.aclose()
         async for item in stream_gen:
             if item["role"] == "inner_____gpt_whole_text":
