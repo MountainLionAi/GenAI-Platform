@@ -23,8 +23,9 @@ async def save_user_log(request: Request):
             await user_log_service.save_user_log(user_id, request_ip, request_path)
             return
         redis_client = RedisConnectionPool().get_connection()
-        user_token_key = user_service.get_user_key(check_res[1], check_res[2]) + ':' + token
-        user = redis_client.get(user_token_key)
+        user_token_key = user_service.get_user_key(check_res[1], check_res[2])
+        user_token_key_final = user_token_key + ':' + token
+        user = redis_client.get(user_token_key_final)
         if user is None:
             user_id = 0
             await user_log_service.save_user_log(user_id, request_ip, request_path)
