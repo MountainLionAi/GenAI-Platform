@@ -14,7 +14,7 @@ async def get_rendered_html(url):
         else:
             browser = await launch(timeout=2000, headless=True)
         page = await browser.newPage()
-        await asyncio.wait_for(page.goto(url), timeout=5)
+        await asyncio.wait_for(page.goto(url), timeout=9)
         rendered_html = await page.content()  # 获取页面内容
         return rendered_html
     except Exception as e:
