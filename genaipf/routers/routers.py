@@ -43,6 +43,7 @@ blueprint_v1.add_route(user.get_captcha, "getCaptcha", methods=["GET"])
 blueprint_v1.add_route(user.verify_captcha_code, "testVerifyCode", methods=["POST"])
 blueprint_v1.add_route(user.modify_password, "modifyPassword", methods=["POST"])
 blueprint_v1.add_route(user.get_news, "newsbot", methods=["GET"])
+blueprint_v1.add_route(user.login_other, "userLoginOther", methods=["POST"])
 blueprint_v1.add_route(feedback.add_feedback, "addFeedback", methods=["POST"])
 
 # 支付相关接口

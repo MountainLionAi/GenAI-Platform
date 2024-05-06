@@ -9,6 +9,7 @@ from genaipf.tools.search.google_serper.goole_serper_client import GoogleSerperC
 from genaipf.utils.common_utils import aget_multi_coro, sync_to_async
 from genaipf.tools.search.google.google_search import google_search
 from genaipf.conf.rag_conf import RAG_SEARCH_CLIENT
+import time
 
 WHITE_LIST_URL = [
     "trustwallet.com",
@@ -53,17 +54,25 @@ async def get_related_question_task(newest_question_arr, fixed_related_question,
 # 获取相关source和content的task
 async def get_sources_tasks(front_messages, related_qa, language):
     enrich_question = 'False'
+    enrich_question_start_time = time.perf_counter()
     msgs = LionPromptCommon.get_prompted_messages("enrich_question", front_messages, language)
     try:
         enrich_question = await simple_achat(msgs)
         logger.info(f'丰富后的问题是: {enrich_question}')
     except Exception as e:
         logger.error(f'获取丰富后的问题失败: {str(e)}')
+    enrich_question_end_time = time.perf_counter()
+    elapsed_enrich_question_time = (enrich_question_end_time - enrich_question_start_time) * 1000
+    logger.info(f'=====================>enrich_question耗时：{elapsed_enrich_question_time:.3f}毫秒')
     sources = []
     final_related_qa = related_qa
     if enrich_question not in['False', 'False.'] :
         # sources, content = await other_search(enrich_question, related_qa, language)
+        multi_search_start_time = time.perf_counter()
         sources, content = await multi_search(enrich_question, related_qa, language)
+        multi_search_end_time = time.perf_counter()
+        elapsed_multi_search_time = (multi_search_end_time - multi_search_start_time) * 1000
+        logger.info(f'=====================>multi_search耗时：{elapsed_multi_search_time:.3f}毫秒')
         need_white_list = False
         try:
             for message in front_messages['messages']:
@@ -87,6 +96,9 @@ async def get_sources_tasks(front_messages, related_qa, language):
         except Exception as e:
             logger.error(f'白名单识别失败: {e}')
         final_related_qa = content
+    get_sources_tasks_end_time = time.perf_counter()
+    elapsed_get_sources_tasks_time = (get_sources_tasks_end_time - enrich_question_start_time) * 1000
+    logger.info(f'=====================>get_sources_tasks耗时：{elapsed_get_sources_tasks_time:.3f}毫秒')
     return sources, final_related_qa
 
 
@@ -194,12 +206,12 @@ async def multi_search(questions: str, related_qa=[], language=None):
         google_serper_client = GoogleSerperClient()
         multi_search_task.append(google_serper_client.search(questions))
     elif RAG_SEARCH_CLIENT == 'GOOGLE_SEARCH':
-        multi_search_task.append(google_search(questions, 5, language))
+        multi_search_task.append(google_search(questions, 4, language))
     elif RAG_SEARCH_CLIENT == 'ALL':
         google_serper_client = GoogleSerperClient()
         multi_search_task.append(google_serper_client.search(questions))
         multi_search_task.append(google_search(questions))
-    multi_search_task.append(metaphor_search2(questions, language))
+    #multi_search_task.append(metaphor_search2(questions, language))
     results = await asyncio.gather(*multi_search_task)
 
     final_sources = []

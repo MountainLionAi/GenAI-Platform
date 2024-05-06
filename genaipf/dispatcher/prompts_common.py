@@ -5,6 +5,8 @@ from genaipf.dispatcher.prompt_templates_common.related_url import _get_related_
 from genaipf.dispatcher.prompt_templates_common.summary_page_by_msg import _get_summary_page_by_msg_prompted_messages
 from genaipf.dispatcher.prompt_templates_common.richer_prompt import _get_richer_prompt_prompted_messages
 from genaipf.dispatcher.prompt_templates_common.choose_hot_question import _choose_hot_question_prompted_messages
+from genaipf.dispatcher.prompt_templates_common.swap_agent_question import _get_swap_agent_question_prompted_messages
+from genaipf.dispatcher.prompt_templates_common.nft_agent_question import _get_nft_agent_question_prompted_messages
 import typing
 
 _default_lang = "en"
@@ -27,6 +29,10 @@ class LionPromptCommon:
             return _get_richer_prompt_prompted_messages(data, language)
         elif preset_name=="choose_hot_question":
             return _choose_hot_question_prompted_messages(language)
+        elif preset_name=="swap_agent_question":
+            return _get_swap_agent_question_prompted_messages(language)
+        elif preset_name=="swap_nft_question":
+            return _get_nft_agent_question_prompted_messages(language)
         else:
             raise Exception("has not")
 

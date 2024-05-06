@@ -7,6 +7,7 @@ from genaipf.constant.error_code import ERROR_CODE
 from genaipf.utils.html_cleanout_util import cleanout
 from genaipf.utils.rendered_html_util import get_rendered_html
 import asyncio
+import time
 # from genaipf.tools.search.utils.search_task_manager import summarize_urls
 
 
@@ -83,11 +84,15 @@ async def google_search(search_content: str, num: int = 5, language = None):
         return sources, content
 
 
-async def get_content_by_url(url, title, _search_details: AsyncSafeList):
+async def get_content_by_url(url, title, _search_details: AsyncSafeList = None):
     try:
         html_str = await get_rendered_html(url)
         if html_str:
+            cleanout_start_time = time.perf_counter()
             content = cleanout(html_str)
+            cleanout_end_time = time.perf_counter()
+            elapsed_cleanout_time = (cleanout_end_time - cleanout_start_time) * 1000
+            logger.info(f'=====================>cleanout耗时：{elapsed_cleanout_time:.3f}毫秒')
             if content:
                 detail = {"url": url, "title": title}
                 detail['content'] = content

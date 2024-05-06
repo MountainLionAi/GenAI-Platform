@@ -43,6 +43,7 @@ gpt_functions_mapping = {
 
 gpt_functions = list(gpt_functions_mapping.values())
 need_tool_agent_l = [
+    "medical",
     "medical_____treatment",
 ]
 

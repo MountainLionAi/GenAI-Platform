@@ -6,6 +6,7 @@ from genaipf.dispatcher.api import generate_unique_id, get_format_output, gpt_fu
 from genaipf.dispatcher.postprocess import posttext_mapping, PostTextParam
 from genaipf.tools.search.utils.search_agent_utils import not_need_search, not_need_sources
 from genaipf.services.cmc_token import get_token_cmc_url
+import time
 
 async def convert_func_out_to_stream(chunk, messages, newest_question, model, language, related_qa, source, owner, sources=[], is_need_search=False, sources_task=None, chain_id=''):
     """
@@ -23,7 +24,11 @@ async def convert_func_out_to_stream(chunk, messages, newest_question, model, la
     if sources:
         already_sources = True
     if is_need_search and (func_name not in not_need_sources):
+        convert_task_start_time = time.perf_counter()
         sources, related_qa = await sources_task
+        convert_task_emd_time = time.perf_counter()
+        elapsed_related_questions_task_time = (convert_task_start_time - convert_task_emd_time) * 1000
+        logger.info(f'=====================>convert_task_questions_task耗时：{elapsed_related_questions_task_time:.3f}毫秒')
     else:
         if func_name == 'coin_price':
             sources = [
@@ -130,9 +135,14 @@ async def convert_func_out_to_stream(chunk, messages, newest_question, model, la
 async def run_tool_agent(chunk, messages, newest_question, model, language, related_qa, source, owner, sources=[], is_need_search=False, sources_task=None, chain_id=''):
     _param = chunk["content"]
     func_name = _param["func_name"]
-    from genaipf.dispatcher.tool_agent import tool_agent_mapping
-    tool_agent_func = tool_agent_mapping[func_name]["func"]
-    resp = await tool_agent_func(messages, newest_question, model, language, related_qa, source, owner, sources=[], is_need_search=False, sources_task=None, chain_id='')
+    sub_func_name = _param["sub_func_name"]
+    whole_func_name = f"{func_name}_____{sub_func_name}"
+    from genaipf.dispatcher.tool_agent import tool_agent_mapping, tool_agent_sub_mapping
+    if whole_func_name in tool_agent_sub_mapping:
+        tool_agent_func = tool_agent_sub_mapping[whole_func_name]["func"]
+    else:
+        tool_agent_func = tool_agent_mapping[func_name]["func"]
+    resp = tool_agent_func(messages, newest_question, model, language, related_qa, source, owner, sources=[], is_need_search=False, sources_task=None, chain_id='')
     async for item in resp:
         yield item
     
