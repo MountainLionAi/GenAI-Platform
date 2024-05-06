@@ -93,7 +93,7 @@ async def user_login(email, password, signature, wallet_addr, timestamp, login_t
     return {'user_token': jwt_token, 'account': account, 'user_id': user_id}
 
 # 用户三方登陆
-async def user_login_other(email, wallet_addr):
+async def user_login_other(email, wallet_addr, source):
     user = None
     if email:
         user = await get_user_info_from_db(email)
@@ -105,18 +105,18 @@ async def user_login_other(email, wallet_addr):
         user_key = wallet_addr
     if not user:
         if email:
-            hashed_pwd = generate_user_password('Pa55swftW0rd')
             user_info = (
                 email,
-                hashed_pwd,
+                '',
                 '',
                 email,
                 '',
                 '',
                 '',
-                get_format_time()
+                get_format_time(),
+                source
             )
-            await add_user(user_info)
+            await add_user_source(user_info)
             user = await get_user_info_from_db(email)
         else:
             user_info = (
@@ -127,14 +127,14 @@ async def user_login_other(email, wallet_addr):
                 '',
                 wallet_addr,
                 '',
-                get_format_time()
+                get_format_time(),
+                source
             )
-            await add_user(user_info)
+            await add_user_source(user_info)
             user = await get_user_info_by_address(wallet_addr)
     user_info = user[0]
     user_id = user_info['id']
     jwt_manager = JWTManager()
-    print(str(user_info['id'])+'----'+user_key)
     jwt_token = jwt_manager.generate_token(user_info['id'], user_key)
     redis_client = RedisConnectionPool().get_connection()
     token_key = get_user_key(user_info['id'], user_key)
@@ -245,6 +245,12 @@ async def add_user(user_info):
     res = await CollectionPool().insert(sql, user_info)
     return res
 
+# 添加一个三方新用户
+async def add_user_source(user_info):
+    sql = "INSERT INTO `user_infos` (`email`, `password`, `auth_token`, `user_name`, `avatar_url`, `wallet_address`, " \
+          "`oauth`, `create_time`, `source`) VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s)"
+    res = await CollectionPool().insert(sql, user_info)
+    return res
 
 # 更新用户token
 async def update_user_token(user_id, token):

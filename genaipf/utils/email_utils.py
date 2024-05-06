@@ -45,7 +45,7 @@ env = Environment(
 )
 
 async def format_captcha_email(email, captcha_code, language, scene):
-    if language == 'zh':
+    if language == 'zh' or language == 'cn':
         template_file = 'email_template_zh.html' if scene == EMAIL_SCENES['REGISTER'] else 'email_template_zh_forget.html'
     else:
         template_file = 'email_template_en.html' if scene == EMAIL_SCENES['REGISTER'] else 'email_template_en_forget.html'

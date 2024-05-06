@@ -2,7 +2,7 @@
 
 def _get_summary_page_by_msg_prompted_messages(data, language):
     prompt_language = '英文'
-    if language == 'zh':
+    if language == 'zh' or language == 'cn':
         prompt_language = '中文'
     messages = data["messages"]
     article_text = data["article_text"]
