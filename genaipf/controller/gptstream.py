@@ -288,29 +288,29 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
             msgs = msgs[:-1] + buildVisionMessage(last_front_msg)
             isvision = True
             used_gpt_functions = None
-        resp1 = await aref_answer_gpt_generator(msgs, model, language, None, picked_content, related_qa, source, owner, isvision) 
+        resp1 = await aref_answer_gpt_generator(msgs, model, language, None, picked_content, related_qa, source, owner, isvision, output_type) 
         async for chunk in resp1:
             if chunk["role"] == "inner_____gpt_whole_text":
                 _tmp_text = chunk["content"]
-                if output_type == "voice":
-                    # 对于语音输出，将文本转换为语音并编码
-                    base64_encoded_voice = textToSpeech(_tmp_text)
-                    yield json.dumps(get_format_output("tts", base64_encoded_voice, "voice_mp3_v001"))
+                # if output_type == "voice":
+                #     # 对于语音输出，将文本转换为语音并编码
+                #     base64_encoded_voice = textToSpeech(_tmp_text)
+                #     yield json.dumps(get_format_output("tts", base64_encoded_voice, "voice_mp3_v001"))
             else:
                 yield json.dumps(chunk) 
     else:
         if func_chunk["content"]["func_name"] in need_tool_agent_l:
             stream_gen = run_tool_agent(func_chunk , messages, newest_question, model, language, related_qa, source, owner, sources, is_need_search, sources_task, chain_id)
         else:
-            stream_gen = convert_func_out_to_stream(func_chunk , messages, newest_question, model, language, related_qa, source, owner, sources, is_need_search, sources_task, chain_id)
+            stream_gen = convert_func_out_to_stream(func_chunk , messages, newest_question, model, language, related_qa, source, owner, sources, is_need_search, sources_task, chain_id, output_type)
         await resp1.aclose()
         async for item in stream_gen:
             if item["role"] == "inner_____gpt_whole_text":
                 _tmp_text = item["content"]
-                if output_type == "voice":
-                    # 对于语音输出，将文本转换为语音并编码
-                    base64_encoded_voice = textToSpeech(_tmp_text)
-                    yield json.dumps(get_format_output("tts", base64_encoded_voice, "voice_mp3_v001"))
+                # if output_type == "voice":
+                #     # 对于语音输出，将文本转换为语音并编码
+                #     base64_encoded_voice = textToSpeech(_tmp_text)
+                #     yield json.dumps(get_format_output("tts", base64_encoded_voice, "voice_mp3_v001"))
             elif item["role"] == "inner_____preset":
                 data.update(item["content"])
             elif item["role"] == "inner_____preset_top":

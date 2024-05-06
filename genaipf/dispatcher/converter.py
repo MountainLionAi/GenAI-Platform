@@ -7,7 +7,7 @@ from genaipf.dispatcher.postprocess import posttext_mapping, PostTextParam
 from genaipf.tools.search.utils.search_agent_utils import not_need_search, not_need_sources
 from genaipf.services.cmc_token import get_token_cmc_url
 
-async def convert_func_out_to_stream(chunk, messages, newest_question, model, language, related_qa, source, owner, sources=[], is_need_search=False, sources_task=None, chain_id=''):
+async def convert_func_out_to_stream(chunk, messages, newest_question, model, language, related_qa, source, owner, sources=[], is_need_search=False, sources_task=None, chain_id='', output_type=""):
     """
     chunk: afunc_gpt_generator return
     """
@@ -84,7 +84,7 @@ async def convert_func_out_to_stream(chunk, messages, newest_question, model, la
     if (func_name not in not_need_search and sub_func_name != 'coin_swap1') or (func_name == 'generate_report' and presetContent == {}):
         _messages = [x for x in messages if x["role"] != "system"]
         msgs = _messages[::]
-        resp2 = await aref_answer_gpt_generator(msgs, model, language, _type, str(picked_content), related_qa, source, owner)
+        resp2 = await aref_answer_gpt_generator(msgs, model, language, _type, str(picked_content), related_qa, source, owner, output_type)
         logger.info(f'>>>>> start->data done.')
         async for item in resp2:
             if item["role"] == "inner_____gpt_whole_text":
