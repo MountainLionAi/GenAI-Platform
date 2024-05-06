@@ -304,18 +304,20 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
             msgs = msgs[:-1] + buildVisionMessage(last_front_msg)
             isvision = True
             used_gpt_functions = None
+
         aref_answer_gpt_generator_start_time = time.perf_counter()
-        resp1 = await aref_answer_gpt_generator(msgs, model, language_, None, picked_content, related_qa, source, owner, isvision)
+        resp1 = await aref_answer_gpt_generator(msgs, model, language, None, picked_content, related_qa, source, owner, isvision, output_type) 
         aref_answer_gpt_generator_end_time = time.perf_counter()
         elapsed_aref_answer_gpt_generator_time = (aref_answer_gpt_generator_end_time - aref_answer_gpt_generator_start_time) * 1000
         logger.info(f'=====================>aref_answer_gpt_generator耗时：{elapsed_aref_answer_gpt_generator_time:.3f}毫秒')
+        
         async for chunk in resp1:
             if chunk["role"] == "inner_____gpt_whole_text":
                 _tmp_text = chunk["content"]
-                if output_type == "voice":
-                    # 对于语音输出，将文本转换为语音并编码
-                    base64_encoded_voice = textToSpeech(_tmp_text)
-                    yield json.dumps(get_format_output("tts", base64_encoded_voice, "voice_mp3_v001"))
+                # if output_type == "voice":
+                #     # 对于语音输出，将文本转换为语音并编码
+                #     base64_encoded_voice = textToSpeech(_tmp_text)
+                #     yield json.dumps(get_format_output("tts", base64_encoded_voice, "voice_mp3_v001"))
             else:
                 yield json.dumps(chunk) 
     else:
@@ -331,7 +333,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
                 logger.info(f'=====================>run_tool_agent耗时：{elapsed_run_tool_agent_time:.3f}毫秒')
             else:
                 convert_func_out_to_stream_start_time = time.perf_counter()
-                stream_gen = convert_func_out_to_stream(func_chunk , messages, newest_question, model, language_, related_qa, source, owner, sources, is_need_search, sources_task, chain_id)
+                stream_gen = convert_func_out_to_stream(func_chunk , messages, newest_question, model, language_, related_qa, source, owner, sources, is_need_search, sources_task, chain_id, output_type)
                 convert_func_out_to_stream_time_end_time = time.perf_counter()
                 elapsed_convert_func_out_to_stream_time = (convert_func_out_to_stream_time_end_time - convert_func_out_to_stream_start_time) * 1000
                 logger.info(f'=====================>convert_func_out_to_stream耗时：{elapsed_convert_func_out_to_stream_time:.3f}毫秒')
@@ -342,10 +344,10 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         async for item in stream_gen:
             if item["role"] == "inner_____gpt_whole_text":
                 _tmp_text = item["content"]
-                if output_type == "voice":
-                    # 对于语音输出，将文本转换为语音并编码
-                    base64_encoded_voice = textToSpeech(_tmp_text)
-                    yield json.dumps(get_format_output("tts", base64_encoded_voice, "voice_mp3_v001"))
+                # if output_type == "voice":
+                #     # 对于语音输出，将文本转换为语音并编码
+                #     base64_encoded_voice = textToSpeech(_tmp_text)
+                #     yield json.dumps(get_format_output("tts", base64_encoded_voice, "voice_mp3_v001"))
             elif item["role"] == "inner_____preset":
                 data.update(item["content"])
             elif item["role"] == "inner_____preset_top":
