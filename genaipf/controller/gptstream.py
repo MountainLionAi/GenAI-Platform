@@ -338,6 +338,10 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         async for item in stream_gen:
             if item["role"] == "inner_____gpt_whole_text":
                 _tmp_text = item["content"]
+                if output_type == "voice":
+                    # 对于语音输出，将文本转换为语音并编码
+                    base64_encoded_voice = textToSpeech(_tmp_text)
+                    yield json.dumps(get_format_output("tts", base64_encoded_voice, "voice_mp3_v001"))
             elif item["role"] == "inner_____preset":
                 data.update(item["content"])
             elif item["role"] == "inner_____preset_top":
@@ -364,10 +368,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
             else:
                 yield json.dumps(item)
 
-    if output_type == "voice":
-        # 对于语音输出，将文本转换为语音并编码
-        base64_encoded_voice = textToSpeech(_tmp_text)
-        yield json.dumps(get_format_output("tts", base64_encoded_voice, "voice_mp3_v001"))
+
     data.update({
         'content' : _tmp_text,
         'code' : _code
