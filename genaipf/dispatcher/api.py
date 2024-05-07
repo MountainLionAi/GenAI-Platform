@@ -2,7 +2,7 @@ import json
 import asyncio
 from genaipf.conf.server import os
 from genaipf.dispatcher.functions import gpt_functions
-from genaipf.dispatcher.utils import openai, OPENAI_PLUS_MODEL, CLAUDE_MODEL, openai_chat_completion_acreate
+from genaipf.dispatcher.utils import openai, OPENAI_PLUS_MODEL, CLAUDE_MODEL, openai_chat_completion_acreate, PERPLEXITY_MODEL
 from genaipf.utils.log_utils import logger
 from datetime import datetime
 from genaipf.dispatcher.prompts_v001 import LionPrompt
@@ -203,10 +203,12 @@ async def afunc_gpt_generator(messages, functions=gpt_functions, language=LionPr
     return aget_error_generator("error after retry many times")
 
 
-async def aref_answer_gpt_generator(messages, model='', language=LionPrompt.default_lang, preset_name=None, picked_content="", related_qa=[], source='v001', owner='', isvision=False, output_type=""):
+async def aref_answer_gpt_generator(messages, model='', language=LionPrompt.default_lang, preset_name=None, picked_content="", related_qa=[], source='v001', owner='', isvision=False, output_type="", llm_model=""):
     use_model = 'gpt-3.5-turbo-0125'
-    if model == 'ml-plus':
+    if llm_model == 'openai':
         use_model = OPENAI_PLUS_MODEL
+    elif llm_model == 'perplexity':
+        use_model = PERPLEXITY_MODEL
     else:
         use_model = CLAUDE_MODEL
     if isvision:
@@ -229,7 +231,7 @@ async def aref_answer_gpt_generator(messages, model='', language=LionPrompt.defa
         "role": "system",
         "content": content
     }
-    if use_model.startswith("gpt"):
+    if use_model.startswith("gpt") or use_model == PERPLEXITY_MODEL:
         for i in range(5):
             mlength = len(messages)
             try:
