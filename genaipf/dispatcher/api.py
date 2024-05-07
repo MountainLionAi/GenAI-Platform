@@ -144,7 +144,7 @@ async def awrap_gpt_generator(gpt_response, output_type=""):
         yield get_format_output("inner_____func_param", _param)
         
 
-async def afunc_gpt_generator(messages, functions=gpt_functions, language=LionPrompt.default_lang, model='', picked_content="", related_qa=[], source='v001', owner='', isvision=False):
+async def afunc_gpt_generator(messages, functions=gpt_functions, language=LionPrompt.default_lang, model='', picked_content="", related_qa=[], source='v001', owner='', isvision=False, output_type=""):
     '''
     "messages": [
         {"role": "user", "content": "Hello"},
@@ -191,7 +191,7 @@ async def afunc_gpt_generator(messages, functions=gpt_functions, language=LionPr
                 stream=True
             )
             logger.info('afunc_gpt_generator called')
-            return awrap_gpt_generator(response)
+            return awrap_gpt_generator(response, output_type)
         except BadRequestError as e:
             print(e)
             logger.error(f'afunc_gpt_generator BadRequestError {e}', e)
