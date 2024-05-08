@@ -8,7 +8,7 @@ from functools import partial, update_wrapper
 
 AsyncCallable = Callable[..., Awaitable[Any]]
 
-def _wrap(fn: AsyncCallable) -> AsyncCallable:
+def _wrap(self, fn: AsyncCallable) -> AsyncCallable:
     sig = inspect.signature(fn)
     parameters = [p for name, p in sig.parameters.items() if name != 'self']
     new_sig = sig.replace(parameters=parameters)
@@ -29,6 +29,8 @@ class AutoGenMultiAgent:
         self.llm_config: Mapping[str, Any] = llm_config
         self.agents_config: Mapping[str, Any] = agents_config
         self.context_obj = context_obj
+        if hasattr(self.context_obj, "update_llm_config"):
+            self.llm_config = self.context_obj.update_llm_config(self.llm_config)
         self.assistant_agents = dict()
         self.setup_agents()
         self.setup_groupchat()
@@ -70,7 +72,7 @@ class AutoGenMultiAgent:
     def setup_AssistantAgent(self, config):
         name = config["name"]
         system_message = config["system_message"]
-        func_configs = config["func_configs"]
+        func_configs = config.get("func_configs", dict())
         self.assistant_agents[name] = autogen.AssistantAgent(
             name=name,
             system_message=system_message,
@@ -79,7 +81,7 @@ class AutoGenMultiAgent:
         for _, func_conf in func_configs.items():
             desc = func_conf["description"]
             fn = func_conf["func"]
-            wrapped_fn = _wrap(fn)
+            wrapped_fn = _wrap(self, fn)
             _agent = self.assistant_agents[name]
             _agent.register_for_execution()(
                 _agent.register_for_llm(description=desc)(wrapped_fn)
