@@ -18,3 +18,9 @@ def get_format_time_YYYY_mm_dd():
 def get_current_timestamp():
     now = datetime.now()
     return int(datetime.timestamp(now))
+
+# 获取当前毫秒级时间戳
+def get_current_timestamp_msec():
+    return int(datetime.now().timestamp() * 1000)
+
+
