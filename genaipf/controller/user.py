@@ -49,8 +49,8 @@ async def check_login(request: Request):
         account = mask_email(user_key)
     else:
         account = user_key
-    # user_id = request.ctx.user.get('id')
-    # await create_ai_account(user_id)
+    user_id = request.ctx.user.get('id')
+    await create_ai_account(user_id)
     return success(
         {'is_login': True, 'account': account, 'user_id': request.ctx.user.get('id')})
 
