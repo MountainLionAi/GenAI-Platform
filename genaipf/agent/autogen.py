@@ -28,25 +28,42 @@ class AutoGenMultiAgent:
     ):
         self.llm_config: Mapping[str, Any] = llm_config
         self.agents_config: Mapping[str, Any] = agents_config
+        self.context_obj = context_obj
         self.assistant_agents = dict()
         self.setup_agents()
         
     def setup_agents(self):
         for _, config in self.agents_config.items():
-            name = config["name"]
-            system_message = config["system_message"]
-            func_configs = config["func_configs"]
-            self.assistant_agents[name] = autogen.AssistantAgent(
-                name=name,
-                system_message=system_message,
-                llm_config=self.llm_config.copy()
+            if config["agent_type"] == "UserProxyAgent":
+                self.setup_UserProxyAgent(config)
+            elif config["agent_type"] == "AssistantAgent":
+                self.setup_AssistantAgent(config)
+            
+    def setup_UserProxyAgent(self, config):
+        name = config["name"]
+        self.assistant_agents[name] = autogen.UserProxyAgent(
+            name=name,
+            is_termination_msg=lambda x: True if "TERMINATE" in x.get("content") else False,
+            code_execution_config=False,
+            human_input_mode="NEVER",
+            default_auto_reply="TERMINATE",
+            max_consecutive_auto_reply=3,
+        )
+    
+    def setup_AssistantAgent(self, config):
+        name = config["name"]
+        system_message = config["system_message"]
+        func_configs = config["func_configs"]
+        self.assistant_agents[name] = autogen.AssistantAgent(
+            name=name,
+            system_message=system_message,
+            llm_config=self.llm_config.copy()
+        )
+        for _, func_conf in func_configs.items():
+            desc = func_conf["description"]
+            fn = func_conf["func"]
+            wrapped_fn = _wrap(fn)
+            _agent = self.assistant_agents[name]
+            _agent.register_for_execution()(
+                _agent.register_for_llm(description=desc)(wrapped_fn)
             )
-            for _, func_conf in func_configs.items():
-                desc = func_conf["description"]
-                fn = func_conf["func"]
-                wrapped_fn = _wrap(fn)
-                _agent = self.assistant_agents[name]
-                _agent.register_for_execution()(
-                    _agent.register_for_llm(description=desc)(wrapped_fn)
-                )
-
