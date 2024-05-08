@@ -31,6 +31,7 @@ class AutoGenMultiAgent:
         self.context_obj = context_obj
         self.assistant_agents = dict()
         self.setup_agents()
+        self.setup_groupchat()
         
     def setup_agents(self):
         for _, config in self.agents_config.items():
@@ -38,10 +39,26 @@ class AutoGenMultiAgent:
                 self.setup_UserProxyAgent(config)
             elif config["agent_type"] == "AssistantAgent":
                 self.setup_AssistantAgent(config)
-            
+    
+    def setup_groupchat(self):
+        _agents = [self.user_proxy] + list(self.assistant_agents.values())
+        self.groupchat = autogen.GroupChat(
+            agents=_agents, messages=[], max_round=50
+        )
+        self.manager = autogen.GroupChatManager(
+            groupchat=self.groupchat,
+            llm_config=self.llm_config.copy()
+        )
+
+    async def a_initiate_chat(self, message: str):
+        return await self.user_proxy.a_initiate_chat(
+            self.manager,
+            message=message,
+        )
+    
     def setup_UserProxyAgent(self, config):
         name = config["name"]
-        self.assistant_agents[name] = autogen.UserProxyAgent(
+        self.user_proxy = autogen.UserProxyAgent(
             name=name,
             is_termination_msg=lambda x: True if "TERMINATE" in x.get("content") else False,
             code_execution_config=False,
