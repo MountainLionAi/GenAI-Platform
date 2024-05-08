@@ -101,6 +101,7 @@ async def send_stream_chat(request: Request):
     # messages = process_messages(messages)
     output_type = request_params.get('output_type', 'text') # text or voice; (voice is mp3)
     llm_model = request_params.get('llm_model', 'openai') # openai | perplexity | claude
+    wallet_type = request_params.get('wallet_type', 'AI')
     # messages = [{"role": msg["role"], "content": msg["content"]} for msg in process_messages(messages)]
     # messages = messages[-10:]
     messages = process_messages(messages)
@@ -118,7 +119,7 @@ async def send_stream_chat(request: Request):
     try:
         async def event_generator(_response):
             # async for _str in getAnswerAndCallGpt(request_params['content'], userid, msggroup, language, messages):
-            async for _str in getAnswerAndCallGpt(request_params.get('content'), userid, msggroup, language, messages, device_no, question_code, model, output_type, source, owner, agent_id, chain_id, llm_model):
+            async for _str in getAnswerAndCallGpt(request_params.get('content'), userid, msggroup, language, messages, device_no, question_code, model, output_type, source, owner, agent_id, chain_id, llm_model, wallet_type):
                 await _response.write(f"data:{_str}\n\n")
                 await asyncio.sleep(0.01)
         return ResponseStream(event_generator, headers={"accept": "application/json"}, content_type="text/event-stream")
@@ -171,7 +172,7 @@ async def send_chat(request: Request):
         logger.error(traceback.format_exc())
    
 
-async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messages, device_no, question_code, model, output_type, source, owner, agent_id, chain_id, llm_model):
+async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messages, device_no, question_code, model, output_type, source, owner, agent_id, chain_id, llm_model, wallet_type):
     t0 = time.time()
     MAX_CH_LENGTH = 8000
     _ensure_ascii = False
@@ -347,7 +348,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
                 logger.info(f'=====================>run_tool_agent耗时：{elapsed_run_tool_agent_time:.3f}毫秒')
             else:
                 convert_func_out_to_stream_start_time = time.perf_counter()
-                stream_gen = convert_func_out_to_stream(func_chunk , messages, newest_question, model, language_, related_qa, source, owner, sources, is_need_search, sources_task, chain_id, output_type, llm_model)
+                stream_gen = convert_func_out_to_stream(func_chunk , messages, newest_question, model, language_, related_qa, source, owner, sources, is_need_search, sources_task, chain_id, output_type, llm_model, userid, wallet_type)
                 convert_func_out_to_stream_time_end_time = time.perf_counter()
                 elapsed_convert_func_out_to_stream_time = (convert_func_out_to_stream_time_end_time - convert_func_out_to_stream_start_time) * 1000
                 logger.info(f'=====================>convert_func_out_to_stream耗时：{elapsed_convert_func_out_to_stream_time:.3f}毫秒')
