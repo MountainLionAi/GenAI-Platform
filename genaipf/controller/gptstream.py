@@ -32,6 +32,7 @@ from genaipf.tools.search.utils.search_agent_utils import premise_search, premis
 from genaipf.tools.search.utils.search_task_manager import get_related_question_task
 from genaipf.utils.common_utils import contains_chinese
 from genaipf.utils.sensitive_util import isNormal
+from genaipf.dispatcher.callgpt import DispatcherCallGpt
 import os
 import base64
 from genaipf.conf.server import os
@@ -274,7 +275,6 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     related_questions = []
     _related_news = []
     if source == 'v004':
-        from genaipf.dispatcher.callgpt import DispatcherCallGpt
         _data = {"msgs":msgs, "model":model, "preset_name":"attitude", "source":source, "owner":owner}
         _tmp_attitude, _related_news = await DispatcherCallGpt.get_subtype_task_result(source, language_, _data)
         yield json.dumps(get_format_output("attitude", _tmp_attitude))
@@ -378,7 +378,6 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
                     "content": data
                 }
                 yield json.dumps(_tmp)
-                from genaipf.dispatcher.callgpt import DispatcherCallGpt
                 if DispatcherCallGpt.need_call_gpt(data):
                     # 研报的相关问题前置，不然加载很慢
                     related_questions_task_start_time = time.perf_counter()
