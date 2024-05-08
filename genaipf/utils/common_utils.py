@@ -2,6 +2,7 @@ import json
 import re
 import asyncio
 from urllib.parse import urlparse
+from genaipf.utils.snowflake import SnowflakeIdWorker
 
 
 
@@ -158,3 +159,9 @@ def is_valid_url(url: str) -> bool:
     """
     parsed_url = urlparse(url)
     return bool(parsed_url.scheme) and bool(parsed_url.netloc)
+
+
+def get_uniq_id():
+    # 初始化 Snowflake 实例
+    worker = SnowflakeIdWorker(datacenter_id=1, worker_id=1)
+    return worker.get_id()
