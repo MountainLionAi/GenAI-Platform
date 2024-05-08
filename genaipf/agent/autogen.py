@@ -1,0 +1,52 @@
+import os
+import asyncio
+import autogen
+from typing_extensions import Annotated
+from typing import Mapping, Any, Callable, Awaitable
+import inspect
+from functools import partial, update_wrapper
+
+AsyncCallable = Callable[..., Awaitable[Any]]
+
+def _wrap(fn: AsyncCallable) -> AsyncCallable:
+    sig = inspect.signature(fn)
+    parameters = [p for name, p in sig.parameters.items() if name != 'self']
+    new_sig = sig.replace(parameters=parameters)
+    async def _wrapped_fn(*args: Any, **kwargs: Any) -> Any:
+        res = await fn(self, *args, **kwargs)
+        return res
+    update_wrapper(_wrapped_fn, fn, assigned=('__module__', '__name__', '__qualname__', '__annotations__', '__doc__'))
+    _wrapped_fn.__signature__ = new_sig
+    return _wrapped_fn
+
+class AutoGenMultiAgent:
+    def __init__(
+        self,
+        llm_config: Mapping[str, Any],
+        agents_config: Mapping[str, Any],
+        context_obj: Any
+    ):
+        self.llm_config: Mapping[str, Any] = llm_config
+        self.agents_config: Mapping[str, Any] = agents_config
+        self.assistant_agents = dict()
+        self.setup_agents()
+        
+    def setup_agents(self):
+        for _, config in self.agents_config.items():
+            name = config["name"]
+            system_message = config["system_message"]
+            func_configs = config["func_configs"]
+            self.assistant_agents[name] = autogen.AssistantAgent(
+                name=name,
+                system_message=system_message,
+                llm_config=self.llm_config.copy()
+            )
+            for _, func_conf in func_configs.items():
+                desc = func_conf["description"]
+                fn = func_conf["func"]
+                wrapped_fn = _wrap(fn)
+                _agent = self.assistant_agents[name]
+                _agent.register_for_execution()(
+                    _agent.register_for_llm(description=desc)(wrapped_fn)
+                )
+
