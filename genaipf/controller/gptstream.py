@@ -31,6 +31,7 @@ from genaipf.tools.search.utils.search_agent_utils import other_search
 from genaipf.tools.search.utils.search_agent_utils import premise_search, premise_search1, premise_search2, new_question_question, fixed_related_question
 from genaipf.tools.search.utils.search_task_manager import get_related_question_task
 from genaipf.utils.common_utils import contains_chinese
+from genaipf.utils.sensitive_util import isNormal
 import os
 import base64
 from genaipf.conf.server import os
@@ -190,6 +191,18 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     
     last_front_msg = front_messages[-1]
     question = last_front_msg['content']
+
+    # 判断是否有敏感词汇，更改用户问题、上下文内容。question为存库数据，不需要修改
+    is_normal_question = await isNormal(newest_question)
+    if not is_normal_question:
+        newest_question = '用户的问题中涉及敏感词汇，明确告知用户他的问题中有敏感词汇，并且不能使用敏感词汇'
+        front_messages = [
+            {"role": "user", "content": newest_question}
+        ]
+        messages = [
+            {"role": "user", "content": newest_question}
+        ]
+
     if last_front_msg.get("need_whisper"):
         yield json.dumps(get_format_output("whisper", last_front_msg['content']))
     
