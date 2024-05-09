@@ -50,6 +50,7 @@ class CollectionPool:
             cursor.execute(sql, params)
             conn.commit()
             self.release_connection(conn)
+            return True
         except Exception as e:
             logger.error(f"UpdateDataError: {e}")
             self.release_connection(conn)
@@ -63,6 +64,7 @@ class CollectionPool:
             cursor.execute(sql, params)
             conn.commit()
             self.release_connection(conn)
+            return True
         except Exception as e:
             logger.error(f"InsertDataError: {e}")
             self.release_connection(conn)
@@ -76,6 +78,7 @@ class CollectionPool:
             cursor.executemany(sql, params)
             conn.commit()
             self.release_connection(conn)
+            return True
         except Exception as e:
             logger.error(f"InsertDataError: {e}")
             self.release_connection(conn)
@@ -89,6 +92,7 @@ class CollectionPool:
             cursor.execute(sql, params)
             conn.commit()
             self.release_connection(conn)
+            return True
         except Exception as e:
             logger.error(f"DeleteDataError: {e}")
             self.release_connection(conn)
@@ -107,6 +111,7 @@ class CollectionPool:
                 cursor.execute(sql, params)
             conn.commit()  # 全部操作成功后提交事务
             self.release_connection(conn)
+            return True
         except Exception as e:
             conn.rollback()  # 发生异常时回滚事务
             logger.error(f"TransactionError: {e}")

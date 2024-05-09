@@ -23,6 +23,9 @@ ERROR_CODE = {
     "RAG_CONFIG_ERROR": 6004,
     "CHAIN_NOT_SUPPORTED": 7001,
     "USER_ACTIVITY_NOT_EXIST": 8001,
+    "REPEAT_RECHARGE": 8002,
+    "USER_SUB_ACCOUNT_NOT_EXIST": 8003,
+    "CREATE_RECORD_ERROR": 8004,
 }
 
 # 错误信息
@@ -50,4 +53,7 @@ ERROR_MESSAGE = {
     6004: 'Rag config error',
     7001: 'The Chain Not Supported',
     8001: 'User Account Activity Not Exist',
+    8002: 'Repeat Recharge',
+    8003: 'User Sub Accout Not Exist',
+    8005: 'Create Record Error'
 }
