@@ -8,6 +8,7 @@ from genaipf.utils.common_utils import mask_email
 # import lib.hcaptcha as hcaptcha
 import genaipf.utils.hcaptcha_utils as hcaptcha
 from genaipf.utils.bot_utils import CollectionPool, get_news_by_api
+from ml4gp.services.user_account_service import create_ai_account
 
 
 # 用户登陆
@@ -48,6 +49,8 @@ async def check_login(request: Request):
         account = mask_email(user_key)
     else:
         account = user_key
+    user_id = request.ctx.user.get('id')
+    await create_ai_account(user_id)
     return success(
         {'is_login': True, 'account': account, 'user_id': request.ctx.user.get('id')})
 

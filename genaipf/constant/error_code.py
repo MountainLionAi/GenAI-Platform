@@ -22,6 +22,13 @@ ERROR_CODE = {
     "SWAP_ADDRESS_ERROR": 6003,
     "RAG_CONFIG_ERROR": 6004,
     "CHAIN_NOT_SUPPORTED": 7001,
+    "USER_ACTIVITY_NOT_EXIST": 8001,
+    "REPEAT_RECHARGE": 8002,
+    "USER_SUB_ACCOUNT_NOT_EXIST": 8003,
+    "CREATE_RECORD_ERROR": 8004,
+    "SWAP_BALANCE_NOT_ENOUGH": 8005,
+    "SWAP_API_ERROR": 8006,
+    "CREATE_ACTIVITY_ERROR": 8007
 }
 
 # 错误信息
@@ -47,5 +54,12 @@ ERROR_MESSAGE = {
     6002: 'Exchange Out of Range',
     6003: 'Swap From or To Address Error',
     6004: 'Rag config error',
-    7001: 'The Chain Not Supported'
+    7001: 'The Chain Not Supported',
+    8001: 'User Account Activity Not Exist',
+    8002: 'Repeat Recharge',
+    8003: 'User Sub Accout Not Exist',
+    8004: 'Create Record Error',
+    8005: 'Balance Not Enough',
+    8006: 'Swap API Error',
+    8007: 'Create Activity Error',
 }

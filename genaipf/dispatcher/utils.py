@@ -14,6 +14,9 @@ from genaipf.conf.server import os
 from llama_index.llms import ChatMessage, OpenAI as OpenAI2
 from llama_index.llms.openai import DEFAULT_OPENAI_MODEL
 
+PERPLEXITY_API_KEY=os.getenv("PERPLEXITY_API_KEY")
+PERPLEXITY_URL=os.getenv("PERPLEXITY_URL", "https://api.perplexity.ai")
+
 openai.api_key = os.getenv("OPENAI_API_KEY")
 MAX_CH_LENGTH_GPT3 = 8000
 MAX_CH_LENGTH_GPT4 = 3000
@@ -21,16 +24,17 @@ MAX_CH_LENGTH_QA_GPT3 = 3000
 MAX_CH_LENGTH_QA_GPT4 = 1500
 OPENAI_PLUS_MODEL = "gpt-4-0125-preview"
 CLAUDE_MODEL = "claude-3-opus-20240229"
+PERPLEXITY_MODEL = "llama-3-sonar-small-32k-chat"  # "sonar-small-online"
 qdrant_url = "http://localhost:6333"
 
 openai_client = OpenAI(
     # defaults to os.environ.get("OPENAI_API_KEY")
     api_key=openai.api_key,
 )
-async_openai_client = AsyncOpenAI(
-    # defaults to os.environ.get("OPENAI_API_KEY")
-    api_key=openai.api_key,
-)
+# async_openai_client = AsyncOpenAI(
+#     # defaults to os.environ.get("OPENAI_API_KEY")
+#     api_key=openai.api_key,
+# )
 
 from genaipf.conf.server import PLUGIN_NAME
 vdb_prefix = PLUGIN_NAME
@@ -56,37 +60,71 @@ async def openai_chat_completion_acreate(
     temperature, max_tokens, top_p, frequency_penalty, presence_penalty, stream
 ):
     try:
-        # print(f'>>>>>>>>>test001.1 async_openai_client.chat.completions.create')
-        if functions:
-            response = await asyncio.wait_for(
-                async_openai_client.chat.completions.create(
-                    model=model,
-                    messages=messages,
-                    functions=functions if functions else NOT_GIVEN,
-                    temperature=temperature,  # 值在[0,1]之间，越大表示回复越具有不确定性
-                    max_tokens=max_tokens, # 输出的最大 token 数
-                    top_p=top_p, # 过滤掉低于阈值的 token 确保结果不散漫
-                    frequency_penalty=frequency_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
-                    presence_penalty=presence_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
-                    stream=stream
-                ),
-                timeout=60.0  # 设置超时时间为180秒
-            )
+        if model == PERPLEXITY_MODEL:
+            async_openai_client = AsyncOpenAI(api_key=PERPLEXITY_API_KEY, base_url=PERPLEXITY_URL)
+            if functions:
+                response = await asyncio.wait_for(
+                    async_openai_client.chat.completions.create(
+                        model=model,
+                        messages=messages,
+                        functions=functions if functions else NOT_GIVEN,
+                        temperature=temperature,  # 值在[0,1]之间，越大表示回复越具有不确定性
+                        max_tokens=max_tokens, # 输出的最大 token 数
+                        top_p=top_p, # 过滤掉低于阈值的 token 确保结果不散漫
+                        presence_penalty=presence_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
+                        stream=stream
+                    ),
+                    timeout=60.0  # 设置超时时间为180秒
+                )
+            else:
+                response = await asyncio.wait_for(
+                    async_openai_client.chat.completions.create(
+                        model=model,
+                        messages=messages,
+                        temperature=temperature,  # 值在[0,1]之间，越大表示回复越具有不确定性
+                        max_tokens=max_tokens, # 输出的最大 token 数
+                        top_p=top_p, # 过滤掉低于阈值的 token 确保结果不散漫
+                        presence_penalty=presence_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
+                        stream=stream
+                    ),
+                    timeout=60.0  # 设置超时时间为180秒
+                )
         else:
-            response = await asyncio.wait_for(
-                async_openai_client.chat.completions.create(
-                    model=model,
-                    messages=messages,
-                    temperature=temperature,  # 值在[0,1]之间，越大表示回复越具有不确定性
-                    max_tokens=max_tokens, # 输出的最大 token 数
-                    top_p=top_p, # 过滤掉低于阈值的 token 确保结果不散漫
-                    frequency_penalty=frequency_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
-                    presence_penalty=presence_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
-                    stream=stream
-                ),
-                timeout=60.0  # 设置超时时间为180秒
+            async_openai_client = AsyncOpenAI(
+                # defaults to os.environ.get("OPENAI_API_KEY")
+                api_key=openai.api_key,
             )
-        # print(f'>>>>>>>>>test001 async_openai_client.chat.completions.create, response: {response}')
+            # print(f'>>>>>>>>>test001.1 async_openai_client.chat.completions.create')
+            if functions:
+                response = await asyncio.wait_for(
+                    async_openai_client.chat.completions.create(
+                        model=model,
+                        messages=messages,
+                        functions=functions if functions else NOT_GIVEN,
+                        temperature=temperature,  # 值在[0,1]之间，越大表示回复越具有不确定性
+                        max_tokens=max_tokens, # 输出的最大 token 数
+                        top_p=top_p, # 过滤掉低于阈值的 token 确保结果不散漫
+                        frequency_penalty=frequency_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
+                        presence_penalty=presence_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
+                        stream=stream
+                    ),
+                    timeout=60.0  # 设置超时时间为180秒
+                )
+            else:
+                response = await asyncio.wait_for(
+                    async_openai_client.chat.completions.create(
+                        model=model,
+                        messages=messages,
+                        temperature=temperature,  # 值在[0,1]之间，越大表示回复越具有不确定性
+                        max_tokens=max_tokens, # 输出的最大 token 数
+                        top_p=top_p, # 过滤掉低于阈值的 token 确保结果不散漫
+                        frequency_penalty=frequency_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
+                        presence_penalty=presence_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
+                        stream=stream
+                    ),
+                    timeout=60.0  # 设置超时时间为180秒
+                )
+            # print(f'>>>>>>>>>test001 async_openai_client.chat.completions.create, response: {response}')
     except asyncio.TimeoutError as e:
         print(f'>>>>>>>>>test002 async_openai_client.chat.completions.create, e: {e}')
         raise Exception("The request to OpenAI tgeimed out after 3 minutes.")
@@ -95,7 +133,7 @@ async def openai_chat_completion_acreate(
         raise e
     return response
 
-async def simple_achat(messages: typing.List[typing.Mapping[str, str]], model: str = DEFAULT_OPENAI_MODEL):
+async def simple_achat(messages: typing.List[typing.Mapping[str, str]], model: str = 'gpt-4'):
     OPENAI_API_KEY = openai.api_key
     _msgs = []
     for m in messages:

@@ -1,7 +1,9 @@
 import json
 import re
 import asyncio
+import uuid
 from urllib.parse import urlparse
+from genaipf.utils.snowflake import SnowflakeIdWorker
 
 
 
@@ -158,3 +160,31 @@ def is_valid_url(url: str) -> bool:
     """
     parsed_url = urlparse(url)
     return bool(parsed_url.scheme) and bool(parsed_url.netloc)
+
+
+def get_uniq_id():
+    # 初始化 Snowflake 实例
+    worker = SnowflakeIdWorker(datacenter_id=1, worker_id=1)
+    return worker.get_id()
+
+# 进行浮点数计算
+def process_number(num_str, addition):
+    # 将输入字符串转换为浮点数
+    num_float = float(num_str)
+
+    # 进行计算
+    result_float = num_float + addition
+
+    # 返回格式化后的六位小数字符串
+    return format(result_float, ".6f")
+
+
+# 生成唯一uuid
+def get_uuid():
+    # 生成一个随机的 UUID
+    unique_uuid = uuid.uuid4()
+
+    # 将 UUID 转换为字符串
+    uuid_str = str(unique_uuid)
+    return uuid_str
+

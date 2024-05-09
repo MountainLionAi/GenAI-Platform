@@ -8,7 +8,7 @@ from genaipf.tools.search.utils.search_agent_utils import not_need_search, not_n
 from genaipf.services.cmc_token import get_token_cmc_url
 import time
 
-async def convert_func_out_to_stream(chunk, messages, newest_question, model, language, related_qa, source, owner, sources=[], is_need_search=False, sources_task=None, chain_id=''):
+async def convert_func_out_to_stream(chunk, messages, newest_question, model, language, related_qa, source, owner, sources=[], is_need_search=False, sources_task=None, chain_id='', output_type="", llm_model="", user_id="", wallet_type=""):
     """
     chunk: afunc_gpt_generator return
     """
@@ -17,6 +17,8 @@ async def convert_func_out_to_stream(chunk, messages, newest_question, model, la
     _param = chunk["content"]
     _param["language"] = language
     _param["chain_id"] = chain_id
+    _param["wallet_type"] = wallet_type
+    _param["user_id"] = user_id
     func_name = _param["func_name"]
     sub_func_name = _param["subtype"]
     logger.info(f'>>>>> func_name: {func_name}, sub_func_name: {sub_func_name}, _param: {_param}')
@@ -39,7 +41,7 @@ async def convert_func_out_to_stream(chunk, messages, newest_question, model, la
             ]
     if func_name not in not_need_search and not already_sources:
         yield {
-            "role": "sources", 
+            "role": "sources",
             "content": sources
         }
         yield get_format_output("chatSerpResults", sources)
@@ -79,17 +81,17 @@ async def convert_func_out_to_stream(chunk, messages, newest_question, model, la
                         'coin': _param.get('coin')
                     })
                 yield {
-                    "role": "inner_____preset_top", 
-                    "type": "inner_____preset_top", 
-                    "format": "inner_____preset_top", 
-                    "version": "v001", 
+                    "role": "inner_____preset_top",
+                    "type": "inner_____preset_top",
+                    "format": "inner_____preset_top",
+                    "version": "v001",
                     "content": _data
                 }
                 _data = {}
     if (func_name not in not_need_search and sub_func_name != 'coin_swap1') or (func_name == 'generate_report' and presetContent == {}):
         _messages = [x for x in messages if x["role"] != "system"]
         msgs = _messages[::]
-        resp2 = await aref_answer_gpt_generator(msgs, model, language, _type, str(picked_content), related_qa, source, owner)
+        resp2 = await aref_answer_gpt_generator(msgs, model, language, _type, str(picked_content), related_qa, source, owner, output_type=output_type, llm_model=llm_model)
         logger.info(f'>>>>> start->data done.')
         async for item in resp2:
             if item["role"] == "inner_____gpt_whole_text":
@@ -104,15 +106,15 @@ async def convert_func_out_to_stream(chunk, messages, newest_question, model, la
                 yield get_format_output("gpt", _gpt_letter)
     if _data:
         yield {
-            "role": "inner_____preset", 
-            "type": "inner_____preset", 
-            "format": "inner_____preset", 
-            "version": "v001", 
+            "role": "inner_____preset",
+            "type": "inner_____preset",
+            "format": "inner_____preset",
+            "version": "v001",
             "content": _data
         }
-        
-        
-        
+
+
+
 async def run_tool_agent(chunk, messages, newest_question, model, language, related_qa, source, owner, sources=[], is_need_search=False, sources_task=None, chain_id=''):
     _param = chunk["content"]
     func_name = _param["func_name"]
@@ -126,4 +128,3 @@ async def run_tool_agent(chunk, messages, newest_question, model, language, rela
     resp = tool_agent_func(messages, newest_question, model, language, related_qa, source, owner, sources=[], is_need_search=False, sources_task=None, chain_id='')
     async for item in resp:
         yield item
-    

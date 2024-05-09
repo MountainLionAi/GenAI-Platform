@@ -31,6 +31,7 @@ from genaipf.tools.search.utils.search_agent_utils import other_search
 from genaipf.tools.search.utils.search_agent_utils import premise_search, premise_search1, premise_search2, new_question_question, fixed_related_question
 from genaipf.tools.search.utils.search_task_manager import get_related_question_task
 from genaipf.utils.common_utils import contains_chinese
+from genaipf.utils.sensitive_util import isNormal
 import os
 import base64
 from genaipf.conf.server import os
@@ -99,6 +100,8 @@ async def send_stream_chat(request: Request):
     agent_id = request_params.get('agent_id', None)
     # messages = process_messages(messages)
     output_type = request_params.get('output_type', 'text') # text or voice; (voice is mp3)
+    llm_model = request_params.get('llm_model', 'openai') # openai | perplexity | claude
+    wallet_type = request_params.get('wallet_type', 'AI')
     # messages = [{"role": msg["role"], "content": msg["content"]} for msg in process_messages(messages)]
     # messages = messages[-10:]
     messages = process_messages(messages)
@@ -116,7 +119,7 @@ async def send_stream_chat(request: Request):
     try:
         async def event_generator(_response):
             # async for _str in getAnswerAndCallGpt(request_params['content'], userid, msggroup, language, messages):
-            async for _str in getAnswerAndCallGpt(request_params.get('content'), userid, msggroup, language, messages, device_no, question_code, model, output_type, source, owner, agent_id, chain_id):
+            async for _str in getAnswerAndCallGpt(request_params.get('content'), userid, msggroup, language, messages, device_no, question_code, model, output_type, source, owner, agent_id, chain_id, llm_model, wallet_type):
                 await _response.write(f"data:{_str}\n\n")
                 await asyncio.sleep(0.01)
         return ResponseStream(event_generator, headers={"accept": "application/json"}, content_type="text/event-stream")
@@ -169,7 +172,7 @@ async def send_chat(request: Request):
         logger.error(traceback.format_exc())
    
 
-async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messages, device_no, question_code, model, output_type, source, owner, agent_id, chain_id):
+async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messages, device_no, question_code, model, output_type, source, owner, agent_id, chain_id, llm_model, wallet_type):
     t0 = time.time()
     MAX_CH_LENGTH = 8000
     _ensure_ascii = False
@@ -189,13 +192,28 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     
     last_front_msg = front_messages[-1]
     question = last_front_msg['content']
+
+    # 判断是否有敏感词汇，更改用户问题、上下文内容。question为存库数据，不需要修改
+    is_normal_question = await isNormal(newest_question)
+    if not is_normal_question:
+        newest_question = '用户的问题中涉及敏感词汇，明确告知用户他的问题中有敏感词汇，并且不能使用敏感词汇'
+        front_messages = [
+            {"role": "user", "content": newest_question}
+        ]
+        messages = [
+            {"role": "user", "content": newest_question}
+        ]
+
     if last_front_msg.get("need_whisper"):
         yield json.dumps(get_format_output("whisper", last_front_msg['content']))
     
     # vvvvvvvv 在第一次 func gpt 就准备好数据 vvvvvvvv
     logger.info(f'>>>>> newest_question: {newest_question}')
     start_time1 = time.perf_counter()
-    related_qa = get_qa_vdb_topk(newest_question)
+    related_qa = []
+    # 钱包客服不走向量数据库
+    if source != 'v005':
+        related_qa = get_qa_vdb_topk(newest_question)
     end_time1 = time.perf_counter()
     elapsed_time1 = (end_time1 - start_time1) * 1000
     logger.info(f'=====================>get_qa_vdb_topk耗时：{elapsed_time1:.3f}毫秒')
@@ -304,14 +322,20 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
             msgs = msgs[:-1] + buildVisionMessage(last_front_msg)
             isvision = True
             used_gpt_functions = None
+
         aref_answer_gpt_generator_start_time = time.perf_counter()
-        resp1 = await aref_answer_gpt_generator(msgs, model, language_, None, picked_content, related_qa, source, owner, isvision)
+        resp1 = await aref_answer_gpt_generator(msgs, model, language_, None, picked_content, related_qa, source, owner, isvision, output_type, llm_model) 
         aref_answer_gpt_generator_end_time = time.perf_counter()
         elapsed_aref_answer_gpt_generator_time = (aref_answer_gpt_generator_end_time - aref_answer_gpt_generator_start_time) * 1000
         logger.info(f'=====================>aref_answer_gpt_generator耗时：{elapsed_aref_answer_gpt_generator_time:.3f}毫秒')
+        
         async for chunk in resp1:
             if chunk["role"] == "inner_____gpt_whole_text":
                 _tmp_text = chunk["content"]
+                # if output_type == "voice":
+                #     # 对于语音输出，将文本转换为语音并编码
+                #     base64_encoded_voice = textToSpeech(_tmp_text)
+                #     yield json.dumps(get_format_output("tts", base64_encoded_voice, "voice_mp3_v001"))
             else:
                 yield json.dumps(chunk) 
     else:
@@ -327,7 +351,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
                 logger.info(f'=====================>run_tool_agent耗时：{elapsed_run_tool_agent_time:.3f}毫秒')
             else:
                 convert_func_out_to_stream_start_time = time.perf_counter()
-                stream_gen = convert_func_out_to_stream(func_chunk , messages, newest_question, model, language_, related_qa, source, owner, sources, is_need_search, sources_task, chain_id)
+                stream_gen = convert_func_out_to_stream(func_chunk , messages, newest_question, model, language_, related_qa, source, owner, sources, is_need_search, sources_task, chain_id, output_type, llm_model, userid, wallet_type)
                 convert_func_out_to_stream_time_end_time = time.perf_counter()
                 elapsed_convert_func_out_to_stream_time = (convert_func_out_to_stream_time_end_time - convert_func_out_to_stream_start_time) * 1000
                 logger.info(f'=====================>convert_func_out_to_stream耗时：{elapsed_convert_func_out_to_stream_time:.3f}毫秒')
@@ -338,6 +362,10 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         async for item in stream_gen:
             if item["role"] == "inner_____gpt_whole_text":
                 _tmp_text = item["content"]
+                # if output_type == "voice":
+                #     # 对于语音输出，将文本转换为语音并编码
+                #     base64_encoded_voice = textToSpeech(_tmp_text)
+                #     yield json.dumps(get_format_output("tts", base64_encoded_voice, "voice_mp3_v001"))
             elif item["role"] == "inner_____preset":
                 data.update(item["content"])
             elif item["role"] == "inner_____preset_top":
@@ -356,6 +384,16 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
                 yield json.dumps(_tmp)
                 from genaipf.dispatcher.callgpt import DispatcherCallGpt
                 if DispatcherCallGpt.need_call_gpt(data):
+                    # 研报的相关问题前置，不然加载很慢
+                    need_qa = False
+                    related_questions_task_start_time = time.perf_counter()
+                    await related_questions_task
+                    related_questions = related_questions_task.result()
+                    related_questions_task_end_time = time.perf_counter()
+                    elapsed_related_questions_task_time = (related_questions_task_end_time - related_questions_task_start_time) * 1000
+                    logger.info(f'=====================>related_questions_task耗时：{elapsed_related_questions_task_time:.3f}毫秒')
+                    yield json.dumps(get_format_output("chatRelatedResults", related_questions))
+
                     subtype_task_result = await DispatcherCallGpt.get_subtype_task_result(data["subtype"], language_, data)
                     preset_type, preset_content, data = DispatcherCallGpt.gen_preset_content(data["subtype"], subtype_task_result, data)
                     yield json.dumps(get_format_output("preset", preset_content, type=preset_type))
@@ -364,10 +402,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
             else:
                 yield json.dumps(item)
 
-    if output_type == "voice":
-        # 对于语音输出，将文本转换为语音并编码
-        base64_encoded_voice = textToSpeech(_tmp_text)
-        yield json.dumps(get_format_output("tts", base64_encoded_voice, "voice_mp3_v001"))
+
     data.update({
         'content' : _tmp_text,
         'code' : _code
@@ -400,7 +435,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         related_questions_task_end_time = time.perf_counter()
         elapsed_related_questions_task_time = (related_questions_task_end_time - related_questions_task_start_time) * 1000
         logger.info(f'=====================>related_questions_task耗时：{elapsed_related_questions_task_time:.3f}毫秒')
-    yield json.dumps(get_format_output("chatRelatedResults", related_questions))
+        yield json.dumps(get_format_output("chatRelatedResults", related_questions))
     yield json.dumps(get_format_output("step", "done"))
     logger.info(f'>>>>> func & ref _tmp_text & output_type: {output_type}: {_tmp_text}')
     base64_type = 0

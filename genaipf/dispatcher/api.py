@@ -2,7 +2,7 @@ import json
 import asyncio
 from genaipf.conf.server import os
 from genaipf.dispatcher.functions import gpt_functions
-from genaipf.dispatcher.utils import openai, OPENAI_PLUS_MODEL, CLAUDE_MODEL, openai_chat_completion_acreate
+from genaipf.dispatcher.utils import openai, OPENAI_PLUS_MODEL, CLAUDE_MODEL, openai_chat_completion_acreate, PERPLEXITY_MODEL
 from genaipf.utils.log_utils import logger
 from datetime import datetime
 from genaipf.dispatcher.prompts_v001 import LionPrompt
@@ -13,6 +13,7 @@ import genaipf.dispatcher.prompts_v005 as prompts_v005
 # from openai.error import InvalidRequestError
 from openai import BadRequestError
 from genaipf.utils.redis_utils import RedisConnectionPool
+from genaipf.utils.speech_utils import transcribe, textToSpeech
 
 # temperature=2 # 值在[0,1]之间，越大表示回复越具有不确定性
 # max_tokens=2000 # 输出的最大 token 数
@@ -64,17 +65,32 @@ async def aget_error_generator(msg="ERROR"):
         await asyncio.sleep(0.02)
         yield get_format_output("error", c)
 
-async def awrap_claude_generator(lc_response):
+async def awrap_claude_generator(lc_response, output_type=""):
     resp = lc_response
     yield get_format_output("step", "llm_yielding")
     _tmp_text = ""
+    _tmp_voice_text = ""
     async for c in resp:
         if c is not None:
             _tmp_text += c
+            _tmp_voice_text += c
+            if output_type != 'voice':
+                yield get_format_output("gpt", c)
+        if output_type == 'voice':
+            if len(_tmp_voice_text) == 200:
+                base64_encoded_voice = textToSpeech(_tmp_voice_text)
+                yield get_format_output("tts", base64_encoded_voice, "voice_mp3_v001")
+                for c in _tmp_voice_text:
+                    yield get_format_output("gpt", c)
+                _tmp_voice_text = ""
+    if output_type == 'voice': 
+        base64_encoded_voice = textToSpeech(_tmp_voice_text)
+        yield get_format_output("tts", base64_encoded_voice, "voice_mp3_v001")
+        for c in _tmp_voice_text:
             yield get_format_output("gpt", c)
     yield get_format_output("inner_____gpt_whole_text", _tmp_text)
     
-async def awrap_gpt_generator(gpt_response):
+async def awrap_gpt_generator(gpt_response, output_type=""):
     resp = gpt_response
     chunk = await resp.__anext__()
     _func_or_text = chunk.choices[0].delta.function_call
@@ -86,14 +102,31 @@ async def awrap_gpt_generator(gpt_response):
         yield get_format_output("step", "llm_yielding")
         c0 = chunk.choices[0].delta.content
         _tmp_text = ""
+        _tmp_voice_text = ""
         if c0:
             _tmp_text += c0
-            yield get_format_output("gpt", c0)
+            _tmp_voice_text += c0
+            if output_type != 'voice':
+                yield get_format_output("gpt", c0)
         async for chunk in resp:
             _gpt_letter = chunk.choices[0].delta.content
             if _gpt_letter:
                 _tmp_text += _gpt_letter
-                yield get_format_output("gpt", _gpt_letter)
+                _tmp_voice_text += _gpt_letter
+                if output_type != 'voice':
+                    yield get_format_output("gpt", _gpt_letter)
+            if output_type == 'voice': 
+                if len(_tmp_voice_text) == 200:
+                    base64_encoded_voice = textToSpeech(_tmp_voice_text)
+                    yield get_format_output("tts", base64_encoded_voice, "voice_mp3_v001")
+                    for c in _tmp_voice_text:
+                        yield get_format_output("gpt", c)
+                    _tmp_voice_text = ""
+        if output_type == 'voice': 
+            base64_encoded_voice = textToSpeech(_tmp_voice_text)
+            yield get_format_output("tts", base64_encoded_voice, "voice_mp3_v001")
+            for c in _tmp_voice_text:
+                yield get_format_output("gpt", c)
         yield get_format_output("inner_____gpt_whole_text", _tmp_text)
     elif mode1 == "func":
         yield get_format_output("step", "agent_routing")
@@ -111,7 +144,7 @@ async def awrap_gpt_generator(gpt_response):
         yield get_format_output("inner_____func_param", _param)
         
 
-async def afunc_gpt_generator(messages, functions=gpt_functions, language=LionPrompt.default_lang, model='', picked_content="", related_qa=[], source='v001', owner='', isvision=False):
+async def afunc_gpt_generator(messages, functions=gpt_functions, language=LionPrompt.default_lang, model='', picked_content="", related_qa=[], source='v001', owner='', isvision=False, output_type=""):
     '''
     "messages": [
         {"role": "user", "content": "Hello"},
@@ -158,7 +191,7 @@ async def afunc_gpt_generator(messages, functions=gpt_functions, language=LionPr
                 stream=True
             )
             logger.info('afunc_gpt_generator called')
-            return awrap_gpt_generator(response)
+            return awrap_gpt_generator(response, output_type)
         except BadRequestError as e:
             print(e)
             logger.error(f'afunc_gpt_generator BadRequestError {e}', e)
@@ -170,10 +203,12 @@ async def afunc_gpt_generator(messages, functions=gpt_functions, language=LionPr
     return aget_error_generator("error after retry many times")
 
 
-async def aref_answer_gpt_generator(messages, model='', language=LionPrompt.default_lang, preset_name=None, picked_content="", related_qa=[], source='v001', owner='', isvision=False):
+async def aref_answer_gpt_generator(messages, model='', language=LionPrompt.default_lang, preset_name=None, picked_content="", related_qa=[], source='v001', owner='', isvision=False, output_type="", llm_model=""):
     use_model = 'gpt-3.5-turbo-0125'
-    if model == 'ml-plus':
+    if llm_model == 'openai':
         use_model = OPENAI_PLUS_MODEL
+    elif llm_model == 'perplexity':
+        use_model = PERPLEXITY_MODEL
     else:
         use_model = CLAUDE_MODEL
     if isvision:
@@ -196,7 +231,7 @@ async def aref_answer_gpt_generator(messages, model='', language=LionPrompt.defa
         "role": "system",
         "content": content
     }
-    if use_model.startswith("gpt"):
+    if use_model.startswith("gpt") or use_model == PERPLEXITY_MODEL:
         for i in range(5):
             mlength = len(messages)
             try:
@@ -215,7 +250,7 @@ async def aref_answer_gpt_generator(messages, model='', language=LionPrompt.defa
                     stream=True
                 )
                 logger.info(f'aref_answer_gpt called')
-                return awrap_gpt_generator(response)
+                return awrap_gpt_generator(response, output_type)
             except BadRequestError as e:
                 print(e)
                 logger.error(f'aref_answer_gpt_generator BadRequestError {e}', e)
@@ -245,7 +280,7 @@ async def aref_answer_gpt_generator(messages, model='', language=LionPrompt.defa
             chain = prompt | chat | parser
             response = chain.astream({})
             logger.info(f'aref_answer_gpt claude called')
-            return awrap_claude_generator(response)
+            return awrap_claude_generator(response, output_type)
         except Exception as e:
             print(e)
             logger.error(f'aref_answer_gpt_generator claude error {e}', e)
