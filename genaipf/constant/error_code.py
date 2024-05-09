@@ -26,6 +26,9 @@ ERROR_CODE = {
     "REPEAT_RECHARGE": 8002,
     "USER_SUB_ACCOUNT_NOT_EXIST": 8003,
     "CREATE_RECORD_ERROR": 8004,
+    "SWAP_BALANCE_NOT_ENOUGH": 8005,
+    "SWAP_API_ERROR": 8006,
+    "CREATE_ACTIVITY_ERROR": 8007
 }
 
 # 错误信息
@@ -55,5 +58,8 @@ ERROR_MESSAGE = {
     8001: 'User Account Activity Not Exist',
     8002: 'Repeat Recharge',
     8003: 'User Sub Accout Not Exist',
-    8005: 'Create Record Error'
+    8004: 'Create Record Error',
+    8005: 'Balance Not Enough',
+    8006: 'Swap API Error',
+    8007: 'Create Activity Error',
 }
