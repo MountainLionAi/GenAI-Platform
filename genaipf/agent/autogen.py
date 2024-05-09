@@ -24,13 +24,13 @@ class AutoGenMultiAgent:
         self,
         llm_config: Mapping[str, Any],
         agents_config: Mapping[str, Any],
-        context_obj: Any
+        ctx: Any
     ):
         self.llm_config: Mapping[str, Any] = llm_config
         self.agents_config: Mapping[str, Any] = agents_config
-        self.context_obj = context_obj
-        if hasattr(self.context_obj, "update_llm_config"):
-            self.llm_config = self.context_obj.update_llm_config(self.llm_config)
+        self.ctx = ctx
+        if hasattr(self.ctx, "update_llm_config"):
+            self.llm_config = self.ctx.update_llm_config(self.llm_config)
         self.assistant_agents = dict()
         self.setup_agents()
         self.setup_groupchat()
