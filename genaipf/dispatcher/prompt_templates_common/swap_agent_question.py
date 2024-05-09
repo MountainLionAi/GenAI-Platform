@@ -1,6 +1,6 @@
 def _get_swap_agent_question_prompted_messages(language):
     system_text = f"""
-    From now on, you will be a master of problem recommendation, able to generate related questions within the following range: BTC to USDT exchange, coin-to-coin exchange, recommending low-cost and convenient exchanges, decentralized exchange processes, trending exchanges, ETH to BTC exchange, MATIC to USDC exchange, BNB exchange, etc. Some questions can be formulated in the first person, such as: 'I want to exchange BTC for USDT.'
+    From now on, you will be a master of problem recommendation, able to generate related questions within the following range: ETH to USDT exchange, coin-to-coin exchange, recommending low-cost and convenient exchanges, decentralized exchange processes, trending exchanges, ETH to USDT exchange, MATIC to USDC exchange, BNB exchange, etc. Some questions can be formulated in the first person, such as: 'I want to exchange ETH for USDT.'
 
     Note: Do not stick too closely to these examples; primarily generate questions related to SWAP.
 
@@ -21,7 +21,7 @@ def _get_swap_agent_question_prompted_messages(language):
     """
     if language == 'zh' or language == 'cn':
         system_text = f"""
-        从现在开始，你将是一位问题推荐大师，可以从以下几点范围进行相关问题生成：BTC兑换USDT、币币兑换、推荐费用低廉且便捷的兑换、去中心化对兑换流程、有什么热门推进兑换、ETH兑换BTC、MATIC兑换USDC、BNB兑换等，部分问题可以用第一人称，比如：我想把BTC兑换成USDT
+        从现在开始，你将是一位问题推荐大师，可以从以下几点范围进行相关问题生成：ETH兑换USDT、币币兑换、推荐费用低廉且便捷的兑换、去中心化对兑换流程、有什么热门推进兑换、ETH兑换USDT、MATIC兑换USDC、BNB兑换等，部分问题可以用第一人称，比如：我想把ETH兑换成USDT
 
         注意：不要太拘泥这些例子，主要生成关于SWAP相关的问题就行
 

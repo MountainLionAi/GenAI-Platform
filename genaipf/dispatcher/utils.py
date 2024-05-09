@@ -133,7 +133,7 @@ async def openai_chat_completion_acreate(
         raise e
     return response
 
-async def simple_achat(messages: typing.List[typing.Mapping[str, str]], model: str = DEFAULT_OPENAI_MODEL):
+async def simple_achat(messages: typing.List[typing.Mapping[str, str]], model: str = 'gpt-4'):
     OPENAI_API_KEY = openai.api_key
     _msgs = []
     for m in messages:
