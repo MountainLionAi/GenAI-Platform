@@ -212,7 +212,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     start_time1 = time.perf_counter()
     related_qa = []
     # 钱包客服不走向量数据库
-    if source != 'v005'
+    if source != 'v005':
         related_qa = get_qa_vdb_topk(newest_question)
     end_time1 = time.perf_counter()
     elapsed_time1 = (end_time1 - start_time1) * 1000
