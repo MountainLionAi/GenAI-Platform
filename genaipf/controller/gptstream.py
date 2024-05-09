@@ -381,6 +381,16 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
                 yield json.dumps(_tmp)
                 from genaipf.dispatcher.callgpt import DispatcherCallGpt
                 if DispatcherCallGpt.need_call_gpt(data):
+                    # 研报的相关问题前置，不然加载很慢
+                    need_qa = False
+                    related_questions_task_start_time = time.perf_counter()
+                    await related_questions_task
+                    related_questions = related_questions_task.result()
+                    related_questions_task_end_time = time.perf_counter()
+                    elapsed_related_questions_task_time = (related_questions_task_end_time - related_questions_task_start_time) * 1000
+                    logger.info(f'=====================>related_questions_task耗时：{elapsed_related_questions_task_time:.3f}毫秒')
+                    yield json.dumps(get_format_output("chatRelatedResults", related_questions))
+
                     subtype_task_result = await DispatcherCallGpt.get_subtype_task_result(data["subtype"], language_, data)
                     preset_type, preset_content, data = DispatcherCallGpt.gen_preset_content(data["subtype"], subtype_task_result, data)
                     yield json.dumps(get_format_output("preset", preset_content, type=preset_type))
@@ -422,7 +432,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         related_questions_task_end_time = time.perf_counter()
         elapsed_related_questions_task_time = (related_questions_task_end_time - related_questions_task_start_time) * 1000
         logger.info(f'=====================>related_questions_task耗时：{elapsed_related_questions_task_time:.3f}毫秒')
-    yield json.dumps(get_format_output("chatRelatedResults", related_questions))
+        yield json.dumps(get_format_output("chatRelatedResults", related_questions))
     yield json.dumps(get_format_output("step", "done"))
     logger.info(f'>>>>> func & ref _tmp_text & output_type: {output_type}: {_tmp_text}')
     base64_type = 0
