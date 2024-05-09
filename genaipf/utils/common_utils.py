@@ -1,6 +1,7 @@
 import json
 import re
 import asyncio
+import uuid
 from urllib.parse import urlparse
 from genaipf.utils.snowflake import SnowflakeIdWorker
 
@@ -176,4 +177,14 @@ def process_number(num_str, addition):
 
     # 返回格式化后的六位小数字符串
     return format(result_float, ".6f")
+
+
+# 生成唯一uuid
+def get_uuid():
+    # 生成一个随机的 UUID
+    unique_uuid = uuid.uuid4()
+
+    # 将 UUID 转换为字符串
+    uuid_str = str(unique_uuid)
+    return uuid_str
 
