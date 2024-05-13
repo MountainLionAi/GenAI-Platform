@@ -212,8 +212,8 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     start_time1 = time.perf_counter()
     related_qa = []
     # 钱包客服不走向量数据库
-    if source != 'v005':
-        related_qa = get_qa_vdb_topk(newest_question, source=source)
+    # if source != 'v005':
+    #     related_qa = get_qa_vdb_topk(newest_question, source=source)
     end_time1 = time.perf_counter()
     elapsed_time1 = (end_time1 - start_time1) * 1000
     logger.info(f'=====================>get_qa_vdb_topk耗时：{elapsed_time1:.3f}毫秒')
@@ -242,8 +242,9 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     # 判断是分析还是回答
     if source == 'v004':
         responseType = 1
-    if source == 'v005':
+    if source == 'v005' or source == 'v006':
         used_rag = False
+        need_qa = False
     # 特殊处理swap前置问题
     if source == 'v101':
         source = 'v001'
@@ -435,6 +436,8 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         related_questions_task_end_time = time.perf_counter()
         elapsed_related_questions_task_time = (related_questions_task_end_time - related_questions_task_start_time) * 1000
         logger.info(f'=====================>related_questions_task耗时：{elapsed_related_questions_task_time:.3f}毫秒')
+        yield json.dumps(get_format_output("chatRelatedResults", related_questions))
+    elif not related_questions:
         yield json.dumps(get_format_output("chatRelatedResults", related_questions))
     yield json.dumps(get_format_output("step", "done"))
     logger.info(f'>>>>> func & ref _tmp_text & output_type: {output_type}: {_tmp_text}')
