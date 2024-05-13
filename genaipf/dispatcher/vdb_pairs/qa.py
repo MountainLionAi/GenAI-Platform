@@ -17,3 +17,4 @@ if PLUGIN_NAME:
     plugin_submodule_name = f'{PLUGIN_NAME}.dispatcher.vdb_pairs.qa'
     plugin_submodule = import_module(plugin_submodule_name)
     vdb_map = plugin_submodule.vdb_map
+    qa_maps = getattr(plugin_submodule, "qa_maps", dict())
