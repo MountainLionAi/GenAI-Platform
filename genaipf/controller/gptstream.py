@@ -212,8 +212,8 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     start_time1 = time.perf_counter()
     related_qa = []
     # 钱包客服不走向量数据库
-    if source != 'v005':
-        related_qa = get_qa_vdb_topk(newest_question, source=source)
+    # if source != 'v005':
+    #     related_qa = get_qa_vdb_topk(newest_question, source=source)
     end_time1 = time.perf_counter()
     elapsed_time1 = (end_time1 - start_time1) * 1000
     logger.info(f'=====================>get_qa_vdb_topk耗时：{elapsed_time1:.3f}毫秒')
@@ -242,8 +242,9 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     # 判断是分析还是回答
     if source == 'v004':
         responseType = 1
-    if source == 'v005':
+    if source == 'v005' or source == 'v006':
         used_rag = False
+        need_qa = False
     # 特殊处理swap前置问题
     if source == 'v101':
         source = 'v001'
