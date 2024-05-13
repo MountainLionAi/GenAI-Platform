@@ -1,5 +1,5 @@
 from genaipf.dispatcher.utils import get_vdb_topk, gpt_func_coll_name
-from genaipf.dispatcher.vdb_pairs.gpt_func import vdb_map
+from genaipf.dispatcher.vdb_pairs.gpt_func import vdb_map, gpt_func_maps
 from genaipf.utils.log_utils import logger
 
 from importlib import import_module
@@ -47,15 +47,23 @@ need_tool_agent_l = [
     "medical_____treatment",
 ]
 
-def gpt_function_filter(gpt_functions_mapping, messages, msg_k=5, v_n=5, per_n=2):
+def gpt_function_filter(gpt_functions_mapping, messages, msg_k=5, v_n=5, per_n=2, source=None):
+    from genaipf.dispatcher.source_mapping import source_mapping
+    if source in source_mapping:
+        vdb_name = source_mapping[source]["gpt_func_vdb"]
+        _gpt_func_map_name = source_mapping[source]["gpt_func_map"]
+        _gpt_func_map = gpt_func_maps[_gpt_func_map_name]
+    else:
+        vdb_name = gpt_func_coll_name
+        _gpt_func_map = vdb_map
     try:
         user_messages = [msg['content'] for msg in messages if msg['role'] == 'user'][-msg_k:]
         used_names = set()
         for text in user_messages:
             tmp_names = []
-            results = get_vdb_topk(text, gpt_func_coll_name, 0.1, v_n)
+            results = get_vdb_topk(text, vdb_name, 0.1, v_n)
             for x in results:
-                _name = vdb_map.get(x["payload"]["q"])
+                _name = _gpt_func_map.get(x["payload"]["q"])
                 if _name and _name not in tmp_names:
                     tmp_names.append(_name)
             used_names = used_names.union(set(tmp_names[:per_n]))
