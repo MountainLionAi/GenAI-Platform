@@ -51,6 +51,8 @@ def update_vdb(collection_name):
         id_cur += 1
     if tobe_vectors:
         client.upsert(collection_name, tobe_vectors)
+    print(f'>>>>> inc_texts {inc_texts[:1]} ... {inc_texts[-1:]}')
+    print(f'>>>>> tobe_vectors {tobe_vectors[:1]} ... {tobe_vectors[-1:]}')
     # ======= 把 vdb_map 新增的内容加到向量数据库 END =======
 
 def update_all_vdb():
