@@ -37,10 +37,11 @@ openai_client = OpenAI(
 # )
 
 from genaipf.conf.server import PLUGIN_NAME
+from genaipf.conf.server import SUB_VDB_QA_PREFIX, SUB_VDB_GPT_FUNC_PREFIX
 vdb_prefix = PLUGIN_NAME
 
-qa_coll_name = f"{vdb_prefix}_filtered_qa"
-gpt_func_coll_name = f"{vdb_prefix}_gpt_func"
+qa_coll_name = f"{SUB_VDB_QA_PREFIX}{vdb_prefix}_filtered_qa"
+gpt_func_coll_name = f"{SUB_VDB_GPT_FUNC_PREFIX}{vdb_prefix}_gpt_func"
 
 client = QdrantClient(qdrant_url)
 
@@ -179,13 +180,21 @@ def get_vdb_topk(text: str, cname: str, sim_th: float = 0.8, topk: int = 3) -> t
             wrapper_result.append({'payload': result.payload, 'similarity': result.score})
     return wrapper_result
 
-def get_qa_vdb_topk(text: str, sim_th: float = 0.8, topk: int = 3) -> typing.List[typing.Mapping]:
-    # results = get_vdb_topk(text, "qa", sim_th, topk)
-    from genaipf.dispatcher.vdb_pairs.qa import vdb_map
-    results = get_vdb_topk(text, qa_coll_name, sim_th, topk)
+def get_qa_vdb_topk(text: str, sim_th: float = 0.8, topk: int = 3, source=None) -> typing.List[typing.Mapping]:
+    from genaipf.dispatcher.source_mapping import source_mapping
+    # # results = get_vdb_topk(text, "qa", sim_th, topk)
+    from genaipf.dispatcher.vdb_pairs.qa import vdb_map, qa_maps
+    if source in source_mapping:
+        vdb_name = source_mapping[source]["qa_vdb"]
+        _qa_map_name = source_mapping[source]["qa_map"]
+        _qa_map = qa_maps[_qa_map_name]
+    else:
+        vdb_name = qa_coll_name
+        _qa_map = vdb_map
+    results = get_vdb_topk(text, vdb_name, sim_th, topk)
     out_l = []
     for x in results:
-        _a = vdb_map.get(x["payload"]["q"])
+        _a = _qa_map.get(x["payload"]["q"])
         ans = _a if _a else x["payload"].get("a")
         v = f'{x["payload"].get("q")}: {ans}'
         out_l.append(v)
