@@ -210,7 +210,10 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     # vvvvvvvv 在第一次 func gpt 就准备好数据 vvvvvvvv
     logger.info(f'>>>>> newest_question: {newest_question}')
     start_time1 = time.perf_counter()
-    related_qa = get_qa_vdb_topk(newest_question)
+    related_qa = []
+    # 钱包客服不走向量数据库
+    if source != 'v005':
+        related_qa = get_qa_vdb_topk(newest_question)
     end_time1 = time.perf_counter()
     elapsed_time1 = (end_time1 - start_time1) * 1000
     logger.info(f'=====================>get_qa_vdb_topk耗时：{elapsed_time1:.3f}毫秒')
@@ -321,7 +324,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
             used_gpt_functions = None
 
         aref_answer_gpt_generator_start_time = time.perf_counter()
-        resp1 = await aref_answer_gpt_generator(msgs, model, language, None, picked_content, related_qa, source, owner, isvision, output_type, llm_model) 
+        resp1 = await aref_answer_gpt_generator(msgs, model, language_, None, picked_content, related_qa, source, owner, isvision, output_type, llm_model) 
         aref_answer_gpt_generator_end_time = time.perf_counter()
         elapsed_aref_answer_gpt_generator_time = (aref_answer_gpt_generator_end_time - aref_answer_gpt_generator_start_time) * 1000
         logger.info(f'=====================>aref_answer_gpt_generator耗时：{elapsed_aref_answer_gpt_generator_time:.3f}毫秒')

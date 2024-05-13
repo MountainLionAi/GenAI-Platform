@@ -37,10 +37,11 @@ openai_client = OpenAI(
 # )
 
 from genaipf.conf.server import PLUGIN_NAME
+from genaipf.conf.server import SUB_VDB_QA_PREFIX, SUB_VDB_GPT_FUNC_PREFIX
 vdb_prefix = PLUGIN_NAME
 
-qa_coll_name = f"{vdb_prefix}_filtered_qa"
-gpt_func_coll_name = f"{vdb_prefix}_gpt_func"
+qa_coll_name = f"{SUB_VDB_QA_PREFIX}{vdb_prefix}_filtered_qa"
+gpt_func_coll_name = f"{SUB_VDB_GPT_FUNC_PREFIX}{vdb_prefix}_gpt_func"
 
 client = QdrantClient(qdrant_url)
 
@@ -133,7 +134,7 @@ async def openai_chat_completion_acreate(
         raise e
     return response
 
-async def simple_achat(messages: typing.List[typing.Mapping[str, str]], model: str = DEFAULT_OPENAI_MODEL):
+async def simple_achat(messages: typing.List[typing.Mapping[str, str]], model: str = 'gpt-4'):
     OPENAI_API_KEY = openai.api_key
     _msgs = []
     for m in messages:
