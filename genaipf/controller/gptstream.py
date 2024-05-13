@@ -213,7 +213,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     related_qa = []
     # 钱包客服不走向量数据库
     if source != 'v005':
-        related_qa = get_qa_vdb_topk(newest_question)
+        related_qa = get_qa_vdb_topk(newest_question, source=source)
     end_time1 = time.perf_counter()
     elapsed_time1 = (end_time1 - start_time1) * 1000
     logger.info(f'=====================>get_qa_vdb_topk耗时：{elapsed_time1:.3f}毫秒')
@@ -264,7 +264,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     msgs = _messages[::]
     # ^^^^^^^^ 在第一次 func gpt 就准备好数据 ^^^^^^^^
     gpt_function_filter_start_time = time.perf_counter()
-    used_gpt_functions = gpt_function_filter(gpt_functions_mapping, _messages)
+    used_gpt_functions = gpt_function_filter(gpt_functions_mapping, _messages, source=source)
     gpt_function_filter_end_time = time.perf_counter()
     elapsed_gpt_function_filter_time = (gpt_function_filter_end_time - gpt_function_filter_start_time) * 1000
     logger.info(f'=====================>gpt_function_filter耗时：{elapsed_gpt_function_filter_time:.3f}毫秒')
@@ -501,7 +501,7 @@ async def  getAnswerAndCallGptData(question, userid, msggroup, language, front_m
     
     # vvvvvvvv 在第一次 func gpt 就准备好数据 vvvvvvvv
     logger.info(f'>>>>> newest_question: {newest_question}')
-    related_qa = get_qa_vdb_topk(newest_question)
+    related_qa = get_qa_vdb_topk(newest_question, source=source)
     language_ = contains_chinese(newest_question)
     # 判断最新的问题中是否含有中文
     # TODO 速度问题暂时注释掉
@@ -513,7 +513,7 @@ async def  getAnswerAndCallGptData(question, userid, msggroup, language, front_m
     _messages = [x for x in messages if x["role"] != "system"]
     msgs = _messages[::]
     # ^^^^^^^^ 在第一次 func gpt 就准备好数据 ^^^^^^^^
-    used_gpt_functions = gpt_function_filter(gpt_functions_mapping, _messages)
+    used_gpt_functions = gpt_function_filter(gpt_functions_mapping, _messages, source=source)
     _tmp_text = ""
     _code = generate_unique_id()
     isPresetTop = False
