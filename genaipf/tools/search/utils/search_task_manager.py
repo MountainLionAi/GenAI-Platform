@@ -39,7 +39,7 @@ async def get_is_need_search_task(front_messages):
 # 获取相关问题相关task
 async def get_related_question_task(newest_question_arr, fixed_related_question, language):
     msgs = LionPromptCommon.get_prompted_messages("related_question", newest_question_arr, language)
-    questions_result = await simple_achat(msgs)
+    questions_result = await simple_achat(msgs, 'gpt-4')
     related_questions = []
     if questions_result != 'False':
         try:
