@@ -134,7 +134,7 @@ async def openai_chat_completion_acreate(
         raise e
     return response
 
-async def simple_achat(messages: typing.List[typing.Mapping[str, str]], model: str = 'gpt-4'):
+async def simple_achat(messages: typing.List[typing.Mapping[str, str]], model: str = DEFAULT_OPENAI_MODEL):
     OPENAI_API_KEY = openai.api_key
     _msgs = []
     for m in messages:
@@ -180,7 +180,7 @@ def get_vdb_topk(text: str, cname: str, sim_th: float = 0.8, topk: int = 3) -> t
             wrapper_result.append({'payload': result.payload, 'similarity': result.score})
     return wrapper_result
 
-def get_qa_vdb_topk(text: str, sim_th: float = 0.8, topk: int = 3, source=None) -> typing.List[typing.Mapping]:
+def get_qa_vdb_topk(text: str, sim_th: float = 0.85, topk: int = 3, source=None) -> typing.List[typing.Mapping]:
     from genaipf.dispatcher.source_mapping import source_mapping
     # # results = get_vdb_topk(text, "qa", sim_th, topk)
     from genaipf.dispatcher.vdb_pairs.qa import vdb_map, qa_maps
