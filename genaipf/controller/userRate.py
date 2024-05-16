@@ -22,6 +22,7 @@ async def user_rate(request: Request):
         result = await set_gpt_gmessage_rate_by_id(rate,comment, msgid)
         if not result:
             return success('已记录')
+        return success('记录成功')
     except Exception as e:
         logger.error(e)
 
