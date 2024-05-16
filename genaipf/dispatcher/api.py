@@ -179,6 +179,7 @@ async def afunc_gpt_generator(messages, functions=gpt_functions, language=LionPr
             # messages.insert(0, system)
             _messages = [system] + messages
             # print(f'>>>>>test 004 : {_messages}')
+            logger.info("functions sent to gpt {}".format(functions))
             response = await openai_chat_completion_acreate(
                 model=use_model,
                 messages=_messages,
