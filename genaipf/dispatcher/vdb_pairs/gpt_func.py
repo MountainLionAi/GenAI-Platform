@@ -10,3 +10,4 @@ if PLUGIN_NAME:
     plugin_submodule_name = f'{PLUGIN_NAME}.dispatcher.vdb_pairs.gpt_func'
     plugin_submodule = import_module(plugin_submodule_name)
     vdb_map = plugin_submodule.vdb_map
+    gpt_func_maps = getattr(plugin_submodule, "gpt_func_maps", dict())
