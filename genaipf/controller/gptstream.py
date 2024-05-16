@@ -462,7 +462,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     elif not related_questions:
         yield json.dumps(get_format_output("chatRelatedResults", related_questions))
     yield json.dumps(get_format_output("step", "done"))
-    logger.info(f'>>>>> func & ref _tmp_text & output_type: {output_type}: {_tmp_text}')
+    logger.info(f'>>>>> userid={userid}, func & ref _tmp_text & output_type: {output_type}: {_tmp_text}')
     base64_type = 0
     if last_front_msg.get('type') == 'image':
         base64_type = 1
