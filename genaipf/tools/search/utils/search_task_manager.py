@@ -206,6 +206,9 @@ async def multi_search(questions: str, related_qa=[], language=None):
         google_serper_client = GoogleSerperClient()
         multi_search_task.append(google_serper_client.search(questions))
     elif RAG_SEARCH_CLIENT == 'GOOGLE_SEARCH':
+        multi_search_task.append(google_search(questions, 1, language, 'https://www.techflowpost.com/'))
+        multi_search_task.append(google_search(questions, 1, language, 'https://foresightnews.pro/'))
+        multi_search_task.append(google_search(questions, 1, language, 'https://www.binance.com/'))
         multi_search_task.append(google_search(questions, 4, language))
     elif RAG_SEARCH_CLIENT == 'ALL':
         google_serper_client = GoogleSerperClient()
