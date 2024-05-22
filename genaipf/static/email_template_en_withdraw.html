@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        .bold {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h2>Withdraw Verification Code</h2>
+    <p>You have initiated a request to withdraw {{ amount }} {{ coinCode }} to the following address:</p>
+    <p>Address:</p>
+    <p>{{ address }}</p>
+    <p>Note:</p>
+    <p>{{ note }}</p>
+    <p>Please check the withdrawal address carefully before proceeding.</p>
+    <p class="bold">Is not responsible for any funds sent to the wrong address.</p>
+    <br></br>
+    <p class="bold">Verification Code：</p>
+    <p class="bold">{{ emailCode }}</p>
+    <br></br>
+    <p class="bold">The verification code will expire after 15 minutes. Never share the verification code with others.</p>
+    <br></br>
+    <p class="bold">Not you? Please change your password now.</p>
+    <br></br>
+    <p><i>Please note that this is an automated message, please do not reply to this email.</i></p>
+    <br></br>
+    <p><a href="{{ company_url }}">{{ company_name }}</a></p>
+</body>
+</html>
