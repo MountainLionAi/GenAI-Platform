@@ -2,21 +2,24 @@ from importlib import import_module
 from genaipf.conf.server import PLUGIN_NAME
 from genaipf.dispatcher.functions import need_tool_agent_l
 from langchain.tools import tool
+from genaipf.agent.utils import _wrap
 
 
-@tool
-async def get_word_length(word: str) -> int:
+async def get_word_length(self, word: str) -> int:
     """Returns the length of a word."""
+    print(self)
     return len(word)
 
-@tool
-async def multiply(a: int, b: int) -> int:
+
+async def multiply(self, a: int, b: int) -> int:
     """Multiple two integers and returns the result integer"""
+    print(self)
     return a * b
 
-@tool
-async def add(a: int, b: int) -> int:
+
+async def add(self, a: int, b: int) -> int:
     """Add two integers and returns the result integer"""
+    print(self)
     return a + b
 
 async def fake_example_func(messages, newest_question, model, language, related_qa, source, owner, sources=[], is_need_search=False, sources_task=None, chain_id=''):
@@ -44,8 +47,12 @@ async def fake_example_func(messages, newest_question, model, language, related_
             MessagesPlaceholder(variable_name="agent_scratchpad"),
         ]
     )
-    
-    tools = [get_word_length, multiply, add]
+    ctx = "This context object can do something..."
+    tools = [
+        _wrap(ctx, get_word_length),
+        _wrap(ctx, multiply),
+        _wrap(ctx, add),
+    ]
     agent = create_openai_tools_agent(
         model.with_config({"tags": ["agent_llm"]}), tools, prompt
     )
