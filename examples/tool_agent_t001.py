@@ -7,7 +7,7 @@ from genaipf.dispatcher.tool_agent import fake_example_func
 
 async def main():
     messages = [
-        {"user": "please calculate the result of this math expression '2 + 3 * 5' "}
+        {"role": "user", "content": "please calculate the result of this math expression '2 + 3 * 5' "}
     ]
     async for x in fake_example_func(messages, None, None, None, None, None, None):
         print(x)

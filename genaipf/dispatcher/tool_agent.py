@@ -49,9 +49,9 @@ async def fake_example_func(messages, newest_question, model, language, related_
     )
     ctx = "This context object can do something..."
     tools = [
-        _wrap(ctx, get_word_length),
-        _wrap(ctx, multiply),
-        _wrap(ctx, add),
+        tool(_wrap(ctx, get_word_length)),
+        tool(_wrap(ctx, multiply)),
+        tool(_wrap(ctx, add)),
     ]
     agent = create_openai_tools_agent(
         model.with_config({"tags": ["agent_llm"]}), tools, prompt
