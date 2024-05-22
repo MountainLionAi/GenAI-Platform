@@ -34,7 +34,7 @@ from genaipf.utils.common_utils import contains_chinese
 from genaipf.utils.sensitive_util import isNormal
 import os
 import base64
-from genaipf.conf.server import os
+from genaipf.conf.server import os, AI_ANALYSIS_USE_MODEL
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 proxy = { 'https' : '127.0.0.1:8001'}
@@ -284,7 +284,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     _related_news = []
     if source == 'v004':
         from genaipf.dispatcher.callgpt import DispatcherCallGpt
-        _data = {"msgs":msgs, "model":model, "preset_name":"attitude", "source":source, "owner":owner}
+        _data = {"msgs": msgs, "model": model, "preset_name": "attitude", "source": source, "owner": owner, "llm_model": AI_ANALYSIS_USE_MODEL}
         _tmp_attitude, _related_news = await DispatcherCallGpt.get_subtype_task_result(source, language_, _data)
         yield json.dumps(get_format_output("attitude", _tmp_attitude))
         yield json.dumps(get_format_output("chatRelatedNews", _related_news))
