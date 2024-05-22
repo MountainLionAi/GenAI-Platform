@@ -306,7 +306,7 @@ async def send_verify_code(email, captcha_code, session_id):
 
 
 # 基于hcaptcha的图形验证
-async def send_verify_code_new(email, captcha_resp, language, scene):
+async def send_verify_code_new(email, captcha_resp, language, scene, need_captcha = True, option_params = {}, related_key = ''):
     try:
         redis_client = RedisConnectionPool().get_connection()
         user = await get_user_info_from_db(email)
@@ -315,6 +315,8 @@ async def send_verify_code_new(email, captcha_resp, language, scene):
         if scene == email_utils.EMAIL_SCENES['FORGET_PASSWORD'] and (not user or len(user) == 0):
             raise CustomerError(status_code=ERROR_CODE['USER_NOT_EXIST'])
         is_continue = await check_user_continue_send_email(email)
+        if not need_captcha:
+            is_continue = True
         captcha_verify_status = False
 
         # 判断要发的验证码类型是不是在列表中
@@ -335,9 +337,11 @@ async def send_verify_code_new(email, captcha_resp, language, scene):
         # 生成发送验证码邮件相关的模版
         email_code = generate_email_code()
         subject = EMAIL_INFO[scene]['subject'][language]
-        email_content = await email_utils.format_captcha_email(email, email_code, language, scene)
-        email_key = REDIS_KEYS['USER_KEYS']['EMAIL_CODE'].format(email, scene)
-
+        email_content = await email_utils.format_captcha_email(email, email_code, language, scene, option_params)
+        if need_captcha == False:
+            email_key = REDIS_KEYS['USER_KEYS']['EMAIL_CODE_OTHER'].format(email, scene, related_key)
+        else:
+            email_key = REDIS_KEYS['USER_KEYS']['EMAIL_CODE'].format(email, scene)
         # 发送邮箱验证码
         await email_utils.send_email(subject, email_content, email)
         redis_client.setex(email_key, 60 * 15, email_code)
@@ -363,9 +367,12 @@ def generate_email_code():
 
 
 # 检测邮箱验证码是否正确
-def check_email_code(email, verify_code, scene):
+def check_email_code(email, verify_code, scene, related_key = ''):
     redis_client = RedisConnectionPool().get_connection()
-    email_key = REDIS_KEYS['USER_KEYS']['EMAIL_CODE'].format(email, scene)
+    if related_key:
+        email_key = REDIS_KEYS['USER_KEYS']['EMAIL_CODE_OTHER'].format(email, scene, related_key)
+    else:
+        email_key = REDIS_KEYS['USER_KEYS']['EMAIL_CODE'].format(email, scene)
     stored_verify_code = redis_client.get(email_key)
     if not stored_verify_code:
         raise CustomerError(status_code=ERROR_CODE['VERIFY_CODE_ERROR'])

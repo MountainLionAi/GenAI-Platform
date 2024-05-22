@@ -14,5 +14,12 @@ EMAIL_INFO = {
             'cn': f'【{SERVICE_NAME}】忘记密码',
             'en': f'【{SERVICE_NAME}】Forgot Password'
         }
+    },
+    'WITHDRAW': {
+        'subject': {
+            'zh': f'【{SERVICE_NAME}】提币验证码',
+            'cn': f'【{SERVICE_NAME}】提币验证码',
+            'en': f'【{SERVICE_NAME}】Withdraw Verification Code'
+        }
     }
 }
