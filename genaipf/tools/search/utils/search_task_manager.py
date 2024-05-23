@@ -55,12 +55,14 @@ async def get_related_question_task(newest_question_arr, fixed_related_question,
 async def get_sources_tasks(front_messages, related_qa, language):
     enrich_question = 'False'
     enrich_question_start_time = time.perf_counter()
-    msgs = LionPromptCommon.get_prompted_messages("enrich_question", front_messages, language)
-    try:
-        enrich_question = await simple_achat(msgs)
-        logger.info(f'丰富后的问题是: {enrich_question}')
-    except Exception as e:
-        logger.error(f'获取丰富后的问题失败: {str(e)}')
+    # msgs = LionPromptCommon.get_prompted_messages("enrich_question", front_messages, language)
+    # try:
+    #     enrich_question = await simple_achat(msgs)
+    #     logger.info(f'丰富后的问题是: {enrich_question}')
+    # except Exception as e:
+    #     logger.error(f'获取丰富后的问题失败: {str(e)}')
+    enrich_question = front_messages['messages'][-1]['content']
+    logger.info(f'丰富后的问题是: {enrich_question}')
     enrich_question_end_time = time.perf_counter()
     elapsed_enrich_question_time = (enrich_question_end_time - enrich_question_start_time) * 1000
     logger.info(f'=====================>enrich_question耗时：{elapsed_enrich_question_time:.3f}毫秒')
@@ -206,11 +208,19 @@ async def multi_search(questions: str, related_qa=[], language=None):
         google_serper_client = GoogleSerperClient()
         multi_search_task.append(google_serper_client.search(questions))
     elif RAG_SEARCH_CLIENT == 'GOOGLE_SEARCH':
+        # multi_search_task.append(google_search(questions, 1, language, 'https://www.techflowpost.com/'))
+        # multi_search_task.append(google_search(questions, 1, language, 'https://foresightnews.pro/'))
+        # multi_search_task.append(google_search(questions, 1, language, 'https://www.coindesk.com/'))
+        # multi_search_task.append(google_search(questions, 1, language, 'https://www.reddit.com/'))
+        # multi_search_task.append(google_search(questions, 1, language, 'https://www.chaincatcher.com/'))
         multi_search_task.append(google_search(questions, 4, language))
     elif RAG_SEARCH_CLIENT == 'ALL':
         google_serper_client = GoogleSerperClient()
         multi_search_task.append(google_serper_client.search(questions))
-        multi_search_task.append(google_search(questions))
+        multi_search_task.append(google_search(questions, 2, language, 'https://www.coindesk.com/'))
+        multi_search_task.append(google_search(questions, 2, language, 'https://www.reddit.com/'))
+        multi_search_task.append(google_search(questions, 2, language, 'https://www.chaincatcher.com/'))
+        # multi_search_task.append(google_search(questions))
     #multi_search_task.append(metaphor_search2(questions, language))
     results = await asyncio.gather(*multi_search_task)
 
