@@ -33,7 +33,8 @@ ERROR_CODE = {
     "WITHDRAW_BALANCE_NOT_ENOUGH": 8009,
     "WITHDRAW_AMT_MIN": 8010,
     "PRE_WITHDRAW_API": 8011,
-    "CHECK_WITHDRAW_INFO_ERROR": 8012
+    "CHECK_WITHDRAW_INFO_ERROR": 8012,
+    "WITHDRAW_API_ERROR": 8013,
 }
 
 # 错误信息
@@ -71,5 +72,6 @@ ERROR_MESSAGE = {
     8009: 'Withdraw Balance Not Enough',
     8010: 'Withdraw Amount Too Small',
     8011: 'Request Pre Withdraw Api Error, Maybe Email Problem',
-    8012: 'Check Withdraw Info Error'
+    8012: 'Check Withdraw Info Error',
+    8013: 'Withdraw API Error'
 }
