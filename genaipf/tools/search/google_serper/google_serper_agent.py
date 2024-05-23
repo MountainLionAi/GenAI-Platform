@@ -16,6 +16,7 @@ async def google_serper(question, type="search", k=5):
         return parse_snippets(results, type, k)
     except Exception as e:
         logger.error("Google serper error")
+        return [], ''
 
 def parse_snippets(results, type, k):
     result_key_for_type = {
