@@ -337,7 +337,10 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
                 yield json.dumps(get_format_output("chatSerpResults", sources))
             else:
                 yield json.dumps(get_format_output("chatSerpResults", []))
-                related_qa[0] = '\n'.join([str(i) for i in _related_news])
+                if len(related_qa) == 0:
+                    related_qa.append('\n'.join([str(i) for i in _related_news]))
+                else:
+                    related_qa[0] = '\n'.join([str(i) for i in _related_news])
                 model = "claude"
         if last_front_msg.get('type') == 'image' and last_front_msg.get('base64content') is not None:
             msgs = msgs[:-1] + buildVisionMessage(last_front_msg)
