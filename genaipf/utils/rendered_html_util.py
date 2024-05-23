@@ -12,7 +12,7 @@ from selenium.webdriver.common.by import By
 
 
 async def get_rendered_html(url):
-    get_rendered_html_start_time = time.perf_counter()
+    get_rendered_html_start_time = time.perf_counter() # a
     try:
         if CHROMIUM_EXECUTABLEPATH:
             browser = await launch(executablePath=CHROMIUM_EXECUTABLEPATH, timeout=2000, headless=True)
