@@ -206,11 +206,19 @@ async def multi_search(questions: str, related_qa=[], language=None):
         google_serper_client = GoogleSerperClient()
         multi_search_task.append(google_serper_client.search(questions))
     elif RAG_SEARCH_CLIENT == 'GOOGLE_SEARCH':
+        # multi_search_task.append(google_search(questions, 1, language, 'https://www.techflowpost.com/'))
+        # multi_search_task.append(google_search(questions, 1, language, 'https://foresightnews.pro/'))
+        # multi_search_task.append(google_search(questions, 1, language, 'https://www.coindesk.com/'))
+        # multi_search_task.append(google_search(questions, 1, language, 'https://www.reddit.com/'))
+        # multi_search_task.append(google_search(questions, 1, language, 'https://www.chaincatcher.com/'))
         multi_search_task.append(google_search(questions, 4, language))
     elif RAG_SEARCH_CLIENT == 'ALL':
         google_serper_client = GoogleSerperClient()
         multi_search_task.append(google_serper_client.search(questions))
-        multi_search_task.append(google_search(questions))
+        multi_search_task.append(google_search(questions, 1, language, 'https://www.coindesk.com/'))
+        multi_search_task.append(google_search(questions, 1, language, 'https://www.reddit.com/'))
+        multi_search_task.append(google_search(questions, 1, language, 'https://www.chaincatcher.com/'))
+        # multi_search_task.append(google_search(questions))
     #multi_search_task.append(metaphor_search2(questions, language))
     results = await asyncio.gather(*multi_search_task)
 
