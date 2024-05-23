@@ -55,12 +55,14 @@ async def get_related_question_task(newest_question_arr, fixed_related_question,
 async def get_sources_tasks(front_messages, related_qa, language):
     enrich_question = 'False'
     enrich_question_start_time = time.perf_counter()
-    msgs = LionPromptCommon.get_prompted_messages("enrich_question", front_messages, language)
-    try:
-        enrich_question = await simple_achat(msgs)
-        logger.info(f'丰富后的问题是: {enrich_question}')
-    except Exception as e:
-        logger.error(f'获取丰富后的问题失败: {str(e)}')
+    # msgs = LionPromptCommon.get_prompted_messages("enrich_question", front_messages, language)
+    # try:
+    #     enrich_question = await simple_achat(msgs)
+    #     logger.info(f'丰富后的问题是: {enrich_question}')
+    # except Exception as e:
+    #     logger.error(f'获取丰富后的问题失败: {str(e)}')
+    enrich_question = front_messages['messages'][-1]['content']
+    logger.info(f'丰富后的问题是: {enrich_question}')
     enrich_question_end_time = time.perf_counter()
     elapsed_enrich_question_time = (enrich_question_end_time - enrich_question_start_time) * 1000
     logger.info(f'=====================>enrich_question耗时：{elapsed_enrich_question_time:.3f}毫秒')
