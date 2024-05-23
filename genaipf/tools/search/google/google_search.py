@@ -65,9 +65,9 @@ async def google_search(search_content: str, num: int = 5, language = None, site
         search_details = AsyncSafeList()
         client = AsyncHTTPClient()
         if site_search:
-            params = {"key": key, "cx": cx, "q": search_content, "num": num, "siteSearch": site_search, "siteSearchFilter": "i"}    
+            params = {"key": key, "cx": cx, "q": search_content, "num": num, "sort": "date", "siteSearch": site_search, "siteSearchFilter": "i"}    
         else:
-            params = {"key": key, "cx": cx, "q": search_content, "num": num}
+            params = {"key": key, "cx": cx, "q": search_content, "num": num, "sort": "date"}
         logger.info(f'google search params:{params}')
 
         if language:

@@ -44,7 +44,6 @@ async def get_rendered_html_by_playwright(url):
             page = await browser.new_page()
             await page.goto(url)
             html = await page.content()
-            print(html)
             return html
     except Exception as e:
         logger.error(f"get_rendered_html_by_playwright error, url={url}, {e}")
@@ -65,7 +64,9 @@ async def get_rendered_html_by_selenium(url):
     try:
         service = Service(executable_path=driver_path)
         driver = webdriver.Chrome(service=service, options=options)
+        driver.set_page_load_timeout(10)
         driver.get(url)
+        driver.implicitly_wait(10)
         html = driver.page_source
         return html
     except Exception as e:
