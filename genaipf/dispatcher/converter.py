@@ -4,7 +4,7 @@ from genaipf.controller.preset_entry import preset_entry_mapping, preset_entry_t
 from genaipf.dispatcher.utils import get_qa_vdb_topk, merge_ref_and_input_text
 from genaipf.dispatcher.api import generate_unique_id, get_format_output, gpt_functions, afunc_gpt_generator, aref_answer_gpt_generator
 from genaipf.dispatcher.postprocess import posttext_mapping, PostTextParam
-from genaipf.tools.search.utils.search_agent_utils import not_need_search, not_need_sources
+from genaipf.tools.search.utils.search_agent_utils import not_need_search, not_need_sources, need_gpt
 from genaipf.services.cmc_token import get_token_cmc_url
 import time
 
@@ -88,7 +88,7 @@ async def convert_func_out_to_stream(chunk, messages, newest_question, model, la
                     "content": _data
                 }
                 _data = {}
-    if (func_name not in not_need_search and sub_func_name not in ['coin_swap1','transfer_only', 'why_can_not_transfer_out', 'buy_but_not_receive']) or (func_name == 'generate_report' and presetContent == {}) or source in ['v201', 'v202']:
+    if (func_name not in not_need_search and sub_func_name not in ['coin_swap1','transfer_only', 'why_can_not_transfer_out', 'buy_but_not_receive']) or (func_name == 'generate_report' and presetContent == {}) or source in ['v201', 'v202'] or func_name in need_gpt:
         _messages = [x for x in messages if x["role"] != "system"]
         msgs = _messages[::]
         resp2 = await aref_answer_gpt_generator(msgs, model, language, _type, str(picked_content), related_qa, source, owner, output_type=output_type, llm_model=llm_model)
