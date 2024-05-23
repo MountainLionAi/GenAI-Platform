@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>提币验证码</title>
+    <style>
+        .bold-text {
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>提币验证码</h1>
+    <p>您已发起请求将{{ amount }} {{ coinCode }} 提取到以下地址:</p>
+    <p>地址:</p>
+    <p>{{ address }}</p>
+    <p>备注:</p>
+    <p>{{ note }}</p>
+    <p>在继续之前，请仔细核对提币地址。</p>
+    <p class="bold">对发送至错误地址的任何资金，{{ company_name }} 概不负责。</p>
+    <br></br>
+    <p class="bold">验证码：</p>
+    <p class="bold">{{ emailCode }}</p>
+    <br></br>
+    <p class="bold">验证码将在30分钟后失效。切勿向他人透漏验证码。</p>
+    <br></br>
+    <p class="bold">若非本人操作？ 请立即修改密码.</p>
+    <br></br>
+    <p><i>请注意这是一条自动发送的消息，请勿直接回复本电子邮件。</i></p>
+    <br></br>
+    <p><a href="{{ company_url }}">{{ company_name }}</a></p>
+</body>
+
+</html>
