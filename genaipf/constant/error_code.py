@@ -28,7 +28,13 @@ ERROR_CODE = {
     "CREATE_RECORD_ERROR": 8004,
     "SWAP_BALANCE_NOT_ENOUGH": 8005,
     "SWAP_API_ERROR": 8006,
-    "CREATE_ACTIVITY_ERROR": 8007
+    "CREATE_ACTIVITY_ERROR": 8007,
+    "TOKEN_CANT_WITHDRAW": 8008,
+    "WITHDRAW_BALANCE_NOT_ENOUGH": 8009,
+    "WITHDRAW_AMT_MIN": 8010,
+    "PRE_WITHDRAW_API": 8011,
+    "CHECK_WITHDRAW_INFO_ERROR": 8012,
+    "WITHDRAW_API_ERROR": 8013,
 }
 
 # 错误信息
@@ -62,4 +68,10 @@ ERROR_MESSAGE = {
     8005: 'Balance Not Enough',
     8006: 'Swap API Error',
     8007: 'Create Activity Error',
+    8008: 'The Token Cannot Withdraw Right Now',
+    8009: 'Withdraw Balance Not Enough',
+    8010: 'Withdraw Amount Too Small',
+    8011: 'Request Pre Withdraw Api Error, Maybe Email Problem',
+    8012: 'Check Withdraw Info Error',
+    8013: 'Withdraw API Error'
 }

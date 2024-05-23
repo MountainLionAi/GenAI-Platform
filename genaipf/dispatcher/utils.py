@@ -13,6 +13,8 @@ from openai._types import NOT_GIVEN
 from genaipf.conf.server import os
 from llama_index.llms import ChatMessage, OpenAI as OpenAI2
 from llama_index.llms.openai import DEFAULT_OPENAI_MODEL
+from genaipf.utils.log_utils import logger
+import json
 
 PERPLEXITY_API_KEY=os.getenv("PERPLEXITY_API_KEY")
 PERPLEXITY_URL=os.getenv("PERPLEXITY_URL", "https://api.perplexity.ai")
@@ -62,6 +64,7 @@ async def openai_chat_completion_acreate(
 ):
     try:
         if model == PERPLEXITY_MODEL:
+            logger.info(f"调用perplexity模型传入的消息列表:{messages}")
             async_openai_client = AsyncOpenAI(api_key=PERPLEXITY_API_KEY, base_url=PERPLEXITY_URL)
             if functions:
                 response = await asyncio.wait_for(
@@ -78,6 +81,7 @@ async def openai_chat_completion_acreate(
                     timeout=60.0  # 设置超时时间为180秒
                 )
             else:
+                logger.info(f"调用OPENAI模型传入的消息列表:{messages}")
                 response = await asyncio.wait_for(
                     async_openai_client.chat.completions.create(
                         model=model,

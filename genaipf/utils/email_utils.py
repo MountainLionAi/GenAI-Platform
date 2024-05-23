@@ -12,12 +12,14 @@ import asyncio
 
 LIMIT_TIME_10MIN = {
     'REGISTER': 8,
-    'FORGET_PASSWORD': 8
+    'FORGET_PASSWORD': 8,
+    'WITHDRAW': 8,
 }
 
 EMAIL_SCENES = {
     'REGISTER': 'REGISTER',
-    'FORGET_PASSWORD': 'FORGET_PASSWORD'
+    'FORGET_PASSWORD': 'FORGET_PASSWORD',
+    'WITHDRAW': 'WITHDRAW',
 }
 
 
@@ -44,28 +46,48 @@ env = Environment(
     autoescape=select_autoescape(['html', 'xml'])
 )
 
-async def format_captcha_email(email, captcha_code, language, scene):
+async def format_captcha_email(email, captcha_code, language, scene, option_params = {}):
     if language == 'zh' or language == 'cn':
-        template_file = 'email_template_zh.html' if scene == EMAIL_SCENES['REGISTER'] else 'email_template_zh_forget.html'
+        if scene == EMAIL_SCENES['REGISTER']:
+            template_file = 'email_template_zh.html'
+        elif scene == EMAIL_SCENES['FORGET_PASSWORD']:
+            template_file = 'email_template_zh_forget.html'
+        else:
+            template_file = 'email_template_zh_withdraw.html'
     else:
-        template_file = 'email_template_en.html' if scene == EMAIL_SCENES['REGISTER'] else 'email_template_en_forget.html'
+        if scene == EMAIL_SCENES['REGISTER']:
+            template_file = 'email_template_en.html'
+        elif scene == EMAIL_SCENES['FORGET_PASSWORD']:
+            template_file = 'email_template_en_forget.html'
+        else:
+            template_file = 'email_template_en_withdraw.html'
     
     company_name = os.getenv("COMPANY_NAME")
     company_url = os.getenv("COMPANY_URL")
 
     template = env.get_template(template_file)
-
-    loop = asyncio.get_event_loop()
-    email_content = await loop.run_in_executor(
-        None,
-        template.render,  
-        {
-            'email': email,
-            'emailCode': captcha_code,
-            'company_name': company_name,
-            'company_url': company_url
-        }
-    )
+    if scene not in [EMAIL_SCENES['REGISTER'], EMAIL_SCENES['FORGET_PASSWORD']]:
+        loop = asyncio.get_event_loop()
+        option_params['company_name'] = company_name
+        option_params['company_url'] = company_url
+        option_params['emailCode'] = captcha_code
+        email_content = await loop.run_in_executor(
+            None,
+            template.render,
+            option_params
+        )
+    else:
+        loop = asyncio.get_event_loop()
+        email_content = await loop.run_in_executor(
+            None,
+            template.render,
+            {
+                'email': email,
+                'emailCode': captcha_code,
+                'company_name': company_name,
+                'company_url': company_url
+            }
+        )
 
     return email_content
 
