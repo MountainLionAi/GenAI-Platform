@@ -74,4 +74,6 @@ class GoogleSerperClient:
                     {"title": result["title"], "url": result["link"]}
                 )
                 content += result["snippet"] + "\n引用地址" + result["link"] + "\n"
+        logger.info(f'google serper search sources {sources}')
+        logger.info(f'google serper search content {content}')
         return sources, content

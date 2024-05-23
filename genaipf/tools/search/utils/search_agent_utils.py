@@ -135,13 +135,20 @@ async def premise_search2(front_messages, related_qa=None, language=None):
     data = {'messages': front_messages}
     # 相关问题取最新的
     newest_question_arr = {"messages": [data['messages'][-1]]}
-    t1 = asyncio.create_task(get_is_need_search_task(data))
+    # t1 = asyncio.create_task(get_is_need_search_task(data))
     t2 = asyncio.create_task(get_sources_tasks(data, related_qa, language))
     t3 = asyncio.create_task(get_related_question_task(newest_question_arr, fixed_related_question, language))
-    await t1
-    need_search = t1.result()
-    return need_search, t2, t3
+    # await t1
+    # need_search = t1.result()
+    # return need_search, t2, t3
+    return t2, t3
 
+def is_need_rag_simple(message):
+    l = ['hi', 'hello', '你好', '您好']
+    if message and len(message) > 1 and not message in l:
+        return True
+    else:
+        return False
 
 async def new_question_question(is_need_search: str, language: str, improve_question_task, related_qa):
     sources = []
