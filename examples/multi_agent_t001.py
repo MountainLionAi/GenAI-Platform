@@ -3,8 +3,10 @@ import asyncio
 import autogen
 from typing_extensions import Annotated
 from datetime import datetime
-
-openai_api_key = "xxx"
+from genaipf.conf.server import os
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+openai_api_key = OPENAI_API_KEY
+# openai_api_key = "xxx"
 
 llm_config = {
     "config_list": [{"model": "gpt-4-turbo", "api_key": openai_api_key}],
