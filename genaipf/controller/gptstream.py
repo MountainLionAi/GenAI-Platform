@@ -28,7 +28,7 @@ from genaipf.utils.redis_utils import RedisConnectionPool
 from genaipf.conf.server import IS_INNER_DEBUG, IS_UNLIMIT_USAGE
 from genaipf.utils.speech_utils import transcribe, textToSpeech
 from genaipf.tools.search.utils.search_agent_utils import other_search
-from genaipf.tools.search.utils.search_agent_utils import premise_search, premise_search1, premise_search2, new_question_question, fixed_related_question
+from genaipf.tools.search.utils.search_agent_utils import premise_search, premise_search1, premise_search2, is_need_rag_simple, new_question_question, fixed_related_question
 from genaipf.tools.search.utils.search_task_manager import get_related_question_task
 from genaipf.utils.common_utils import contains_chinese
 from genaipf.utils.sensitive_util import isNormal
@@ -266,8 +266,9 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     yield json.dumps(get_format_output("responseType", responseType))
     logger.info(f"userid={userid},本次对话是否需要用到rag={used_rag}")
     if used_rag:
+        is_need_search = is_need_rag_simple(newest_question)
         premise_search2_start_time = time.perf_counter()
-        is_need_search, sources_task, related_questions_task = await premise_search2(front_messages, related_qa, language_)
+        sources_task, related_questions_task = await premise_search2(front_messages, related_qa, language_)
         premise_search2_end_time = time.perf_counter()
         elapsed_premise_search2 = (premise_search2_end_time - premise_search2_start_time) * 1000
         logger.info(f'=====================>premise_search2耗时：{elapsed_premise_search2:.3f}毫秒')
@@ -296,7 +297,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     _related_news = []
     if source == 'v004':
         from genaipf.dispatcher.callgpt import DispatcherCallGpt
-        _data = {"msgs":msgs, "model":model, "preset_name":"attitude", "source":source, "owner":owner, "llm_model": AI_ANALYSIS_USE_MODEL}
+        _data = {"msgs": msgs, "model": model, "preset_name": "attitude", "source": source, "owner": owner, "llm_model": AI_ANALYSIS_USE_MODEL}
         _tmp_attitude, _related_news = await DispatcherCallGpt.get_subtype_task_result(source, language_, _data)
         yield json.dumps(get_format_output("attitude", _tmp_attitude))
         yield json.dumps(get_format_output("chatRelatedNews", _related_news))
@@ -336,7 +337,10 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
                 yield json.dumps(get_format_output("chatSerpResults", sources))
             else:
                 yield json.dumps(get_format_output("chatSerpResults", []))
-                related_qa[0] = '\n'.join([str(i) for i in _related_news])
+                if len(related_qa) == 0:
+                    related_qa.append('\n'.join([str(i) for i in _related_news]))
+                else:
+                    related_qa[0] = '\n'.join([str(i) for i in _related_news])
                 model = "claude"
         if last_front_msg.get('type') == 'image' and last_front_msg.get('base64content') is not None:
             msgs = msgs[:-1] + buildVisionMessage(last_front_msg)
