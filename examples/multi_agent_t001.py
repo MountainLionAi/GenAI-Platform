@@ -9,7 +9,7 @@ openai_api_key = OPENAI_API_KEY
 # openai_api_key = "xxx"
 
 llm_config = {
-    "config_list": [{"model": "gpt-4-turbo", "api_key": openai_api_key}],
+    "config_list": [{"model": "gpt-4o", "api_key": openai_api_key}],
     "cache_seed": "abc123",
     "temperature": 0.1,
     "timeout": 5 * 60,
