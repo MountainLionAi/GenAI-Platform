@@ -8,6 +8,7 @@ from genaipf.utils.html_cleanout_util import cleanout
 from genaipf.utils.rendered_html_util import get_rendered_html, get_rendered_html_by_playwright, get_rendered_html_by_selenium
 import asyncio
 import time
+from genaipf.tools.crawl.spider.spider_client import SpiderClient
 # from genaipf.tools.search.utils.search_task_manager import summarize_urls
 
 
@@ -96,13 +97,19 @@ async def google_search(search_content: str, num: int = 5, language = None, site
 
 async def get_content_by_url(url, title, _search_details: AsyncSafeList = None):
     try:
-        html_str = await get_rendered_html_by_selenium(url)
+        html_str = ''
+        # html_str = await get_rendered_html_by_selenium(url)
+        spider = SpiderClient()
+        res = await spider.scrape_url(url)
+        if res[0]['status'] == 200:
+            html_str = res[0]['content']
         if html_str:
             cleanout_start_time = time.perf_counter()
             content = cleanout(html_str)
             cleanout_end_time = time.perf_counter()
             elapsed_cleanout_time = (cleanout_end_time - cleanout_start_time) * 1000
             logger.info(f'=====================>cleanout耗时：{elapsed_cleanout_time:.3f}毫秒')
+            logger.info(f'=====================>content:{content[:200] if len(content) > 200 else content}')
             if content:
                 detail = {"url": url, "title": title}
                 detail['content'] = content
