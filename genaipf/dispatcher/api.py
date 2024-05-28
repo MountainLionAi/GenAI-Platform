@@ -157,7 +157,7 @@ async def afunc_gpt_generator(messages, functions=gpt_functions, language=LionPr
         use_model = OPENAI_PLUS_MODEL
     if isvision:
         # 图片处理专用模型
-        use_model = 'gpt-4-vision-preview'
+        use_model = 'gpt-4o'
     for i in range(5):
         mlength = len(messages)
         try:
@@ -214,7 +214,7 @@ async def aref_answer_gpt_generator(messages, model='', language=LionPrompt.defa
         use_model = CLAUDE_MODEL
     if isvision:
         # 图片处理专用模型
-        use_model = 'gpt-4-vision-preview'
+        use_model = 'gpt-4o'
     if source == 'v002':
         content = prompts_v002.LionPrompt.get_aref_answer_prompt(language, preset_name, picked_content, related_qa, use_model)
     elif source == 'v003':

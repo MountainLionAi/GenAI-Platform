@@ -31,7 +31,7 @@ async def fake_example_func(messages, newest_question, model, language, related_
     from genaipf.conf.server import os
     from genaipf.dispatcher.api import get_format_output
     OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-    model = ChatOpenAI(model="gpt-4-turbo", temperature=0, streaming=True, openai_api_key=OPENAI_API_KEY)
+    model = ChatOpenAI(model="gpt-4o", temperature=0, streaming=True, openai_api_key=OPENAI_API_KEY)
     
     prompt = ChatPromptTemplate.from_messages(
         [
