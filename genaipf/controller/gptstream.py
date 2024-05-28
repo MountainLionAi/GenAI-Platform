@@ -34,6 +34,7 @@ from genaipf.utils.common_utils import contains_chinese
 from genaipf.utils.sensitive_util import isNormal
 import os
 import base64
+from copy import deepcopy
 from genaipf.conf.server import os, AI_ANALYSIS_USE_MODEL
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
@@ -186,13 +187,17 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     messages = []
     picked_content = ""
     isPreSwap = False
+    has_image = False
     for x in front_messages:
+        if x.get("type") == "image":
+            has_image = True
         if x.get("code"):
             del x["code"]
         if x["role"] == "gptfunc":
             messages.append({"role": "assistant", "content": None, "function_call": x["function_call"]})
         else:
-            messages.append({"role": x["role"], "content": x["content"]})
+            # messages.append({"role": x["role"], "content": x["content"]})
+            messages.append(deepcopy(x))
     user_history_l = [x["content"] for x in messages if x["role"] == "user"]
     newest_question = user_history_l[-1]
     
@@ -297,7 +302,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     _related_news = []
     if source == 'v004':
         from genaipf.dispatcher.callgpt import DispatcherCallGpt
-        _data = {"msgs":msgs, "model":model, "preset_name":"attitude", "source":source, "owner":owner, "llm_model": AI_ANALYSIS_USE_MODEL}
+        _data = {"msgs": msgs, "model": model, "preset_name": "attitude", "source": source, "owner": owner, "llm_model": AI_ANALYSIS_USE_MODEL}
         _tmp_attitude, _related_news = await DispatcherCallGpt.get_subtype_task_result(source, language_, _data)
         yield json.dumps(get_format_output("attitude", _tmp_attitude))
         yield json.dumps(get_format_output("chatRelatedNews", _related_news))
@@ -342,8 +347,9 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
                 else:
                     related_qa[0] = '\n'.join([str(i) for i in _related_news])
                 model = "claude"
-        if last_front_msg.get('type') == 'image' and last_front_msg.get('base64content') is not None:
-            msgs = msgs[:-1] + buildVisionMessage(last_front_msg)
+        # if last_front_msg.get('type') == 'image' and last_front_msg.get('base64content') is not None:
+        #     msgs = msgs[:-1] + buildVisionMessage(last_front_msg)
+        if has_image:
             isvision = True
             used_gpt_functions = None
 

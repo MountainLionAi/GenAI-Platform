@@ -39,7 +39,8 @@ async def get_is_need_search_task(front_messages):
 # 获取相关问题相关task
 async def get_related_question_task(newest_question_arr, fixed_related_question, language):
     msgs = LionPromptCommon.get_prompted_messages("related_question", newest_question_arr, language)
-    questions_result = await simple_achat(msgs, 'gpt-4')
+    # questions_result = await simple_achat(msgs, 'gpt-4')
+    questions_result = await simple_achat(msgs)
     related_questions = []
     if questions_result != 'False':
         try:
@@ -136,7 +137,7 @@ async def get_article_summary(front_messages):
     '''
     try:
         msgs = LionPromptCommon.get_prompted_messages("summary_page_by_msg", front_messages)
-        # summary_str = await simple_achat(msgs, model="gpt-4-1106-preview")
+        # summary_str = await simple_achat(msgs, model="gpt-4o")
         summary_str = await simple_achat(msgs)
         return summary_str
     except Exception as e:
@@ -217,9 +218,13 @@ async def multi_search(questions: str, related_qa=[], language=None):
     elif RAG_SEARCH_CLIENT == 'ALL':
         google_serper_client = GoogleSerperClient()
         multi_search_task.append(google_serper_client.search(questions))
-        multi_search_task.append(google_search(questions, 2, language, 'https://www.coindesk.com/'))
-        multi_search_task.append(google_search(questions, 2, language, 'https://www.reddit.com/'))
-        multi_search_task.append(google_search(questions, 2, language, 'https://www.chaincatcher.com/'))
+        multi_search_task.append(google_search(questions, 1, language, 'https://www.coindesk.com/'))
+        multi_search_task.append(google_search(questions, 1, language, 'https://www.theblock.co/'))
+        multi_search_task.append(google_search(questions, 1, language, 'https://decrypt.co/'))
+        multi_search_task.append(google_search(questions, 1, language, 'https://www.reddit.com/'))
+        multi_search_task.append(google_search(questions, 1, language, 'https://www.chaincatcher.com/'))
+        multi_search_task.append(google_search(questions, 1, language, 'https://www.odaily.news/'))
+        multi_search_task.append(google_search(questions, 1, language, 'https://www.panewslab.com/'))
         # multi_search_task.append(google_search(questions))
     #multi_search_task.append(metaphor_search2(questions, language))
     results = await asyncio.gather(*multi_search_task)

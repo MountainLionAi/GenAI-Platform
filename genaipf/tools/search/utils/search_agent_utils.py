@@ -186,7 +186,7 @@ async def related_search(question: str, language=None):
             {"role": "user", "content": question}
         ]
     completion = client.chat.completions.create(
-        model="gpt-4-0125-preview",
+        model="gpt-4o",
         messages=messages
     )
     try:
