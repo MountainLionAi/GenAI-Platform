@@ -1,5 +1,6 @@
 import json
 import asyncio
+from typing import List
 from genaipf.conf.server import os
 from genaipf.dispatcher.functions import gpt_functions
 from genaipf.dispatcher.utils import openai, OPENAI_PLUS_MODEL, CLAUDE_MODEL, openai_chat_completion_acreate, PERPLEXITY_MODEL
@@ -144,7 +145,7 @@ async def awrap_gpt_generator(gpt_response, output_type=""):
         yield get_format_output("inner_____func_param", _param)
         
 
-async def afunc_gpt_generator(messages, functions=gpt_functions, language=LionPrompt.default_lang, model='', picked_content="", related_qa=[], source='v001', owner='', isvision=False, output_type=""):
+async def afunc_gpt_generator(messages_in, functions=gpt_functions, language=LionPrompt.default_lang, model='', picked_content="", related_qa=[], source='v001', owner='', isvision=False, output_type=""):
     '''
     "messages": [
         {"role": "user", "content": "Hello"},
@@ -158,6 +159,7 @@ async def afunc_gpt_generator(messages, functions=gpt_functions, language=LionPr
     if isvision:
         # 图片处理专用模型
         use_model = 'gpt-4o'
+    messages = make_calling_messages_based_on_model(messages_in, use_model)
     for i in range(5):
         mlength = len(messages)
         try:
@@ -204,7 +206,7 @@ async def afunc_gpt_generator(messages, functions=gpt_functions, language=LionPr
     return aget_error_generator("error after retry many times")
 
 
-async def aref_answer_gpt_generator(messages, model='', language=LionPrompt.default_lang, preset_name=None, picked_content="", related_qa=[], source='v001', owner='', isvision=False, output_type="", llm_model=""):
+async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.default_lang, preset_name=None, picked_content="", related_qa=[], source='v001', owner='', isvision=False, output_type="", llm_model=""):
     use_model = 'gpt-3.5-turbo-0125'
     if llm_model == 'openai':
         use_model = OPENAI_PLUS_MODEL
@@ -232,6 +234,7 @@ async def aref_answer_gpt_generator(messages, model='', language=LionPrompt.defa
         "role": "system",
         "content": content
     }
+    messages = make_calling_messages_based_on_model(messages_in, use_model)
     if use_model.startswith("gpt") or use_model == PERPLEXITY_MODEL:
         for i in range(5):
             mlength = len(messages)
@@ -329,3 +332,42 @@ async def aref_oneshot_gpt_generator(messages, model='', language=LionPrompt.def
         print(e)
         logger.error(f'aref_answer_gpt_generator question_JSON call gpt4 error {e}', e)
         raise e
+
+def make_calling_messages_based_on_model(messages, use_model: str) -> List:
+    """_summary_
+
+    Args:
+        messages (list): _description_
+            [
+                {"role": "system", "content": "You are a chatbot."},
+                {"role": "user", "content": "what is it", "base64content": "<base64>", "type": "image", "version": "v001"},
+                {"role": "assistant", "content": "it is an apple"},
+                {"role": "user", "content": "what color?", "type": "text", "version": "v001"},
+            ]
+        use_model (str): _description_
+            "gpt-4o"
+    Outputs:
+        [
+            {"role": "system", "content": "You are a chatbot."},
+            {"role": "user", "content": [{"type": "text", "text": "what is it"}, {"type": "image_url", "image_url": "<base64>"}]},
+            {"role": "assistant", "content": "it is an apple"},
+            {"role": "user", "content": "what color?"},
+        ]
+    """
+    out_msgs = []
+    if use_model.startswith("gpt-4o") or use_model.startswith("gpt-4-vision"):
+        for x in messages:
+            if x.get("type") == "image":
+                out_msgs.append({
+                    "role": x["role"],
+                    "content": [
+                        {"type": "text", "text": x.get("content", "")},
+                        {"type": "image_url", "image_url": {"url": x.get('base64content')}}
+                    ],
+                })
+            else:
+                out_msgs.append({"role": x["role"], "content": x["content"]})
+    else:
+        for x in messages:
+            out_msgs.append({"role": x["role"], "content": x["content"]})
+    return out_msgs

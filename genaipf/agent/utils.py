@@ -1,7 +1,22 @@
 import asyncio
 import inspect
 from inspect import signature
+from functools import partial, update_wrapper
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Optional, Type, List, AsyncGenerator
+
+AsyncCallable = Callable[..., Awaitable[Any]]
+
+
+def _wrap(self, fn: AsyncCallable) -> AsyncCallable:
+    sig = inspect.signature(fn)
+    parameters = [p for name, p in sig.parameters.items() if name != 'self']
+    new_sig = sig.replace(parameters=parameters)
+    async def _wrapped_fn(*args: Any, **kwargs: Any) -> Any:
+        res = await fn(self, *args, **kwargs)
+        return res
+    update_wrapper(_wrapped_fn, fn, assigned=('__module__', '__name__', '__qualname__', '__annotations__', '__doc__'))
+    _wrapped_fn.__signature__ = new_sig
+    return _wrapped_fn
 
 async def merge_async_generators(self, gen1, gen2):
     async def producer(queue, agen):
