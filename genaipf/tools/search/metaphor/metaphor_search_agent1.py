@@ -16,7 +16,7 @@ async def metaphor_search(question: str, language=None):
     question: 问题1
     language: en-英文;zh-中文
     """
-    llm = ChatOpenAI(temperature=0.8, model='gpt-4-0125-preview')
+    llm = ChatOpenAI(temperature=0.8, model='gpt-4o')
     date = get_format_time_YYYY_mm_dd()
     system_message = (
             f"Today is {date}.\n\n"

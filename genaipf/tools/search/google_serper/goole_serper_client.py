@@ -6,6 +6,7 @@ from genaipf.utils.http_util import AsyncHTTPClient
 
 CLIENT_TYPE = 'google_serper'
 REQUEST_URL = 'https://google.serper.dev/search'
+REQUEST_URL_NEWS = 'https://google.serper.dev/news'
 
 class GoogleSerperClient:
     _api_key = None
@@ -37,6 +38,27 @@ class GoogleSerperClient:
                 'Content-Type': 'application/json'
             }
             result = await client.post_json(REQUEST_URL, payload, headers)
+            return self.parse_snippets(result, type, k)
+        except Exception as e:
+            if '429' in str(e):
+                set_api_key_unavaiable(self._api_key, CLIENT_TYPE)
+            logger.error(f'google serper search error: {str(e)}')
+            return search_result, ''
+
+    async def news(self, question, k=5):
+        logger.info(f'google serper search current key is {self._api_key}')
+        type: Literal["news", "search", "places", "images"] = "news"
+        search_result = []
+        try:
+            client = AsyncHTTPClient()
+            payload = {
+                "q": question
+            }
+            headers = {
+                'X-API-KEY': self._api_key,
+                'Content-Type': 'application/json'
+            }
+            result = await client.post_json(REQUEST_URL_NEWS, payload, headers)
             return self.parse_snippets(result, type, k)
         except Exception as e:
             if '429' in str(e):
