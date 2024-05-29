@@ -188,7 +188,13 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     picked_content = ""
     isPreSwap = False
     has_image = False
+    continue_get_quote = True
+    quote_message = ''
     for x in front_messages:
+        if continue_get_quote:
+            if x.get("role") == 'quote':
+                quote_message = x['content']
+                continue_get_quote = False
         if x.get("type") == "image":
             has_image = True
         if x.get("code"):
@@ -354,7 +360,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
             used_gpt_functions = None
 
         aref_answer_gpt_generator_start_time = time.perf_counter()
-        resp1 = await aref_answer_gpt_generator(msgs, model, language_, None, picked_content, related_qa, source, owner, isvision, output_type, llm_model) 
+        resp1 = await aref_answer_gpt_generator(msgs, model, language_, None, picked_content, related_qa, source, owner, isvision, output_type, llm_model, quote_message)
         aref_answer_gpt_generator_end_time = time.perf_counter()
         elapsed_aref_answer_gpt_generator_time = (aref_answer_gpt_generator_end_time - aref_answer_gpt_generator_start_time) * 1000
         logger.info(f'=====================>aref_answer_gpt_generator耗时：{elapsed_aref_answer_gpt_generator_time:.3f}毫秒')

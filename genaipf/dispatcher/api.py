@@ -206,7 +206,7 @@ async def afunc_gpt_generator(messages_in, functions=gpt_functions, language=Lio
     return aget_error_generator("error after retry many times")
 
 
-async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.default_lang, preset_name=None, picked_content="", related_qa=[], source='v001', owner='', isvision=False, output_type="", llm_model=""):
+async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.default_lang, preset_name=None, picked_content="", related_qa=[], source='v001', owner='', isvision=False, output_type="", llm_model="", quote_message= ''):
     use_model = 'gpt-3.5-turbo-0125'
     if llm_model == 'openai':
         use_model = OPENAI_PLUS_MODEL
@@ -229,7 +229,7 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
     elif source == 'v005' or source == 'v006':
         content = prompts_v005.LionPrompt.get_aref_answer_prompt(language, preset_name, picked_content, related_qa, use_model)
     else:
-        content = LionPrompt.get_aref_answer_prompt(language, preset_name, picked_content, related_qa, use_model, '', owner)
+        content = LionPrompt.get_aref_answer_prompt(language, preset_name, picked_content, related_qa, use_model, '', owner, quote_message)
     system = {
         "role": "system",
         "content": content
