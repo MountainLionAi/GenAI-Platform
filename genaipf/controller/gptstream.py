@@ -314,10 +314,11 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         _data = {"msgs": msgs, "model": model, "preset_name": "attitude", "source": source, "owner": owner, "llm_model": AI_ANALYSIS_USE_MODEL}
         _tmp_attitude, _related_news = await DispatcherCallGpt.get_subtype_task_result(source, language_, _data)
         yield json.dumps(get_format_output("attitude", _tmp_attitude))
-        yield json.dumps(get_format_output("chatRelatedNews", _related_news))
+        #yield json.dumps(get_format_output("chatRelatedNews", _related_news))
         data["attitude"] = _tmp_attitude
-        data["chatRelatedNews"] = _related_news
+        #data["chatRelatedNews"] = _related_news
         picked_content = _tmp_attitude
+        yield json.dumps(get_format_output("source", "v004"))
     afunc_gpt_generator_start_time = time.perf_counter()
     resp1 = await afunc_gpt_generator(msgs, used_gpt_functions, language_, model, picked_content, related_qa, source, owner)
     afunc_gpt_generator_end_time = time.perf_counter()
@@ -351,10 +352,11 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
                 yield json.dumps(get_format_output("chatSerpResults", sources))
             else:
                 yield json.dumps(get_format_output("chatSerpResults", []))
-                if len(related_qa) == 0:
-                    related_qa.append('\n'.join([str(i) for i in _related_news]))
-                else:
-                    related_qa[0] = '\n'.join([str(i) for i in _related_news])
+                # if len(related_qa) == 0:
+                #     related_qa.append('\n'.join([str(i) for i in _related_news]))
+                # else:
+                #     related_qa[0] = '\n'.join([str(i) for i in _related_news])
+                yield json.dumps(get_format_output("source", "v004"))
                 model = "claude"
         # if last_front_msg.get('type') == 'image' and last_front_msg.get('base64content') is not None:
         #     msgs = msgs[:-1] + buildVisionMessage(last_front_msg)
