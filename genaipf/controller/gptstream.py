@@ -74,6 +74,8 @@ def process_messages(messages):
         else:
             content = message['content']
             need_whisper = False
+        if message.get('quote_info') != '' and message.get('quote_info') is not None:
+            shadow_message['quote_info'] = message.get('quote_info')
         shadow_message['need_whisper'] = need_whisper
         shadow_message['content'] = content
         processed_messages.append(shadow_message)
@@ -188,7 +190,13 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     picked_content = ""
     isPreSwap = False
     has_image = False
+    continue_get_quote = True
+    quote_message = ''
     for x in front_messages:
+        if continue_get_quote:
+            if x.get("quote_info"):
+                quote_message = x['quote_info']
+                continue_get_quote = False
         if x.get("type") == "image":
             has_image = True
         if x.get("code"):
@@ -198,9 +206,9 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         else:
             # messages.append({"role": x["role"], "content": x["content"]})
             messages.append(deepcopy(x))
+    last_front_msg = front_messages[-1]
     user_history_l = [x["content"] for x in messages if x["role"] == "user"]
     newest_question = user_history_l[-1]
-    
     last_front_msg = front_messages[-1]
     question = last_front_msg['content']
 
@@ -225,6 +233,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     
     # vvvvvvvv 在第一次 func gpt 就准备好数据 vvvvvvvv
     logger.info(f'>>>>> newest_question: {newest_question}')
+    logger.info(f'>>>>>>>>>>>>>>>>>> quote_message: {quote_message}')
     start_time1 = time.perf_counter()
     related_qa = []
     # 钱包客服不走向量数据库
@@ -355,7 +364,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
             used_gpt_functions = None
 
         aref_answer_gpt_generator_start_time = time.perf_counter()
-        resp1 = await aref_answer_gpt_generator(msgs, model, language_, None, picked_content, related_qa, source, owner, isvision, output_type, llm_model) 
+        resp1 = await aref_answer_gpt_generator(msgs, model, language_, None, picked_content, related_qa, source, owner, isvision, output_type, llm_model, quote_message)
         aref_answer_gpt_generator_end_time = time.perf_counter()
         elapsed_aref_answer_gpt_generator_time = (aref_answer_gpt_generator_end_time - aref_answer_gpt_generator_start_time) * 1000
         logger.info(f'=====================>aref_answer_gpt_generator耗时：{elapsed_aref_answer_gpt_generator_time:.3f}毫秒')
@@ -478,6 +487,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     if last_front_msg.get('type') == 'image':
         base64_type = 1
     base64_content = last_front_msg.get('base64content')
+    quote_info = last_front_msg.get('quote_info', None)
     file_type = last_front_msg.get('format')
     if question and msggroup :
         gpt_message = (
@@ -489,6 +499,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         device_no,
         base64_type,
         base64_content,
+        quote_info,
         file_type,
         agent_id
         )
@@ -509,6 +520,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
             msggroup,
             data['code'],
             device_no,
+            None,
             None,
             None,
             None,

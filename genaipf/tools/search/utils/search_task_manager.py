@@ -62,7 +62,11 @@ async def get_sources_tasks(front_messages, related_qa, language):
     #     logger.info(f'丰富后的问题是: {enrich_question}')
     # except Exception as e:
     #     logger.error(f'获取丰富后的问题失败: {str(e)}')
-    enrich_question = front_messages['messages'][-1]['content']
+    latest_user_msg = front_messages['messages'][-1]
+    if latest_user_msg.get('quote_info'):
+        enrich_question = latest_user_msg.get('quote_info')
+    else:
+        enrich_question = latest_user_msg['content']
     logger.info(f'丰富后的问题是: {enrich_question}')
     enrich_question_end_time = time.perf_counter()
     elapsed_enrich_question_time = (enrich_question_end_time - enrich_question_start_time) * 1000

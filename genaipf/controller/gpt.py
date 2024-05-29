@@ -37,9 +37,11 @@ async def get_message_list(request: Request):
             message['content'] = {
                 'type': 'user',
                 'content': message['content'],
-                'base64content': message.get('base64content')
+                'base64content': message.get('base64content'),
+                'quote_info': message.get('quoteInfo')
             }
             del message['base64content']
+            del message['quoteInfo']
         message['agent_id'] = message.get('agent_id') 
     data = {
         "messageList" : messageList
