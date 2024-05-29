@@ -190,12 +190,16 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     has_image = False
     continue_get_quote = True
     quote_message = ''
+    _temp_user_msg = {}
     for x in front_messages:
         if continue_get_quote:
-            if x.get("role") == 'quote':
+            if x.get("is_quote") == '1':
                 quote_message = x['content']
                 continue_get_quote = False
-                continue
+                _temp_user_msg = {
+                    "role": "user",
+                    "content": quote_message
+                }
         if x.get("type") == "image":
             has_image = True
         if x.get("code"):
@@ -204,10 +208,13 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
             messages.append({"role": "assistant", "content": None, "function_call": x["function_call"]})
         else:
             # messages.append({"role": x["role"], "content": x["content"]})
-            messages.append(deepcopy(x))
+            if continue_get_quote:
+                messages.append(deepcopy(x))
+    if not continue_get_quote:
+        front_messages.append(_temp_user_msg)
+    last_front_msg = front_messages[-1]
     user_history_l = [x["content"] for x in messages if x["role"] == "user"]
     newest_question = user_history_l[-1]
-    
     last_front_msg = front_messages[-1]
     question = last_front_msg['content']
 
