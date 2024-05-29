@@ -57,13 +57,23 @@ def process_messages(messages):
     for message in messages:
         if previousIsUser and message['role'] == 'user':
             processed_messages = processed_messages[:-1]
-        previousIsUser = message['role'] == 'user'
-        shadow_message = {
-            "role": message['role'],
-            "type": message.get('type', 'text'),
-            "format": message.get('format', 'text'),
-            "version": message.get('version', 'v001')
-        }
+        if message['is_quote']:
+            previousIsUser = message['role'] == 'user'
+            shadow_message = {
+                "role": message['role'],
+                "type": message.get('type', 'text'),
+                "format": message.get('format', 'text'),
+                "version": message.get('version', 'v001'),
+                "is_quote": message.get('is_quote', True)
+            }
+        else:
+            previousIsUser = message['role'] == 'user'
+            shadow_message = {
+                "role": message['role'],
+                "type": message.get('type', 'text'),
+                "format": message.get('format', 'text'),
+                "version": message.get('version', 'v001')
+            }
         if message.get('type') == 'voice':
             content = transcribe(message['content'])
             need_whisper = True
@@ -193,7 +203,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     _temp_user_msg = {}
     for x in front_messages:
         if continue_get_quote:
-            if x.get("is_quote") == '1':
+            if x.get("is_quote"):
                 quote_message = x['content']
                 continue_get_quote = False
                 _temp_user_msg = {
