@@ -195,6 +195,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
             if x.get("role") == 'quote':
                 quote_message = x['content']
                 continue_get_quote = False
+                continue
         if x.get("type") == "image":
             has_image = True
         if x.get("code"):
@@ -231,6 +232,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     
     # vvvvvvvv 在第一次 func gpt 就准备好数据 vvvvvvvv
     logger.info(f'>>>>> newest_question: {newest_question}')
+    logger.info(f'>>>>>>>>>>>>>>>>>> quote_message: {quote_message}')
     start_time1 = time.perf_counter()
     related_qa = []
     # 钱包客服不走向量数据库
