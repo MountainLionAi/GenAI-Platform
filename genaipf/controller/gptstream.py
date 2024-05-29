@@ -318,6 +318,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         data["attitude"] = _tmp_attitude
         #data["chatRelatedNews"] = _related_news
         picked_content = _tmp_attitude
+        yield json.dumps(get_format_output("source", "v004"))
     afunc_gpt_generator_start_time = time.perf_counter()
     resp1 = await afunc_gpt_generator(msgs, used_gpt_functions, language_, model, picked_content, related_qa, source, owner)
     afunc_gpt_generator_end_time = time.perf_counter()
