@@ -57,8 +57,8 @@ def process_messages(messages):
     for message in messages:
         if previousIsUser and message['role'] == 'user':
             processed_messages = processed_messages[:-1]
-        if message['is_quote']:
-            previousIsUser = message['role'] == 'user'
+        if message.get('is_quote', False):
+            previousIsUser = False
             shadow_message = {
                 "role": message['role'],
                 "type": message.get('type', 'text'),
