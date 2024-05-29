@@ -57,23 +57,13 @@ def process_messages(messages):
     for message in messages:
         if previousIsUser and message['role'] == 'user':
             processed_messages = processed_messages[:-1]
-        if message.get('is_quote', False):
-            previousIsUser = False
-            shadow_message = {
-                "role": message['role'],
-                "type": message.get('type', 'text'),
-                "format": message.get('format', 'text'),
-                "version": message.get('version', 'v001'),
-                "is_quote": message.get('is_quote', True)
-            }
-        else:
-            previousIsUser = message['role'] == 'user'
-            shadow_message = {
-                "role": message['role'],
-                "type": message.get('type', 'text'),
-                "format": message.get('format', 'text'),
-                "version": message.get('version', 'v001')
-            }
+        previousIsUser = message['role'] == 'user'
+        shadow_message = {
+            "role": message['role'],
+            "type": message.get('type', 'text'),
+            "format": message.get('format', 'text'),
+            "version": message.get('version', 'v001')
+        }
         if message.get('type') == 'voice':
             content = transcribe(message['content'])
             need_whisper = True
@@ -84,6 +74,8 @@ def process_messages(messages):
         else:
             content = message['content']
             need_whisper = False
+        if message.get('quote_info') != '' and message.get('quote_info') is not None:
+            shadow_message['quote_info'] = message.get('quote_info')
         shadow_message['need_whisper'] = need_whisper
         shadow_message['content'] = content
         processed_messages.append(shadow_message)
@@ -200,16 +192,11 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     has_image = False
     continue_get_quote = True
     quote_message = ''
-    _temp_user_msg = {}
     for x in front_messages:
         if continue_get_quote:
-            if x.get("is_quote"):
-                quote_message = x['content']
+            if x.get("quote_info"):
+                quote_message = x['quote_info']
                 continue_get_quote = False
-                _temp_user_msg = {
-                    "role": "user",
-                    "content": quote_message
-                }
         if x.get("type") == "image":
             has_image = True
         if x.get("code"):
@@ -218,10 +205,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
             messages.append({"role": "assistant", "content": None, "function_call": x["function_call"]})
         else:
             # messages.append({"role": x["role"], "content": x["content"]})
-            if continue_get_quote:
-                messages.append(deepcopy(x))
-    if not continue_get_quote:
-        front_messages.append(_temp_user_msg)
+            messages.append(deepcopy(x))
     last_front_msg = front_messages[-1]
     user_history_l = [x["content"] for x in messages if x["role"] == "user"]
     newest_question = user_history_l[-1]
