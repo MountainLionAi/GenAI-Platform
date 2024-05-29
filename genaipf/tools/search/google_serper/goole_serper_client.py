@@ -3,6 +3,8 @@ from metaphor_python import Metaphor
 from genaipf.utils.common_utils import sync_to_async
 from genaipf.utils.log_utils import logger
 from genaipf.utils.http_util import AsyncHTTPClient
+from genaipf.dispatcher.prompts_common import LionPromptCommon
+from genaipf.dispatcher.utils import simple_achat
 
 CLIENT_TYPE = 'google_serper'
 REQUEST_URL = 'https://google.serper.dev/search'
@@ -29,10 +31,15 @@ class GoogleSerperClient:
         type: Literal["news", "search", "places", "images"] = "search"
         search_result = []
         try:
+            recent_search = LionPromptCommon.get_prompted_messages("recent_search", question)
+            is_recent = await simple_achat(recent_search)
             client = AsyncHTTPClient()
             payload = {
-                "q": question
+                "q": question,
             }
+            if is_recent:
+                payload["tbs"] = "qdr:w"
+            logger.info(f'google serper search payload: {payload}')
             headers = {
                 'X-API-KEY': self._api_key,
                 'Content-Type': 'application/json'
