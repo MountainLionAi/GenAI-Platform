@@ -259,7 +259,6 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         responseType = 1
     # 判断是分析还是回答
     if source == 'v004':
-        used_rag = False
         responseType = 1
     if source == 'v005' or source == 'v006':
         used_rag = False
