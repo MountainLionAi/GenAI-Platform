@@ -57,13 +57,23 @@ def process_messages(messages):
     for message in messages:
         if previousIsUser and message['role'] == 'user':
             processed_messages = processed_messages[:-1]
-        previousIsUser = message['role'] == 'user'
-        shadow_message = {
-            "role": message['role'],
-            "type": message.get('type', 'text'),
-            "format": message.get('format', 'text'),
-            "version": message.get('version', 'v001')
-        }
+        if message.get('is_quote', False):
+            previousIsUser = False
+            shadow_message = {
+                "role": message['role'],
+                "type": message.get('type', 'text'),
+                "format": message.get('format', 'text'),
+                "version": message.get('version', 'v001'),
+                "is_quote": message.get('is_quote', True)
+            }
+        else:
+            previousIsUser = message['role'] == 'user'
+            shadow_message = {
+                "role": message['role'],
+                "type": message.get('type', 'text'),
+                "format": message.get('format', 'text'),
+                "version": message.get('version', 'v001')
+            }
         if message.get('type') == 'voice':
             content = transcribe(message['content'])
             need_whisper = True
@@ -188,7 +198,18 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     picked_content = ""
     isPreSwap = False
     has_image = False
+    continue_get_quote = True
+    quote_message = ''
+    _temp_user_msg = {}
     for x in front_messages:
+        if continue_get_quote:
+            if x.get("is_quote"):
+                quote_message = x['content']
+                continue_get_quote = False
+                _temp_user_msg = {
+                    "role": "user",
+                    "content": quote_message
+                }
         if x.get("type") == "image":
             has_image = True
         if x.get("code"):
@@ -197,10 +218,13 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
             messages.append({"role": "assistant", "content": None, "function_call": x["function_call"]})
         else:
             # messages.append({"role": x["role"], "content": x["content"]})
-            messages.append(deepcopy(x))
+            if continue_get_quote:
+                messages.append(deepcopy(x))
+    if not continue_get_quote:
+        front_messages.append(_temp_user_msg)
+    last_front_msg = front_messages[-1]
     user_history_l = [x["content"] for x in messages if x["role"] == "user"]
     newest_question = user_history_l[-1]
-    
     last_front_msg = front_messages[-1]
     question = last_front_msg['content']
 
@@ -225,6 +249,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     
     # vvvvvvvv 在第一次 func gpt 就准备好数据 vvvvvvvv
     logger.info(f'>>>>> newest_question: {newest_question}')
+    logger.info(f'>>>>>>>>>>>>>>>>>> quote_message: {quote_message}')
     start_time1 = time.perf_counter()
     related_qa = []
     # 钱包客服不走向量数据库
@@ -354,7 +379,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
             used_gpt_functions = None
 
         aref_answer_gpt_generator_start_time = time.perf_counter()
-        resp1 = await aref_answer_gpt_generator(msgs, model, language_, None, picked_content, related_qa, source, owner, isvision, output_type, llm_model) 
+        resp1 = await aref_answer_gpt_generator(msgs, model, language_, None, picked_content, related_qa, source, owner, isvision, output_type, llm_model, quote_message)
         aref_answer_gpt_generator_end_time = time.perf_counter()
         elapsed_aref_answer_gpt_generator_time = (aref_answer_gpt_generator_end_time - aref_answer_gpt_generator_start_time) * 1000
         logger.info(f'=====================>aref_answer_gpt_generator耗时：{elapsed_aref_answer_gpt_generator_time:.3f}毫秒')
