@@ -341,7 +341,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
             if source != 'v004':
                 yield json.dumps(get_format_output("chatSerpResults", sources))
             else:
-                # yield json.dumps(get_format_output("chatSerpResults", []))
+                yield json.dumps(get_format_output("chatSerpResults", []))
                 # if len(related_qa) == 0:
                 #     related_qa.append('\n'.join([str(i) for i in _related_news]))
                 # else:
