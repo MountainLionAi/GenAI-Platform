@@ -8,7 +8,7 @@ async def add_gpt_message(gpt_message):
     return res
 
 async def add_gpt_message_with_code(gpt_message):
-    sql = "INSERT INTO `gpt_messages` (`content`, `type`, `userid`, `msggroup`, `code`, `device_no`, `base64_type`, `base64_content`, `quote_info`, `file_type`, `agent_id`) VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+    sql = "INSERT INTO `gpt_messages` (`content`, `type`, `userid`, `msggroup`, `code`, `device_no`, `base64_type`, `base64_content`, `quote_info`, `file_type`, `agent_id`, `rewrite_code`) VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
     res = await CollectionPool().insert(sql, gpt_message)
     return res
 

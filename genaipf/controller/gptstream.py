@@ -105,9 +105,10 @@ async def send_stream_chat(request: Request):
     output_type = request_params.get('output_type', 'text') # text or voice; (voice is mp3)
     llm_model = request_params.get('llm_model', 'openai') # openai | perplexity | claude
     wallet_type = request_params.get('wallet_type', 'AI')
+    rewrite_code = request_params.get('rewrite_code', '')
     logger_content = f"""
 input_params:
-userid={userid},language={language},msggroup={msggroup},device_no={device_no},question_code={question_code},model={model},source={source},chain_id={chain_id},owner={owner},agent_id={agent_id},output_type={output_type},llm_model={llm_model},wallet_type={wallet_type}
+userid={userid},language={language},msggroup={msggroup},device_no={device_no},question_code={question_code},model={model},source={source},chain_id={chain_id},owner={owner},agent_id={agent_id},output_type={output_type},llm_model={llm_model},wallet_type={wallet_type},rewrite_code={rewrite_code}
     """
     logger.info(logger_content)
 
@@ -128,7 +129,7 @@ userid={userid},language={language},msggroup={msggroup},device_no={device_no},qu
     try:
         async def event_generator(_response):
             # async for _str in getAnswerAndCallGpt(request_params['content'], userid, msggroup, language, messages):
-            async for _str in getAnswerAndCallGpt(request_params.get('content'), userid, msggroup, language, messages, device_no, question_code, model, output_type, source, owner, agent_id, chain_id, llm_model, wallet_type):
+            async for _str in getAnswerAndCallGpt(request_params.get('content'), userid, msggroup, language, messages, device_no, question_code, model, output_type, source, owner, agent_id, chain_id, llm_model, wallet_type, rewrite_code):
                 await _response.write(f"data:{_str}\n\n")
                 await asyncio.sleep(0.01)
         return ResponseStream(event_generator, headers={"accept": "application/json"}, content_type="text/event-stream")
@@ -181,7 +182,7 @@ async def send_chat(request: Request):
         logger.error(traceback.format_exc())
    
 
-async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messages, device_no, question_code, model, output_type, source, owner, agent_id, chain_id, llm_model, wallet_type):
+async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messages, device_no, question_code, model, output_type, source, owner, agent_id, chain_id, llm_model, wallet_type, rewrite_code):
     t0 = time.time()
     MAX_CH_LENGTH = 8000
     _ensure_ascii = False
@@ -502,9 +503,10 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         base64_content,
         quote_info,
         file_type,
-        agent_id
+        agent_id,
+        ''
         )
-        if not isPreSwap:
+        if not isPreSwap and not rewrite_code:
             await gpt_service.add_gpt_message_with_code(gpt_message)
         if data['type'] in ['coin_swap', 'wallet_balance', 'token_transfer']:  # 如果是兑换类型，存库时候需要加一个过期字段，前端用于判断不再发起交易
             data['expired'] = True
@@ -525,7 +527,8 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
             None,
             None,
             None,
-            agent_id
+            agent_id,
+            rewrite_code
         )
         await gpt_service.add_gpt_message_with_code(gpt_message)
 
@@ -613,7 +616,8 @@ async def  getAnswerAndCallGptData(question, userid, msggroup, language, front_m
         msggroup,
         question_code,
         device_no,
-        agent_id
+        agent_id,
+        ''
         )
         await gpt_service.add_gpt_message_with_code(gpt_message)
         if data['type'] == 'coin_swap':  # 如果是兑换类型，存库时候需要加一个过期字段，前端用于判断不再发起交易
@@ -629,7 +633,8 @@ async def  getAnswerAndCallGptData(question, userid, msggroup, language, front_m
             msggroup,
             data['code'],
             device_no,
-            agent_id
+            agent_id,
+            ''
         )
         await gpt_service.add_gpt_message_with_code(gpt_message)
     # else :
