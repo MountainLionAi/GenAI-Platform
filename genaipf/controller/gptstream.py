@@ -319,7 +319,18 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         data["attitude"] = _tmp_attitude
         data["chatRelatedNews"] = _related_news
         picked_content = _tmp_attitude
+        if int(picked_content) == 1:
+            if language == 'zh' or language == 'cn':
+                picked_content = "这则新闻对Web3行业是利好消息"
+            else:
+                picked_content = "The news is positive for the Web3 industry"
+        else:
+            if language == 'zh' or language == 'cn':
+                picked_content = "这则新闻对Web3行业是利空消息"
+            else:
+                picked_content = "The news is negative for the Web3 industry"
         yield json.dumps(get_format_output("source", "v004"))
+        yield json.dumps(get_format_output("gpt", picked_content + '\n'))
     afunc_gpt_generator_start_time = time.perf_counter()
     resp1 = await afunc_gpt_generator(msgs, used_gpt_functions, language_, model, picked_content, related_qa, source, owner)
     afunc_gpt_generator_end_time = time.perf_counter()
@@ -445,7 +456,8 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
             else:
                 yield json.dumps(item)
 
-
+    if source == 'v004':
+        _tmp_text = picked_content + "\n" + _tmp_text
     data.update({
         'content' : _tmp_text,
         'code' : _code
