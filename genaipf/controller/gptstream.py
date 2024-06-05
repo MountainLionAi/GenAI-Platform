@@ -320,14 +320,14 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         picked_content = _tmp_attitude
         if int(picked_content) == 1:
             if language == 'zh' or language == 'cn':
-                picked_content = "这则新闻为利好消息"
+                picked_content = "这则新闻对Web3行业是利好消息"
             else:
-                picked_content = "The news is positive"
+                picked_content = "The news is positive for the Web3 industry"
         else:
             if language == 'zh' or language == 'cn':
-                picked_content = "这则新闻为利空消息"
+                picked_content = "这则新闻对Web3行业是利空消息"
             else:
-                picked_content = "The news is negative"
+                picked_content = "The news is negative for the Web3 industry"
         yield json.dumps(get_format_output("source", "v004"))
         yield json.dumps(get_format_output("gpt", picked_content + '\n'))
     afunc_gpt_generator_start_time = time.perf_counter()
