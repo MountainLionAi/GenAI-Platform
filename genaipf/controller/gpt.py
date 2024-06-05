@@ -33,9 +33,16 @@ async def get_message_list(request: Request):
         message['create_time'] = message['create_time'].strftime('%Y-%m-%d %H:%M:%S')
         if message['type'] != 'user':
             message['content'] = json.loads(message['content'])
-        elif message['type'] != 'user_isDeep':
+        elif message['type'] == 'user_isDeep':
             message['content'] = {
                 'type': 'user_isDeep',
+                'content': message['content'],
+            }
+            del message['base64content']
+            del message['quoteInfo']
+        elif message['type'] == 'isDeep':
+            message['content'] = {
+                'type': 'isDeep',
                 'content': message['content'],
             }
             del message['base64content']
