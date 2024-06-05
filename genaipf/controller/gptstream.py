@@ -329,7 +329,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
             else:
                 picked_content = "The news is negative"
         yield json.dumps(get_format_output("source", "v004"))
-        yield json.dumps(get_format_output("gpt", picked_content))
+        yield json.dumps(get_format_output("gpt", picked_content + '\n'))
     afunc_gpt_generator_start_time = time.perf_counter()
     resp1 = await afunc_gpt_generator(msgs, used_gpt_functions, language_, model, picked_content, related_qa, source, owner)
     afunc_gpt_generator_end_time = time.perf_counter()
