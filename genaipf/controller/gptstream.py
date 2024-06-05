@@ -454,7 +454,8 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
             else:
                 yield json.dumps(item)
 
-
+    if source == 'v004':
+        _tmp_text = picked_content + "\n" + _tmp_text
     data.update({
         'content' : _tmp_text,
         'code' : _code
