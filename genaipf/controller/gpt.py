@@ -31,22 +31,22 @@ async def get_message_list(request: Request):
     messageList = await gpt_service.get_gpt_message_limit(userid, msggroup, 20)
     for message in messageList:
         message['create_time'] = message['create_time'].strftime('%Y-%m-%d %H:%M:%S')
-        if message['type'] != 'user':
-            message['content'] = json.loads(message['content'])
+        if message['type'] == 'isDeep':
+            message['content'] = {
+                'type': 'isDeep',
+                'content': message['content']
+            }
+            del message['base64content']
+            del message['quoteInfo']
         elif message['type'] == 'user_isDeep':
             message['content'] = {
                 'type': 'user_isDeep',
-                'content': message['content'],
+                'content': message['content']
             }
             del message['base64content']
             del message['quoteInfo']
-        elif message['type'] == 'isDeep':
-            message['content'] = {
-                'type': 'isDeep',
-                'content': message['content'],
-            }
-            del message['base64content']
-            del message['quoteInfo']
+        elif message['type'] != 'user':
+            message['content'] = json.loads(message['content'])
         else:
             message['content'] = {
                 'type': 'user',
