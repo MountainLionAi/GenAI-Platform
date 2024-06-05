@@ -317,6 +317,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         yield json.dumps(get_format_output("chatRelatedNews", _related_news))
         data["attitude"] = _tmp_attitude
         data["chatRelatedNews"] = _related_news
+        picked_content = _tmp_attitude
         if int(picked_content) == 1:
             if language == 'zh' or language == 'cn':
                 picked_content = "这则新闻为利好消息"
