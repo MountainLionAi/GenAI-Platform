@@ -105,9 +105,10 @@ async def send_stream_chat(request: Request):
     output_type = request_params.get('output_type', 'text') # text or voice; (voice is mp3)
     llm_model = request_params.get('llm_model', 'openai') # openai | perplexity | claude
     wallet_type = request_params.get('wallet_type', 'AI')
+    regenerate_response = request_params.get('regenerate_response', None)
     logger_content = f"""
 input_params:
-userid={userid},language={language},msggroup={msggroup},device_no={device_no},question_code={question_code},model={model},source={source},chain_id={chain_id},owner={owner},agent_id={agent_id},output_type={output_type},llm_model={llm_model},wallet_type={wallet_type}
+userid={userid},language={language},msggroup={msggroup},device_no={device_no},question_code={question_code},model={model},source={source},chain_id={chain_id},owner={owner},agent_id={agent_id},output_type={output_type},llm_model={llm_model},wallet_type={wallet_type},regenerate_response={regenerate_response}
     """
     logger.info(logger_content)
 
@@ -128,7 +129,7 @@ userid={userid},language={language},msggroup={msggroup},device_no={device_no},qu
     try:
         async def event_generator(_response):
             # async for _str in getAnswerAndCallGpt(request_params['content'], userid, msggroup, language, messages):
-            async for _str in getAnswerAndCallGpt(request_params.get('content'), userid, msggroup, language, messages, device_no, question_code, model, output_type, source, owner, agent_id, chain_id, llm_model, wallet_type):
+            async for _str in getAnswerAndCallGpt(request_params.get('content'), userid, msggroup, language, messages, device_no, question_code, model, output_type, source, owner, agent_id, chain_id, llm_model, wallet_type, regenerate_response):
                 await _response.write(f"data:{_str}\n\n")
                 await asyncio.sleep(0.01)
         return ResponseStream(event_generator, headers={"accept": "application/json"}, content_type="text/event-stream")
@@ -181,7 +182,7 @@ async def send_chat(request: Request):
         logger.error(traceback.format_exc())
    
 
-async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messages, device_no, question_code, model, output_type, source, owner, agent_id, chain_id, llm_model, wallet_type):
+async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messages, device_no, question_code, model, output_type, source, owner, agent_id, chain_id, llm_model, wallet_type, regenerate_response):
     t0 = time.time()
     MAX_CH_LENGTH = 8000
     _ensure_ascii = False
@@ -318,7 +319,18 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         data["attitude"] = _tmp_attitude
         data["chatRelatedNews"] = _related_news
         picked_content = _tmp_attitude
+        if int(picked_content) == 1:
+            if language == 'zh' or language == 'cn':
+                picked_content = "这则新闻对Web3行业是利好消息"
+            else:
+                picked_content = "The news is positive for the Web3 industry"
+        else:
+            if language == 'zh' or language == 'cn':
+                picked_content = "这则新闻对Web3行业是利空消息"
+            else:
+                picked_content = "The news is negative for the Web3 industry"
         yield json.dumps(get_format_output("source", "v004"))
+        yield json.dumps(get_format_output("gpt", picked_content + '\n'))
     afunc_gpt_generator_start_time = time.perf_counter()
     resp1 = await afunc_gpt_generator(msgs, used_gpt_functions, language_, model, picked_content, related_qa, source, owner)
     afunc_gpt_generator_end_time = time.perf_counter()
@@ -444,7 +456,8 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
             else:
                 yield json.dumps(item)
 
-
+    if source == 'v004':
+        _tmp_text = picked_content + "\n" + _tmp_text
     data.update({
         'content' : _tmp_text,
         'code' : _code
@@ -502,7 +515,8 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         base64_content,
         quote_info,
         file_type,
-        agent_id
+        agent_id,
+        regenerate_response
         )
         if not isPreSwap:
             await gpt_service.add_gpt_message_with_code(gpt_message)
@@ -525,7 +539,8 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
             None,
             None,
             None,
-            agent_id
+            agent_id,
+            None
         )
         await gpt_service.add_gpt_message_with_code(gpt_message)
 
@@ -613,7 +628,8 @@ async def  getAnswerAndCallGptData(question, userid, msggroup, language, front_m
         msggroup,
         question_code,
         device_no,
-        agent_id
+        agent_id,
+        None
         )
         await gpt_service.add_gpt_message_with_code(gpt_message)
         if data['type'] == 'coin_swap':  # 如果是兑换类型，存库时候需要加一个过期字段，前端用于判断不再发起交易
@@ -629,7 +645,8 @@ async def  getAnswerAndCallGptData(question, userid, msggroup, language, front_m
             msggroup,
             data['code'],
             device_no,
-            agent_id
+            agent_id,
+            None
         )
         await gpt_service.add_gpt_message_with_code(gpt_message)
     # else :
