@@ -23,7 +23,7 @@ async def http4gpt4(request: Request):
 
 
 async def get_message_list(request: Request):
-    userid = 0
+    userid = 13
     if hasattr(request.ctx, 'user'):
         userid = request.ctx.user['id']
     args = request.args
@@ -31,14 +31,7 @@ async def get_message_list(request: Request):
     messageList = await gpt_service.get_gpt_message_limit(userid, msggroup, 20)
     for message in messageList:
         message['create_time'] = message['create_time'].strftime('%Y-%m-%d %H:%M:%S')
-        if message['type'] == 'isDeep':
-            message['content'] = {
-                'type': 'isDeep',
-                'content': message['content']
-            }
-            del message['base64content']
-            del message['quoteInfo']
-        elif message['type'] == 'user_isDeep':
+        if message['type'] == 'user_isDeep':
             message['content'] = {
                 'type': 'user_isDeep',
                 'content': message['content']
