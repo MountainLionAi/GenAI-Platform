@@ -119,11 +119,13 @@ async def openai_chat_completion_acreate(
             else:
                 try:
                     _base_urls = os.getenv("COMPATABLE_OPENAI_BASE_URLS", [])
+                    _base_urls = json.loads(_base_urls)
                     _api_keys = os.getenv("COMPATABLE_OPENAI_API_KEYS", [])
+                    _api_keys = json.loads(_api_keys)
                     if len(_base_urls) == 0:
                         raise
                     import random
-                    i = random.randint(0, len(_base_urls))
+                    i = random.randint(0, len(_base_urls) - 1)
                     _base_url = _base_urls[i]
                     _api_key = _api_keys[i]
                     _client = AsyncOpenAI(api_key=_api_key, base_url=_base_url)
@@ -140,9 +142,10 @@ async def openai_chat_completion_acreate(
                         ),
                         timeout=60.0  # 设置超时时间为180秒
                     )
-                    print(f'>>>>>>>>>use {_base_url}')
+                    print(f'>>>>>>>>>other openai use {_base_url}')
                     return response
-                except:
+                except Exception as e:
+                    print(f'>>>>>>>>>other openai error: {e}')
                     pass
                 response = await asyncio.wait_for(
                     async_openai_client.chat.completions.create(
