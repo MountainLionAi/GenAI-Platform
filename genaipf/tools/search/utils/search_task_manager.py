@@ -37,7 +37,7 @@ async def get_is_need_search_task(front_messages):
 
 
 # 获取相关问题相关task
-async def get_related_question_task(newest_question_arr, fixed_related_question, language, source):
+async def get_related_question_task(newest_question_arr, fixed_related_question, language, source=''):
     related_questions = []
     if source == 'v007':
         return related_questions
