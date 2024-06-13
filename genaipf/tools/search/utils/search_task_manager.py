@@ -37,11 +37,13 @@ async def get_is_need_search_task(front_messages):
 
 
 # 获取相关问题相关task
-async def get_related_question_task(newest_question_arr, fixed_related_question, language):
+async def get_related_question_task(newest_question_arr, fixed_related_question, language, source):
+    related_questions = []
+    if source == 'v007':
+        return related_questions
     msgs = LionPromptCommon.get_prompted_messages("related_question", newest_question_arr, language)
     # questions_result = await simple_achat(msgs, 'gpt-4')
     questions_result = await simple_achat(msgs)
-    related_questions = []
     if questions_result != 'False':
         try:
             for question in json.loads(questions_result):
@@ -53,7 +55,7 @@ async def get_related_question_task(newest_question_arr, fixed_related_question,
 
 
 # 获取相关source和content的task
-async def get_sources_tasks(front_messages, related_qa, language):
+async def get_sources_tasks(front_messages, related_qa, language, source):
     enrich_question = 'False'
     enrich_question_start_time = time.perf_counter()
     # msgs = LionPromptCommon.get_prompted_messages("enrich_question", front_messages, language)
@@ -67,6 +69,12 @@ async def get_sources_tasks(front_messages, related_qa, language):
         enrich_question = latest_user_msg.get('quote_info')
     else:
         enrich_question = latest_user_msg['content']
+    if source == 'v007':  # 单独处理空投的content
+        airdrop_info = json.loads(latest_user_msg['content'])
+        if language == 'zh':
+            enrich_question = f'请帮我介绍一下: {airdrop_info.get("title")}这个空投项目'
+        else:
+            enrich_question = f'Please introduce the {airdrop_info.get("title")} Airdrop Project'
     logger.info(f'丰富后的问题是: {enrich_question}')
     enrich_question_end_time = time.perf_counter()
     elapsed_enrich_question_time = (enrich_question_end_time - enrich_question_start_time) * 1000
