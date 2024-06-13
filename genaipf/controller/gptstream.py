@@ -244,7 +244,10 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     end_time1 = time.perf_counter()
     elapsed_time1 = (end_time1 - start_time1) * 1000
     logger.info(f'=====================>get_qa_vdb_topk耗时：{elapsed_time1:.3f}毫秒')
-    language_ = contains_chinese(newest_question)
+    if source == 'v007':  # 空投产品，系统语言不切换
+        language_ = language
+    else:
+        language_ = contains_chinese(newest_question)
     logger.info(f"userid={userid},本次对话语言={language_}")
     _code = generate_unique_id()
     # responseType （0是回答，1是分析）
@@ -283,7 +286,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     if used_rag:
         is_need_search = is_need_rag_simple(newest_question)
         premise_search2_start_time = time.perf_counter()
-        sources_task, related_questions_task = await premise_search2(front_messages, related_qa, language_)
+        sources_task, related_questions_task = await premise_search2(front_messages, related_qa, language_, source)
         premise_search2_end_time = time.perf_counter()
         elapsed_premise_search2 = (premise_search2_end_time - premise_search2_start_time) * 1000
         logger.info(f'=====================>premise_search2耗时：{elapsed_premise_search2:.3f}毫秒')
@@ -331,6 +334,11 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
                 picked_content = "The news is negative for the Web3 industry"
         yield json.dumps(get_format_output("source", "v004"))
         yield json.dumps(get_format_output("gpt", picked_content + '\n'))
+    if source == 'v007':
+        airdrop_info = json.loads(newest_question)
+        if airdrop_info:
+            picked_content = airdrop_info.get('content')
+        logger.info(f'=====================>airdrop_picked_content：{picked_content}')
     afunc_gpt_generator_start_time = time.perf_counter()
     resp1 = await afunc_gpt_generator(msgs, used_gpt_functions, language_, model, picked_content, related_qa, source, owner)
     afunc_gpt_generator_end_time = time.perf_counter()
