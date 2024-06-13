@@ -144,7 +144,7 @@ async def premise_search2(front_messages, related_qa=None, language=None, source
     return t2, t3
 
 def is_need_rag_simple(message):
-    l = ['hi', 'hello', '你好', '您好']
+    l = ['hi', 'hello', '你好', '您好', '1 + 1 = ? 1 or 2?']
     if message and len(message) > 1 and not message in l:
         return True
     else:
