@@ -27,6 +27,7 @@ MAX_CH_LENGTH_QA_GPT4 = 1500
 OPENAI_PLUS_MODEL = "gpt-4o"
 CLAUDE_MODEL = "claude-3-opus-20240229"
 PERPLEXITY_MODEL = "llama-3-sonar-small-32k-chat"  # "sonar-small-online"
+MISTRAL_MODEL = "open-mixtral-8x22b"
 qdrant_url = "http://localhost:6333"
 
 openai_client = OpenAI(
@@ -116,6 +117,36 @@ async def openai_chat_completion_acreate(
                     timeout=60.0  # 设置超时时间为180秒
                 )
             else:
+                try:
+                    _base_urls = os.getenv("COMPATABLE_OPENAI_BASE_URLS", [])
+                    _base_urls = json.loads(_base_urls)
+                    _api_keys = os.getenv("COMPATABLE_OPENAI_API_KEYS", [])
+                    _api_keys = json.loads(_api_keys)
+                    if len(_base_urls) == 0:
+                        raise
+                    import random
+                    i = random.randint(0, len(_base_urls) - 1)
+                    _base_url = _base_urls[i]
+                    _api_key = _api_keys[i]
+                    _client = AsyncOpenAI(api_key=_api_key, base_url=_base_url)
+                    response = await asyncio.wait_for(
+                        _client.chat.completions.create(
+                            model=model,
+                            messages=messages,
+                            temperature=temperature,  # 值在[0,1]之间，越大表示回复越具有不确定性
+                            max_tokens=max_tokens, # 输出的最大 token 数
+                            top_p=top_p, # 过滤掉低于阈值的 token 确保结果不散漫
+                            frequency_penalty=frequency_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
+                            presence_penalty=presence_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
+                            stream=stream
+                        ),
+                        timeout=60.0  # 设置超时时间为180秒
+                    )
+                    print(f'>>>>>>>>>other openai use {_base_url}')
+                    return response
+                except Exception as e:
+                    print(f'>>>>>>>>>other openai error: {e}')
+                    pass
                 response = await asyncio.wait_for(
                     async_openai_client.chat.completions.create(
                         model=model,
