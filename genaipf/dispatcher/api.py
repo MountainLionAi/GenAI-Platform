@@ -3,7 +3,7 @@ import asyncio
 from typing import List
 from genaipf.conf.server import os
 from genaipf.dispatcher.functions import gpt_functions
-from genaipf.dispatcher.utils import openai, OPENAI_PLUS_MODEL, CLAUDE_MODEL, openai_chat_completion_acreate, PERPLEXITY_MODEL
+from genaipf.dispatcher.utils import openai, OPENAI_PLUS_MODEL, CLAUDE_MODEL, openai_chat_completion_acreate, PERPLEXITY_MODEL, MISTRAL_MODEL
 from genaipf.utils.log_utils import logger
 from datetime import datetime
 from genaipf.dispatcher.prompts_v001 import LionPrompt
@@ -11,10 +11,13 @@ import genaipf.dispatcher.prompts_v002 as prompts_v002
 import genaipf.dispatcher.prompts_v003 as prompts_v003
 import genaipf.dispatcher.prompts_v004 as prompts_v004
 import genaipf.dispatcher.prompts_v005 as prompts_v005
+import genaipf.dispatcher.prompts_v007 as prompts_v007
 # from openai.error import InvalidRequestError
 from openai import BadRequestError
 from genaipf.utils.redis_utils import RedisConnectionPool
 from genaipf.utils.speech_utils import transcribe, textToSpeech
+from mistralai.async_client import MistralAsyncClient
+from mistralai.models.chat_completion import ChatMessage
 
 # temperature=2 # 值在[0,1]之间，越大表示回复越具有不确定性
 # max_tokens=2000 # 输出的最大 token 数
@@ -65,6 +68,43 @@ async def aget_error_generator(msg="ERROR"):
     for c in msg:
         await asyncio.sleep(0.02)
         yield get_format_output("error", c)
+        
+
+async def awrap_mistral_generator(mi_response, output_type="", client:MistralAsyncClient=None ):
+    resp = mi_response
+    chunk = await resp.__anext__()
+    yield get_format_output("step", "llm_yielding")
+    c0 = chunk.choices[0].delta.content
+    _tmp_text = ""
+    _tmp_voice_text = ""
+    if c0:
+        _tmp_text += c0
+        _tmp_voice_text += c0
+        if output_type != 'voice':
+            yield get_format_output("gpt", c0)
+    async for chunk in resp:
+        _gpt_letter = chunk.choices[0].delta.content
+        if _gpt_letter:
+            _tmp_text += _gpt_letter
+            _tmp_voice_text += _gpt_letter
+            if output_type != 'voice':
+                yield get_format_output("gpt", _gpt_letter)
+        if output_type == 'voice': 
+            if len(_tmp_voice_text) == 200:
+                base64_encoded_voice = textToSpeech(_tmp_voice_text)
+                yield get_format_output("tts", base64_encoded_voice, "voice_mp3_v001")
+                for c in _tmp_voice_text:
+                    yield get_format_output("gpt", c)
+                _tmp_voice_text = ""
+    if output_type == 'voice': 
+        base64_encoded_voice = textToSpeech(_tmp_voice_text)
+        yield get_format_output("tts", base64_encoded_voice, "voice_mp3_v001")
+        for c in _tmp_voice_text:
+            yield get_format_output("gpt", c)
+    yield get_format_output("inner_____gpt_whole_text", _tmp_text)
+    if client:
+        await client.close()
+    
 
 async def awrap_claude_generator(lc_response, output_type=""):
     resp = lc_response
@@ -212,6 +252,8 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
         use_model = OPENAI_PLUS_MODEL
     elif llm_model == 'perplexity':
         use_model = PERPLEXITY_MODEL
+    elif llm_model == 'mistral':
+        use_model = MISTRAL_MODEL
     else:
         use_model = CLAUDE_MODEL
     if isvision:
@@ -228,6 +270,8 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
         content = prompts_v004.LionPrompt.get_aref_answer_prompt(language, preset_name, picked_content, related_qa, use_model, {}, quote_message)
     elif source == 'v005' or source == 'v006':
         content = prompts_v005.LionPrompt.get_aref_answer_prompt(language, preset_name, picked_content, related_qa, use_model, {}, quote_message)
+    elif source == 'v007':
+        content = prompts_v007.LionPrompt.get_aref_answer_prompt(language, preset_name, picked_content, related_qa, use_model, {}, quote_message)
     else:
         content = LionPrompt.get_aref_answer_prompt(language, preset_name, picked_content, related_qa, use_model, '', owner, quote_message)
     system = {
@@ -263,6 +307,22 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
                 print(e)
                 logger.error(f'aref_answer_gpt_generator question_JSON call gpt4 error {e}', e)
                 return aget_error_generator(str(e))
+    elif use_model == MISTRAL_MODEL:
+        client = None
+        try:
+            _messages = [system] + messages
+            __messages = [ChatMessage(role=x['role'], content=x['content']) for x in _messages]
+            logger.info(f"调用mistral模型传入的消息列表:{__messages}")
+            mistral_api_key = os.getenv("MISTRAL_API_KEY")
+            client = MistralAsyncClient(api_key=mistral_api_key)
+            response = client.chat_stream(
+                model=use_model,
+                messages=__messages,
+            )
+            return awrap_mistral_generator(response, output_type, client)
+        except Exception as e:
+            logger.error(f'aref_answer_gpt_generator question_JSON call mistral error {e}', e)
+            return aget_error_generator(str(e))
     elif use_model.startswith("claude"):
         try:
             anthropic_api_key = os.getenv("ANTHROPIC_API_KEY")
@@ -272,13 +332,13 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
             content = content.replace('{', '(')
             content = content.replace('}', ')')
             lc_msgs = [("system", content)]
-            logger.info(f"调用claude模型传入的消息列表:{lc_msgs}")
             for _m in messages:
                 _m["content"] = _m["content"].replace('{', '(').replace('}', ')')
                 if _m["role"] == "user":
                     lc_msgs.append(("human", _m["content"]))
                 else:
                     lc_msgs.append(("ai", _m["content"]))
+            logger.info(f"调用claude模型传入的消息列表:{lc_msgs}")
             chat = ChatAnthropic(temperature=0, anthropic_api_key=anthropic_api_key, model_name="claude-3-opus-20240229")
             prompt = ChatPromptTemplate.from_messages(lc_msgs)
             parser = StrOutputParser()
