@@ -323,17 +323,18 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         data["chatRelatedNews"] = _related_news
         picked_content = _tmp_attitude
         if int(picked_content) == 1:
-            if language == 'zh' or language == 'cn':
+            if language_ == 'zh' or language_ == 'cn':
                 picked_content = "这则新闻对Web3行业是利好消息"
             else:
                 picked_content = "The news is positive for the Web3 industry"
         else:
-            if language == 'zh' or language == 'cn':
+            if language_ == 'zh' or language_ == 'cn':
                 picked_content = "这则新闻对Web3行业是利空消息"
             else:
                 picked_content = "The news is negative for the Web3 industry"
         yield json.dumps(get_format_output("source", "v004"))
         yield json.dumps(get_format_output("gpt", picked_content + '\n'))
+        yield json.dumps(get_format_output("gpt", '\n'))
     if source == 'v007':
         airdrop_info = json.loads(newest_question)
         if airdrop_info:
