@@ -19,6 +19,13 @@ async def get_gpt_message(userid, msggroup):
     result = await CollectionPool().query(sql, (userid, msggroup))
     return result
 
+# 获取用户某个类型最后一条消息
+async def get_gpt_message_last_by_type(userid, msggroup, type):
+    sql = 'SELECT id, content, type, msggroup, create_time, code FROM gpt_messages WHERE ' \
+          'userid=%s AND msggroup=%s and deleted=0 and type=%s ORDER BY id DESC LIMIT 1'
+    result = await CollectionPool().query(sql, (userid, msggroup, type))
+    return result
+
 # 获取用户消息列表用作上下文
 async def get_gpt_message_limit(userid, msggroup, limit):
     sql = 'SELECT id, content, type, msggroup, create_time, code, base64_type, base64_content as base64content, quote_info as quoteInfo, file_type, agent_id,regenerate_response FROM gpt_messages WHERE ' \
@@ -64,9 +71,22 @@ async def add_share_message(code, messages, userid):
     result = await CollectionPool().insert(sql, (code, messages, userid))
     return result
 
-
 async def get_share_msg(code):
     sql = 'SELECT id, code, messages FROM share_messages WHERE ' \
           'code=%s'
     result = await CollectionPool().query(sql, (code))
+    return result
+
+# 获取用户某条消息
+async def get_gpt_message_by_id(userid, message_id):
+    sql = 'SELECT id, content, type, msggroup, create_time, code FROM gpt_messages WHERE ' \
+          'userid=%s AND id=%s and deleted=0'
+    result = await CollectionPool().query(sql, (userid, message_id))
+    return result
+
+# 修改用户某条消息
+async def update_gpt_message_content(userid, message_id, content):
+    sql = 'UPDATE gpt_messages SET content=%s WHERE ' \
+          'userid=%s AND id=%s and deleted=0'
+    result = await CollectionPool().update(sql, (content, userid, message_id))
     return result
