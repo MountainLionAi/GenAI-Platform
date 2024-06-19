@@ -35,6 +35,8 @@ ERROR_CODE = {
     "PRE_WITHDRAW_API": 8011,
     "CHECK_WITHDRAW_INFO_ERROR": 8012,
     "WITHDRAW_API_ERROR": 8013,
+    "PAY_SCENARIO_NOT_EXIST": 9001,
+    "PAY_SCENARIO_BALANCE_NOT_ENOUGH": 9002,
 }
 
 # 错误信息
@@ -73,5 +75,7 @@ ERROR_MESSAGE = {
     8010: 'Withdraw Amount Too Small',
     8011: 'Request Pre Withdraw Api Error, Maybe Email Problem',
     8012: 'Check Withdraw Info Error',
-    8013: 'Withdraw API Error'
+    8013: 'Withdraw API Error',
+    9001: 'Pay Scenario Not Exist',
+    9002: 'Pay Scenario Balance Not Enough'
 }
