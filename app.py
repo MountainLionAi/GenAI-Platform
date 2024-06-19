@@ -8,6 +8,8 @@ from sanic_cors import CORS
 from genaipf.middlewares.user_token_middleware import check_user
 from genaipf.middlewares.user_log_middleware import save_user_log
 from sanic_session import Session
+from genaipf.bot.tg.tg_ai_bot import tgAiBot
+import asyncio
 
 Sanic(server.SERVICE_NAME)
 app = Sanic.get_app()
@@ -60,3 +62,4 @@ if __name__ == "__main__":
             # workers的数量可以单独设置，如果设置为fast则默认为8
             # app.run(host=server.HOST, port=server.PORT, fast=True)
             app.run(host=server.HOST, port=server.PORT, workers=2)
+        asyncio.run(tgAiBot.startup())

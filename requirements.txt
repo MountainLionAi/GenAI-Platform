@@ -47,3 +47,4 @@ playwright==1.44.0
 selenium==4.21.0
 spider-client==0.0.21
 mistralai=0.4.0
+pyTelegramBotAPI==4.19.1
