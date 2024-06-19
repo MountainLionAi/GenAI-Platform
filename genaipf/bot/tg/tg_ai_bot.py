@@ -1,8 +1,8 @@
 from telebot.async_telebot import AsyncTeleBot
-from telebot import asyncio_helper
+# from telebot import asyncio_helper
 from telebot.types import ReplyKeyboardMarkup, KeyboardButton
 from genaipf.utils.log_utils import logger
-from utils import i18n_util
+from genaipf.bot.tg.utils import i18n_util
 from genaipf.bot.tg.utils.keyboard_util import quick_markup_title
 from genaipf.bot.tg.client.price_predict_client import PricePredictClient
 from genaipf.bot.tg.client.research_report_client import ResearchReportClient
@@ -10,7 +10,7 @@ from genaipf.bot.tg import bot_cache
 from genaipf.conf import tg_bot_conf
 import time
 
-asyncio_helper.proxy = 'http://127.0.0.1:7890'
+# asyncio_helper.proxy = 'http://127.0.0.1:7890'
 
 
 def reply_keyboards(message):

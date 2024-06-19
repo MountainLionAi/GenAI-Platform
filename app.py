@@ -47,6 +47,10 @@ args = parser.parse_args()
 # args.addvectordb
 config = vars(args)
 
+@app.listener('after_server_start')
+async def start_bot(app, loop):
+    await tgAiBot.startup()
+
 if __name__ == "__main__":
     '''
     python app.py -a # add dispatcher/vdb_pairs to vector db
@@ -62,4 +66,3 @@ if __name__ == "__main__":
             # workers的数量可以单独设置，如果设置为fast则默认为8
             # app.run(host=server.HOST, port=server.PORT, fast=True)
             app.run(host=server.HOST, port=server.PORT, workers=2)
-        asyncio.run(tgAiBot.startup())
