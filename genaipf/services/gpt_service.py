@@ -71,9 +71,22 @@ async def add_share_message(code, messages, userid):
     result = await CollectionPool().insert(sql, (code, messages, userid))
     return result
 
-
 async def get_share_msg(code):
     sql = 'SELECT id, code, messages FROM share_messages WHERE ' \
           'code=%s'
     result = await CollectionPool().query(sql, (code))
+    return result
+
+# 获取用户某条消息
+async def get_gpt_message_by_id(userid, message_id):
+    sql = 'SELECT id, content, type, msggroup, create_time, code FROM gpt_messages WHERE ' \
+          'userid=%s AND id=%s and deleted=0'
+    result = await CollectionPool().query(sql, (userid, message_id))
+    return result
+
+# 修改用户某条消息
+async def update_gpt_message_content(userid, message_id, content):
+    sql = 'UPDATE gpt_messages SET content=%s WHERE ' \
+          'userid=%s AND id=%s and deleted=0'
+    result = await CollectionPool().update(sql, (content, userid, message_id))
     return result
