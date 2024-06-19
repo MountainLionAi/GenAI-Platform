@@ -23,7 +23,7 @@ async def get_gpt_message(userid, msggroup):
 async def get_gpt_message_last_by_type(userid, msggroup, type):
     sql = 'SELECT id, content, type, msggroup, create_time, code FROM gpt_messages WHERE ' \
           'userid=%s AND msggroup=%s and deleted=0 and type=%s ORDER BY id DESC LIMIT 1'
-    result = await CollectionPool().query(sql, (userid, msggroup))
+    result = await CollectionPool().query(sql, (userid, msggroup, type))
     return result
 
 # 获取用户消息列表用作上下文
