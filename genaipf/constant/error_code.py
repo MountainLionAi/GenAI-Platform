@@ -78,4 +78,5 @@ ERROR_MESSAGE = {
     8013: 'Withdraw API Error',
     9001: 'Pay Scenario Not Exist',
     9002: 'Pay Scenario Balance Not Enough'
+
 }
