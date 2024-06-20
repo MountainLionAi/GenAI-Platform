@@ -57,6 +57,7 @@ class TgAiBot:
                 i18n_util.set_text(call.message, 'en')
                 await send_start(call.message)
                 bot_cache.set_lang(call.message, 'en')
+        
 
         @self.__bot.message_handler(commands=['start'])
         async def send_start(message):
@@ -68,6 +69,12 @@ class TgAiBot:
             markup.add(*reply_keyboards(message))
             await self.__bot.send_message(message.chat.id, i18n_util.get_text(message)("请选择下方菜单"),
                                           reply_markup=markup)
+
+
+        @self.__bot.callback_query_handler(func=lambda c: c.data in ['releated_question_one', 'releated_question_two', 'releated_question_three'])
+        async def releated_question_handler(call):
+            await self.send_message(call.message.text, call.message)
+        
 
         @self.__bot.message_handler(func=lambda message: True)
         async def echo_all(message):
@@ -82,85 +89,111 @@ class TgAiBot:
                 param = i18n_util.get_text(message)("请选择语言")
                 await self.__bot.send_message(message.chat.id, param, reply_markup=select_lang_keyboard)
             else:
-                logger.info(f"message.chat.type={message.chat.type}")
-                need_answer = False
-                group_talk = False
-                to_ask_gpt_question = message.text
-                if message.chat.type == "private":
-                    need_answer = True
-                elif message.chat.type in ["group", "supergroup", "channel"]:
-                    if f"@{tg_bot_conf.BOT_USER_NAME}" in to_ask_gpt_question:
-                        need_answer = True
-                        group_talk = True
-                        to_ask_gpt_question = to_ask_gpt_question.replace(f"@{tg_bot_conf.BOT_USER_NAME}", "")
-                if not need_answer:
-                    return
-                text = ""
-                message_count = 0
-                batch_size = 25
-                text_parts = []
-                sent_msg = None
+                await self.send_message(None,message)
                 
-                _question = message.text
-                _userid = None
-                _msggroup = None,
-                _language = bot_cache.get_lang(message)
-                _front_messages = [{"role": "user", "content": to_ask_gpt_question}]
-                _device_no = None
-                _question_code = None
-                _model = "ml-plus"
-                _output_type = "text"
-                _source = "v203"
-                _owner = "tgbot"
-                _agent_id = None
-                _chain_id = None
-                _llm_model = "openai"
-                _wallet_type = None
-                _regenerate_response = None
-                async for str in getAnswerAndCallGpt(_question, _userid, _msggroup, _language, _front_messages, _device_no, _question_code, _model, _output_type, _source, _owner, _agent_id, _chain_id, _llm_model, _wallet_type, _regenerate_response):
-                    _msg_json = json.loads(str)
-                    _type = _msg_json.get("role")
-                    _content = _msg_json.get("content")
-                    if _type == 'gpt':
-                        if _content != "llm_yielding" and _content != "":
-                            _content = escape_markdown(_content)
-                            if _content == ' ':
-                                _content = _content + '\u200b'
-                            text_parts.append(_content)
-                            message_count += 1
-                            if message_count >= batch_size:
-                                final_text = ''.join(text_parts)
-                                text += final_text
-                                if sent_msg is None:
-                                    if group_talk:
-                                        sent_msg = await self.__bot.send_message(chat_id, text, parse_mode="MarkdownV2", reply_to_message_id=message.message_id)
-                                    else:
-                                        sent_msg = await self.__bot.send_message(chat_id, text, parse_mode="MarkdownV2")
-                                else:
-                                    await self.retry_send_message(chat_id, sent_msg.message_id, text)
-                                text_parts = []
-                                message_count = 0
-                                time.sleep(0.7)
-                    elif _type == 'step':
-                        if _content == 'done':
-                            if text_parts:
-                                final_text = ''.join(text_parts)
-                                text += final_text
-                                if sent_msg is None:
-                                    if group_talk:
-                                        sent_msg = await self.__bot.send_message(chat_id, text, parse_mode="MarkdownV2", reply_to_message_id=message.message_id)
-                                    else:
-                                        sent_msg = await self.__bot.send_message(chat_id, text, parse_mode="MarkdownV2")
-                                else:
-                                    await self.retry_send_message(chat_id, sent_msg.message_id, text)
-                            logger.info("输出结束")
-                logger.info(f"text=\n{text}")
+                
+
+    async def send_message(self, to_ask_gpt_question, message):
+        chat_id = message.chat.id
+        logger.info(f"message.chat.type={message.chat.type}")
+        need_answer = False
+        group_talk = False
+        if not to_ask_gpt_question:
+            to_ask_gpt_question = message.text
+        if message.chat.type == "private":
+            need_answer = True
+        elif message.chat.type in ["group", "supergroup", "channel"]:
+            if f"@{tg_bot_conf.BOT_USER_NAME}" in to_ask_gpt_question:
+                need_answer = True
+                group_talk = True
+                to_ask_gpt_question = to_ask_gpt_question.replace(f"@{tg_bot_conf.BOT_USER_NAME}", "")
+        if not need_answer:
+            return
+        text = ""
+        message_count = 0
+        batch_size = 25
+        text_parts = []
+        sent_msg = None
+        releated_question_keyboard = None
+        
+        _question = to_ask_gpt_question
+        _userid = None
+        _msggroup = None,
+        _language = bot_cache.get_lang(message)
+        _front_messages = [{"role": "user", "content": to_ask_gpt_question}]
+        _device_no = None
+        _question_code = None
+        _model = "ml-plus"
+        _output_type = "text"
+        _source = "v203"
+        _owner = "tgbot"
+        _agent_id = None
+        _chain_id = None
+        _llm_model = "openai"
+        _wallet_type = None
+        _regenerate_response = None
+        async for str in getAnswerAndCallGpt(_question, _userid, _msggroup, _language, _front_messages, _device_no, _question_code, _model, _output_type, _source, _owner, _agent_id, _chain_id, _llm_model, _wallet_type, _regenerate_response):
+            _msg_json = json.loads(str)
+            _type = _msg_json.get("role")
+            _content = _msg_json.get("content")
+            if _type == 'gpt':
+                if _content != "llm_yielding" and _content != "":
+                    _content = escape_markdown(_content)
+                    if _content == ' ':
+                        _content = _content + '\u200b'
+                    text_parts.append(_content)
+                    message_count += 1
+                    if message_count >= batch_size:
+                        final_text = ''.join(text_parts)
+                        text += final_text
+                        if sent_msg is None:
+                            if group_talk:
+                                sent_msg = await self.__bot.send_message(chat_id, text, parse_mode="MarkdownV2", reply_to_message_id=message.message_id)
+                            else:
+                                sent_msg = await self.__bot.send_message(chat_id, text, parse_mode="MarkdownV2")
+                        else:
+                            await self.retry_send_message(chat_id, sent_msg.message_id, text, releated_question_keyboard)
+                        text_parts = []
+                        message_count = 0
+                        time.sleep(0.7)
+            elif _type == 'step':
+                if _content == 'done':
+                    if text_parts:
+                        final_text = ''.join(text_parts)
+                        text += final_text
+                        if sent_msg is None:
+                            if group_talk:
+                                sent_msg = await self.__bot.send_message(chat_id, text, parse_mode="MarkdownV2", reply_to_message_id=message.message_id)
+                            else:
+                                sent_msg = await self.__bot.send_message(chat_id, text, parse_mode="MarkdownV2")
+                        else:
+                            await self.retry_send_message(chat_id, sent_msg.message_id, text, releated_question_keyboard)
+                    logger.info("输出结束")
+            elif _type == 'chatRelatedResults':
+                contents = _msg_json.get("content")
+                if contents and len(contents) > 0:
+                    button = {
+                        'one': [
+                            [contents[0]["title"], {'callback_data': 'releated_question_one'}],
+                        ],
+                        "two": [
+                            [contents[1]["title"], {'callback_data': 'releated_question_two'}],
+                        ],
+                        "three": [
+                            [contents[2]["title"], {'callback_data': 'releated_question_three'}],
+                        ],
+                    }
+                    releated_question_keyboard = quick_markup_title(button)
+        logger.info(f"text=\n{text}")
 
     
-    async def retry_send_message(self, chat_id, message_id, text):
+    async def retry_send_message(self, chat_id, message_id, text, releated_question_keyboard):
         while True:
             try:
-                await self.__bot.edit_message_text(text=text, chat_id=chat_id, message_id=message_id, parse_mode="MarkdownV2")
+                if releated_question_keyboard:
+                    await self.__bot.edit_message_text(text=text, chat_id=chat_id, message_id=message_id, parse_mode="MarkdownV2", reply_markup=releated_question_keyboard)
+                else:
+                    await self.__bot.edit_message_text(text=text, chat_id=chat_id, message_id=message_id, parse_mode="MarkdownV2")
                 break
             except Exception as e:
                 if e.error_code == 429:
