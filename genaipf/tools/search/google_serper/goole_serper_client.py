@@ -31,14 +31,14 @@ class GoogleSerperClient:
         type: Literal["news", "search", "places", "images"] = "search"
         search_result = []
         try:
-            recent_search = LionPromptCommon.get_prompted_messages("recent_search", question)
-            is_recent = await simple_achat(recent_search)
             client = AsyncHTTPClient()
             payload = {
                 "q": question,
             }
-            if is_recent:
-                payload["tbs"] = "qdr:w"
+            # recent_search = LionPromptCommon.get_prompted_messages("recent_search", question)
+            # is_recent = await simple_achat(recent_search)
+            # if is_recent:
+            #     payload["tbs"] = "qdr:w"
             logger.info(f'google serper search payload: {payload}')
             headers = {
                 'X-API-KEY': self._api_key,
