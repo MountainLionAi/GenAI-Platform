@@ -1,6 +1,7 @@
 from genaipf.bot.tg.utils import i18n_util, keyboard_util
 from genaipf.conf import tg_bot_conf
 from genaipf.bot.tg import bot_cache
+import urllib.parse
 
 
 def research_report_button(message):
@@ -55,7 +56,14 @@ class ResearchReportClient:
         async def price_predict_callback_handler(call):
             base_url = tg_bot_conf.MOUNTAIN_HOST
             coin = url_param.get(call.data)
-            text = base_url + f"isBot=true&question={coin[0]}的研报&lang={bot_cache.get_lang(call.message)}"
+            question_text = i18n_util.get_text(call.message)("每日预测")
+            params = {
+                'isBot': 'true',
+                'question': f'{coin[0]}{question_text}',
+                'lang': f'{bot_cache.get_lang(call.message)}'
+            }
+            # text = base_url + f"isBot=true&question={coin[0]}{question_text}&lang={bot_cache.get_lang(call.message)}"
+            text = base_url + urllib.parse.urlencode(params)
             await self.bot.send_message(chat_id=call.message.chat.id, text=text)
 
     async def research_report_info(self, message):
