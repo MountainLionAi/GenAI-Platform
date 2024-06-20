@@ -7,4 +7,4 @@ def set_lang(msg, lang):
 
 
 def get_lang(msg):
-    return user_lang_set.get(msg.chat.id, "en")
+    return user_lang_set.get(msg.chat.id)
