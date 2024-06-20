@@ -22,3 +22,12 @@ msgstr "请选择下方菜单:"
 
 msgid "请选择语言"
 msgstr "请选择语言"
+
+msgid "选择一个币种"
+msgstr "选择一个币种"
+
+msgid "每日预测"
+msgstr "每日预测"
+
+msgid "的研报"
+msgstr "的研报"

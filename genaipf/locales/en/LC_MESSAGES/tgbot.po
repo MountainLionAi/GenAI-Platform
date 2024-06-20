@@ -23,6 +23,16 @@ msgstr "Please select from the menu below:"
 msgid "请选择语言"
 msgstr "Please select a language"
 
+msgid "选择一个币种"
+msgstr "Select a coin"
+
+msgid "每日预测"
+msgstr " daily prediction"
+
+msgid "的研报"
+msgstr " research report"
+
+
 
 
 
