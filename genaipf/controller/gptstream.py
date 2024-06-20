@@ -216,6 +216,10 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     # 特殊处理移动端问题
     if owner == 'IOS':
         owner = 'MountainLion'
+    
+    # tgbot特殊处理owner
+    if owner == "tgbot":
+        owner = "MountainLion.ai"
 
     # 判断是否有敏感词汇，更改用户问题、上下文内容。question为存库数据，不需要修改
     is_normal_question = await isNormal(newest_question)
