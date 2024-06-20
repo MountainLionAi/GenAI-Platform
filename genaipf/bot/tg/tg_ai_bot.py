@@ -64,7 +64,8 @@ class TgAiBot:
             language_code = 'en' if message.from_user.language_code is None else message.from_user.language_code.lower()
             lang = 'zh_CN' if 'zh' in language_code else 'en'
             i18n_util.get_text(message, lang)
-            bot_cache.set_lang(message, 'zh' if lang == 'zh_CN' else lang)
+            if bot_cache.get_lang(message) is None:
+                bot_cache.set_lang(message, 'zh' if lang == 'zh_CN' else lang)
             markup = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=False, row_width=2)
             markup.add(*reply_keyboards(message))
             await self.__bot.send_message(message.chat.id, i18n_util.get_text(message)("请选择下方菜单"),
