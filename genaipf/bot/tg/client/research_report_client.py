@@ -56,7 +56,7 @@ class ResearchReportClient:
         async def price_predict_callback_handler(call):
             base_url = tg_bot_conf.MOUNTAIN_HOST
             coin = url_param.get(call.data)
-            question_text = i18n_util.get_text(call.message)("每日预测")
+            question_text = i18n_util.get_text(call.message)("的研报")
             params = {
                 'isBot': 'true',
                 'question': f'{coin[0]}{question_text}',
