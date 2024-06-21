@@ -1,11 +1,11 @@
 import asyncio
 from inspect import signature
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Optional, Type, List, AsyncGenerator
-from llama_index.llms import OpenAI, ChatMessage
-from llama_index.tools import BaseTool, FunctionTool, ToolMetadata
-from llama_index.tools.utils import create_schema_from_function
-from llama_index.agent import OpenAIAgent
-from llama_index.llms import OpenAI
+from llama_index.core.base.llms.types import ChatMessage
+from llama_index.core.tools  import BaseTool, FunctionTool, ToolMetadata
+from llama_index.core.tools.utils import create_schema_from_function
+from llama_index.agent.openai import OpenAIAgent
+from llama_index.llms.openai import OpenAI
 from llama_index.llms.openai import DEFAULT_TEMPERATURE
 from genaipf.conf.server import OPENAI_API_KEY
 from genaipf.dispatcher.api import get_format_output
