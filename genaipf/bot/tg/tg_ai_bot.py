@@ -51,13 +51,12 @@ class TgAiBot:
         async def select_items_handler(call):
             if call.data == 'select_zh_cn':
                 i18n_util.set_text(call.message, 'zh_CN')
-                await send_start(call.message)
                 bot_cache.set_lang(call.message, 'zh')
+                await send_start(call.message)
             elif call.data == 'select_en':
                 i18n_util.set_text(call.message, 'en')
-                await send_start(call.message)
                 bot_cache.set_lang(call.message, 'en')
-        
+                await send_start(call.message)
 
         @self.__bot.message_handler(commands=['start'])
         async def send_start(message):
@@ -66,6 +65,8 @@ class TgAiBot:
             i18n_util.get_text(message, lang)
             if bot_cache.get_lang(message) is None:
                 bot_cache.set_lang(message, 'zh' if lang == 'zh_CN' else lang)
+            logger.info("language=" + bot_cache.get_lang(message))
+            logger.info("gettext=" + i18n_util.get_text(message)("请选择下方菜单"))
             markup = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=False, row_width=2)
             markup.add(*reply_keyboards(message))
             await self.__bot.send_message(message.chat.id, i18n_util.get_text(message)("请选择下方菜单"),
@@ -74,13 +75,19 @@ class TgAiBot:
 
         @self.__bot.callback_query_handler(func=lambda c: c.data in ['releated_question_one', 'releated_question_two', 'releated_question_three'])
         async def releated_question_handler(call):
-            await self.send_message(call.message.text, call.message)
+            await self.send_message(call.message)
         
 
         @self.__bot.message_handler(func=lambda message: True)
         async def echo_all(message):
             chat_id = message.chat.id
             logger.info(f'receive message={message.text}, chat_id={chat_id}')
+            price_predict = i18n_util.get_text(message)("币价预测")
+            logger.info(f"price_predict={price_predict}")
+            research_report = i18n_util.get_text(message)("研究报告")
+            logger.info(f"research_report={research_report}")
+            switch_language = i18n_util.get_text(message)("切换语言")
+            logger.info(f"research_report={switch_language}")
             if message.text == i18n_util.get_text(message)("币价预测"):
                 await self.price_predict_client.price_predict_info(message)
             elif message.text == i18n_util.get_text(message)("研究报告"):
@@ -90,17 +97,16 @@ class TgAiBot:
                 param = i18n_util.get_text(message)("请选择语言")
                 await self.__bot.send_message(message.chat.id, param, reply_markup=select_lang_keyboard)
             else:
-                await self.send_message(None,message)
+                await self.send_message(message)
                 
                 
 
-    async def send_message(self, to_ask_gpt_question, message):
+    async def send_message(self, message):
         chat_id = message.chat.id
         logger.info(f"message.chat.type={message.chat.type}")
         need_answer = False
         group_talk = False
-        if not to_ask_gpt_question:
-            to_ask_gpt_question = message.text
+        to_ask_gpt_question = message.text
         if message.chat.type == "private":
             need_answer = True
         elif message.chat.type in ["group", "supergroup", "channel"]:
