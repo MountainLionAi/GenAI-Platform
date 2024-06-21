@@ -80,14 +80,16 @@ class TgAiBot:
 
         @self.__bot.message_handler(func=lambda message: True)
         async def echo_all(message):
-            chat_id = message.chat.id
-            logger.info(f'receive message={message.text}, chat_id={chat_id}')
-            price_predict = i18n_util.get_text(message)("币价预测")
-            logger.info(f"price_predict={price_predict}")
-            research_report = i18n_util.get_text(message)("研究报告")
-            logger.info(f"research_report={research_report}")
-            switch_language = i18n_util.get_text(message)("切换语言")
-            logger.info(f"research_report={switch_language}")
+            lang = bot_cache.get_lang(message)
+            logger.info(f"lang={lang}")
+            logger.info(f"user_message={message.text}")
+            if lang is None:
+                if message.text in ["📈Price predict", "📊Research report"]:
+                    i18n_util.get_text(message, "en")
+                    bot_cache.set_lang(message, "en")
+                if message.text in ["📈币价预测", "📊研究报告"]:
+                    i18n_util.get_text(message, "zh_CN")
+                    bot_cache.set_lang(message, "zh")
             if message.text == i18n_util.get_text(message)("币价预测"):
                 await self.price_predict_client.price_predict_info(message)
             elif message.text == i18n_util.get_text(message)("研究报告"):
