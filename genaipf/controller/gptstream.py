@@ -520,55 +520,55 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
             yield json.dumps(get_format_output("chatRelatedResults", related_questions))
         yield json.dumps(get_format_output("step", "done"))
         logger.info(f'>>>>> userid={userid}, func & ref _tmp_text & output_type: {output_type}: {_tmp_text}')
-    else:
-        logger.info(f'>>>>> userid={userid}, func & ref _tmp_text & output_type & has sensitive word in response: {output_type}: {_tmp_text}')
-    base64_type = 0
-    if last_front_msg.get('type') == 'image':
-        base64_type = 1
-    base64_content = last_front_msg.get('base64content')
-    quote_info = last_front_msg.get('quote_info', None)
-    file_type = last_front_msg.get('format')
-    if question and msggroup :
-        gpt_message = (
-        question,
-        'user',
-        userid,
-        msggroup,
-        question_code,
-        device_no,
-        base64_type,
-        base64_content,
-        quote_info,
-        file_type,
-        agent_id,
-        regenerate_response
-        )
-        if not isPreSwap:
-            await gpt_service.add_gpt_message_with_code(gpt_message)
-        if data['type'] in ['coin_swap', 'wallet_balance', 'token_transfer']:  # 如果是兑换类型，存库时候需要加一个过期字段，前端用于判断不再发起交易
-            data['expired'] = True
-        # TODO 速度问题暂时注释掉
-        if used_rag:
-            data['chatSerpResults'] = [] # TODO 因为敏感词屏蔽RAG来源
-            # data['chatSerpResults'] = sources
-            data['chatRelatedResults'] = related_questions
-        data['responseType'] = responseType
-        messageContent = json.dumps(data)
-        gpt_message = (
-            messageContent,
-            data['type'],
+        base64_type = 0
+        if last_front_msg.get('type') == 'image':
+            base64_type = 1
+        base64_content = last_front_msg.get('base64content')
+        quote_info = last_front_msg.get('quote_info', None)
+        file_type = last_front_msg.get('format')
+        if question and msggroup :
+            gpt_message = (
+            question,
+            'user',
             userid,
             msggroup,
-            data['code'],
+            question_code,
             device_no,
-            None,
-            None,
-            None,
-            None,
+            base64_type,
+            base64_content,
+            quote_info,
+            file_type,
             agent_id,
-            None
-        )
-        await gpt_service.add_gpt_message_with_code(gpt_message)
+            regenerate_response
+            )
+            if not isPreSwap:
+                await gpt_service.add_gpt_message_with_code(gpt_message)
+            if data['type'] in ['coin_swap', 'wallet_balance', 'token_transfer']:  # 如果是兑换类型，存库时候需要加一个过期字段，前端用于判断不再发起交易
+                data['expired'] = True
+            # TODO 速度问题暂时注释掉
+            if used_rag:
+                data['chatSerpResults'] = [] # TODO 因为敏感词屏蔽RAG来源
+                # data['chatSerpResults'] = sources
+                data['chatRelatedResults'] = related_questions
+            data['responseType'] = responseType
+            messageContent = json.dumps(data)
+            gpt_message = (
+                messageContent,
+                data['type'],
+                userid,
+                msggroup,
+                data['code'],
+                device_no,
+                None,
+                None,
+                None,
+                None,
+                agent_id,
+                None
+            )
+            await gpt_service.add_gpt_message_with_code(gpt_message)
+    else:
+        logger.info(f'>>>>> userid={userid}, func & ref _tmp_text & output_type & has sensitive word in response: {output_type}: {_tmp_text}')
 
 
 async def  getAnswerAndCallGptData(question, userid, msggroup, language, front_messages, device_no, question_code, model, output_type, source, owner, agent_id):
