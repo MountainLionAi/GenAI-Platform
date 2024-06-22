@@ -374,8 +374,8 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
             logger.info(f"userid={userid},本次聊天rag检索生成的rag_qa={related_qa}")
             # logger.info(f'>>>>> second related_qa: {related_qa}')
             if source != 'v004':
-                # yield json.dumps(get_format_output("chatSerpResults", []))  #  TODO 因为敏感词屏蔽RAG来源
-                yield json.dumps(get_format_output("chatSerpResults", sources))
+                yield json.dumps(get_format_output("chatSerpResults", []))  #  TODO 因为敏感词屏蔽RAG来源
+                # yield json.dumps(get_format_output("chatSerpResults", sources))
             else:
                 yield json.dumps(get_format_output("chatSerpResults", []))
                 if len(related_qa) == 0:
@@ -538,8 +538,8 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
             data['expired'] = True
         # TODO 速度问题暂时注释掉
         if used_rag:
-            # data['chatSerpResults'] = [] # TODO 因为敏感词屏蔽RAG来源
-            data['chatSerpResults'] = sources
+            data['chatSerpResults'] = [] # TODO 因为敏感词屏蔽RAG来源
+            # data['chatSerpResults'] = sources
             data['chatRelatedResults'] = related_questions
         data['responseType'] = responseType
         messageContent = json.dumps(data)
