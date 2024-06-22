@@ -506,19 +506,22 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
 
     # 把相关问题放到这里 节省执行时间
     logger.info(f"userid={userid},本次对话是否需要qa={need_qa}")
-    if need_qa:
-        related_questions_task_start_time = time.perf_counter()
-        await related_questions_task
-        related_questions = related_questions_task.result()
-        related_questions_task_end_time = time.perf_counter()
-        elapsed_related_questions_task_time = (related_questions_task_end_time - related_questions_task_start_time) * 1000
-        logger.info(f'=====================>related_questions_task耗时：{elapsed_related_questions_task_time:.3f}毫秒')
-        logger.info(f"userid={userid},related_questions={related_questions}")
-        yield json.dumps(get_format_output("chatRelatedResults", related_questions))
-    elif not related_questions:
-        yield json.dumps(get_format_output("chatRelatedResults", related_questions))
-    yield json.dumps(get_format_output("step", "done"))
-    logger.info(f'>>>>> userid={userid}, func & ref _tmp_text & output_type: {output_type}: {_tmp_text}')
+    if not has_sensitive_word: # 如果没有敏感词
+        if need_qa:
+            related_questions_task_start_time = time.perf_counter()
+            await related_questions_task
+            related_questions = related_questions_task.result()
+            related_questions_task_end_time = time.perf_counter()
+            elapsed_related_questions_task_time = (related_questions_task_end_time - related_questions_task_start_time) * 1000
+            logger.info(f'=====================>related_questions_task耗时：{elapsed_related_questions_task_time:.3f}毫秒')
+            logger.info(f"userid={userid},related_questions={related_questions}")
+            yield json.dumps(get_format_output("chatRelatedResults", related_questions))
+        elif not related_questions:
+            yield json.dumps(get_format_output("chatRelatedResults", related_questions))
+        yield json.dumps(get_format_output("step", "done"))
+        logger.info(f'>>>>> userid={userid}, func & ref _tmp_text & output_type: {output_type}: {_tmp_text}')
+    else:
+        logger.info(f'>>>>> userid={userid}, func & ref _tmp_text & output_type & has sensitive word in response: {output_type}: {_tmp_text}')
     base64_type = 0
     if last_front_msg.get('type') == 'image':
         base64_type = 1
