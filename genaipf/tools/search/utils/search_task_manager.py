@@ -256,10 +256,6 @@ async def multi_search(questions: str, related_qa=[], language=None):
         related_qa.append(questions + ' : ' + final_content)
     return final_sources, related_qa
 
-async def check_sensitive_words_in_source(source):
-    return checked_sources
-
-
 
 async def check_sensitive_words_in_sources(sources):
     checked_sources = []
