@@ -249,17 +249,11 @@ async def multi_search(questions: str, related_qa=[], language=None):
             source_info = result[0]
             source_content = result[1]
             # 检查sources
-            # checked_sources = await check_sensitive_words_in_sources(source_info)
-            # final_sources = final_sources + checked_sources
-
-            # TODO 去调屏蔽
-            final_sources = final_sources + source_info
-
-            # # 检查内容
-            # if await sensitive_utils.isNormal(source_content):
-            #     final_content += source_content
-
-            final_content += source_content
+            checked_sources = await check_sensitive_words_in_sources(source_info)
+            final_sources = final_sources + checked_sources
+            # 检查内容
+            if await sensitive_utils.isNormal(source_content):
+                final_content += source_content
     if len(final_sources) > 0:
         related_qa.append(questions + ' : ' + final_content)
     logger.info(f'================最后的sources===============')

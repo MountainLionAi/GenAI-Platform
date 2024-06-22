@@ -568,7 +568,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
             )
             await gpt_service.add_gpt_message_with_code(gpt_message)
     else:
-        logger.info(f'>>>>> userid={userid}, func & ref _tmp_text & output_type & has sensitive word in response: {output_type}: {_tmp_text}')
+        logger.info(f'>>>>> userid={userid}, query={newest_question}, func & ref _tmp_text & output_type & has sensitive word in response: {output_type}: {_tmp_text}')
 
 
 async def  getAnswerAndCallGptData(question, userid, msggroup, language, front_messages, device_no, question_code, model, output_type, source, owner, agent_id):
