@@ -256,6 +256,12 @@ async def multi_search(questions: str, related_qa=[], language=None):
                 final_content += source_content
     if len(final_sources) > 0:
         related_qa.append(questions + ' : ' + final_content)
+    logger.info(f'================最后的sources===============')
+    logger.info(final_sources)
+    logger.info(f'================最后的sources===============')
+    logger.info(f'================最后的related_qa===============')
+    logger.info(related_qa)
+    logger.info(f'================最后的related_qa===============')
     return final_sources, related_qa
 
 
@@ -263,15 +269,6 @@ async def check_sensitive_words_in_sources(sources):
     checked_sources = []
     for source in sources:
         title = source['title']
-        print(f'===================当前的title是=============')
-        print(title)
-        print(f'===================当前的title是=============')
         if await sensitive_utils.isNormal(title):
-            print(f'===================检测通过的source=============')
-            print(title)
-            print(f'===================检测通过的source=============')
             checked_sources.append(source)
-    print(f'===================最后的sources是=============')
-    print(checked_sources)
-    print(f'===================最后的sources是=============')
     return checked_sources
