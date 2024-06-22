@@ -115,8 +115,6 @@ async def get_sources_tasks(front_messages, related_qa, language, source):
     get_sources_tasks_end_time = time.perf_counter()
     elapsed_get_sources_tasks_time = (get_sources_tasks_end_time - enrich_question_start_time) * 1000
     logger.info(f'=====================>get_sources_tasks耗时：{elapsed_get_sources_tasks_time:.3f}毫秒')
-    if sources and len(sources) != 0:  # 判断来源的sources中是否含有敏感词汇
-        sources = await check_sensitive_words_in_sources(sources)
     return sources, final_related_qa
 
 
@@ -248,11 +246,19 @@ async def multi_search(questions: str, related_qa=[], language=None):
     final_content = ''
     if len(results) != 0:
         for result in results:
-            final_sources = final_sources + result[0]
-            final_content += result[1]
+            source_info = result[0]
+            source_content = result[1]
+            if await sensitive_utils.isNormal(source_info['title']):
+                if await sensitive_utils.isNormal(source_content):
+                    final_sources = final_sources + source_info
+                    final_content += source_content
     if len(final_sources) > 0:
         related_qa.append(questions + ' : ' + final_content)
     return final_sources, related_qa
+
+async def check_sensitive_words_in_source(source):
+    return checked_sources
+
 
 
 async def check_sensitive_words_in_sources(sources):
