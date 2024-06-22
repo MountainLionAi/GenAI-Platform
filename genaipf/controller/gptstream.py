@@ -193,6 +193,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     has_image = False
     continue_get_quote = True
     quote_message = ''
+    has_sensitive_word = False
     for x in front_messages:
         if continue_get_quote:
             if x.get("quote_info"):
@@ -404,7 +405,14 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
                 #     base64_encoded_voice = textToSpeech(_tmp_text)
                 #     yield json.dumps(get_format_output("tts", base64_encoded_voice, "voice_mp3_v001"))
             else:
-                yield json.dumps(chunk) 
+                _need_check_text = chunk['content']
+                if not await isNormal(_need_check_text):
+                    has_sensitive_word = True
+                    yield json.dumps(get_format_output("hasSensitiveWord", True))
+                    _tmp_text = 'response has sensitive word'
+                    await resp1.aclose()
+                else:
+                    yield json.dumps(chunk)
     else:
         try:
             func_name = func_chunk["content"]["func_name"]
@@ -498,66 +506,69 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
 
     # 把相关问题放到这里 节省执行时间
     logger.info(f"userid={userid},本次对话是否需要qa={need_qa}")
-    if need_qa:
-        related_questions_task_start_time = time.perf_counter()
-        await related_questions_task
-        related_questions = related_questions_task.result()
-        related_questions_task_end_time = time.perf_counter()
-        elapsed_related_questions_task_time = (related_questions_task_end_time - related_questions_task_start_time) * 1000
-        logger.info(f'=====================>related_questions_task耗时：{elapsed_related_questions_task_time:.3f}毫秒')
-        logger.info(f"userid={userid},related_questions={related_questions}")
-        yield json.dumps(get_format_output("chatRelatedResults", related_questions))
-    elif not related_questions:
-        yield json.dumps(get_format_output("chatRelatedResults", related_questions))
-    yield json.dumps(get_format_output("step", "done"))
-    logger.info(f'>>>>> userid={userid}, func & ref _tmp_text & output_type: {output_type}: {_tmp_text}')
-    base64_type = 0
-    if last_front_msg.get('type') == 'image':
-        base64_type = 1
-    base64_content = last_front_msg.get('base64content')
-    quote_info = last_front_msg.get('quote_info', None)
-    file_type = last_front_msg.get('format')
-    if question and msggroup :
-        gpt_message = (
-        question,
-        'user',
-        userid,
-        msggroup,
-        question_code,
-        device_no,
-        base64_type,
-        base64_content,
-        quote_info,
-        file_type,
-        agent_id,
-        regenerate_response
-        )
-        if not isPreSwap:
-            await gpt_service.add_gpt_message_with_code(gpt_message)
-        if data['type'] in ['coin_swap', 'wallet_balance', 'token_transfer']:  # 如果是兑换类型，存库时候需要加一个过期字段，前端用于判断不再发起交易
-            data['expired'] = True
-        # TODO 速度问题暂时注释掉
-        if used_rag:
-            data['chatSerpResults'] = [] # TODO 因为敏感词屏蔽RAG来源
-            # data['chatSerpResults'] = sources
-            data['chatRelatedResults'] = related_questions
-        data['responseType'] = responseType
-        messageContent = json.dumps(data)
-        gpt_message = (
-            messageContent,
-            data['type'],
+    if not has_sensitive_word: # 如果没有敏感词
+        if need_qa:
+            related_questions_task_start_time = time.perf_counter()
+            await related_questions_task
+            related_questions = related_questions_task.result()
+            related_questions_task_end_time = time.perf_counter()
+            elapsed_related_questions_task_time = (related_questions_task_end_time - related_questions_task_start_time) * 1000
+            logger.info(f'=====================>related_questions_task耗时：{elapsed_related_questions_task_time:.3f}毫秒')
+            logger.info(f"userid={userid},related_questions={related_questions}")
+            yield json.dumps(get_format_output("chatRelatedResults", related_questions))
+        elif not related_questions:
+            yield json.dumps(get_format_output("chatRelatedResults", related_questions))
+        yield json.dumps(get_format_output("step", "done"))
+        logger.info(f'>>>>> userid={userid}, func & ref _tmp_text & output_type: {output_type}: {_tmp_text}')
+        base64_type = 0
+        if last_front_msg.get('type') == 'image':
+            base64_type = 1
+        base64_content = last_front_msg.get('base64content')
+        quote_info = last_front_msg.get('quote_info', None)
+        file_type = last_front_msg.get('format')
+        if question and msggroup :
+            gpt_message = (
+            question,
+            'user',
             userid,
             msggroup,
-            data['code'],
+            question_code,
             device_no,
-            None,
-            None,
-            None,
-            None,
+            base64_type,
+            base64_content,
+            quote_info,
+            file_type,
             agent_id,
-            None
-        )
-        await gpt_service.add_gpt_message_with_code(gpt_message)
+            regenerate_response
+            )
+            if not isPreSwap:
+                await gpt_service.add_gpt_message_with_code(gpt_message)
+            if data['type'] in ['coin_swap', 'wallet_balance', 'token_transfer']:  # 如果是兑换类型，存库时候需要加一个过期字段，前端用于判断不再发起交易
+                data['expired'] = True
+            # TODO 速度问题暂时注释掉
+            if used_rag:
+                data['chatSerpResults'] = [] # TODO 因为敏感词屏蔽RAG来源
+                # data['chatSerpResults'] = sources
+                data['chatRelatedResults'] = related_questions
+            data['responseType'] = responseType
+            messageContent = json.dumps(data)
+            gpt_message = (
+                messageContent,
+                data['type'],
+                userid,
+                msggroup,
+                data['code'],
+                device_no,
+                None,
+                None,
+                None,
+                None,
+                agent_id,
+                None
+            )
+            await gpt_service.add_gpt_message_with_code(gpt_message)
+    else:
+        logger.info(f'>>>>> userid={userid}, query={newest_question}, func & ref _tmp_text & output_type & has sensitive word in response: {output_type}: {_tmp_text}')
 
 
 async def  getAnswerAndCallGptData(question, userid, msggroup, language, front_messages, device_no, question_code, model, output_type, source, owner, agent_id):
