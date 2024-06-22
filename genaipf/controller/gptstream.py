@@ -193,6 +193,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     has_image = False
     continue_get_quote = True
     quote_message = ''
+    has_sensitive_word = False
     for x in front_messages:
         if continue_get_quote:
             if x.get("quote_info"):
@@ -404,7 +405,14 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
                 #     base64_encoded_voice = textToSpeech(_tmp_text)
                 #     yield json.dumps(get_format_output("tts", base64_encoded_voice, "voice_mp3_v001"))
             else:
-                yield json.dumps(chunk) 
+                _need_check_text = chunk['content']
+                if not await isNormal(_need_check_text):
+                    has_sensitive_word = True
+                    yield json.dumps(get_format_output("hasSensitiveWord", True))
+                    _tmp_text = ''
+                    await resp1.aclose()
+                else:
+                    yield json.dumps(chunk)
     else:
         try:
             func_name = func_chunk["content"]["func_name"]
