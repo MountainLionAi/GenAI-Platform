@@ -259,6 +259,15 @@ def check_sensitive_words_in_sources(sources):
     checked_sources = []
     for source in sources:
         title = source['title']
+        print(f'===================当前的title是=============')
+        print(title)
+        print(f'===================当前的title是=============')
         if sensitive_utils.isNormal(title):
+            print(f'===================检测通过的source=============')
+            print(title)
+            print(f'===================检测通过的source=============')
             checked_sources.append(source)
+    print(f'===================最后的sources是=============')
+    print(checked_sources)
+    print(f'===================最后的sources是=============')
     return checked_sources
