@@ -116,7 +116,7 @@ async def get_sources_tasks(front_messages, related_qa, language, source):
     elapsed_get_sources_tasks_time = (get_sources_tasks_end_time - enrich_question_start_time) * 1000
     logger.info(f'=====================>get_sources_tasks耗时：{elapsed_get_sources_tasks_time:.3f}毫秒')
     if sources and len(sources) != 0:  # 判断来源的sources中是否含有敏感词汇
-        sources = check_sensitive_words_in_sources(sources)
+        sources = await check_sensitive_words_in_sources(sources)
     return sources, final_related_qa
 
 
@@ -255,10 +255,19 @@ async def multi_search(questions: str, related_qa=[], language=None):
     return final_sources, related_qa
 
 
-def check_sensitive_words_in_sources(sources):
+async def check_sensitive_words_in_sources(sources):
     checked_sources = []
     for source in sources:
         title = source['title']
-        if sensitive_utils.isNormal(title):
+        print(f'===================当前的title是=============')
+        print(title)
+        print(f'===================当前的title是=============')
+        if await sensitive_utils.isNormal(title):
+            print(f'===================检测通过的source=============')
+            print(title)
+            print(f'===================检测通过的source=============')
             checked_sources.append(source)
+    print(f'===================最后的sources是=============')
+    print(checked_sources)
+    print(f'===================最后的sources是=============')
     return checked_sources
