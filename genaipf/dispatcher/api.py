@@ -273,7 +273,7 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
         content = prompts_v003.LionPrompt.get_aref_answer_prompt(language, preset_name, picked_content, related_qa, use_model, data, quote_message)
     elif source == 'v004':
         content = prompts_v004.LionPrompt.get_aref_answer_prompt(language, preset_name, picked_content, related_qa, use_model, {}, quote_message)
-    elif source == 'v005' or source == 'v006':
+    elif source == 'v005' or source == 'v006' or source == 'v008':
         content = prompts_v005.LionPrompt.get_aref_answer_prompt(language, preset_name, picked_content, related_qa, use_model, {}, quote_message)
     elif source == 'v007':
         content = prompts_v007.LionPrompt.get_aref_answer_prompt(language, preset_name, picked_content, related_qa, use_model, {}, quote_message)
