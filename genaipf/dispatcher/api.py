@@ -12,12 +12,14 @@ import genaipf.dispatcher.prompts_v003 as prompts_v003
 import genaipf.dispatcher.prompts_v004 as prompts_v004
 import genaipf.dispatcher.prompts_v005 as prompts_v005
 import genaipf.dispatcher.prompts_v007 as prompts_v007
+import genaipf.dispatcher.prompts_v008 as prompts_v008
 # from openai.error import InvalidRequestError
 from openai import BadRequestError
 from genaipf.utils.redis_utils import RedisConnectionPool
 from genaipf.utils.speech_utils import transcribe, textToSpeech
 from mistralai.async_client import MistralAsyncClient
 from mistralai.models.chat_completion import ChatMessage
+from genaipf.utils.sensitive_util import isNormal
 
 # temperature=2 # 值在[0,1]之间，越大表示回复越具有不确定性
 # max_tokens=2000 # 输出的最大 token 数
@@ -153,6 +155,10 @@ async def awrap_gpt_generator(gpt_response, output_type=""):
             _gpt_letter = chunk.choices[0].delta.content
             if _gpt_letter:
                 _tmp_text += _gpt_letter
+                is_normal = await isNormal(_tmp_text)
+                if not is_normal:
+                    yield get_format_output("has_sensitive", '')
+                    await resp.aclose()
                 _tmp_voice_text += _gpt_letter
                 if output_type != 'voice':
                     yield get_format_output("gpt", _gpt_letter)
@@ -272,6 +278,8 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
         content = prompts_v005.LionPrompt.get_aref_answer_prompt(language, preset_name, picked_content, related_qa, use_model, {}, quote_message)
     elif source == 'v007':
         content = prompts_v007.LionPrompt.get_aref_answer_prompt(language, preset_name, picked_content, related_qa, use_model, {}, quote_message)
+    elif source == 'v008':
+        content = prompts_v008.LionPrompt.get_aref_answer_prompt(language, preset_name, picked_content, related_qa, use_model, {}, quote_message)
     else:
         content = LionPrompt.get_aref_answer_prompt(language, preset_name, picked_content, related_qa, use_model, '', owner, quote_message)
     system = {
