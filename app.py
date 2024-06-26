@@ -8,6 +8,8 @@ from sanic_cors import CORS
 from genaipf.middlewares.user_token_middleware import check_user
 from genaipf.middlewares.user_log_middleware import save_user_log
 from sanic_session import Session
+from genaipf.bot.tg.tg_ai_bot import tgAiBot
+import asyncio
 
 Sanic(server.SERVICE_NAME)
 app = Sanic.get_app()
@@ -44,6 +46,10 @@ parser.add_argument("-a", "--addvectordb", action="store_true", help="add vector
 args = parser.parse_args()
 # args.addvectordb
 config = vars(args)
+
+@app.listener('after_server_start')
+async def start_bot(app, loop):
+    await tgAiBot.startup()
 
 if __name__ == "__main__":
     '''

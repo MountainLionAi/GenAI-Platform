@@ -51,8 +51,8 @@ coverage.xml
 .idea/
 
 # Translations
-*.mo
-*.pot
+#*.mo
+#*.pot
 
 # Django stuff:
 *.log
@@ -112,3 +112,4 @@ doc/
 .variables
 logs
 
+test/
