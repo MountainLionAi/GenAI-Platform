@@ -1,0 +1,38 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"PO-Revision-Date: 2023-09-20 12:15+0800\n"
+"Last-Translator: lgy18 <EMAIL@ADDRESS>\n"
+"Language-Team: Language D:\\projects\\swftbot\\locales\\en\\LC\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "切换语言"
+msgstr "🔄Switch language"
+
+msgid "币价预测"
+msgstr "📈Price predict"
+
+msgid "研究报告"
+msgstr "📊Research report"
+
+msgid "请选择下方菜单"
+msgstr "Please select from the menu below:"
+
+msgid "请选择语言"
+msgstr "Please select a language"
+
+msgid "选择一个币种"
+msgstr "Select a coin"
+
+msgid "每日预测"
+msgstr " daily prediction"
+
+msgid "的研报"
+msgstr " research report"
+
+
+
+
+

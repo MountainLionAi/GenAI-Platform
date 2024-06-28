@@ -55,7 +55,8 @@ async def del_message_by_codes(request: Request):
     try:
         result = await del_gpt_message_by_code(userid, _code)
         logger.info(f">>>>>>>>>>>>deleted messages:{_code}")
-        if not result:
+        if result:
             return success('已删除')
     except Exception as e:
         logger.error(e)
+        return fail(ERROR_CODE['PARAMS_ERROR'])

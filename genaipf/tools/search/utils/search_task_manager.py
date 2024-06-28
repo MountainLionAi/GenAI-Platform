@@ -9,6 +9,7 @@ from genaipf.tools.search.google_serper.goole_serper_client import GoogleSerperC
 from genaipf.utils.common_utils import aget_multi_coro, sync_to_async
 from genaipf.tools.search.google.google_search import google_search
 from genaipf.conf.rag_conf import RAG_SEARCH_CLIENT
+import genaipf.utils.sensitive_util as sensitive_utils
 import time
 
 WHITE_LIST_URL = [
@@ -37,7 +38,7 @@ async def get_is_need_search_task(front_messages):
 
 
 # 获取相关问题相关task
-async def get_related_question_task(newest_question_arr, fixed_related_question, language, source):
+async def get_related_question_task(newest_question_arr, fixed_related_question, language, source=''):
     related_questions = []
     if source == 'v007':
         return related_questions
@@ -245,8 +246,29 @@ async def multi_search(questions: str, related_qa=[], language=None):
     final_content = ''
     if len(results) != 0:
         for result in results:
-            final_sources = final_sources + result[0]
-            final_content += result[1]
+            source_info = result[0]
+            source_content = result[1]
+            # 检查sources
+            checked_sources = await check_sensitive_words_in_sources(source_info)
+            final_sources = final_sources + checked_sources
+            # 检查内容
+            if await sensitive_utils.isNormal(source_content):
+                final_content += source_content
     if len(final_sources) > 0:
         related_qa.append(questions + ' : ' + final_content)
+    logger.info(f'================最后的sources===============')
+    logger.info(final_sources)
+    logger.info(f'================最后的sources===============')
+    logger.info(f'================最后的related_qa===============')
+    logger.info(related_qa)
+    logger.info(f'================最后的related_qa===============')
     return final_sources, related_qa
+
+
+async def check_sensitive_words_in_sources(sources):
+    checked_sources = []
+    for source in sources:
+        title = source['title']
+        if await sensitive_utils.isNormal(title):
+            checked_sources.append(source)
+    return checked_sources

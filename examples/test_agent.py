@@ -16,7 +16,10 @@ async def add(self, a: int, b: int) -> int:
 # agent = LlamaIndexAgent([])
 agent = LlamaIndexAgent([multiply, add], verbose=True)
 
-agent.start_chat("What is (121 * 3) + 42?")
+async def test1():
+    agent.start_chat("What is (121 * 3) + 42?")
 
-async for x in agent.async_response_gen():
-    print(x)
+    async for x in agent.async_response_gen():
+        print(x)
+        
+asyncio.run(test1())
