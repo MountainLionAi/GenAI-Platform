@@ -281,6 +281,7 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
         "role": "system",
         "content": content
     }
+    logger.info(f"system_prompt={content}")
     messages = make_calling_messages_based_on_model(messages_in, use_model)
     if use_model.startswith("gpt") or use_model == PERPLEXITY_MODEL:
         for i in range(5):
