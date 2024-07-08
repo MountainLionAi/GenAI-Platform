@@ -1,10 +1,12 @@
 import redis
 # https://github.com/aio-libs/aiocache
+from redis import asyncio as aioredis
 from aiocache import cached, Cache
 from aiocache.serializers import PickleSerializer
 from functools import wraps
 from genaipf.conf import redis_conf
 
+REDIS_DEFAULT_NAMESPACE = "main"
 
 class RedisConnectionPool:
     redis_client = None
@@ -41,7 +43,7 @@ def generate_cache_key(func, *args, **kwargs):
 
 # 初始化 Redis 缓存实例
 __cache = Cache(
-    Cache.REDIS, serializer=PickleSerializer(), namespace="main",
+    Cache.REDIS, serializer=PickleSerializer(), namespace=REDIS_DEFAULT_NAMESPACE,
     endpoint=redis_conf.HOST, port=redis_conf.PORT, password=redis_conf.PASSWORD
 )
 
@@ -69,3 +71,45 @@ def async_redis_cache(ttl, key_prefix=""):
 # async def cached_call():
 #     # 这里是你的异步函数逻辑
 #     ...
+
+
+# 手动使用的 cache
+manual_cache = Cache(
+    Cache.REDIS, serializer=PickleSerializer(), namespace="manual",
+    endpoint=redis_conf.HOST, port=redis_conf.PORT, password=redis_conf.PASSWORD
+)
+
+async def x_get(key):
+    return await manual_cache.get(key)
+
+async def x_set(key, value, ttl=None):
+    await manual_cache.set(key, value, ttl=ttl)
+
+async def x_is_key_in(key):
+    return await manual_cache.exists(key)
+
+async def x_delete(key):
+    await manual_cache.delete(key)
+
+# async def x_scratch_keys_of_prefix(prefix):
+#     keys_with_prefix = []
+#     match_pattern = f'{manual_cache.namespace}:{prefix}*'
+#     cursor = 0
+#     async for x in manual_cache.client.scan_iter(match=match_pattern):
+#         print(x)
+#     cursor, keys = await manual_cache.client.scan(cursor, match=match_pattern)
+    
+#     keys_with_prefix.extend(keys)
+#     # Clean up: Remove the namespace prefix from keys
+#     keys_with_prefix = [key.decode('utf-8').replace(f'{manual_cache.namespace}:', '') for key in keys_with_prefix]
+#     return keys_with_prefix
+
+
+
+# async def x_delete_keys_of_prefix(prefix):
+#     keys_with_prefix = await x_scratch_keys_of_prefix(prefix)
+
+#     # The delete method expects the keys to include the namespace
+#     keys_with_namespace = [f'{manual_cache.namespace}:{key}' for key in keys_with_prefix]
+#     if keys_with_namespace:
+#         await manual_cache.client.delete(*keys_with_namespace)
