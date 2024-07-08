@@ -3,7 +3,9 @@ import redis
 from redis import asyncio as aioredis
 from aiocache import cached, Cache
 from aiocache.serializers import PickleSerializer
+import asyncio
 from functools import wraps
+from typing import List
 from genaipf.conf import redis_conf
 
 REDIS_DEFAULT_NAMESPACE = "main"
@@ -113,3 +115,38 @@ async def x_delete(key):
 #     keys_with_namespace = [f'{manual_cache.namespace}:{key}' for key in keys_with_prefix]
 #     if keys_with_namespace:
 #         await manual_cache.client.delete(*keys_with_namespace)
+
+
+def x_list_cache(prefix, ttl=None):
+    def decorator(func):
+        @wraps(func)
+        async def wrapper(input_l: List):
+            tasks = []
+            not_in_cache = []
+
+            # Check which items are already in cache
+            for item in input_l:
+                cache_key = f"{prefix}{item}"
+                if await x_is_key_in(cache_key):
+                    tasks.append(x_get(cache_key))
+                else:
+                    not_in_cache.append(item)
+
+            # Fetch cached values
+            cached_results = await asyncio.gather(*tasks)
+
+            # Calculate the values that are not in cache
+            print(f'>>>x_list_cache {prefix}: {not_in_cache}')
+            calculated_results = await func(not_in_cache) if not_in_cache else []
+
+            # Store the newly calculated values in cache
+            for item, result in zip(not_in_cache, calculated_results):
+                cache_key = f"{prefix}{item}"
+                await x_set(cache_key, result, ttl=ttl)
+
+            # Combine results from cache and newly calculated values
+            results = cached_results + calculated_results
+            return results
+
+        return wrapper
+    return decorator
