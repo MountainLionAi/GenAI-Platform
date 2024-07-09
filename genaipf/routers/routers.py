@@ -22,6 +22,7 @@ blueprint_v1.add_route(gptstream.send_stream_chat, "sendStreamChat", methods=["P
 blueprint_v1.add_route(gptstream.send_chat, "sendChat", methods=["POST"])
 blueprint_v1.add_route(gpt_oneshot.send_oneshot_chat, "sendOneshotChat", methods=["POST"])
 blueprint_v1.add_route(gpt_oneshot.send_raw_chat_stream, "sendRawChatStream", methods=["POST"])
+blueprint_v1.add_route(gpt_oneshot.send_stylized_request, "sendStylizedRequest", methods=["POST"])
 blueprint_v1.add_route(userRate.user_rate, 'userRate', methods=["POST"])
 blueprint_v1.add_route(userRate.del_message_by_codes, 'delMessages', methods=["POST"])
 blueprint_v1.add_route(userRate.share_message, 'shareMessages', methods=["POST"])

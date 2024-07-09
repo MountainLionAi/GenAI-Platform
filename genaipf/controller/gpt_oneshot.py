@@ -1,6 +1,7 @@
 import asyncio
 import traceback
 import json
+from typing import Mapping
 import openai
 from sanic import Request, response
 from sanic.response import ResponseStream
@@ -109,4 +110,23 @@ async def send_raw_chat_stream(request: Request):
     except Exception as e:
         logger.error(e)
         logger.error(traceback.format_exc())
-    
+
+
+async def send_stylized_request(request: Request):
+    # deep_insight, get_format_output
+    params = request.json
+    _type = params.get('type')
+    userid = 0
+    if hasattr(request.ctx, 'user'):
+        userid = request.ctx.user['id']
+    try:
+        from genaipf.dispatcher.stylized_process import stylized_process_mapping
+        stylized_generator = stylized_process_mapping[_type]
+        async def event_generator(_response):
+            async for _str in  stylized_generator(params):
+                await _response.write(f"data:{_str}\n\n")
+                await asyncio.sleep(0.01)
+        return ResponseStream(event_generator, headers={"accept": "application/json"}, content_type="text/event-stream")
+    except Exception as e:
+        logger.error(e)
+        logger.error(traceback.format_exc())

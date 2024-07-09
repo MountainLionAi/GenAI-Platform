@@ -182,7 +182,7 @@ async def simple_achat(messages: typing.List[typing.Mapping[str, str]], model: s
     resp = await OpenAI2(model=model, api_key=OPENAI_API_KEY).achat(_msgs)
     return resp.message.content
 
-async def async_simple_chat(messages: typing.List[typing.Mapping[str, str]], model: str = DEFAULT_OPENAI_MODEL):
+async def async_simple_chat(messages: typing.List[typing.Mapping[str, str]], stream: bool = False, model: str = DEFAULT_OPENAI_MODEL):
     try:
         _base_urls = os.getenv("COMPATABLE_OPENAI_BASE_URLS", [])
         _base_urls = json.loads(_base_urls)
@@ -199,12 +199,15 @@ async def async_simple_chat(messages: typing.List[typing.Mapping[str, str]], mod
             _client.chat.completions.create(
                 model=model,
                 messages=messages,
-                stream=False
+                stream=stream
             ),
             timeout=60.0  # 设置超时时间为180秒
         )
         logger.info(f'>>>>>>>>>async_simple_chat openai use {_base_url}')
-        return response.choices[0].message.content
+        if stream:
+            return response
+        else:
+            return response.choices[0].message.content
     except Exception as e:
         logger.error(f'>>>>>>>>>async_simple_chat openai error: {e}')
         pass
@@ -215,11 +218,19 @@ async def async_simple_chat(messages: typing.List[typing.Mapping[str, str]], mod
         async_openai_client.chat.completions.create(
             model=model,
             messages=messages,
-            stream=False
+            stream=stream
         ),
         timeout=60.0  # 设置超时时间为180秒
     )
-    return response.choices[0].message.content
+    if stream:
+        return response
+    else:
+        return response.choices[0].message.content
+
+async def async_simple_chat_stream(messages: typing.List[typing.Mapping[str, str]], model: str = DEFAULT_OPENAI_MODEL):
+    from genaipf.dispatcher.api import awrap_gpt_generator
+    resp = await async_simple_chat(messages, True, model)
+    return awrap_gpt_generator(resp, "text")
 
 def merge_ref_and_input_text(ref, input_text, language='en'):
     if language == 'zh' or language == 'cn':
