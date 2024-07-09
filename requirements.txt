@@ -49,3 +49,4 @@ spider-client==0.0.21
 mistralai==0.4.0
 pyTelegramBotAPI==4.19.1
 curl_cffi==0.6.4
+dune-client==1.7.4

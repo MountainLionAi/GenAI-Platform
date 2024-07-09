@@ -43,18 +43,21 @@ app.register_middleware(save_user_log, "request")
 parser = argparse.ArgumentParser(description=f"{server.SERVICE_NAME} usage",
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument("-a", "--addvectordb", action="store_true", help="add vector db mode")
+parser.add_argument("-b", "--nobot", action="store_true", help="disable bot mode")
 args = parser.parse_args()
 # args.addvectordb
 config = vars(args)
 
 @app.listener('after_server_start')
 async def start_bot(app, loop):
-    await tgAiBot.startup()
+    if not args.nobot:
+        await tgAiBot.startup()
 
 if __name__ == "__main__":
     '''
     python app.py -a # add dispatcher/vdb_pairs to vector db
     python app.py # run server
+    python app.py -b # run server without bot
     '''
     if args.addvectordb:
         from genaipf.dispatcher.create_vdb import update_all_vdb
