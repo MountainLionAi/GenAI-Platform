@@ -1,5 +1,5 @@
 import asyncio
-from genaipf.dispatcher.utils import async_simple_chat
+from genaipf.dispatcher.utils import async_simple_chat, async_simple_chat_stream
 
 messages = [
     {"role": "system", "content": "you are smart"},
@@ -11,5 +11,16 @@ messages = [
 async def test1():
     x = await async_simple_chat(messages)
     print(x)
-    
-asyncio.run(test1())
+
+async def test2():
+    x = await async_simple_chat(messages, True)
+    async for y in x:
+        print(y)
+
+async def test3():
+    x = await async_simple_chat_stream(messages)
+    async for y in x:
+        print(y)
+
+# asyncio.run(test1())
+asyncio.run(test2())
