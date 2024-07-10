@@ -18,6 +18,7 @@ PATH_WITHOUT_LOGIN = (
     '/v1/api/sendChat',
     '/v1/api/sendOneshotChat',
     '/v1/api/sendRawChatStream',
+    '/v1/api/sendStylizedRequest',
     '/v1/api/getShareMessages',
     '/v1/api/pay/cardInfo',
     '/v1/api/pay/callback',
