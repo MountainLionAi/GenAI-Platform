@@ -1,5 +1,5 @@
 import asyncio
-from genaipf.dispatcher.utils import async_simple_chat, async_simple_chat_stream
+from genaipf.dispatcher.utils import async_simple_chat, async_simple_chat_stream, OPENAI_PLUS_MODEL
 
 messages = [
     {"role": "system", "content": "you are smart"},
