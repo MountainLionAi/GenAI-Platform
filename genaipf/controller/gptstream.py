@@ -183,6 +183,15 @@ async def send_chat(request: Request):
    
 
 async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messages, device_no, question_code, model, output_type, source, owner, agent_id, chain_id, llm_model, wallet_type, regenerate_response):
+    from genaipf.dispatcher.stylized_process import stylized_process_mapping
+    last_sp_msg = front_messages[-1]
+    if last_sp_msg.get("type") in stylized_process_mapping.keys():
+        _t = last_sp_msg.get("type")
+        last_sp_msg["language"] = language
+        g = stylized_process_mapping[_t](last_sp_msg)
+        async for _x in g:
+            yield _x
+        return
     t0 = time.time()
     MAX_CH_LENGTH = 8000
     _ensure_ascii = False
@@ -278,7 +287,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     # 判断是分析还是回答
     if source == 'v004':
         responseType = 1
-    if source == 'v005' or source == 'v006' or source == 'v008':
+    if source == 'v005' or source == 'v006' or source == 'v008' or source == 'v009':
         used_rag = False
         need_qa = False
     # 特殊处理swap前置问题
