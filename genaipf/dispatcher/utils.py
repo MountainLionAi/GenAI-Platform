@@ -20,6 +20,7 @@ PERPLEXITY_API_KEY=os.getenv("PERPLEXITY_API_KEY")
 PERPLEXITY_URL=os.getenv("PERPLEXITY_URL", "https://api.perplexity.ai")
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 MAX_CH_LENGTH_GPT3 = 8000
 MAX_CH_LENGTH_GPT4 = 3000
 MAX_CH_LENGTH_QA_GPT3 = 3000
@@ -180,6 +181,56 @@ async def simple_achat(messages: typing.List[typing.Mapping[str, str]], model: s
             ))
     resp = await OpenAI2(model=model, api_key=OPENAI_API_KEY).achat(_msgs)
     return resp.message.content
+
+async def async_simple_chat(messages: typing.List[typing.Mapping[str, str]], stream: bool = False, model: str = DEFAULT_OPENAI_MODEL):
+    # try:
+    #     _base_urls = os.getenv("COMPATABLE_OPENAI_BASE_URLS", [])
+    #     _base_urls = json.loads(_base_urls)
+    #     _api_keys = os.getenv("COMPATABLE_OPENAI_API_KEYS", [])
+    #     _api_keys = json.loads(_api_keys)
+    #     if len(_base_urls) == 0:
+    #         raise
+    #     import random
+    #     i = random.randint(0, len(_base_urls) - 1)
+    #     _base_url = _base_urls[i]
+    #     _api_key = _api_keys[i]
+    #     _client = AsyncOpenAI(api_key=_api_key, base_url=_base_url)
+    #     response = await asyncio.wait_for(
+    #         _client.chat.completions.create(
+    #             model=model,
+    #             messages=messages,
+    #             stream=stream
+    #         ),
+    #         timeout=60.0  # 设置超时时间为180秒
+    #     )
+    #     logger.info(f'>>>>>>>>>async_simple_chat openai use {_base_url}')
+    #     if stream:
+    #         return response
+    #     else:
+    #         return response.choices[0].message.content
+    # except Exception as e:
+    #     logger.error(f'>>>>>>>>>async_simple_chat openai error: {e}')
+    #     pass
+    async_openai_client = AsyncOpenAI(
+        api_key=OPENAI_API_KEY,
+    )
+    response = await asyncio.wait_for(
+        async_openai_client.chat.completions.create(
+            model=model,
+            messages=messages,
+            stream=stream
+        ),
+        timeout=60.0  # 设置超时时间为180秒
+    )
+    if stream:
+        return response
+    else:
+        return response.choices[0].message.content
+
+async def async_simple_chat_stream(messages: typing.List[typing.Mapping[str, str]], model: str = DEFAULT_OPENAI_MODEL):
+    from genaipf.dispatcher.api import awrap_gpt_generator
+    resp = await async_simple_chat(messages, True, model)
+    return awrap_gpt_generator(resp, "text")
 
 def merge_ref_and_input_text(ref, input_text, language='en'):
     if language == 'zh' or language == 'cn':

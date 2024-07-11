@@ -13,6 +13,7 @@ import genaipf.dispatcher.prompts_v004 as prompts_v004
 import genaipf.dispatcher.prompts_v005 as prompts_v005
 import genaipf.dispatcher.prompts_v007 as prompts_v007
 import genaipf.dispatcher.prompts_v008 as prompts_v008
+import genaipf.dispatcher.prompts_v009 as prompts_v009
 # from openai.error import InvalidRequestError
 from openai import BadRequestError
 from genaipf.utils.redis_utils import RedisConnectionPool
@@ -51,7 +52,7 @@ def generate_unique_id():
     redis_client = RedisConnectionPool().get_connection()
     return redis_client.incr('unique_id')
 
-def get_format_output(role, content, mode=None, type=None):
+def get_format_output(role, content, mode=None, type=None, format=None):
     if mode == "voice_mp3_v001":
         return {
             "role": role, 
@@ -62,6 +63,10 @@ def get_format_output(role, content, mode=None, type=None):
         }
     elif type == "preset7Content":
         return {"role": role, "type": "preset7Content", "format": "text", "version": "v001", "content": content}
+    elif type is not None and format is not None:
+        return {"role": role, "type": type, "format": format, "version": "v001", "content": content}
+    elif type is not None:
+        return {"role": role, "type": type, "format": "text", "version": "v001", "content": content}
     else:
         return {"role": role, "type": "text", "format": "text", "version": "v001", "content": content}
 
@@ -275,12 +280,15 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
         content = prompts_v007.LionPrompt.get_aref_answer_prompt(language, preset_name, picked_content, related_qa, use_model, {}, quote_message)
     elif source == 'v008':
         content = prompts_v008.LionPrompt.get_aref_answer_prompt(language, preset_name, picked_content, related_qa, use_model, {}, quote_message)
+    elif source == 'v009':
+        content = prompts_v009.LionPrompt.get_aref_answer_prompt(language, preset_name, picked_content, related_qa, use_model, {}, quote_message)
     else:
         content = LionPrompt.get_aref_answer_prompt(language, preset_name, picked_content, related_qa, use_model, '', owner, quote_message)
     system = {
         "role": "system",
         "content": content
     }
+    logger.info(f"system_prompt={content}")
     messages = make_calling_messages_based_on_model(messages_in, use_model)
     if use_model.startswith("gpt") or use_model == PERPLEXITY_MODEL:
         for i in range(5):
