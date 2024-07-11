@@ -59,6 +59,8 @@ def gpt_function_filter(gpt_functions_mapping, messages, msg_k=5, v_n=5, per_n=2
     try:
         if source == 'v008':
             used_names = gpt_funcs['SOURCE008']
+        elif source == 'v009':
+            used_names = gpt_funcs['SOURCE009']
         else:
             user_messages = [msg['content'] for msg in messages if msg['role'] == 'user'][-msg_k:]
             used_names = set()
