@@ -40,7 +40,16 @@ async def share_message(request: Request):
     qrcode = await generate_qr_code_base64(qrcode_url)
     summary_str = ''
     if summary == 1:
-        summary_str = await get_share_summary(messages, language)
+        for m in messages:
+            if m["role"] in ["system", "user", "assistant"]:
+                if m.get("type", "") == "preset4":
+                    summary_str = f'{m["content"]["coinName"]}币价预测'
+                    break
+                elif m.get("type", "") == "preset7":
+                    summary_str = f'{m["content"]["predict"]["coinName"]}研报'
+                    break
+        if summary_str == '':
+            summary_str = await get_share_summary(messages, language)
     await add_share_message(_code, json.dumps(messages), userid)
     data = {
         "qrcode": qrcode,
