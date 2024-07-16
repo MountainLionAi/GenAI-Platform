@@ -5,6 +5,8 @@ from genaipf.exception.customer_exception import CustomerError
 from genaipf.services.gpt_service import add_share_message, del_gpt_message_by_code, get_share_msg, set_gpt_gmessage_rate_by_id
 from genaipf.constant.error_code import ERROR_CODE
 from genaipf.interfaces.common_response import success, fail
+from genaipf.utils.qrcode_util import generate_qr_code_base64
+from genaipf.tools.search.utils.search_task_manager import get_share_summary
 
 
 async def user_rate(request: Request):
@@ -32,8 +34,19 @@ async def share_message(request: Request):
     request_params = request.json
     _code = request_params.get("code")
     messages = request_params.get("messages")
+    language = request_params.get("language", "cn")
+    qrcode_url = request_params.get("qrcode_url", "")
+    summary = request_params.get("summary", 0)
+    qrcode = await generate_qr_code_base64(qrcode_url)
+    summary_str = ''
+    if summary == 1:
+        summary_str = await get_share_summary(messages, language)
     await add_share_message(_code, json.dumps(messages), userid)
-    return success("成功")
+    data = {
+        "qrcode": qrcode,
+        "summary_str": summary_str
+    }
+    return success(data)
 
 async def get_share_message(request: Request):
     logger.info(f'>>>>>>>>>>>>>>>HEADERS:{request.headers}')
