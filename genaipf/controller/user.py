@@ -146,9 +146,9 @@ async def get_news(request: Request):
             await CollectionPool().update(update_sql, content['id'])
     else:
         logger.info("开始发送快讯定时消息")
-        msg = "Mountain Lion AI助手快讯播报\n\n"
+        msg = "Mlion.ai助手快讯播报\n\n"
         news = get_news_by_api()
         msg += news
-        msg += "最新最全币圈资讯，尽在 Mountain Lion，欢迎使用 Mountain Lion AI 助手——您的 Web3 专属专家投资顾问，让投资交易更简单！\n使用链接：https://www.mountainlion.ai/"
+        msg += "最新最全币圈资讯，尽在 Mlion.ai，欢迎使用 Mlion.ai 助手——您的 Web3 专属专家投资顾问，让投资交易更简单！\n使用链接：https://www.mlion.ai/"
         renews.append(msg)
     return success(renews)
