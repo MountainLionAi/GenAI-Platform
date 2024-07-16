@@ -130,7 +130,7 @@ async def get_web_urls_of_msg(front_messages):
         urls = urls_str.strip().strip("https://").split(";")
         related_urls = ["https://" + u for u in urls if u]
     except Exception as e:
-        logger.error(f'解析相关问题失败: {e}')
+        logger.error(f'获取相关 url 摘要失败: {e}')
     # if urls_str != 'False':
     #     try:
     #         for u in json.loads(urls_str):
@@ -154,9 +154,18 @@ async def get_article_summary(front_messages):
         summary_str = await simple_achat(msgs)
         return summary_str
     except Exception as e:
-        logger.error(f'解析相关问题失败: {e}')
+        logger.error(f'获取相关文章摘要失败: {e}')
         return None
-
+    
+# 获取分享内容总结
+async def get_share_summary(front_messages, language):
+    try:
+        msgs = LionPromptCommon.get_prompted_messages("share_summary", front_messages, language)
+        summary_str = await simple_achat(msgs)
+        return summary_str
+    except Exception as e:
+        logger.error(f'获取分享内容总结失败: {e}')
+        return None   
 
 async def aload_web(url):
     try:
