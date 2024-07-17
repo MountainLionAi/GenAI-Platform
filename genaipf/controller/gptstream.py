@@ -35,6 +35,7 @@ from genaipf.utils.sensitive_util import isNormal
 import os
 import base64
 from copy import deepcopy
+from genaipf.utils.common_utils import check_is_json
 from genaipf.conf.server import os, AI_ANALYSIS_USE_MODEL
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
@@ -297,224 +298,243 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         used_rag = False
     yield json.dumps(get_format_output("responseType", responseType))
     logger.info(f"userid={userid},本次对话是否需要用到rag={used_rag}")
-    if used_rag:
-        is_need_search = is_need_rag_simple(newest_question)
-        premise_search2_start_time = time.perf_counter()
-        sources_task, related_questions_task = await premise_search2(front_messages, related_qa, language_, source)
-        premise_search2_end_time = time.perf_counter()
-        elapsed_premise_search2 = (premise_search2_end_time - premise_search2_start_time) * 1000
-        logger.info(f'=====================>premise_search2耗时：{elapsed_premise_search2:.3f}毫秒')
-    else:
-        is_need_search = False
-        sources_task = None
-        related_questions_task = asyncio.create_task(get_related_question_task({"messages": [front_messages[-1]]}, fixed_related_question, language_))
-    logger.info(f"userid={userid},本次对话是否需要用到rag中的检索={is_need_search}")
-    _messages = [x for x in messages if x["role"] != "system"]
-    msgs = _messages[::]
-    # ^^^^^^^^ 在第一次 func gpt 就准备好数据 ^^^^^^^^
-    gpt_function_filter_start_time = time.perf_counter()
-    used_gpt_functions = gpt_function_filter(gpt_functions_mapping, _messages, source=source)
-    logger.info(f"userid={userid},本次对话用到的gpt_functions={used_gpt_functions}")
-    gpt_function_filter_end_time = time.perf_counter()
-    elapsed_gpt_function_filter_time = (gpt_function_filter_end_time - gpt_function_filter_start_time) * 1000
-    logger.info(f'=====================>gpt_function_filter耗时：{elapsed_gpt_function_filter_time:.3f}毫秒')
-    _tmp_text = ""
-    isPresetTop = False
-    data = {
-        'type' : 'gpt',
-        'content' : _tmp_text
-    }
-    sources = []
-    related_questions = []
-    _related_news = []
-    if source == 'v004':
-        from genaipf.dispatcher.callgpt import DispatcherCallGpt
-        _data = {"msgs": msgs, "model": model, "preset_name": "attitude", "source": source, "owner": owner, "llm_model": AI_ANALYSIS_USE_MODEL}
-        _tmp_attitude, _related_news = await DispatcherCallGpt.get_subtype_task_result(source, language_, _data)
-        yield json.dumps(get_format_output("attitude", _tmp_attitude))
-        yield json.dumps(get_format_output("chatRelatedNews", _related_news))
-        data["attitude"] = _tmp_attitude
-        data["chatRelatedNews"] = _related_news
-        picked_content = _tmp_attitude
-        if int(picked_content) == 1:
-            if language_ == 'zh' or language_ == 'cn':
-                picked_content = "这则新闻对Web3行业是利好消息"
-            else:
-                picked_content = "The news is positive for the Web3 industry"
-        else:
-            if language_ == 'zh' or language_ == 'cn':
-                picked_content = "这则新闻对Web3行业是利空消息"
-            else:
-                picked_content = "The news is negative for the Web3 industry"
-        yield json.dumps(get_format_output("source", "v004"))
-        yield json.dumps(get_format_output("gpt", picked_content + '\n'))
-        yield json.dumps(get_format_output("gpt", '\n'))
-    if source == 'v007':
-        airdrop_info = json.loads(newest_question)
-        if airdrop_info:
-            picked_content = airdrop_info.get('content')
-        logger.info(f'=====================>airdrop_picked_content：{picked_content}')
-    afunc_gpt_generator_start_time = time.perf_counter()
-    resp1 = await afunc_gpt_generator(msgs, used_gpt_functions, language_, model, picked_content, related_qa, source, owner)
-    afunc_gpt_generator_end_time = time.perf_counter()
-    elapsed_afunc_gpt_generator_time = (afunc_gpt_generator_end_time - afunc_gpt_generator_start_time) * 1000
-    logger.info(f'=====================>afunc_gpt_generator耗时：{elapsed_afunc_gpt_generator_time:.3f}毫秒')
-    chunk = await asyncio.wait_for(resp1.__anext__(), timeout=20)
-    isvision = False
-    func_chunk = None
-    if chunk["content"] == "llm_yielding":
-        route_mode = "text"
-    else:
-        func_chunk = await resp1.__anext__()
-        route_mode = "function"
-    await resp1.aclose()
-    # 特殊处理swap前置问题
-    if isPreSwap:
-        # 不匹配function
-        route_mode = "text"
-    if route_mode == "text":
-        logger.info(f"userid={userid},本次聊天未触发function")
-        if used_rag and is_need_search:
-            sources_task_start_time = time.perf_counter()
-            sources, related_qa = await sources_task
-            sources_task_end_time = time.perf_counter()
-            elapsed_sources_task_time = (sources_task_end_time - sources_task_start_time) * 1000
-            logger.info(f'=====================>sources_task耗时：{elapsed_sources_task_time:.3f}毫秒')
-            logger.info(f"userid={userid}, 本次聊天rag检索到的网站={sources}")
-            logger.info(f"userid={userid},本次聊天rag检索生成的rag_qa={related_qa}")
-            # logger.info(f'>>>>> second related_qa: {related_qa}')
-            if source != 'v004':
-                # yield json.dumps(get_format_output("chatSerpResults", []))  #  TODO 因为敏感词屏蔽RAG来源
-                yield json.dumps(get_format_output("chatSerpResults", sources))
-            else:
-                yield json.dumps(get_format_output("chatSerpResults", []))
-                if len(related_qa) == 0:
-                    related_qa.append('\n'.join([str(i) for i in _related_news]))
-                else:
-                    related_qa[0] = '\n'.join([str(i) for i in _related_news])
-                yield json.dumps(get_format_output("source", "v004"))
-                model = "claude"
-        # if last_front_msg.get('type') == 'image' and last_front_msg.get('base64content') is not None:
-        #     msgs = msgs[:-1] + buildVisionMessage(last_front_msg)
-        if has_image:
-            isvision = True
-            used_gpt_functions = None
-
-        aref_answer_gpt_generator_start_time = time.perf_counter()
-        resp1 = await aref_answer_gpt_generator(msgs, model, language_, None, picked_content, related_qa, source, owner, isvision, output_type, llm_model, quote_message)
-        aref_answer_gpt_generator_end_time = time.perf_counter()
-        elapsed_aref_answer_gpt_generator_time = (aref_answer_gpt_generator_end_time - aref_answer_gpt_generator_start_time) * 1000
-        logger.info(f'=====================>aref_answer_gpt_generator耗时：{elapsed_aref_answer_gpt_generator_time:.3f}毫秒')
-        
-        async for chunk in resp1:
-            if chunk["role"] == "inner_____gpt_whole_text":
-                _tmp_text = chunk["content"]
-                # if output_type == "voice":
-                #     # 对于语音输出，将文本转换为语音并编码
-                #     base64_encoded_voice = textToSpeech(_tmp_text)
-                #     yield json.dumps(get_format_output("tts", base64_encoded_voice, "voice_mp3_v001"))
-            else:
-                _need_check_text = chunk['content']
-                if not await isNormal(_need_check_text):
-                    has_sensitive_word = True
-                    yield json.dumps(get_format_output("hasSensitiveWord", True))
-                    _tmp_text = 'response has sensitive word'
-                    await resp1.aclose()
-                else:
-                    yield json.dumps(chunk)
-    else:
-        try:
-            func_name = func_chunk["content"]["func_name"]
-            sub_func_name = func_chunk["content"]["sub_func_name"]
-            whole_func_name = f"{func_name}_____{sub_func_name}"
-            logger.info(f"userid={userid},本次聊天触发function,whole_func_name={whole_func_name}")
-            if func_name in need_tool_agent_l or whole_func_name in need_tool_agent_l:
-                run_tool_agent_start_time = time.perf_counter()
-                stream_gen = run_tool_agent(func_chunk , messages, newest_question, model, language_, related_qa, source, owner, sources, is_need_search, sources_task, chain_id)
-                run_tool_agent_end_time = time.perf_counter()
-                elapsed_run_tool_agent_time = (run_tool_agent_end_time - run_tool_agent_start_time) * 1000
-                logger.info(f'=====================>run_tool_agent耗时：{elapsed_run_tool_agent_time:.3f}毫秒')
-            else:
-                convert_func_out_to_stream_start_time = time.perf_counter()
-                stream_gen = convert_func_out_to_stream(func_chunk , messages, newest_question, model, language_, related_qa, source, owner, sources, is_need_search, sources_task, chain_id, output_type, llm_model, userid, wallet_type)
-                convert_func_out_to_stream_time_end_time = time.perf_counter()
-                elapsed_convert_func_out_to_stream_time = (convert_func_out_to_stream_time_end_time - convert_func_out_to_stream_start_time) * 1000
-                logger.info(f'=====================>convert_func_out_to_stream耗时：{elapsed_convert_func_out_to_stream_time:.3f}毫秒')
-        except Exception as e:
-            logger.error(f'error: {e} \n func_chunk: {func_chunk}')
-            raise e
-        await resp1.aclose()
-        async for item in stream_gen:
-            if item["role"] == "inner_____gpt_whole_text":
-                _tmp_text = item["content"]
-                # if output_type == "voice":
-                #     # 对于语音输出，将文本转换为语音并编码
-                #     base64_encoded_voice = textToSpeech(_tmp_text)
-                #     yield json.dumps(get_format_output("tts", base64_encoded_voice, "voice_mp3_v001"))
-            elif item["role"] == "inner_____preset":
-                data.update(item["content"])
-            elif item["role"] == "inner_____preset_top":
-                isPresetTop = True
-                data.update(item["content"])
-                data.update({
-                    'code' : _code
-                })
-                _tmp = {
-                    "role": "preset", 
-                    "type": data["type"], 
-                    "format": data["subtype"], 
-                    "version": "v001", 
-                    "content": data
-                }
-                yield json.dumps(_tmp)
-                from genaipf.dispatcher.callgpt import DispatcherCallGpt
-                if DispatcherCallGpt.need_call_gpt(data):
-                    # 研报的相关问题前置，不然加载很慢
-                    need_qa = False
-                    related_questions_task_start_time = time.perf_counter()
-                    await related_questions_task
-                    related_questions = related_questions_task.result()
-                    related_questions_task_end_time = time.perf_counter()
-                    elapsed_related_questions_task_time = (related_questions_task_end_time - related_questions_task_start_time) * 1000
-                    logger.info(f'=====================>related_questions_task耗时：{elapsed_related_questions_task_time:.3f}毫秒')
-                    yield json.dumps(get_format_output("chatRelatedResults", related_questions))
-
-                    subtype_task_result = await DispatcherCallGpt.get_subtype_task_result(data["subtype"], language_, data)
-                    preset_type, preset_content, data = DispatcherCallGpt.gen_preset_content(data["subtype"], subtype_task_result, data)
-                    yield json.dumps(get_format_output("preset", preset_content, type=preset_type))
-            elif item["role"] == "sources":
-                sources = item["content"]
-            else:
-                yield json.dumps(item)
-
-    if source == 'v004':
-        _tmp_text = picked_content + "\n" + _tmp_text
-    data.update({
-        'content' : _tmp_text,
-        'code' : _code
-    })
-    if data["type"] != "gpt" and not isPresetTop:
-        _tmp = {
-            "role": "preset", 
-            "type": data["type"], 
-            "format": data["subtype"], 
-            "version": "v001", 
-            "content": data
+    
+    template_content = ''
+    if source == 'v008' and len(related_qa) > 0:
+        template_content = getTemplateContent(related_qa, language_)
+    if template_content != '':
+        related_questions = []
+        _tmp_text = template_content
+        data = {
+            'code' : _code,
+            'type' : 'gpt',
+            'content' : _tmp_text,
+            'chatSerpResults' : [],
+            'chatRelatedResults' : [],
+            'responseType' : 0
         }
-        yield json.dumps(_tmp)
-    if isPreSwap:
-        v101_content = await get_swap_preset_info(language_)
-        v101_content['content'].update(
-            {
-                'content' : _tmp_text,
-                'code' : _code
-            }
-        )
-        yield json.dumps(v101_content)
-        data = v101_content['content']
+        yield json.dumps(get_format_output("step", "llm_yielding"))
+        yield json.dumps(get_format_output("gpt", template_content))
+        yield json.dumps(get_format_output("step", "done"))
+    else:
+        if used_rag:
+            is_need_search = is_need_rag_simple(newest_question)
+            premise_search2_start_time = time.perf_counter()
+            sources_task, related_questions_task = await premise_search2(front_messages, related_qa, language_, source)
+            premise_search2_end_time = time.perf_counter()
+            elapsed_premise_search2 = (premise_search2_end_time - premise_search2_start_time) * 1000
+            logger.info(f'=====================>premise_search2耗时：{elapsed_premise_search2:.3f}毫秒')
+        else:
+            is_need_search = False
+            sources_task = None
+            related_questions_task = asyncio.create_task(get_related_question_task({"messages": [front_messages[-1]]}, fixed_related_question, language_))
+        logger.info(f"userid={userid},本次对话是否需要用到rag中的检索={is_need_search}")
+        _messages = [x for x in messages if x["role"] != "system"]
+        msgs = _messages[::]
+        # ^^^^^^^^ 在第一次 func gpt 就准备好数据 ^^^^^^^^
+        gpt_function_filter_start_time = time.perf_counter()
+        used_gpt_functions = gpt_function_filter(gpt_functions_mapping, _messages, source=source)
+        logger.info(f"userid={userid},本次对话用到的gpt_functions={used_gpt_functions}")
+        gpt_function_filter_end_time = time.perf_counter()
+        elapsed_gpt_function_filter_time = (gpt_function_filter_end_time - gpt_function_filter_start_time) * 1000
+        logger.info(f'=====================>gpt_function_filter耗时：{elapsed_gpt_function_filter_time:.3f}毫秒')
+        _tmp_text = ""
+        isPresetTop = False
+        data = {
+            'type' : 'gpt',
+            'content' : _tmp_text
+        }
+        sources = []
+        related_questions = []
+        _related_news = []
+        if source == 'v004':
+            from genaipf.dispatcher.callgpt import DispatcherCallGpt
+            _data = {"msgs": msgs, "model": model, "preset_name": "attitude", "source": source, "owner": owner, "llm_model": AI_ANALYSIS_USE_MODEL}
+            _tmp_attitude, _related_news = await DispatcherCallGpt.get_subtype_task_result(source, language_, _data)
+            yield json.dumps(get_format_output("attitude", _tmp_attitude))
+            yield json.dumps(get_format_output("chatRelatedNews", _related_news))
+            data["attitude"] = _tmp_attitude
+            data["chatRelatedNews"] = _related_news
+            picked_content = _tmp_attitude
+            if int(picked_content) == 1:
+                if language_ == 'zh' or language_ == 'cn':
+                    picked_content = "这则新闻对Web3行业是利好消息"
+                else:
+                    picked_content = "The news is positive for the Web3 industry"
+            else:
+                if language_ == 'zh' or language_ == 'cn':
+                    picked_content = "这则新闻对Web3行业是利空消息"
+                else:
+                    picked_content = "The news is negative for the Web3 industry"
+            yield json.dumps(get_format_output("source", "v004"))
+            yield json.dumps(get_format_output("gpt", picked_content + '\n'))
+            yield json.dumps(get_format_output("gpt", '\n'))
+        if source == 'v007':
+            airdrop_info = json.loads(newest_question)
+            if airdrop_info:
+                picked_content = airdrop_info.get('content')
+            logger.info(f'=====================>airdrop_picked_content：{picked_content}')
+        afunc_gpt_generator_start_time = time.perf_counter()
+        resp1 = await afunc_gpt_generator(msgs, used_gpt_functions, language_, model, picked_content, related_qa, source, owner)
+        afunc_gpt_generator_end_time = time.perf_counter()
+        elapsed_afunc_gpt_generator_time = (afunc_gpt_generator_end_time - afunc_gpt_generator_start_time) * 1000
+        logger.info(f'=====================>afunc_gpt_generator耗时：{elapsed_afunc_gpt_generator_time:.3f}毫秒')
+        chunk = await asyncio.wait_for(resp1.__anext__(), timeout=20)
+        isvision = False
+        func_chunk = None
+        if chunk["content"] == "llm_yielding":
+            route_mode = "text"
+        else:
+            func_chunk = await resp1.__anext__()
+            route_mode = "function"
+        await resp1.aclose()
+        # 特殊处理swap前置问题
+        if isPreSwap:
+            # 不匹配function
+            route_mode = "text"
+        if route_mode == "text":
+            logger.info(f"userid={userid},本次聊天未触发function")
+            if used_rag and is_need_search:
+                sources_task_start_time = time.perf_counter()
+                sources, related_qa = await sources_task
+                sources_task_end_time = time.perf_counter()
+                elapsed_sources_task_time = (sources_task_end_time - sources_task_start_time) * 1000
+                logger.info(f'=====================>sources_task耗时：{elapsed_sources_task_time:.3f}毫秒')
+                logger.info(f"userid={userid}, 本次聊天rag检索到的网站={sources}")
+                logger.info(f"userid={userid},本次聊天rag检索生成的rag_qa={related_qa}")
+                # logger.info(f'>>>>> second related_qa: {related_qa}')
+                if source != 'v004':
+                    # yield json.dumps(get_format_output("chatSerpResults", []))  #  TODO 因为敏感词屏蔽RAG来源
+                    yield json.dumps(get_format_output("chatSerpResults", sources))
+                else:
+                    yield json.dumps(get_format_output("chatSerpResults", []))
+                    if len(related_qa) == 0:
+                        related_qa.append('\n'.join([str(i) for i in _related_news]))
+                    else:
+                        related_qa[0] = '\n'.join([str(i) for i in _related_news])
+                    yield json.dumps(get_format_output("source", "v004"))
+                    model = "claude"
+            # if last_front_msg.get('type') == 'image' and last_front_msg.get('base64content') is not None:
+            #     msgs = msgs[:-1] + buildVisionMessage(last_front_msg)
+            if has_image:
+                isvision = True
+                used_gpt_functions = None
 
-    # 把相关问题放到这里 节省执行时间
-    logger.info(f"userid={userid},本次对话是否需要qa={need_qa}")
+            aref_answer_gpt_generator_start_time = time.perf_counter()
+            resp1 = await aref_answer_gpt_generator(msgs, model, language_, None, picked_content, related_qa, source, owner, isvision, output_type, llm_model, quote_message)
+            aref_answer_gpt_generator_end_time = time.perf_counter()
+            elapsed_aref_answer_gpt_generator_time = (aref_answer_gpt_generator_end_time - aref_answer_gpt_generator_start_time) * 1000
+            logger.info(f'=====================>aref_answer_gpt_generator耗时：{elapsed_aref_answer_gpt_generator_time:.3f}毫秒')
+            
+            async for chunk in resp1:
+                if chunk["role"] == "inner_____gpt_whole_text":
+                    _tmp_text = chunk["content"]
+                    # if output_type == "voice":
+                    #     # 对于语音输出，将文本转换为语音并编码
+                    #     base64_encoded_voice = textToSpeech(_tmp_text)
+                    #     yield json.dumps(get_format_output("tts", base64_encoded_voice, "voice_mp3_v001"))
+                else:
+                    _need_check_text = chunk['content']
+                    if not await isNormal(_need_check_text):
+                        has_sensitive_word = True
+                        yield json.dumps(get_format_output("hasSensitiveWord", True))
+                        _tmp_text = 'response has sensitive word'
+                        await resp1.aclose()
+                    else:
+                        yield json.dumps(chunk)
+        else:
+            try:
+                func_name = func_chunk["content"]["func_name"]
+                sub_func_name = func_chunk["content"]["sub_func_name"]
+                whole_func_name = f"{func_name}_____{sub_func_name}"
+                logger.info(f"userid={userid},本次聊天触发function,whole_func_name={whole_func_name}")
+                if func_name in need_tool_agent_l or whole_func_name in need_tool_agent_l:
+                    run_tool_agent_start_time = time.perf_counter()
+                    stream_gen = run_tool_agent(func_chunk , messages, newest_question, model, language_, related_qa, source, owner, sources, is_need_search, sources_task, chain_id)
+                    run_tool_agent_end_time = time.perf_counter()
+                    elapsed_run_tool_agent_time = (run_tool_agent_end_time - run_tool_agent_start_time) * 1000
+                    logger.info(f'=====================>run_tool_agent耗时：{elapsed_run_tool_agent_time:.3f}毫秒')
+                else:
+                    convert_func_out_to_stream_start_time = time.perf_counter()
+                    stream_gen = convert_func_out_to_stream(func_chunk , messages, newest_question, model, language_, related_qa, source, owner, sources, is_need_search, sources_task, chain_id, output_type, llm_model, userid, wallet_type)
+                    convert_func_out_to_stream_time_end_time = time.perf_counter()
+                    elapsed_convert_func_out_to_stream_time = (convert_func_out_to_stream_time_end_time - convert_func_out_to_stream_start_time) * 1000
+                    logger.info(f'=====================>convert_func_out_to_stream耗时：{elapsed_convert_func_out_to_stream_time:.3f}毫秒')
+            except Exception as e:
+                logger.error(f'error: {e} \n func_chunk: {func_chunk}')
+                raise e
+            await resp1.aclose()
+            async for item in stream_gen:
+                if item["role"] == "inner_____gpt_whole_text":
+                    _tmp_text = item["content"]
+                    # if output_type == "voice":
+                    #     # 对于语音输出，将文本转换为语音并编码
+                    #     base64_encoded_voice = textToSpeech(_tmp_text)
+                    #     yield json.dumps(get_format_output("tts", base64_encoded_voice, "voice_mp3_v001"))
+                elif item["role"] == "inner_____preset":
+                    data.update(item["content"])
+                elif item["role"] == "inner_____preset_top":
+                    isPresetTop = True
+                    data.update(item["content"])
+                    data.update({
+                        'code' : _code
+                    })
+                    _tmp = {
+                        "role": "preset", 
+                        "type": data["type"], 
+                        "format": data["subtype"], 
+                        "version": "v001", 
+                        "content": data
+                    }
+                    yield json.dumps(_tmp)
+                    from genaipf.dispatcher.callgpt import DispatcherCallGpt
+                    if DispatcherCallGpt.need_call_gpt(data):
+                        # 研报的相关问题前置，不然加载很慢
+                        need_qa = False
+                        related_questions_task_start_time = time.perf_counter()
+                        await related_questions_task
+                        related_questions = related_questions_task.result()
+                        related_questions_task_end_time = time.perf_counter()
+                        elapsed_related_questions_task_time = (related_questions_task_end_time - related_questions_task_start_time) * 1000
+                        logger.info(f'=====================>related_questions_task耗时：{elapsed_related_questions_task_time:.3f}毫秒')
+                        yield json.dumps(get_format_output("chatRelatedResults", related_questions))
+
+                        subtype_task_result = await DispatcherCallGpt.get_subtype_task_result(data["subtype"], language_, data)
+                        preset_type, preset_content, data = DispatcherCallGpt.gen_preset_content(data["subtype"], subtype_task_result, data)
+                        yield json.dumps(get_format_output("preset", preset_content, type=preset_type))
+                elif item["role"] == "sources":
+                    sources = item["content"]
+                else:
+                    yield json.dumps(item)
+
+        if source == 'v004':
+            _tmp_text = picked_content + "\n" + _tmp_text
+        data.update({
+            'content' : _tmp_text,
+            'code' : _code
+        })
+        if data["type"] != "gpt" and not isPresetTop:
+            _tmp = {
+                "role": "preset", 
+                "type": data["type"], 
+                "format": data["subtype"], 
+                "version": "v001", 
+                "content": data
+            }
+            yield json.dumps(_tmp)
+        if isPreSwap:
+            v101_content = await get_swap_preset_info(language_)
+            v101_content['content'].update(
+                {
+                    'content' : _tmp_text,
+                    'code' : _code
+                }
+            )
+            yield json.dumps(v101_content)
+            data = v101_content['content']
+
+        # 把相关问题放到这里 节省执行时间
+        logger.info(f"userid={userid},本次对话是否需要qa={need_qa}")
     if not has_sensitive_word: # 如果没有敏感词
         if need_qa:
             related_questions_task_start_time = time.perf_counter()
@@ -713,3 +733,18 @@ def buildVisionMessage(_type_message):
         _message.get('content').append(_message_question)
     _message.get('content').append(_content_image_url)
     return [_message]
+
+def getTemplateContent(related_qa, language):
+    from genaipf.dispatcher.template_qa import template_qa
+    # qa = related_qa[0]
+    # ans = qa[qa.find(':')+1:]
+    # if check_is_json(ans):
+    #     ans_json = json.loads(ans)
+    #     if ans_json.get('template', 0) == 1:
+    #         return ans_json.get('ans_'+language, '')
+    qa = related_qa[0]
+    q = qa[0:qa.find(':')]
+    ans = template_qa.get(q, {})
+    if ans:
+        return ans.get('ans_'+language, '')
+    return ''
