@@ -39,7 +39,7 @@ async def share_message(request: Request):
     summary = request_params.get("summary", 0)
     qrcode = await generate_qr_code_base64(qrcode_url)
     summary_str = ''
-    if summary == 1:
+    if int(summary) == 1:
         for m in messages:
             if m["role"] in ["system", "user", "assistant"]:
                 if m.get("type", "") == "preset4":
@@ -54,7 +54,7 @@ async def share_message(request: Request):
                     break
         if summary_str == '':
             summary_str = await get_share_summary(messages, language)
-    await add_share_message(_code, json.dumps(messages), userid)
+    await add_share_message(_code, json.dumps(messages), userid, summary_str)
     data = {
         "qrcode": qrcode,
         "summary_str": summary_str
