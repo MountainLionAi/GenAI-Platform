@@ -39,7 +39,7 @@ async def share_message(request: Request):
     summary = request_params.get("summary", 0)
     qrcode = await generate_qr_code_base64(qrcode_url)
     summary_str = ''
-    if int(summary) == 1:
+    if summary == 1:
         for m in messages:
             if m["role"] in ["system", "user", "assistant"]:
                 if m.get("type", "") == "preset4":
