@@ -11,7 +11,7 @@ from genaipf.utils.redis_utils import RedisConnectionPool
 async def check_user(request: Request):
     request_path = request.path
     # 判断当前路由是否在不需要登陆态的路由中
-    if request_path in PATH_WITHOUT_LOGIN:
+    if request_path in PATH_WITHOUT_LOGIN or '/static/' in request_path:
         token = request.token
         if token is None or len(request.token) == 0:
             return

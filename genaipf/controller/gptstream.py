@@ -223,13 +223,9 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     last_front_msg = front_messages[-1]
     question = last_front_msg['content']
 
-    # 特殊处理移动端问题
-    if owner == 'IOS':
+    # 特殊处理IOS移动端问题 tgbot特殊处理owner
+    if owner == 'IOS' or owner == "tgbot" or owner == "MountainLion.ai":
         owner = 'Mlion.ai'
-    
-    # tgbot特殊处理owner
-    if owner == "tgbot":
-        owner = "Mlion.ai"
 
     # 判断是否有敏感词汇，更改用户问题、上下文内容。question为存库数据，不需要修改
     is_normal_question = await isNormal(newest_question)

@@ -66,13 +66,13 @@ async def del_gpt_message_by_code(userid,codes):
     result = await CollectionPool().update(sql,(userid,codes))
     return result
 
-async def add_share_message(code, messages, userid):
-    sql = "INSERT INTO `share_messages` (`code`, `messages`, `userid`) VALUES(%s, %s, %s)"
-    result = await CollectionPool().insert(sql, (code, messages, userid))
+async def add_share_message(code, messages, userid, summary):
+    sql = "INSERT INTO `share_messages` (`code`, `messages`, `userid`, `summary`) VALUES(%s, %s, %s, %s)"
+    result = await CollectionPool().insert(sql, (code, messages, userid, summary))
     return result
 
 async def get_share_msg(code):
-    sql = 'SELECT id, code, messages FROM share_messages WHERE ' \
+    sql = 'SELECT id, code, messages, summary FROM share_messages WHERE ' \
           'code=%s'
     result = await CollectionPool().query(sql, (code))
     return result

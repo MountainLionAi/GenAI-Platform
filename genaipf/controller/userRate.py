@@ -44,13 +44,17 @@ async def share_message(request: Request):
             if m["role"] in ["system", "user", "assistant"]:
                 if m.get("type", "") == "preset4":
                     summary_str = f'{m["content"]["coinName"]}币价预测'
+                    if language == 'en':
+                        summary_str = f'{m["content"]["coinName"]} Daily Coin price predict'
                     break
                 elif m.get("type", "") == "preset7":
                     summary_str = f'{m["content"]["predict"]["coinName"]}研报'
+                    if language == 'en':
+                        summary_str = f'{m["content"]["predict"]["coinName"]} research report'
                     break
         if summary_str == '':
             summary_str = await get_share_summary(messages, language)
-    await add_share_message(_code, json.dumps(messages), userid)
+    await add_share_message(_code, json.dumps(messages), userid, summary_str)
     data = {
         "qrcode": qrcode,
         "summary_str": summary_str
