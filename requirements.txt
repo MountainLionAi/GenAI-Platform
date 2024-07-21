@@ -51,3 +51,4 @@ pyTelegramBotAPI==4.19.1
 curl_cffi==0.6.4
 dune-client==1.7.4
 googletrans-py~=4.0.0
+google-generativeai==0.7.2
