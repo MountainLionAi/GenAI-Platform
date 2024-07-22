@@ -171,7 +171,7 @@ def run_pdftotext(file_path, out_dir, page_number):
         
         # Check if process returned zero exit status
         if result.returncode == 0:
-            print("pdftotext succeeded")
+            # print("pdftotext succeeded")
             return True
         else:
             print("pdftotext failed with return code", result.returncode)
@@ -226,8 +226,9 @@ def sort_file_by_suffix(spliter, suffix):
     ...
 
 async def async_process_pdf(file_path, out_dir_images, out_dir_text, first_page, last_page):
+    print(f'async_process_pdf doing: async_run_pdftoppm {file_path}')
     await async_run_pdftoppm(file_path, out_dir_images, first_page, last_page)
-    
+    print(f'async_process_pdf doing: async_run_pdftotext {file_path}')
     for page in range(first_page, last_page+1):
         await async_run_pdftotext(file_path, out_dir_text, page)
 
@@ -248,13 +249,15 @@ async def async_process_pdf(file_path, out_dir_images, out_dir_text, first_page,
     text_files = [x["file"] for x in txt_d_l]
     
     files = []
-    # image_files_ll = [[x] for x in image_files]
-    # args_l, i_m_files = await aget_multi_coro(async_genai_upload_file, image_files_ll, batch_size=2)
-    for img in image_files:
-        m_f = await async_genai_upload_file(img)
-        files.append(m_f)
+    # # image_files_ll = [[x] for x in image_files]
+    # # args_l, i_m_files = await aget_multi_coro(async_genai_upload_file, image_files_ll, batch_size=2)
+    # print(f'async_process_pdf doing: async_genai_upload_file {file_path}')
+    # import tqdm
+    # for img in tqdm(image_files):
+    #     m_f = await async_genai_upload_file(img)
+    #     files.append(m_f)
     img_mime_files = files
-    return img_mime_files, text_files
+    return img_mime_files, image_files, text_files
 
 
 async def async_process_pdf_b64s(pdf_hash, base64_str, filename):
@@ -281,7 +284,7 @@ async def async_process_pdf_b64s(pdf_hash, base64_str, filename):
     first_page, last_page = 1, N_pages
     os.makedirs(out_dir_images, exist_ok=True)
     os.makedirs(out_dir_text, exist_ok=True)
-    img_mime_files, text_files = await async_process_pdf(file_path, out_dir_images, out_dir_text, first_page, last_page)
+    img_mime_files, image_files, text_files = await async_process_pdf(file_path, out_dir_images, out_dir_text, first_page, last_page)
     pdf_mime_info = {
         "pdf_hash": pdf_hash,
         "redis_hash": redis_hash,
@@ -290,22 +293,141 @@ async def async_process_pdf_b64s(pdf_hash, base64_str, filename):
         "out_dir_text": out_dir_text,
         "unique_filename": unique_filename,
         "img_mime_files": img_mime_files,
+        "image_files": image_files,
         "text_files": text_files,
     }
     await x_set(redis_hash, pdf_mime_info, ttl=file_redis_ttl_s)
     print(f'async_process_pdf_b64s miss: {filename} not in redis, make {redis_hash}')
     return pdf_mime_info
     
-def make_content_for_gemini(pdf_mime_info):
+def pdf_mime_info_to_parts_for_gemini(pdf_mime_info):
     texts = [Path(x).read_text() for x in pdf_mime_info["text_files"]]
-    files = pdf_mime_info["img_mime_files"]
+    files = pdf_mime_info["image_files"]
     textbook = []
     first = 1 # from page 1 to end
     for page, (text, image) in enumerate(zip(texts, files)):
-        textbook.append(f'## Page {first+page} ##')
-        textbook.append(text)
-        textbook.append(image)
+        textbook.append(genai.protos.Part(text=f'## Page {first+page} ##'))
+        textbook.append(genai.protos.Part(text=text))
+        textbook.append(genai.protos.Part(
+            inline_data=genai.protos.Blob(
+                mime_type='image/jpeg',
+                data=Path(image).read_bytes()
+            )
+        ))
     return textbook
+
+
+async def async_make_gemini_contents_from_ml_messages(messages):
+    """_summary_
+
+    Args:
+        messages (list): _description_
+            [
+                {"role": "user", "content": "what is it", "base64content": "<base64>", "type": "image", "version": "v001"},
+                {"role": "assistant", "content": "it is an apple"},
+                {"role": "user", "content": "what color?", "type": "text", "version": "v001"},
+                {"role": "assistant", "content": "red"},
+                {"role": "user", "content": "summarize this file", "type": "pdf", "version": "v001", "extra_content": {"base64": "<base64 str>", "filename": "paper.pdf"}},
+            ]
+        use_model (str): _description_
+            "gemini-1.5-flash"
+    Outputs:
+        [
+            Content(role="user", parts=[Part.from_image?(img_mime_file), Part.from_text("it is an apple")]),
+            Content(role="model", parts=[Part.from_text("it is an apple")]),
+            Content(role="user", parts=[Part.from_text("Ned likes watching movies.")]),
+            Content(role="model", parts=[Part.from_text("red")]),
+            Content(role="user", parts=[textbook] + [Part.from_text("summarize this file")]),
+        ]
+    
+    there is no system message which is made when genai.GenerativeModel
+    """
+    out_msgs = []
+    for x in messages:
+        if x["role"] == "assistant":
+            role = "model"
+        else:
+            role = x["role"]
+        if x.get("type") == "image":
+            # b64s = x.get('base64content').strip("data:image/png;base64,")
+            b64s = x.get('base64content').split("base64,")[-1]
+            text = x.get("content", "")
+            out_msgs.append(
+                genai.protos.Content(
+                    role=role,
+                    parts=[
+                        genai.protos.Part(
+                            inline_data=genai.protos.Blob(
+                                # mime_type='image/jpeg',
+                                # data=pathlib.Path('image.jpg').read_bytes()
+                                mime_type='image/png',
+                                data=base64.b64decode(b64s)
+                            )
+                        ), 
+                        genai.protos.Part(text=text)
+                    ]
+                )
+            )
+        elif x.get("type") == "pdf":
+            b64s = x["extra_content"]["base64"]
+            filename = x["extra_content"]["filename"]
+            text = x.get("content", "")
+            pdf_hash = simple_hash(b64s)
+            pdf_mime_info = await async_process_pdf_b64s(pdf_hash, b64s, filename)
+            textbook = pdf_mime_info_to_parts_for_gemini(pdf_mime_info)
+            out_msgs.append(
+                genai.protos.Content(
+                    role=role,
+                    parts=textbook + [genai.protos.Part(text=text)]
+                )
+            )
+        else:
+            text = x.get("content", "")
+            out_msgs.append(
+                genai.protos.Content(
+                    role=role,
+                    parts=[genai.protos.Part(text=text)]
+                )
+            )
+    return out_msgs
+
+
+async def async_get_gemini_chat_stream(gemini_contents, system_message):
+    model = genai.GenerativeModel(model_name='gemini-1.5-flash', system_instruction=system_message)
+    chat = model.start_chat(history=gemini_contents[:-1])
+    response = await chat.send_message_async(gemini_contents[-1], stream=True)
+    async for chunk in response:
+        yield chunk.text
+
+    
+async def async_wrap_string_generator(str_generator, output_type=""):
+    from genaipf.dispatcher.api import get_format_output, textToSpeech
+    resp = str_generator
+    yield get_format_output("step", "llm_yielding")
+    _tmp_text = ""
+    _tmp_voice_text = ""
+    async for chunk in resp:
+        _gpt_letter = chunk
+        if _gpt_letter:
+            _tmp_text += _gpt_letter
+            _tmp_voice_text += _gpt_letter
+            if output_type != 'voice':
+                yield get_format_output("gpt", _gpt_letter)
+        if output_type == 'voice': 
+            if len(_tmp_voice_text) >= 200:
+                base64_encoded_voice = textToSpeech(_tmp_voice_text)
+                yield get_format_output("tts", base64_encoded_voice, "voice_mp3_v001")
+                for c in _tmp_voice_text:
+                    yield get_format_output("gpt", c)
+                _tmp_voice_text = ""
+    if output_type == 'voice': 
+        base64_encoded_voice = textToSpeech(_tmp_voice_text)
+        yield get_format_output("tts", base64_encoded_voice, "voice_mp3_v001")
+        for c in _tmp_voice_text:
+            yield get_format_output("gpt", c)
+    yield get_format_output("inner_____gpt_whole_text", _tmp_text)
+
+
 
 
 
@@ -320,14 +442,16 @@ b64s_and_fname_l = [{"base64": base64_str, "filename": filename}]
 
 
 b1 = "/home/ubuntu/users/ray/GenAI-Platform/.cache/bitcoin_base64.txt"
+filename = "bitcoin.pdf"
+# b1 = "/home/ubuntu/users/ray/GenAI-Platform/.cache/paper_base64.txt"
+# filename = "paper.pdf"
 with open(b1, "r") as f:
     base64_str = f.read()
-filename = "bitcoin.pdf"
 pdf_hash = simple_hash(base64_str)
 pdf_mime_info = await async_process_pdf_b64s(pdf_hash, base64_str, filename)
 
 
-model = genai.GenerativeModel(model_name='gemini-1.5-flash')
+model = genai.GenerativeModel(model_name='gemini-1.5-flash', system_instruction=None)
 
 textbook = make_content_for_gemini(pdf_mime_info)
 
@@ -336,12 +460,73 @@ response = model.generate_content(
     textbook +
     ["[END]\n\n总结一下关键章节"]
 )
-
+x = response.parts[0]
+x.text
 
 pdf_mime_info["redis_hash"]
 
 
+chat = model.start_chat(history=[])
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+b1 = "/home/ubuntu/users/ray/GenAI-Platform/.cache/bitcoin_base64.txt"
+filename = "bitcoin.pdf"
+# b1 = "/home/ubuntu/users/ray/GenAI-Platform/.cache/paper_base64.txt"
+# filename = "paper.pdf"
+with open(b1, "r") as f:
+    base64_str = f.read()
+# pdf_hash = simple_hash(base64_str)
+# pdf_mime_info = await async_process_pdf_b64s(pdf_hash, base64_str, filename)
+# textbook = pdf_mime_info_to_parts_for_gemini(pdf_mime_info)
+
+
+messages = [
+    # {"role": "user", "content": "what is it", "base64content": "<base64>", "type": "image", "version": "v001"},
+    # {"role": "assistant", "content": "it is an apple"},
+    # {"role": "user", "content": "what color?", "type": "text", "version": "v001"},
+    # {"role": "assistant", "content": "red"},
+    {"role": "user", "content": "summarize this file", "type": "pdf", "version": "v001", "extra_content": {"base64": base64_str, "filename": filename}},
+]
+
+
+
+gemini_contents = await async_make_gemini_contents_from_ml_messages(messages)
+
+model = genai.GenerativeModel(model_name='gemini-1.5-flash', system_instruction="you can say up to 10 words")
+
+# chat = model.start_chat(history=gemini_contents)
+
+chat = model.start_chat(history=[])
+response = chat.send_message(gemini_contents[-1])
+
+chat = model.start_chat(history=[])
+response = chat.send_message(gemini_contents[-1])
+
+chat = model.start_chat(history=gemini_contents)
+response = await chat.send_message_async(gemini_contents[-1], stream=True)
+async for chunk in response:
+    # print(chunk.text)
+    print(chunk)
+    print("_"*80)
+
+    
+g1 = async_get_gemini_chat_stream(gemini_contents, "you can say up to 20 words")
+g2 = async_wrap_string_generator(g1)
+async for x in g2:
+    print(x)
 '''
