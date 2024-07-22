@@ -81,6 +81,7 @@ manual_cache = Cache(
     endpoint=redis_conf.HOST, port=redis_conf.PORT, password=redis_conf.PASSWORD
 )
 
+# from genaipf.utils.redis_utils import x_get, x_set, x_is_key_in, x_delete
 async def x_get(key):
     return await manual_cache.get(key)
 
