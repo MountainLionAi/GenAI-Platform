@@ -172,6 +172,8 @@ async def openai_chat_completion_acreate(
 
 async def simple_achat(messages: typing.List[typing.Mapping[str, str]], model: str = DEFAULT_OPENAI_MODEL):
     OPENAI_API_KEY = openai.api_key
+    if model == DEFAULT_OPENAI_MODEL:
+        model = 'gpt-4o-mini'
     _msgs = []
     for m in messages:
         if m["role"] in ["system", "user", "assistant"]:
@@ -216,7 +218,7 @@ async def async_simple_chat(messages: typing.List[typing.Mapping[str, str]], str
     )
     response = await asyncio.wait_for(
         async_openai_client.chat.completions.create(
-            model=model,
+            model="gpt-4o-mini" if model == DEFAULT_OPENAI_MODEL else model,
             messages=messages,
             stream=stream
         ),
@@ -229,6 +231,8 @@ async def async_simple_chat(messages: typing.List[typing.Mapping[str, str]], str
 
 async def async_simple_chat_stream(messages: typing.List[typing.Mapping[str, str]], model: str = DEFAULT_OPENAI_MODEL):
     from genaipf.dispatcher.api import awrap_gpt_generator
+    if model == DEFAULT_OPENAI_MODEL:
+        model = 'gpt-4o-mini'
     resp = await async_simple_chat(messages, True, model)
     return awrap_gpt_generator(resp, "text")
 
