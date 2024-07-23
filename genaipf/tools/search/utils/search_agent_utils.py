@@ -1,7 +1,7 @@
 import ast
 import json
 
-from genaipf.agent.llama_index import LlamaIndexAgent
+
 from genaipf.tools.search.metaphor.metaphor_search_agent import other_search
 from genaipf.tools.search.metaphor.llamaindex_tools import tools
 from genaipf.utils.log_utils import logger
@@ -66,6 +66,7 @@ async def premise_search(newest_question, message_history, related_qa=None):
     #     for question in message_history:
     #         chat_message = ChatMessage(role="user", content=question)
     #         chat_history.append(chat_message)
+    from genaipf.agent.llama_index import LlamaIndexAgent
     agent = LlamaIndexAgent(tools, system_prompt=system_prompt, chat_history=chat_history, verbose=True)
     agent.metaphor_query = ""
     agent.metaphor_results = None

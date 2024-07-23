@@ -11,7 +11,7 @@ import tiktoken
 from openai import OpenAI, AsyncOpenAI
 from openai._types import NOT_GIVEN
 from genaipf.conf.server import os
-from llama_index.llms import ChatMessage, OpenAI as OpenAI2
+
 from genaipf.utils.log_utils import logger
 import json
 from genaipf.utils.common_utils import check_is_json
@@ -171,6 +171,7 @@ async def openai_chat_completion_acreate(
     return response
 
 async def simple_achat(messages: typing.List[typing.Mapping[str, str]], model: str = 'gpt-4o-mini'):
+    from llama_index.llms import ChatMessage, OpenAI as OpenAI2
     OPENAI_API_KEY = openai.api_key
     _msgs = []
     for m in messages:
