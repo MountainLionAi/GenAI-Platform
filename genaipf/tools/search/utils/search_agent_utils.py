@@ -9,7 +9,7 @@ from genaipf.utils.time_utils import get_format_time_YYYY_mm_dd
 from openai import OpenAI
 import asyncio
 from genaipf.dispatcher.prompts_common import LionPromptCommon
-from genaipf.dispatcher.utils import simple_achat
+from genaipf.dispatcher.utils import async_simple_chat
 from genaipf.tools.search.utils.search_task_manager import get_related_question_task, get_sources_tasks, \
     get_is_need_search_task
 from genaipf.tools.search.google_serper.google_serper_agent import google_serper
@@ -102,9 +102,9 @@ async def premise_search1(front_messages, related_qa=None, language=None):
     # 相关问题取最新的
     newest_question_arr = {"messages": [data['messages'][-1]]}
     msgs3 = LionPromptCommon.get_prompted_messages("related_question", newest_question_arr, language)
-    t1 = asyncio.create_task(simple_achat(msgs1))
-    t2 = asyncio.create_task(simple_achat(msgs2))
-    t3 = asyncio.create_task(simple_achat(msgs3))
+    t1 = asyncio.create_task(async_simple_chat(msgs1))
+    t2 = asyncio.create_task(async_simple_chat(msgs2))
+    t3 = asyncio.create_task(async_simple_chat(msgs3))
     # t1t2t3 并发运行的；
     # 另外如果不需要搜索（t1 的结果是 False），不用等待 t2 和 网络搜索
     sources = []
