@@ -253,6 +253,17 @@ async def afunc_gpt_generator(messages_in, functions=gpt_functions, language=Lio
 
 
 async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.default_lang, preset_name=None, picked_content="", related_qa=[], source='v001', owner='', isvision=False, output_type="", llm_model="", quote_message= ''):
+    """_summary_
+
+    Args:
+        messages_in (list): _description_
+            [
+                {"role": "system", "content": "You are a chatbot."},
+                {"role": "user", "content": "what is it", "base64content": "<base64>", "type": "image", "version": "v001"},
+                {"role": "assistant", "content": "it is an apple"},
+                {"role": "user", "content": "what color?", "type": "text", "version": "v001"},
+            ]
+    """
     use_model = 'gpt-4o-mini'
     if llm_model == 'openai':
         use_model = OPENAI_PLUS_MODEL
@@ -284,13 +295,33 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
         content = prompts_v009.LionPrompt.get_aref_answer_prompt(language, preset_name, picked_content, related_qa, use_model, {}, quote_message)
     else:
         content = LionPrompt.get_aref_answer_prompt(language, preset_name, picked_content, related_qa, use_model, '', owner, quote_message)
+    system_message = content
     system = {
         "role": "system",
         "content": content
     }
     logger.info(f"system_prompt={content}")
     messages = make_calling_messages_based_on_model(messages_in, use_model)
-    if use_model.startswith("gpt") or use_model == PERPLEXITY_MODEL:
+    has_pdf = False
+    for x in messages_in:
+        if x.get("type") == "pdf":
+            has_pdf = True
+    if has_pdf:
+        try:
+            from genaipf.dispatcher.gemini import (
+                async_make_gemini_contents_from_ml_messages,
+                async_get_gemini_chat_stream,
+                async_wrap_string_generator
+            )
+            gemini_contents = await async_make_gemini_contents_from_ml_messages(messages_in)
+            g1 = async_get_gemini_chat_stream(gemini_contents, system_message)
+            g2 = async_wrap_string_generator(g1, output_type)
+            logger.info(f'aref_answer_gpt called: gemini')
+            return g2
+        except Exception as e:
+            logger.error(f'aref_answer_gpt_generator gemini call error {e}', e)
+            return aget_error_generator(str(e))
+    elif use_model.startswith("gpt") or use_model == PERPLEXITY_MODEL:
         for i in range(5):
             mlength = len(messages)
             try:
