@@ -3,7 +3,7 @@ import json
 from genaipf.conf.server import OPENAI_API_KEY
 from genaipf.utils.log_utils import logger
 from genaipf.dispatcher.prompts_common import LionPromptCommon
-from genaipf.dispatcher.utils import simple_achat
+from genaipf.dispatcher.utils import async_simple_chat
 from genaipf.tools.search.metaphor.metaphor_search_agent import other_search, metaphor_search2
 from genaipf.tools.search.google_serper.goole_serper_client import GoogleSerperClient
 from genaipf.utils.common_utils import aget_multi_coro, sync_to_async
@@ -29,7 +29,7 @@ async def get_is_need_search_task(front_messages):
     is_need_search = False
     msgs = LionPromptCommon.get_prompted_messages("if_need_search", front_messages)
     try:
-        res = await simple_achat(msgs)
+        res = await async_simple_chat(msgs)
         if res in 'True':
             is_need_search = True
     except Exception as e:
@@ -43,8 +43,8 @@ async def get_related_question_task(newest_question_arr, fixed_related_question,
     if source == 'v007':
         return related_questions
     msgs = LionPromptCommon.get_prompted_messages("related_question", newest_question_arr, language)
-    # questions_result = await simple_achat(msgs, 'gpt-4')
-    questions_result = await simple_achat(msgs)
+    # questions_result = await async_simple_chat(msgs, 'gpt-4')
+    questions_result = await async_simple_chat(msgs)
     if questions_result != 'False':
         try:
             for question in json.loads(questions_result):
@@ -61,7 +61,7 @@ async def get_sources_tasks(front_messages, related_qa, language, source):
     enrich_question_start_time = time.perf_counter()
     # msgs = LionPromptCommon.get_prompted_messages("enrich_question", front_messages, language)
     # try:
-    #     enrich_question = await simple_achat(msgs)
+    #     enrich_question = await async_simple_chat(msgs)
     #     logger.info(f'丰富后的问题是: {enrich_question}')
     # except Exception as e:
     #     logger.error(f'获取丰富后的问题失败: {str(e)}')
@@ -122,7 +122,7 @@ async def get_sources_tasks(front_messages, related_qa, language, source):
 async def get_web_urls_of_msg(front_messages):
     is_need_search = False
     msgs = LionPromptCommon.get_prompted_messages("related_url", front_messages)
-    urls_str = await simple_achat(msgs)
+    urls_str = await async_simple_chat(msgs)
     related_urls = []
     if "None".lower() in urls_str.lower():
         return related_urls
@@ -150,8 +150,8 @@ async def get_article_summary(front_messages):
     '''
     try:
         msgs = LionPromptCommon.get_prompted_messages("summary_page_by_msg", front_messages)
-        # summary_str = await simple_achat(msgs, model="gpt-4o")
-        summary_str = await simple_achat(msgs)
+        # summary_str = await async_simple_chat(msgs, model="gpt-4o")
+        summary_str = await async_simple_chat(msgs)
         return summary_str
     except Exception as e:
         logger.error(f'解析相关问题失败: {e}')

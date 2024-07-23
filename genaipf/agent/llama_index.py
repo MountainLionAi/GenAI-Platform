@@ -6,7 +6,6 @@ from llama_index.tools import BaseTool, FunctionTool, ToolMetadata
 from llama_index.tools.utils import create_schema_from_function
 from llama_index.agent import OpenAIAgent
 from llama_index.llms import OpenAI
-from llama_index.llms.openai import DEFAULT_TEMPERATURE
 from genaipf.conf.server import OPENAI_API_KEY
 from genaipf.dispatcher.api import get_format_output
 from genaipf.agent.utils import create_function_from_method
@@ -19,7 +18,7 @@ class LlamaIndexAgent:
         system_prompt: Optional[str]=None,
         chat_history: Optional[List[ChatMessage]] = None,
         verbose: bool = False,
-        temperature: float = DEFAULT_TEMPERATURE,
+        temperature: float = 0.1,
         max_tokens: int = None
     ):
         self.output_q = asyncio.Queue()
