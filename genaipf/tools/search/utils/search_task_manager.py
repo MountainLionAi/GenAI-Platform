@@ -177,7 +177,7 @@ async def aload_web(url):
         aload = sync_to_async(loader.load)
         res = await aload()
         openai_api_key = OPENAI_API_KEY
-        llm = ChatOpenAI(temperature=0, openai_api_key=openai_api_key, model_name="gpt-3.5-turbo-0125")
+        llm = ChatOpenAI(temperature=0, openai_api_key=openai_api_key, model_name="gpt-4o-mini")
         chain = load_summarize_chain(llm, chain_type="stuff")
         res = await chain.arun(res)
         return res
