@@ -62,8 +62,9 @@ async def register(request: Request):
     if not request_params or not request_params['email'] or not request_params['password'] or \
             not request_params['verifyCode']:
         raise CustomerError(status_code=ERROR_CODE['PARAMS_ERROR'])
+    inviter = request_params.get('inviter', '')
     register_res = await user_service.user_register(request_params['email'], request_params['password'],
-                                                    request_params['verifyCode'])
+                                                    request_params['verifyCode'], inviter)
     return success(register_res)
 
 
