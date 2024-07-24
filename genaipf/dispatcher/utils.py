@@ -11,8 +11,7 @@ import tiktoken
 from openai import OpenAI, AsyncOpenAI
 from openai._types import NOT_GIVEN
 from genaipf.conf.server import os
-from llama_index.llms import ChatMessage, OpenAI as OpenAI2
-from llama_index.llms.openai import DEFAULT_OPENAI_MODEL
+
 from genaipf.utils.log_utils import logger
 import json
 from genaipf.utils.common_utils import check_is_json
@@ -171,7 +170,8 @@ async def openai_chat_completion_acreate(
         raise e
     return response
 
-async def simple_achat(messages: typing.List[typing.Mapping[str, str]], model: str = DEFAULT_OPENAI_MODEL):
+async def simple_achat(messages: typing.List[typing.Mapping[str, str]], model: str = 'gpt-4o-mini'):
+    from llama_index.llms import ChatMessage, OpenAI as OpenAI2
     OPENAI_API_KEY = openai.api_key
     _msgs = []
     for m in messages:
@@ -183,7 +183,7 @@ async def simple_achat(messages: typing.List[typing.Mapping[str, str]], model: s
     resp = await OpenAI2(model=model, api_key=OPENAI_API_KEY).achat(_msgs)
     return resp.message.content
 
-async def async_simple_chat(messages: typing.List[typing.Mapping[str, str]], stream: bool = False, model: str = DEFAULT_OPENAI_MODEL):
+async def async_simple_chat(messages: typing.List[typing.Mapping[str, str]], stream: bool = False, model: str = 'gpt-4o-mini'):
     # try:
     #     _base_urls = os.getenv("COMPATABLE_OPENAI_BASE_URLS", [])
     #     _base_urls = json.loads(_base_urls)
@@ -228,7 +228,7 @@ async def async_simple_chat(messages: typing.List[typing.Mapping[str, str]], str
     else:
         return response.choices[0].message.content
 
-async def async_simple_chat_stream(messages: typing.List[typing.Mapping[str, str]], model: str = DEFAULT_OPENAI_MODEL):
+async def async_simple_chat_stream(messages: typing.List[typing.Mapping[str, str]], model: str='gpt-4o-mini'):
     from genaipf.dispatcher.api import awrap_gpt_generator
     resp = await async_simple_chat(messages, True, model)
     return awrap_gpt_generator(resp, "text")

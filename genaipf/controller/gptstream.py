@@ -71,6 +71,10 @@ def process_messages(messages):
             shadow_message['base64content'] = message.get('base64content')
             content = message['content']
             need_whisper = False
+        elif message.get('type') == 'pdf':
+            shadow_message['extra_content'] = message.get('extra_content')
+            content = message['content']
+            need_whisper = False
         else:
             content = message['content']
             need_whisper = False
