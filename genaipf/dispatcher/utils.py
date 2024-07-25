@@ -11,9 +11,10 @@ import tiktoken
 from openai import OpenAI, AsyncOpenAI
 from openai._types import NOT_GIVEN
 from genaipf.conf.server import os
-from llama_index.llms import ChatMessage, OpenAI as OpenAI2
+
 from genaipf.utils.log_utils import logger
 import json
+from genaipf.utils.common_utils import check_is_json
 
 PERPLEXITY_API_KEY=os.getenv("PERPLEXITY_API_KEY")
 PERPLEXITY_URL=os.getenv("PERPLEXITY_URL", "https://api.perplexity.ai")
@@ -170,6 +171,7 @@ async def openai_chat_completion_acreate(
     return response
 
 async def simple_achat(messages: typing.List[typing.Mapping[str, str]], model: str = 'gpt-4o-mini'):
+    from llama_index.llms import ChatMessage, OpenAI as OpenAI2
     OPENAI_API_KEY = openai.api_key
     _msgs = []
     for m in messages:
@@ -281,6 +283,12 @@ def get_qa_vdb_topk(text: str, sim_th: float = 0.85, topk: int = 3, source=None)
     for x in results:
         _a = _qa_map.get(x["payload"]["q"])
         ans = _a if _a else x["payload"].get("a")
+        # if not check_is_json(ans):
+        #     data = {
+        #         'template': 0,
+        #         'ans': ans
+        #     }
+        #     ans = json.dumps(data)
         v = f'{x["payload"].get("q")}: {ans}'
         out_l.append(v)
     return out_l

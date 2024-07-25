@@ -71,6 +71,10 @@ def process_messages(messages):
             shadow_message['base64content'] = message.get('base64content')
             content = message['content']
             need_whisper = False
+        elif message.get('type') == 'pdf':
+            shadow_message['extra_content'] = message.get('extra_content')
+            content = message['content']
+            need_whisper = False
         else:
             content = message['content']
             need_whisper = False
@@ -99,7 +103,7 @@ async def send_stream_chat(request: Request):
     model = request_params.get('model', '')
     source = request_params.get('source', 'v001')
     chain_id = request_params.get('chain_id', '')
-    owner = request_params.get('owner', 'MountainLion')
+    owner = request_params.get('owner', 'Mlion.ai')
     agent_id = request_params.get('agent_id', None)
     # messages = process_messages(messages)
     output_type = request_params.get('output_type', 'text') # text or voice; (voice is mp3)
@@ -155,7 +159,7 @@ async def send_chat(request: Request):
     question_code = request_params.get('code', '')
     model = request_params.get('model', '')
     source = request_params.get('source', 'v001')
-    owner = request_params.get('owner', 'MountainLion')
+    owner = request_params.get('owner', 'Mlion.ai')
     agent_id = request_params.get('agent_id', None)
     # messages = process_messages(messages)
     output_type = request_params.get('output_type', 'text') # text or voice; (voice is mp3)
@@ -223,13 +227,9 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     last_front_msg = front_messages[-1]
     question = last_front_msg['content']
 
-    # 特殊处理移动端问题
-    if owner == 'IOS':
-        owner = 'MountainLion'
-    
-    # tgbot特殊处理owner
-    if owner == "tgbot":
-        owner = "MountainLion.ai"
+    # 特殊处理IOS移动端问题 tgbot特殊处理owner
+    if owner == 'IOS' or owner == "tgbot" or owner == "MountainLion.ai":
+        owner = 'Mlion.ai'
 
     # 判断是否有敏感词汇，更改用户问题、上下文内容。question为存库数据，不需要修改
     is_normal_question = await isNormal(newest_question)
