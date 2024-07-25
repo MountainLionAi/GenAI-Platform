@@ -263,18 +263,21 @@ async def async_process_pdf(file_path, out_dir_images, out_dir_text, first_page,
 async def async_process_pdf_b64s(pdf_hash, base64_str, filename):
     "pdf_hash = simple_hash(base64_str)"
     redis_hash = f"{gemini_pdf_prefix}{pdf_hash}"
+    local_filename = f'{pdf_hash[-10:]}.pdf'
     is_in = await x_is_key_in(redis_hash)
     if is_in:
         pdf_mime_info = await x_get(redis_hash)
         pdf_mime_info["filename"] = filename
+        pdf_mime_info["local_filename"] = local_filename
         pdf_mime_info["redis_hash"] = redis_hash
         print(f'async_process_pdf_b64s hit: {filename} : {redis_hash} in redis')
         return pdf_mime_info
+    # await x_delete(redis_hash)
     cache_dir = user_pdf_files_cache_dir
     os.makedirs(cache_dir, exist_ok=True)
     mime_file_data = base64.b64decode(base64_str)
     timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-    unique_filename = f"{timestamp}-{pdf_hash}-{filename}"
+    unique_filename = f"{timestamp}-{pdf_hash}-{local_filename}"
     file_path = os.path.join(cache_dir, unique_filename)
     with open(file_path, 'wb') as temp_file:
         temp_file.write(mime_file_data)
@@ -289,6 +292,7 @@ async def async_process_pdf_b64s(pdf_hash, base64_str, filename):
         "pdf_hash": pdf_hash,
         "redis_hash": redis_hash,
         "filename": filename,
+        "local_filename": local_filename,
         "out_dir_images": out_dir_images,
         "out_dir_text": out_dir_text,
         "unique_filename": unique_filename,
@@ -297,7 +301,7 @@ async def async_process_pdf_b64s(pdf_hash, base64_str, filename):
         "text_files": text_files,
     }
     await x_set(redis_hash, pdf_mime_info, ttl=file_redis_ttl_s)
-    print(f'async_process_pdf_b64s miss: {filename} not in redis, make {redis_hash}')
+    print(f'async_process_pdf_b64s miss: {filename} not in redis, make {redis_hash}, unique_filename {unique_filename}')
     return pdf_mime_info
     
 def pdf_mime_info_to_parts_for_gemini(pdf_mime_info):
