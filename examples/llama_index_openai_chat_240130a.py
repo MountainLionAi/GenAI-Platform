@@ -30,9 +30,9 @@ async def test1():
     data = {}
     data["messages"] = msgs
     from genaipf.dispatcher.prompt_templates_common.enrich_question import _get_enrich_question_prompted_messages
-    from genaipf.dispatcher.utils import simple_achat
+    from genaipf.dispatcher.utils import async_simple_chat
     m_l = _get_enrich_question_prompted_messages(data)
-    x = await simple_achat(m_l)
+    x = await async_simple_chat(m_l)
     print(x)
 
 
@@ -45,9 +45,9 @@ async def test1():
     data = {}
     data["messages"] = msgs
     from genaipf.dispatcher.prompt_templates_common.related_question import _get_related_question_prompted_messages
-    from genaipf.dispatcher.utils import simple_achat
+    from genaipf.dispatcher.utils import async_simple_chat
     m_l = _get_related_question_prompted_messages(data, 'en')
-    x = await simple_achat(m_l)
+    x = await async_simple_chat(m_l)
     print(x.strip(";").split(";"))
 
 
@@ -61,9 +61,9 @@ async def test1():
     data = {}
     data["messages"] = msgs
     from genaipf.dispatcher.prompt_templates_common.if_need_search import _get_if_need_search_prompted_messages
-    from genaipf.dispatcher.utils import simple_achat
+    from genaipf.dispatcher.utils import async_simple_chat
     m_l = _get_if_need_search_prompted_messages(data)
-    x = await simple_achat(m_l)
+    x = await async_simple_chat(m_l)
     print(x)
     
 asyncio.run(test1())

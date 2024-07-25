@@ -67,7 +67,8 @@ async def user_login(email, password, signature, wallet_addr, timestamp, login_t
                 '',
                 wallet_addr,
                 '',
-                get_format_time()
+                get_format_time(),
+                ''
             )
             await add_user(user_info)
         user = await get_user_info_by_address(wallet_addr)
@@ -160,7 +161,7 @@ async def user_login_out(email, user_id, token):
 
 
 # 用户注册
-async def user_register(email, password, verify_code):
+async def user_register(email, password, verify_code, inviter):
     try:
         user = await get_user_info_from_db(email)
         if user and len(user) != 0:
@@ -175,7 +176,8 @@ async def user_register(email, password, verify_code):
             '',
             '',
             '',
-            get_format_time()
+            get_format_time(),
+            inviter
         )
         await add_user(user_info)
         return True
@@ -241,7 +243,7 @@ async def get_user_info_by_userid(userid):
 # 添加一个新用户
 async def add_user(user_info):
     sql = "INSERT INTO `user_infos` (`email`, `password`, `auth_token`, `user_name`, `avatar_url`, `wallet_address`, " \
-          "`oauth`, `create_time`) VALUES(%s, %s, %s, %s, %s, %s, %s, %s)"
+          "`oauth`, `create_time`, `inviter`) VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s)"
     res = await CollectionPool().insert(sql, user_info)
     return res
 

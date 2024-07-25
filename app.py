@@ -13,7 +13,7 @@ import asyncio
 
 Sanic(server.SERVICE_NAME)
 app = Sanic.get_app()
-
+# print(sanic.log.LOGGING_CONFIG_DEFAULTS)
 # 增加自定义异常处理handler
 app.error_handler = CustomerErrorHandler()
 

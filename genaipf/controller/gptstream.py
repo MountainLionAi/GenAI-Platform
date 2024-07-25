@@ -71,6 +71,10 @@ def process_messages(messages):
             shadow_message['base64content'] = message.get('base64content')
             content = message['content']
             need_whisper = False
+        elif message.get('type') == 'pdf':
+            shadow_message['extra_content'] = message.get('extra_content')
+            content = message['content']
+            need_whisper = False
         else:
             content = message['content']
             need_whisper = False
@@ -291,6 +295,9 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         source = 'v001'
         isPreSwap = True
         used_rag = False
+    if last_front_msg['type'] == 'image' or last_front_msg['type'] == 'pdf':
+        used_rag = False
+        need_qa = False
     yield json.dumps(get_format_output("responseType", responseType))
     logger.info(f"userid={userid},本次对话是否需要用到rag={used_rag}")
     if used_rag:
