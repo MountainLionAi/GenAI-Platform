@@ -201,7 +201,7 @@ async def get_web_summary_of_msg(front_messages, timeout=10.1):
 async def aload_web_by_msgs(url, msgs):
     """
     msgs: {"messages": [
-            {"role": "user", "content": "swftc 最新价格"},
+            {"role": "user", "content": "btc 最新价格"},
         ]}
     """
     try:
