@@ -100,7 +100,7 @@ class GoogleSerperClient:
         for result in results[result_key_for_type[type]][: k]:
             if "snippet" in result:
                 sources.append(
-                    {"title": result["title"], "url": result["link"]}
+                    {"title": result["title"], "url": result["link"], 'snippet':result["snippet"]}
                 )
                 content += result["snippet"] + "\n引用地址" + result["link"] + "\n"
         logger.info(f'google serper search sources {sources}')
