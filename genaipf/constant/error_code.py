@@ -39,6 +39,10 @@ ERROR_CODE = {
     "PAY_SCENARIO_NOT_EXIST": 9001,
     "PAY_SCENARIO_BALANCE_NOT_ENOUGH": 9002,
     "PAY_SCENARIO_TOKEN_NOT_SUPPORTED": 9003,
+    "USER_ALREADY_SIGNED": 10001,
+    "CHARGE_POINTS_PRODUCT_NOT_EXIST": 20001,
+    "CONFIRM_CHARGE_POINTS_ERROR": 20002,
+    "ADD_POINTS_ACTIVITY_LOG_ERROR": 20003
 }
 
 # 错误信息
@@ -81,5 +85,9 @@ ERROR_MESSAGE = {
     8014: 'User Main Account Not Supported',
     9001: 'Pay Scenario Not Exist',
     9002: 'Pay Scenario Balance Not Enough',
-    9003: 'Pay Scenario Token Not Supported'
+    9003: 'Pay Scenario Token Not Supported',
+    10001: 'User is Signed Already',
+    20001: 'Charge Product Not Exist',
+    20002: 'Confirm Charge Points Error',
+    20003: 'Add Points Charge Log Error'
 }

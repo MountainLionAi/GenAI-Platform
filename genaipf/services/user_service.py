@@ -180,6 +180,9 @@ async def user_register(email, password, verify_code, inviter):
             inviter
         )
         await add_user(user_info)
+        if inviter:
+            from ml4gp.services.points_activity_service import create_user_points_act, POINTS_ACTIVITY_INVITATION
+            await create_user_points_act({}, POINTS_ACTIVITY_INVITATION, inviter)
         return True
     except Exception as e:
         logger.error(f'User register error: {e}')
