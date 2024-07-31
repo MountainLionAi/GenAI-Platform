@@ -4,8 +4,27 @@ import asyncio
 import uuid
 from urllib.parse import urlparse
 from genaipf.utils.snowflake import SnowflakeIdWorker
+import functools
+import traceback
 
+def async_exception_handler(decorator_arg=None):
+    def inner_function(func):
+        @functools.wraps(func)
+        async def wrapper(*args, **kwargs):
+            try:
+                return await func(*args, **kwargs)
+            except Exception as e:
+                print(f"An error occurred in the function {func.__name__}:")
+                traceback.print_exc()
+                raise e
+        return wrapper
+    return inner_function
 
+def safe_float_conversion(value):
+    try:
+        return float(value)
+    except:
+        return 0
 
 # 判断一个对象是不是json
 def check_is_json(text):
