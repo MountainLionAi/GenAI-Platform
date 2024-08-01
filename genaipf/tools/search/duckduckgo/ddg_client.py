@@ -16,8 +16,12 @@ class DuckduckgoClient:
         self._client = AsyncDDGS(proxy=None)
 
     async def aget_results(self, word, time_period='w', results_num=5):
-        results = await self._client.atext(word, timelimit='w', max_results=results_num)
-        return self.parse_results(results)
+        try:
+            results = await self._client.atext(word, timelimit='w', max_results=results_num)
+            return self.parse_results(results)
+        except Exception as e:
+            logger.error(f"ddg搜索失败{e}")
+            return None
 
     def parse_results(self, results):
         sources = []
