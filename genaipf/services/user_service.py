@@ -236,7 +236,7 @@ async def get_user_info_by_address(wallet_address):
 
 # 根据userid获取用户信息
 async def get_user_info_by_userid(userid):
-    sql = 'SELECT id, create_time FROM user_infos WHERE ' \
+    sql = 'SELECT id, wallet_address, create_time FROM user_infos WHERE ' \
           'id=%s ' \
           'AND status=%s'
     result = await CollectionPool().query(sql, (userid, 0))
