@@ -259,6 +259,8 @@ async def multi_search(questions: str, related_qa=[], language=None):
     final_content = ''
     if len(results) != 0:
         for result in results:
+            if not result:
+                continue
             source_info = result[0]
             source_content = result[1]
             # 检查sources
