@@ -21,7 +21,7 @@ class DuckduckgoClient:
             return self.parse_results(results)
         except Exception as e:
             logger.error(f"ddg搜索失败{e}")
-            return None
+            return [], ""
 
     def parse_results(self, results):
         sources = []
