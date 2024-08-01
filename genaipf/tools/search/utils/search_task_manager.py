@@ -6,6 +6,7 @@ from genaipf.dispatcher.prompts_common import LionPromptCommon
 from genaipf.dispatcher.utils import async_simple_chat
 from genaipf.tools.search.metaphor.metaphor_search_agent import other_search, metaphor_search2
 from genaipf.tools.search.google_serper.goole_serper_client import GoogleSerperClient
+from genaipf.tools.search.duckduckgo.ddg_client import DuckduckgoClient
 from genaipf.utils.common_utils import aget_multi_coro, sync_to_async
 from genaipf.tools.search.google.google_search import google_search
 from genaipf.conf.rag_conf import RAG_SEARCH_CLIENT
@@ -230,6 +231,9 @@ async def multi_search(questions: str, related_qa=[], language=None):
     if RAG_SEARCH_CLIENT == 'SERPER':
         google_serper_client = GoogleSerperClient()
         multi_search_task.append(google_serper_client.search(questions))
+    elif RAG_SEARCH_CLIENT == 'Duckduckgo':
+        ddk_client = DuckduckgoClient()
+        multi_search_task.append(ddk_client.aget_results(questions))
     elif RAG_SEARCH_CLIENT == 'GOOGLE_SEARCH':
         # multi_search_task.append(google_search(questions, 1, language, 'https://www.techflowpost.com/'))
         # multi_search_task.append(google_search(questions, 1, language, 'https://foresightnews.pro/'))

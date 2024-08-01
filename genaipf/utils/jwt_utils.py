@@ -3,7 +3,7 @@ import datetime
 from genaipf.conf.jwt import JWT_SECRET_KEY
 
 class JWTManager:
-    def __init__(self, secret_key=JWT_SECRET_KEY, expires_in_seconds=3600*24*15):
+    def __init__(self, secret_key=JWT_SECRET_KEY, expires_in_seconds=3600*24*180):
         self.secret_key = secret_key
         self.expires_in_seconds = expires_in_seconds
 
