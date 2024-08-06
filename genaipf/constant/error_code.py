@@ -42,7 +42,9 @@ ERROR_CODE = {
     "USER_ALREADY_SIGNED": 10001,
     "CHARGE_POINTS_PRODUCT_NOT_EXIST": 20001,
     "CONFIRM_CHARGE_POINTS_ERROR": 20002,
-    "ADD_POINTS_ACTIVITY_LOG_ERROR": 20003
+    "ADD_POINTS_ACTIVITY_LOG_ERROR": 20003,
+    "POINTS_EXCHANGE_BALANCE_NOT_ENOUGH_ERROR": 20004,
+    "POINTS_EXCHANGE_SCENARIO_NOT_EXIST_ERROR": 20005
 }
 
 # 错误信息
@@ -89,5 +91,7 @@ ERROR_MESSAGE = {
     10001: 'User is Signed Already',
     20001: 'Charge Product Not Exist',
     20002: 'Confirm Charge Points Error',
-    20003: 'Add Points Charge Log Error'
+    20003: 'Add Points Charge Log Error',
+    20004: "User's Points Not Enough",
+    20005: 'Points Exchange Scenario Not Exist'
 }
