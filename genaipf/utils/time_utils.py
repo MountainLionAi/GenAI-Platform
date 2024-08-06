@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 # 获取当前时间
@@ -23,4 +23,7 @@ def get_current_timestamp():
 def get_current_timestamp_msec():
     return int(datetime.now().timestamp() * 1000)
 
-
+# 获取变化后的时间天数
+def get_days_change_time(days):
+    changed_time = datetime.now() + timedelta(days=days)
+    return changed_time.strftime('%Y-%m-%d %H:%M:%S')
