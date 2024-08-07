@@ -32,6 +32,7 @@ from genaipf.tools.search.utils.search_agent_utils import premise_search, premis
 from genaipf.tools.search.utils.search_task_manager import get_related_question_task
 from genaipf.utils.common_utils import contains_chinese
 from genaipf.utils.sensitive_util import isNormal
+import ml4gp.services.points_service as points_service
 import os
 import base64
 from copy import deepcopy
@@ -121,10 +122,12 @@ userid={userid},language={language},msggroup={msggroup},device_no={device_no},qu
     messages = process_messages(messages)
     try:
         if (not IS_UNLIMIT_USAGE and not IS_INNER_DEBUG) and model == 'ml-plus':
-            can_use = await user_account_service_wrapper.get_user_can_use_time(userid)
-            if can_use > 0:
-                await user_account_service_wrapper.minus_one_user_can_use_time(userid)
+            can_use = await points_service.check_user_can_use_time(userid, '')
+            # can_use = await user_account_service_wrapper.get_user_can_use_time(userid)
+            if can_use:
+                await points_service.minus_user_can_use_time(userid)
             else:
+                return fail(ERROR_CODE['NO_REMAINING_TIMES'])
                 raise CustomerError(status_code=ERROR_CODE['NO_REMAINING_TIMES'])
     except Exception as e:
         logger.error(e)
