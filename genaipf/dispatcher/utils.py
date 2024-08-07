@@ -25,9 +25,9 @@ MAX_CH_LENGTH_GPT3 = 8000
 MAX_CH_LENGTH_GPT4 = 3000
 MAX_CH_LENGTH_QA_GPT3 = 3000
 MAX_CH_LENGTH_QA_GPT4 = 1500
-OPENAI_PLUS_MODEL = "gpt-4o"
-CLAUDE_MODEL = "claude-3-opus-20240229"
-PERPLEXITY_MODEL = "llama-3-sonar-small-32k-chat"  # "sonar-small-online"
+OPENAI_PLUS_MODEL = "gpt-4o-2024-08-06"
+CLAUDE_MODEL = "claude-3-5-sonnet-20240620"
+PERPLEXITY_MODEL = "llama-3.1-sonar-small-128k-chat"  # "sonar-small-online"
 MISTRAL_MODEL = "open-mixtral-8x22b"
 qdrant_url = "http://localhost:6333"
 
