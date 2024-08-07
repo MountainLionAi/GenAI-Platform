@@ -23,6 +23,7 @@ PATH_WITHOUT_LOGIN = (
     '/v1/api/pay/cardInfo',
     '/v1/api/pay/callback',
     '/v1/api/addFeedback',
+    '/v1/api/pay/account',
     
     '/v1/api/assistantChat',
     '/v1/api/getAssistantHistory',
