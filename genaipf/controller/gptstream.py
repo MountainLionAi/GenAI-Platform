@@ -32,6 +32,7 @@ from genaipf.tools.search.utils.search_agent_utils import premise_search, premis
 from genaipf.tools.search.utils.search_task_manager import get_related_question_task
 from genaipf.utils.common_utils import contains_chinese
 from genaipf.utils.sensitive_util import isNormal
+import ml4gp.services.points_service as points_service
 import os
 import base64
 from copy import deepcopy
@@ -109,6 +110,7 @@ async def send_stream_chat(request: Request):
     output_type = request_params.get('output_type', 'text') # text or voice; (voice is mp3)
     llm_model = request_params.get('llm_model', 'openai') # openai | perplexity | claude
     wallet_type = request_params.get('wallet_type', 'AI')
+    visitor_id = request_params.get('visitor_id', '')
     regenerate_response = request_params.get('regenerate_response', None)
     logger_content = f"""
 input_params:
@@ -121,10 +123,15 @@ userid={userid},language={language},msggroup={msggroup},device_no={device_no},qu
     messages = process_messages(messages)
     try:
         if (not IS_UNLIMIT_USAGE and not IS_INNER_DEBUG) and model == 'ml-plus':
-            can_use = await user_account_service_wrapper.get_user_can_use_time(userid)
-            if can_use > 0:
-                await user_account_service_wrapper.minus_one_user_can_use_time(userid)
+            _user_id = ''
+            if userid != 0:
+                _user_id = userid
+            can_use = await points_service.check_user_can_use_time(_user_id, visitor_id)
+            # can_use = await user_account_service_wrapper.get_user_can_use_time(userid)
+            if can_use:
+                await points_service.minus_user_can_use_time(_user_id, 'query', visitor_id)
             else:
+                return fail(ERROR_CODE['NO_REMAINING_TIMES'])
                 raise CustomerError(status_code=ERROR_CODE['NO_REMAINING_TIMES'])
     except Exception as e:
         logger.error(e)
