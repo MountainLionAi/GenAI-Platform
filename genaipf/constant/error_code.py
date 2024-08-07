@@ -46,6 +46,7 @@ ERROR_CODE = {
     "ADD_POINTS_ACTIVITY_LOG_ERROR": 20003,
     "POINTS_EXCHANGE_BALANCE_NOT_ENOUGH_ERROR": 20004,
     "POINTS_EXCHANGE_SCENARIO_NOT_EXIST_ERROR": 20005,
+    "POINTS_EXCHANGE_TIMES_LIMITED": 20006,
 }
 
 # 错误信息
@@ -95,5 +96,6 @@ ERROR_MESSAGE = {
     20002: 'Confirm Charge Points Error',
     20003: 'Add Points Charge Log Error',
     20004: "User's Points Not Enough",
-    20005: 'Points Exchange Scenario Not Exist'
+    20005: 'Points Exchange Scenario Not Exist',
+    20006: 'Points Activity Times Limited'
 }
