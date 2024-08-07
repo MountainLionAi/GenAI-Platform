@@ -271,8 +271,10 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
         use_model = PERPLEXITY_MODEL
     elif llm_model == 'mistral':
         use_model = MISTRAL_MODEL
-    else:
+    elif llm_model == 'claude':
         use_model = CLAUDE_MODEL
+    elif llm_model == 'gemini':
+        use_model = 'gemini-1.5-flash'
     if isvision:
         # 图片处理专用模型
         use_model = 'gpt-4o'
@@ -391,6 +393,21 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
         except Exception as e:
             print(e)
             logger.error(f'aref_answer_gpt_generator claude error {e}', e)
+            return aget_error_generator(str(e))
+    elif use_model == "gemini-1.5-flash":
+        try:
+            from genaipf.dispatcher.gemini import (
+                async_make_gemini_contents_from_ml_messages,
+                async_get_gemini_chat_stream,
+                async_wrap_string_generator
+            )
+            gemini_contents = await async_make_gemini_contents_from_ml_messages(messages_in)
+            g1 = async_get_gemini_chat_stream(gemini_contents, system_message)
+            g2 = async_wrap_string_generator(g1, output_type)
+            logger.info(f'aref_answer_gpt called: gemini')
+            return g2
+        except Exception as e:
+            logger.error(f'aref_answer_gpt_generator gemini call error {e}', e)
             return aget_error_generator(str(e))
     return aget_error_generator("error after retry many times")
 
