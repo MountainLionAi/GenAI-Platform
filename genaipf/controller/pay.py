@@ -34,14 +34,20 @@ async def check_order(request: Request):
 
 # 查询用户账户信息
 async def query_user_account(request: Request):
-    userid = request.ctx.user['id']
-    user_account_wrapper = await user_account_service_wrapper.query_user_account_by_userid(userid)
-    user_account = user_account_wrapper['user_account']
-    if user_account is not None:
-        if user_account['due_date'] is not None:
-            user_account['due_date'] = user_account['due_date'].strftime('%Y-%m-%d %H:%M:%S')
-        if user_account['un_terminable_time'] == 0:
-            user_account['un_terminable_time'] = None
+    user_info = request.ctx.user
+    visitor_id = request.args.get('visitorId', '')
+    if not user_info:
+        userid = None
+    else:
+        userid = user_info['id']
+    import ml4gp.services.points_service as points_service
+    user_account_wrapper = await points_service.get_user_query_times(userid, visitor_id)
+    # user_account = user_account_wrapper['user_account']
+    # if user_account is not None:
+    #     if user_account['due_date'] is not None:
+    #         user_account['due_date'] = user_account['due_date'].strftime('%Y-%m-%d %H:%M:%S')
+    #     if user_account['un_terminable_time'] == 0:
+    #         user_account['un_terminable_time'] = None
     return success(user_account_wrapper)
 
 
