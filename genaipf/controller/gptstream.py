@@ -185,6 +185,8 @@ async def send_chat(request: Request):
         logger.error(traceback.format_exc())
 
     try:
+        if owner == 'IOS' or owner == "tgbot" or owner == "MountainLion.ai":
+            owner = 'Mlion.ai'
         response = await getAnswerAndCallGptData(request_params.get('content'), userid, msggroup, language, messages, device_no, question_code, model, output_type, source, owner, agent_id)
         return response
 

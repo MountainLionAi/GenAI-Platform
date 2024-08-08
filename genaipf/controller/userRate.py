@@ -69,7 +69,20 @@ async def get_share_message(request: Request):
     messages = await get_share_msg(_code)
     if messages :
         message = messages[0]
-        message['messages'] = json.loads(message['messages'])  
+        temp_messages = json.loads(message['messages'])
+        preset4_len = 0
+        for m in temp_messages:
+            if m['type'] == 'preset4':
+                preset4_len+=1
+        if preset4_len > 1:
+            remove_len = 0
+            for m in temp_messages:
+                if m['type'] == 'preset4':
+                    temp_messages.remove(m)
+                    remove_len+=1
+                    if remove_len == preset4_len -1:
+                        break
+        message['messages'] = temp_messages
         return success(message)
     else :
         return fail(ERROR_CODE['PARAMS_ERROR'])
