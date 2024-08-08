@@ -48,10 +48,10 @@ args = parser.parse_args()
 # args.addvectordb
 config = vars(args)
 
-# @app.listener('after_server_start')
-# async def start_bot(app, loop):
-#     if not args.nobot:
-#         await tgAiBot.startup()
+@app.listener('after_server_start')
+async def start_bot(app, loop):
+    if not args.nobot:
+        await tgAiBot.startup()
 
 if __name__ == "__main__":
     '''
@@ -64,7 +64,7 @@ if __name__ == "__main__":
         update_all_vdb()
     else:
         if server.IS_INNER_DEBUG:
-            app.run(host=server.HOST, port=server.PORT, dev=True)
+            app.run(host=server.HOST, port=server.PORT)
         else:
             # workers的数量可以单独设置，如果设置为fast则默认为8
             # app.run(host=server.HOST, port=server.PORT, fast=True)
