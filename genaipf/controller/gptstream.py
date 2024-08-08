@@ -239,16 +239,17 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         owner = 'Mlion.ai'
 
     # 判断是否有敏感词汇，更改用户问题、上下文内容。question为存库数据，不需要修改
-    is_normal_question = await isNormal(newest_question)
-    logger.info(f"userid={userid},is_normal_question={is_normal_question}")
-    if not is_normal_question:
-        newest_question = '用户的问题中涉及敏感词汇，明确告知用户他的问题中有敏感词汇，并且不能使用敏感词汇'
-        front_messages = [
-            {"role": "user", "content": newest_question}
-        ]
-        messages = [
-            {"role": "user", "content": newest_question}
-        ]
+    if source != 'v004': 
+        is_normal_question = await isNormal(newest_question)
+        logger.info(f"userid={userid},is_normal_question={is_normal_question}")
+        if not is_normal_question:
+            newest_question = '用户的问题中涉及敏感词汇，明确告知用户他的问题中有敏感词汇，并且不能使用敏感词汇'
+            front_messages = [
+                {"role": "user", "content": newest_question}
+            ]
+            messages = [
+                {"role": "user", "content": newest_question}
+            ]
 
     if last_front_msg.get("need_whisper"):
         yield json.dumps(get_format_output("whisper", last_front_msg['content']))
