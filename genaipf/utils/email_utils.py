@@ -39,10 +39,10 @@ async def send_email(subject, content, to_email):
         password=email_conf.SMTP_PASSWORD,
         use_tls=email_conf.SMTP_USE_TLS,
     )
-
+static_dir = os.getenv('GENAI_STATIC_PATH')
 # 配置Jinja2环境
 env = Environment(
-    loader=FileSystemLoader('genaipf/static'),  # 指定模板文件夹
+    loader=FileSystemLoader(static_dir),  # 指定模板文件夹
     autoescape=select_autoescape(['html', 'xml'])
 )
 
