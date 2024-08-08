@@ -75,9 +75,13 @@ async def get_share_message(request: Request):
             if m['type'] == 'preset4':
                 preset4_len+=1
         if preset4_len > 1:
+            remove_len = 0
             for m in temp_messages:
                 if m['type'] == 'preset4':
                     temp_messages.remove(m)
+                    remove_len+=1
+                    if remove_len == preset4_len -1:
+                        break
         message['messages'] = temp_messages
         return success(message)
     else :
