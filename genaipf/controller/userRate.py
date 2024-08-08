@@ -77,7 +77,7 @@ async def get_share_message(request: Request):
         if preset4_len > 1:
             remove_len = 0
             for m in temp_messages:
-                if m['type'] == 'preset4':
+                if m['type'] == 'preset4' or (m['role'] == 'user' and (m['content'].endswith('每日币价预测') or m['content'].endswith('Daily Coin price predict'))):
                     temp_messages.remove(m)
                     remove_len+=1
                     if remove_len == preset4_len -1:
