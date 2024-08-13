@@ -42,3 +42,4 @@ if PLUGIN_NAME:
     preset_entry_mapping = plugin_submodule.preset_entry_mapping
     preset_entry_top_mapping = plugin_submodule.preset_entry_top_mapping
     get_swap_preset_info = plugin_submodule.get_swap_preset_info
+    intent_recog_mapping = getattr(plugin_submodule, "intent_recog_mapping", dict())
