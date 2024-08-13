@@ -73,7 +73,7 @@ def gpt_function_filter(gpt_functions_mapping, messages, msg_k=5, v_n=5, per_n=2
                         tmp_names.append(_name)
                 used_names = used_names.union(set(tmp_names[:per_n]))
             used_names.add("get_price_info")
-        return [gpt_functions_mapping[k] for k in used_names]
+        return [gpt_functions_mapping[k] for k in used_names if k in gpt_functions_mapping]
     except Exception as e:
         logger.error(f'>>>>>>gpt_function_filter {e}')
         return gpt_functions
