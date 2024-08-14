@@ -85,7 +85,7 @@ def process_messages(messages):
         shadow_message['content'] = content
         processed_messages.append(shadow_message)
     processed_messages = processed_messages[-10:]
-    for message in processed_messages:
+    for message in processed_messages[:]:
         if message['role'] != 'user':
             processed_messages.remove(message)
         else:
