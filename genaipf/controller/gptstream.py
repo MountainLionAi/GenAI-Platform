@@ -84,7 +84,13 @@ def process_messages(messages):
         shadow_message['need_whisper'] = need_whisper
         shadow_message['content'] = content
         processed_messages.append(shadow_message)
-    return processed_messages[-10:]
+    processed_messages = processed_messages[-10:]
+    for message in processed_messages:
+        if message['role'] != 'user':
+            processed_messages.remove(message)
+        else:
+            break
+    return processed_messages
 
 async def send_stream_chat(request: Request):
     logger.info("======start gptstream===========")
