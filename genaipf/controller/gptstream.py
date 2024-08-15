@@ -318,7 +318,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         source = 'v001'
         isPreSwap = True
         used_rag = False
-    if last_front_msg['type'] == 'image' or last_front_msg['type'] == 'pdf':
+    if 'type' in last_front_msg and (last_front_msg['type'] == 'image' or last_front_msg['type'] == 'pdf'):
         used_rag = False
         need_qa = False
     yield json.dumps(get_format_output("responseType", responseType))
