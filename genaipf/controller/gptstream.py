@@ -84,7 +84,13 @@ def process_messages(messages):
         shadow_message['need_whisper'] = need_whisper
         shadow_message['content'] = content
         processed_messages.append(shadow_message)
-    return processed_messages[-10:]
+    processed_messages = processed_messages[-10:]
+    for message in processed_messages[:]:
+        if message['role'] != 'user':
+            processed_messages.remove(message)
+        else:
+            break
+    return processed_messages
 
 async def send_stream_chat(request: Request):
     logger.info("======start gptstream===========")
@@ -122,7 +128,8 @@ userid={userid},language={language},msggroup={msggroup},device_no={device_no},qu
     # messages = messages[-10:]
     messages = process_messages(messages)
     try:
-        if (not IS_UNLIMIT_USAGE and not IS_INNER_DEBUG) and model == 'ml-plus':
+        source_list = ['v005','v006','v008','v009','v201','v202','v203']
+        if (not IS_UNLIMIT_USAGE and not IS_INNER_DEBUG) and model == 'ml-plus' and source not in source_list:
             _user_id = ''
             if userid != 0:
                 _user_id = userid
@@ -174,17 +181,25 @@ async def send_chat(request: Request):
     # messages = messages[-10:]
     messages = process_messages(messages)
     try:
-        if (not IS_UNLIMIT_USAGE and not IS_INNER_DEBUG) and model == 'ml-plus':
-            can_use = await user_account_service_wrapper.get_user_can_use_time(userid)
-            if can_use > 0:
-                await user_account_service_wrapper.minus_one_user_can_use_time(userid)
+        source_list = ['v005', 'v006', 'v008', 'v009', 'v201', 'v202', 'v203']
+        if (not IS_UNLIMIT_USAGE and not IS_INNER_DEBUG) and model == 'ml-plus' and source not in source_list:
+            _user_id = ''
+            if userid != 0:
+                _user_id = userid
+            can_use = await points_service.check_user_can_use_time(_user_id, visitor_id)
+            # can_use = await user_account_service_wrapper.get_user_can_use_time(userid)
+            if can_use:
+                await points_service.minus_user_can_use_time(_user_id, 'query', visitor_id)
             else:
+                return fail(ERROR_CODE['NO_REMAINING_TIMES'])
                 raise CustomerError(status_code=ERROR_CODE['NO_REMAINING_TIMES'])
     except Exception as e:
         logger.error(e)
         logger.error(traceback.format_exc())
 
     try:
+        if owner == 'IOS' or owner == "tgbot" or owner == "MountainLion.ai":
+            owner = 'Mlion.ai'
         response = await getAnswerAndCallGptData(request_params.get('content'), userid, msggroup, language, messages, device_no, question_code, model, output_type, source, owner, agent_id)
         return response
 
