@@ -22,6 +22,20 @@ async def convert_func_out_to_stream(chunk, messages, newest_question, model, la
     func_name = _param["func_name"]
     sub_func_name = _param["subtype"]
     logger.info(f'>>>>> func_name: {func_name}, sub_func_name: {sub_func_name}, _param: {_param}')
+    from genaipf.controller.preset_entry import intent_recog_mapping
+    if func_name in intent_recog_mapping:
+        func = intent_recog_mapping[func_name]["func"]
+        need_spec_gen_l = intent_recog_mapping[func_name]["need_spec_gen_l"]
+        _messages = [x for x in messages if x["role"] != "system"]
+        need_spec, intent = await func(_messages, _param)
+        if need_spec:
+            _spec_gen = intent_recog_mapping[func_name][intent]
+            _g = _spec_gen(_param)
+            async for _x in _g:
+                yield _x
+            return
+        else:
+            pass
     already_sources = False
     if sources:
         already_sources = True
