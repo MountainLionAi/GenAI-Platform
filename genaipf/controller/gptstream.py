@@ -220,7 +220,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         async for _x in g:
             _d = json.loads(_x)
             if _d['role'] == 'preset':
-                data = _d
+                data = _d['content']
             yield _x
         if question and msggroup :
             gpt_message = (
@@ -241,6 +241,8 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
             _code = generate_unique_id()
             data['responseType'] = 0
             data['code'] = _code
+            data['chatSerpResults'] = []
+            data['chatRelatedResults'] = []
             messageContent = json.dumps(data)
             gpt_message = (
                 messageContent,
