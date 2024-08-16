@@ -84,7 +84,7 @@ def process_messages(messages):
         shadow_message['need_whisper'] = need_whisper
         shadow_message['content'] = content
         processed_messages.append(shadow_message)
-    processed_messages = processed_messages[-10:]
+    processed_messages = processed_messages[-11:]
     for message in processed_messages[:]:
         if message['role'] != 'user':
             processed_messages.remove(message)
@@ -216,8 +216,46 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         last_sp_msg["language"] = language
         last_sp_msg['user_id'] = userid
         g = stylized_process_mapping[_t](last_sp_msg)
+        data = {}
         async for _x in g:
+            _d = json.loads(_x)
+            if _d['role'] == 'preset':
+                data = _d
             yield _x
+        if question and msggroup :
+            gpt_message = (
+            question,
+            'user',
+            userid,
+            msggroup,
+            question_code,
+            device_no,
+            None,
+            None,
+            None,
+            None,
+            agent_id,
+            None
+            )
+            _code = generate_unique_id()
+            data['responseType'] = 0
+            data['code'] = _code
+            messageContent = json.dumps(data)
+            gpt_message = (
+                messageContent,
+                data['type'],
+                userid,
+                msggroup,
+                data['code'],
+                device_no,
+                None,
+                None,
+                None,
+                None,
+                agent_id,
+                None
+            )
+            await gpt_service.add_gpt_message_with_code(gpt_message)
         return
     t0 = time.time()
     MAX_CH_LENGTH = 8000
