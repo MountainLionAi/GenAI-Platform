@@ -237,6 +237,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
             agent_id,
             None
             )
+            await gpt_service.add_gpt_message_with_code(gpt_message)
             _code = generate_unique_id()
             data['responseType'] = 0
             data['code'] = _code
