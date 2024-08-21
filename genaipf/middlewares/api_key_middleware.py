@@ -5,6 +5,7 @@ from genaipf.constant.error_code import ERROR_CODE
 from genaipf.constant.redis_keys import REDIS_KEYS
 from genaipf.utils.redis_utils import RedisConnectionPool
 from genaipf.utils.mysql_utils import CollectionPool
+from genaipf.utils.log_utils import logger
 import asyncio
 
 MAX_LIMIT_PER_MINUTE = 80
@@ -14,12 +15,13 @@ STATUS_UNAVAILABLE = 1
 
 # 判断访问数据中的api_key是否合规
 async def check_api_key(request: Request):
+    request_ip = request.remote_addr
+    ip = request.ip
     api_key = request.headers.get('x-api-key', '')
     if not api_key:
         return fail(ERROR_CODE['ILLEGAL_REQUEST'])
     redis_client = RedisConnectionPool().get_connection()
-    request_ip = request.remote_addr
-    ip = request.ip
+    logger.info(f'当前请求的路径是{request.path},请求的ip是: {ip}, apiKey是{api_key}')
     print(request_ip)
     print(ip)
     api_set_key = REDIS_KEYS['REQUEST_API_KEYS']['API_KEYS']
