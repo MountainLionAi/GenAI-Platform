@@ -57,3 +57,4 @@ google-cloud-texttospeech~=2.16.4
 sqlalchemy~=1.4.52
 asyncmy~=0.2.9
 duckduckgo_search==6.2.3
+solana=0.34.3
