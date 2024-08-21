@@ -84,7 +84,7 @@ def process_messages(messages):
         shadow_message['need_whisper'] = need_whisper
         shadow_message['content'] = content
         processed_messages.append(shadow_message)
-    processed_messages = processed_messages[-10:]
+    processed_messages = processed_messages[-11:]
     for message in processed_messages[:]:
         if message['role'] != 'user':
             processed_messages.remove(message)
@@ -214,9 +214,51 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     if last_sp_msg.get("type") in stylized_process_mapping.keys():
         _t = last_sp_msg.get("type")
         last_sp_msg["language"] = language
+        last_sp_msg['user_id'] = userid
         g = stylized_process_mapping[_t](last_sp_msg)
+        data = {}
         async for _x in g:
+            _d = json.loads(_x)
+            if _d['role'] == 'preset':
+                data = _d['content']
             yield _x
+        if question and msggroup :
+            gpt_message = (
+            question,
+            'user',
+            userid,
+            msggroup,
+            question_code,
+            device_no,
+            None,
+            None,
+            None,
+            None,
+            agent_id,
+            None
+            )
+            await gpt_service.add_gpt_message_with_code(gpt_message)
+            _code = generate_unique_id()
+            data['responseType'] = 0
+            data['code'] = _code
+            data['chatSerpResults'] = []
+            data['chatRelatedResults'] = []
+            messageContent = json.dumps(data)
+            gpt_message = (
+                messageContent,
+                data['type'],
+                userid,
+                msggroup,
+                data['code'],
+                device_no,
+                None,
+                None,
+                None,
+                None,
+                agent_id,
+                None
+            )
+            await gpt_service.add_gpt_message_with_code(gpt_message)
         return
     t0 = time.time()
     MAX_CH_LENGTH = 8000
@@ -318,7 +360,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         source = 'v001'
         isPreSwap = True
         used_rag = False
-    if last_front_msg['type'] == 'image' or last_front_msg['type'] == 'pdf':
+    if 'type' in last_front_msg and (last_front_msg['type'] == 'image' or last_front_msg['type'] == 'pdf'):
         used_rag = False
         need_qa = False
     yield json.dumps(get_format_output("responseType", responseType))
