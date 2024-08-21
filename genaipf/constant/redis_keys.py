@@ -9,5 +9,9 @@ REDIS_KEYS = {
     },
     'RAG_API_KEYS': {
         'KEYS_STATUS': 'KEYS_STATUS_{}'
+    },
+    'REQUEST_API_KEYS': {
+        'API_KEYS': 'API_KEYS',
+        'API_KEY_LIMIT': 'REQUEST_API_KEYS:{}_{}',
     }
 }
