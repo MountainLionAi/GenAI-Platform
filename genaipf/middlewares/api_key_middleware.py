@@ -6,6 +6,7 @@ from genaipf.constant.redis_keys import REDIS_KEYS
 from genaipf.utils.redis_utils import RedisConnectionPool
 from genaipf.utils.mysql_utils import CollectionPool
 from genaipf.utils.log_utils import logger
+from genaipf.routers.routers import blueprint_v2
 import asyncio
 
 MAX_LIMIT_PER_MINUTE = 80
@@ -14,6 +15,7 @@ STATUS_UNAVAILABLE = 1
 
 
 # 判断访问数据中的api_key是否合规
+@blueprint_v2.middleware("request")
 async def check_api_key(request: Request):
     request_ip = request.remote_addr
     api_key = request.headers.get('x-api-key', '')
@@ -61,4 +63,8 @@ async def add_api_key_2redis(api_key):
     redis_client = RedisConnectionPool().get_connection()
     api_set_key = REDIS_KEYS['REQUEST_API_KEYS']['API_KEYS']
     redis_client.sadd(api_set_key, api_key)
+    return True
+
+
+async def remove_api_key(api_key):
     return True
