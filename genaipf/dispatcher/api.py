@@ -20,6 +20,7 @@ from genaipf.utils.redis_utils import RedisConnectionPool
 from genaipf.utils.speech_utils import transcribe, textToSpeech
 from mistralai.async_client import MistralAsyncClient
 from mistralai.models.chat_completion import ChatMessage
+from genaipf.dispatcher.claude_client import claude_cached_api_call
 
 # temperature=2 # 值在[0,1]之间，越大表示回复越具有不确定性
 # max_tokens=2000 # 输出的最大 token 数
@@ -370,24 +371,25 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
     elif use_model.startswith("claude"):
         try:
             anthropic_api_key = os.getenv("ANTHROPIC_API_KEY")
-            from langchain_anthropic import ChatAnthropic
-            from langchain_core.prompts import ChatPromptTemplate
-            from langchain_core.output_parsers import StrOutputParser
-            content = content.replace('{', '(')
-            content = content.replace('}', ')')
-            lc_msgs = [("system", content)]
-            for _m in messages:
-                _m["content"] = _m["content"].replace('{', '(').replace('}', ')')
-                if _m["role"] == "user":
-                    lc_msgs.append(("human", _m["content"]))
-                else:
-                    lc_msgs.append(("ai", _m["content"]))
-            logger.info(f"调用claude模型传入的消息列表:{lc_msgs}")
-            chat = ChatAnthropic(temperature=0, anthropic_api_key=anthropic_api_key, model_name="claude-3-opus-20240229")
-            prompt = ChatPromptTemplate.from_messages(lc_msgs)
-            parser = StrOutputParser()
-            chain = prompt | chat | parser
-            response = chain.astream({})
+            # from langchain_anthropic import ChatAnthropic
+            # from langchain_core.prompts import ChatPromptTemplate
+            # from langchain_core.output_parsers import StrOutputParser
+            # content = content.replace('{', '(')
+            # content = content.replace('}', ')')
+            # lc_msgs = [("system", content)]
+            # for _m in messages:
+            #     _m["content"] = _m["content"].replace('{', '(').replace('}', ')')
+            #     if _m["role"] == "user":
+            #         lc_msgs.append(("human", _m["content"]))
+            #     else:
+            #         lc_msgs.append(("ai", _m["content"]))
+            # logger.info(f"调用claude模型传入的消息列表:{lc_msgs}")
+            # chat = ChatAnthropic(temperature=0, anthropic_api_key=anthropic_api_key, model_name="claude-3-opus-20240229")
+            # prompt = ChatPromptTemplate.from_messages(lc_msgs)
+            # parser = StrOutputParser()
+            # chain = prompt | chat | parser
+            # response = chain.astream({})
+            response = claude_cached_api_call("claude-3-5-sonnet-20240620", system_message, messages)
             logger.info(f'aref_answer_gpt claude called')
             return awrap_claude_generator(response, output_type)
         except Exception as e:
