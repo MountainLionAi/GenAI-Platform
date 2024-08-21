@@ -5,6 +5,7 @@ from genaipf.conf import server
 from genaipf.routers import routers
 from genaipf.exception.customer_error_handler import CustomerErrorHandler
 from sanic_cors import CORS
+from sanic_ext import Extend
 from genaipf.middlewares.user_token_middleware import check_user
 from genaipf.middlewares.user_log_middleware import save_user_log
 from genaipf.middlewares.api_key_middleware import check_api_key
@@ -18,11 +19,14 @@ app = Sanic.get_app()
 app.error_handler = CustomerErrorHandler()
 
 # 增加跨域相关组件
-CORS(app, resources={
-    r"/v1/api/*": {"origins": "*"},  # 允许所有来源访问 /v1/api/ 下的路径
-    r"/v2/api/*": {"origins": "*"},  # 允许所有来源访问 /v1/api/ 下的路径
-    r"/static": {"origins": "*"}      # 允许所有来源访问 /static 路径
-}, supports_credentials=True)
+# CORS(app, resources={
+#     r"/v1/api/*": {"origins": "*"},  # 允许所有来源访问 /v1/api/ 下的路径
+#     r"/v2/api/*": {"origins": "*"},  # 允许所有来源访问 /v1/api/ 下的路径
+#     r"/static": {"origins": "*"}      # 允许所有来源访问 /static 路径
+# }, supports_credentials=True)
+CORS_OPTIONS = {"resources": r'/*', "origins": "*", "methods": ["GET", "POST", "HEAD", "OPTIONS"]}
+# Disable sanic-ext built-in CORS, and add the Sanic-CORS plugin
+Extend(app, extensions=[CORS], config={"CORS": False, "CORS_OPTIONS": CORS_OPTIONS})
 Session(app)
 
 # 加载服务器配置
