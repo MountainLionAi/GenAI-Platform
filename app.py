@@ -20,6 +20,7 @@ app.error_handler = CustomerErrorHandler()
 # 增加跨域相关组件
 CORS(app, resources={
     r"/v1/api/*": {"origins": "*"},  # 允许所有来源访问 /v1/api/ 下的路径
+    r"/v2/api/*": {"origins": "*"},  # 允许所有来源访问 /v1/api/ 下的路径
     r"/static": {"origins": "*"}      # 允许所有来源访问 /static 路径
 }, supports_credentials=True)
 Session(app)

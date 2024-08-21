@@ -103,3 +103,4 @@ if PLUGIN_NAME:
     plugin_router_mapping = plugin_submodule.plugin_router_mapping
     for v in plugin_router_mapping.values():
         blueprint_v1.add_route(v["handler"], v["uri"], v["methods"])
+        blueprint_v2.add_route(v["handler"], v["uri"], v["methods"])
