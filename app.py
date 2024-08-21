@@ -26,7 +26,7 @@ app.error_handler = CustomerErrorHandler()
 # }, supports_credentials=True)
 CORS_OPTIONS = {"resources": r'/*', "origins": "*", "methods": ["GET", "POST", "HEAD", "OPTIONS"]}
 # Disable sanic-ext built-in CORS, and add the Sanic-CORS plugin
-Extend(app, extensions=[CORS], config={"CORS": True, "CORS_OPTIONS": CORS_OPTIONS})
+Extend(app, extensions=[CORS], config={"CORS": False, "CORS_OPTIONS": CORS_OPTIONS})
 Session(app)
 
 # 加载服务器配置
