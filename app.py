@@ -7,9 +7,9 @@ from genaipf.exception.customer_error_handler import CustomerErrorHandler
 from sanic_cors import CORS
 from genaipf.middlewares.user_token_middleware import check_user
 from genaipf.middlewares.user_log_middleware import save_user_log
+from genaipf.middlewares.api_key_middleware import check_api_key
 from sanic_session import Session
 from genaipf.bot.tg.tg_ai_bot import tgAiBot
-import asyncio
 
 Sanic(server.SERVICE_NAME)
 app = Sanic.get_app()
@@ -36,6 +36,7 @@ app.static('/static', server.STATIC_PATH)
 # 加载路由
 app.blueprint(routers.blueprint_v1)
 app.blueprint(routers.blueprint_chatbot)
+app.register_middleware(check_api_key, "request")
 app.register_middleware(check_user, "request")
 app.register_middleware(save_user_log, "request")
 
