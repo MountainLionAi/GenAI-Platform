@@ -59,7 +59,7 @@ async def convert_func_out_to_stream(chunk, messages, newest_question, model, la
             "content": sources
         }
         # yield get_format_output("chatSerpResults", [])  #  TODO 暂时屏蔽RAG来源
-        yield get_format_output("chatSerpResults", sources)
+        # yield get_format_output("chatSerpResults", sources)
     elif func_name in not_need_search and already_sources:
         yield get_format_output("chatSerpResultsHide", 1)
     content = ""
