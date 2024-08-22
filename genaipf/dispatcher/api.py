@@ -14,12 +14,14 @@ import genaipf.dispatcher.prompts_v005 as prompts_v005
 import genaipf.dispatcher.prompts_v007 as prompts_v007
 import genaipf.dispatcher.prompts_v008 as prompts_v008
 import genaipf.dispatcher.prompts_v009 as prompts_v009
+import genaipf.dispatcher.prompts_v010 as prompts_v010
 # from openai.error import InvalidRequestError
 from openai import BadRequestError
 from genaipf.utils.redis_utils import RedisConnectionPool
 from genaipf.utils.speech_utils import transcribe, textToSpeech
 from mistralai.async_client import MistralAsyncClient
 from mistralai.models.chat_completion import ChatMessage
+from genaipf.dispatcher.claude_client import claude_cached_api_call
 
 # temperature=2 # 值在[0,1]之间，越大表示回复越具有不确定性
 # max_tokens=2000 # 输出的最大 token 数
@@ -295,6 +297,8 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
         content = prompts_v008.LionPrompt.get_aref_answer_prompt(language, preset_name, picked_content, related_qa, use_model, {}, quote_message)
     elif source == 'v009':
         content = prompts_v009.LionPrompt.get_aref_answer_prompt(language, preset_name, picked_content, related_qa, use_model, {}, quote_message)
+    elif source == 'v010':
+        content = prompts_v010.LionPrompt.get_aref_answer_prompt(language, preset_name, picked_content, related_qa, use_model, {}, quote_message)
     else:
         content = LionPrompt.get_aref_answer_prompt(language, preset_name, picked_content, related_qa, use_model, '', owner, quote_message)
     system_message = content
@@ -370,24 +374,25 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
     elif use_model.startswith("claude"):
         try:
             anthropic_api_key = os.getenv("ANTHROPIC_API_KEY")
-            from langchain_anthropic import ChatAnthropic
-            from langchain_core.prompts import ChatPromptTemplate
-            from langchain_core.output_parsers import StrOutputParser
-            content = content.replace('{', '(')
-            content = content.replace('}', ')')
-            lc_msgs = [("system", content)]
-            for _m in messages:
-                _m["content"] = _m["content"].replace('{', '(').replace('}', ')')
-                if _m["role"] == "user":
-                    lc_msgs.append(("human", _m["content"]))
-                else:
-                    lc_msgs.append(("ai", _m["content"]))
-            logger.info(f"调用claude模型传入的消息列表:{lc_msgs}")
-            chat = ChatAnthropic(temperature=0, anthropic_api_key=anthropic_api_key, model_name="claude-3-opus-20240229")
-            prompt = ChatPromptTemplate.from_messages(lc_msgs)
-            parser = StrOutputParser()
-            chain = prompt | chat | parser
-            response = chain.astream({})
+            # from langchain_anthropic import ChatAnthropic
+            # from langchain_core.prompts import ChatPromptTemplate
+            # from langchain_core.output_parsers import StrOutputParser
+            # content = content.replace('{', '(')
+            # content = content.replace('}', ')')
+            # lc_msgs = [("system", content)]
+            # for _m in messages:
+            #     _m["content"] = _m["content"].replace('{', '(').replace('}', ')')
+            #     if _m["role"] == "user":
+            #         lc_msgs.append(("human", _m["content"]))
+            #     else:
+            #         lc_msgs.append(("ai", _m["content"]))
+            # logger.info(f"调用claude模型传入的消息列表:{lc_msgs}")
+            # chat = ChatAnthropic(temperature=0, anthropic_api_key=anthropic_api_key, model_name="claude-3-opus-20240229")
+            # prompt = ChatPromptTemplate.from_messages(lc_msgs)
+            # parser = StrOutputParser()
+            # chain = prompt | chat | parser
+            # response = chain.astream({})
+            response = claude_cached_api_call("claude-3-5-sonnet-20240620", system_message, messages)
             logger.info(f'aref_answer_gpt claude called')
             return awrap_claude_generator(response, output_type)
         except Exception as e:

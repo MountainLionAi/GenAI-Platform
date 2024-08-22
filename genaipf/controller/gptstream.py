@@ -128,7 +128,7 @@ userid={userid},language={language},msggroup={msggroup},device_no={device_no},qu
     # messages = messages[-10:]
     messages = process_messages(messages)
     try:
-        source_list = ['v005','v006','v008','v009','v201','v202','v203']
+        source_list = ['v005','v006','v008','v009','v010','v201','v202','v203']
         if (not IS_UNLIMIT_USAGE and not IS_INNER_DEBUG) and model == 'ml-plus' and source not in source_list:
             _user_id = ''
             if userid != 0:
@@ -181,7 +181,7 @@ async def send_chat(request: Request):
     # messages = messages[-10:]
     messages = process_messages(messages)
     try:
-        source_list = ['v005', 'v006', 'v008', 'v009', 'v201', 'v202', 'v203']
+        source_list = ['v005', 'v006', 'v008', 'v009', 'v010', 'v201', 'v202', 'v203']
         if (not IS_UNLIMIT_USAGE and not IS_INNER_DEBUG) and model == 'ml-plus' and source not in source_list:
             _user_id = ''
             if userid != 0:
@@ -352,7 +352,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     # 判断是分析还是回答
     if source == 'v004':
         responseType = 1
-    if source == 'v005' or source == 'v006' or source == 'v008' or source == 'v009':
+    if source == 'v005' or source == 'v006' or source == 'v008' or source == 'v009' or source == 'v010':
         used_rag = False
         need_qa = False
     # 特殊处理swap前置问题
@@ -453,9 +453,10 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
             # logger.info(f'>>>>> second related_qa: {related_qa}')
             if source != 'v004':
                 # yield json.dumps(get_format_output("chatSerpResults", []))  #  TODO 因为敏感词屏蔽RAG来源
-                yield json.dumps(get_format_output("chatSerpResults", sources))
+                # yield json.dumps(get_format_output("chatSerpResults", sources))
+                pass
             else:
-                yield json.dumps(get_format_output("chatSerpResults", []))
+                # yield json.dumps(get_format_output("chatSerpResults", []))
                 if len(related_qa) == 0:
                     related_qa.append('\n'.join([str(i) for i in _related_news]))
                 else:
@@ -625,7 +626,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
             # TODO 速度问题暂时注释掉
             if used_rag:
                 # data['chatSerpResults'] = [] # TODO 因为敏感词屏蔽RAG来源
-                data['chatSerpResults'] = sources
+                # data['chatSerpResults'] = sources
                 data['chatRelatedResults'] = related_questions
             data['responseType'] = responseType
             messageContent = json.dumps(data)
