@@ -128,7 +128,7 @@ userid={userid},language={language},msggroup={msggroup},device_no={device_no},qu
     # messages = messages[-10:]
     messages = process_messages(messages)
     try:
-        source_list = ['v005','v006','v008','v009','v201','v202','v203']
+        source_list = ['v005','v006','v008','v009','v010','v201','v202','v203']
         if (not IS_UNLIMIT_USAGE and not IS_INNER_DEBUG) and model == 'ml-plus' and source not in source_list:
             _user_id = ''
             if userid != 0:
@@ -181,7 +181,7 @@ async def send_chat(request: Request):
     # messages = messages[-10:]
     messages = process_messages(messages)
     try:
-        source_list = ['v005', 'v006', 'v008', 'v009', 'v201', 'v202', 'v203']
+        source_list = ['v005', 'v006', 'v008', 'v009', 'v010', 'v201', 'v202', 'v203']
         if (not IS_UNLIMIT_USAGE and not IS_INNER_DEBUG) and model == 'ml-plus' and source not in source_list:
             _user_id = ''
             if userid != 0:
@@ -352,7 +352,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     # 判断是分析还是回答
     if source == 'v004':
         responseType = 1
-    if source == 'v005' or source == 'v006' or source == 'v008' or source == 'v009':
+    if source == 'v005' or source == 'v006' or source == 'v008' or source == 'v009' or source == 'v010':
         used_rag = False
         need_qa = False
     # 特殊处理swap前置问题
