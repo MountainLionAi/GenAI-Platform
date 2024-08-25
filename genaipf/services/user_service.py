@@ -15,6 +15,7 @@ import genaipf.utils.hcaptcha_utils as hcaptcha
 import genaipf.utils.email_utils as email_utils
 from web3 import Web3
 from eth_account.messages import encode_defunct
+from ml4gp.services.user_account_service import create_ai_account
 
 ORIGIN_MESSAGE = "Welcome. Login Mountainlion. This is completely secure and doesn't cost anything! "
 
@@ -82,6 +83,8 @@ async def user_login(email, password, signature, wallet_addr, timestamp, login_t
         if not check_user_password(user_info['password'].encode('utf-8'), password):
             raise CustomerError(status_code=ERROR_CODE['PWD_ERROR'])
         account = mask_email(email)
+        if not user_info['sub_id']:
+            await create_ai_account(user_id)
     user_id = user_info['id']
     user_key = email if login_type == 0 else wallet_addr
     jwt_manager = JWTManager()
@@ -218,7 +221,7 @@ def get_user_key(user_id, email):
 
 # 根据email获取用户信息
 async def get_user_info_from_db(email):
-    sql = 'SELECT id, email, password, auth_token, user_name, avatar_url, wallet_address  FROM user_infos WHERE ' \
+    sql = 'SELECT id, email, password, auth_token, user_name, avatar_url, wallet_address, sub_id  FROM user_infos WHERE ' \
           'email=%s ' \
           'AND status=%s'
     result = await CollectionPool().query(sql, (email, 0))
