@@ -15,7 +15,6 @@ import genaipf.utils.hcaptcha_utils as hcaptcha
 import genaipf.utils.email_utils as email_utils
 from web3 import Web3
 from eth_account.messages import encode_defunct
-from ml4gp.services.user_account_service import create_ai_account
 
 ORIGIN_MESSAGE = "Welcome. Login Mountainlion. This is completely secure and doesn't cost anything! "
 
@@ -84,6 +83,7 @@ async def user_login(email, password, signature, wallet_addr, timestamp, login_t
             raise CustomerError(status_code=ERROR_CODE['PWD_ERROR'])
         account = mask_email(email)
         if not user_info['sub_id']:
+            from ml4gp.services.user_account_service import create_ai_account
             await create_ai_account(user_id)
     user_id = user_info['id']
     user_key = email if login_type == 0 else wallet_addr
