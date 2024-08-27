@@ -51,6 +51,13 @@ async def del_msggroup(userid, msggroup):
     result = await CollectionPool().update(sql, (userid, msggroup))
     return result
 
+# 删除用户对话列表
+async def tw_del_msggroup(msggroup):
+    sql = 'update gpt_messages set deleted=1 WHERE ' \
+          'msggroup in %s and deleted=0'
+    result = await CollectionPool().update(sql, (msggroup))
+    return result
+
 async def get_predict(coin):
     sql = "SELECT date, open, high, low, close FROM kline_predictd where symbol='{}USDT' order by date desc limit 3".format(coin)
     result = await CollectionPool().query(sql)

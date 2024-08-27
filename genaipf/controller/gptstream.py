@@ -334,6 +334,9 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     yield json.dumps(get_format_output("code", _code))
     # 判断最新的问题中是否含有中文
     yield json.dumps(get_format_output("systemLanguage", language_))
+    # trustwallet过来的返回msggroup
+    if msggroup and msggroup.find('tw_') != -1:
+        yield json.dumps(get_format_output("msggroup", msggroup))
     # TODO 速度问题暂时注释掉
     # sources, related_qa, related_questions = await premise_search(newest_question, user_history_l, related_qa)
     # sources, related_qa = await other_search(newest_question, related_qa)
