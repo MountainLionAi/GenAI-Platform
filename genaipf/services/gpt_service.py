@@ -55,7 +55,7 @@ async def del_msggroup(userid, msggroup):
 async def tw_del_msggroup(msggroup):
     sql = 'update gpt_messages set deleted=1 WHERE ' \
           'msggroup in %s and deleted=0'
-    result = await CollectionPool().update(sql, (msggroup))
+    result = await CollectionPool().update(sql, (msggroup,))
     return result
 
 async def get_predict(coin):
