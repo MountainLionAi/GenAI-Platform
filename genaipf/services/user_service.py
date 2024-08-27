@@ -82,6 +82,9 @@ async def user_login(email, password, signature, wallet_addr, timestamp, login_t
         if not check_user_password(user_info['password'].encode('utf-8'), password):
             raise CustomerError(status_code=ERROR_CODE['PWD_ERROR'])
         account = mask_email(email)
+        if not user_info['sub_id']:
+            from ml4gp.services.user_account_service import create_ai_account
+            await create_ai_account(user_info['id'])
     user_id = user_info['id']
     user_key = email if login_type == 0 else wallet_addr
     jwt_manager = JWTManager()
@@ -218,7 +221,7 @@ def get_user_key(user_id, email):
 
 # 根据email获取用户信息
 async def get_user_info_from_db(email):
-    sql = 'SELECT id, email, password, auth_token, user_name, avatar_url, wallet_address  FROM user_infos WHERE ' \
+    sql = 'SELECT id, email, password, auth_token, user_name, avatar_url, wallet_address, sub_id  FROM user_infos WHERE ' \
           'email=%s ' \
           'AND status=%s'
     result = await CollectionPool().query(sql, (email, 0))
