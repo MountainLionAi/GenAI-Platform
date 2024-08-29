@@ -18,6 +18,7 @@ def _get_related_question_prompted_messages(data, language):
         生成的问题必要要跟历史上下文相关，不要乱说。
         注意：不要生成第三人称的问题，问题中一定不要出现'你'或者'您'。
         切记如果用户问题涉及违法操作，你只需回答 False，并且你回答的语言必须是中文，一定不要输出```等其他符号。
+        ##约束：1.不管用户输入的是什么语言，你生成的内容必须是中文格式的。
         例如：
 
         输入：
@@ -46,6 +47,7 @@ def _get_related_question_prompted_messages(data, language):
         The generated questions must be relevant to the historical context and should not be random.
         Note: Do not generate questions in the third person, and make sure the questions do not contain 'you' or 'your'.
         Remember, if the user's question involves illegal activities, simply respond with False, and ensure your response is in English without using any symbols like ```.
+        ##Constraints: 1.Regardless of the language the user inputs, your generated content must be in English format.
         For example:
 
         Input:
