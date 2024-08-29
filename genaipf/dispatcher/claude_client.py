@@ -7,19 +7,19 @@ async_client = AsyncAnthropic(api_key=anthropic_api_key)
 
 async def claude_cached_api_call(model_name="claude-3-5-sonnet-20240620", system_prompt="", ml_messages=[]):
     messages = []
-    for _m in ml_messages:
-        message = {
-            "role": _m["role"],
-            "content": [
-                {
-                    "type": "text",
-                    "text": _m["content"],
-                    "cache_control": {"type": "ephemeral"}
-                }
-            ]
-        }
-        messages.append(message)
-    logger.info(f"调用claude模型传入的消息列表:{messages}")
+    # for _m in ml_messages:
+    #     message = {
+    #         "role": _m["role"],
+    #         "content": [
+    #             {
+    #                 "type": "text",
+    #                 "text": _m["content"],
+    #                 "cache_control": {"type": "ephemeral"}
+    #             }
+    #         ]
+    #     }
+    #     messages.append(message)
+    logger.info(f"调用claude模型传入的消息列表:{ml_messages}")
     async with async_client.messages.stream(
         model=model_name,
         max_tokens=1000,
@@ -31,7 +31,7 @@ async def claude_cached_api_call(model_name="claude-3-5-sonnet-20240620", system
                 "cache_control": {"type": "ephemeral"}
             }
         ],
-        messages=messages,
+        messages=ml_messages,
         extra_headers={"anthropic-beta": "prompt-caching-2024-07-31"}
     ) as stream:
         async for event in stream:
