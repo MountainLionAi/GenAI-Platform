@@ -290,7 +290,11 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
     elif source == 'v004':
         content = prompts_v004.LionPrompt.get_aref_answer_prompt(language, preset_name, picked_content, related_qa, use_model, {}, quote_message)
     elif source == 'v005' or source == 'v006':
-        content = prompts_v005.LionPrompt.get_aref_answer_prompt(language, preset_name, picked_content, related_qa, use_model, {}, quote_message)
+        if 'claude' in use_model:
+            content = None
+            v005_006_system_prompt, v005_006_system_prompt_ref = prompts_v005.LionPrompt.get_aref_answer_prompt(language, preset_name, picked_content, related_qa, use_model, {}, quote_message)
+        else:
+            content = prompts_v005.LionPrompt.get_aref_answer_prompt(language, preset_name, picked_content, related_qa, use_model, {}, quote_message)
     elif source == 'v007':
         content = prompts_v007.LionPrompt.get_aref_answer_prompt(language, preset_name, picked_content, related_qa, use_model, {}, quote_message)
     elif source == 'v008':
@@ -306,7 +310,11 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
         "role": "system",
         "content": content
     }
-    logger.info(f"system_prompt={content}")
+    if 'cluade' in use_model:
+        logger.info(f"v005_006_system_prompt={v005_006_system_prompt}")
+        logger.info(f"v005_006_system_prompt_ref={v005_006_system_prompt_ref}")
+    else:
+        logger.info(f"system_prompt={content}")
     messages = make_calling_messages_based_on_model(messages_in, use_model)
     has_pdf = False
     for x in messages_in:
@@ -373,7 +381,7 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
             return aget_error_generator(str(e))
     elif use_model.startswith("claude"):
         try:
-            anthropic_api_key = os.getenv("ANTHROPIC_API_KEY")
+            # anthropic_api_key = os.getenv("ANTHROPIC_API_KEY")
             # from langchain_anthropic import ChatAnthropic
             # from langchain_core.prompts import ChatPromptTemplate
             # from langchain_core.output_parsers import StrOutputParser
@@ -392,7 +400,10 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
             # parser = StrOutputParser()
             # chain = prompt | chat | parser
             # response = chain.astream({})
-            response = claude_cached_api_call("claude-3-5-sonnet-20240620", system_message, messages)
+            if source == 'v005' or source == 'v006': 
+                response = claude_cached_api_call("claude-3-5-sonnet-20240620", v005_006_system_prompt, v005_006_system_prompt_ref, messages)
+            else:
+                response = claude_cached_api_call("claude-3-5-sonnet-20240620", system_message, None, messages)
             logger.info(f'aref_answer_gpt claude called')
             return awrap_claude_generator(response, output_type)
         except Exception as e:
