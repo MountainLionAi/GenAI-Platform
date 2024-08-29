@@ -323,10 +323,12 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     end_time1 = time.perf_counter()
     elapsed_time1 = (end_time1 - start_time1) * 1000
     logger.info(f'=====================>get_qa_vdb_topk耗时：{elapsed_time1:.3f}毫秒')
-    if source == 'v007':  # 空投产品，系统语言不切换
-        language_ = language
-    else:
-        language_ = contains_chinese(newest_question)
+    # if source == 'v007':  # 空投产品，系统语言不切换
+    #     language_ = language
+    # else:
+    #     language_ = contains_chinese(newest_question)
+    # 去掉判断语言逻辑
+    language_ = language
     logger.info(f"userid={userid},本次对话语言={language_}")
     _code = generate_unique_id()
     # responseType （0是回答，1是分析）
@@ -673,8 +675,9 @@ async def  getAnswerAndCallGptData(question, userid, msggroup, language, front_m
     # vvvvvvvv 在第一次 func gpt 就准备好数据 vvvvvvvv
     logger.info(f'>>>>> newest_question: {newest_question}')
     related_qa = get_qa_vdb_topk(newest_question, source=source)
-    language_ = contains_chinese(newest_question)
+    # language_ = contains_chinese(newest_question)
     # 判断最新的问题中是否含有中文
+    language_ = language
     # TODO 速度问题暂时注释掉
     # sources, related_qa, related_questions = await premise_search(newest_question, user_history_l, related_qa)
     # sources, related_qa = await other_search(newest_question, related_qa)

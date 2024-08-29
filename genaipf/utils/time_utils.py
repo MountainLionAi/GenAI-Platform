@@ -27,3 +27,11 @@ def get_current_timestamp_msec():
 def get_days_change_time(days):
     changed_time = datetime.now() + timedelta(days=days)
     return changed_time.strftime('%Y-%m-%d %H:%M:%S')
+
+
+# 获取两个日志之间的差值
+def get_days_diff(start_time, end_time):
+    start_date = datetime.strptime(start_time, '%Y-%m-%d %H:%M:%S')
+    end_date = datetime.strptime(end_time, '%Y-%m-%d %H:%M:%S')
+    difference = (end_date - start_date).days + 1
+    return difference
