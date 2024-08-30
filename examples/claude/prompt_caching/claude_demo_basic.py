@@ -1,7 +1,7 @@
 import anthropic
 from examples.claude.prompt_caching.system_prompt_storage import system_prompts
 
-client = anthropic.Anthropic(api_key='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')
+client = anthropic.Anthropic(api_key='')
 
 
 
