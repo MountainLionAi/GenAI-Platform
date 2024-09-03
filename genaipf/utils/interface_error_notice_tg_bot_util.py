@@ -62,5 +62,3 @@ async def send_notice_email(to_email_list: List[str], fileName: str, method: str
     except Exception as e:
         logger.error(f"send interface error notice email error: {e}")
     
-# import asyncio
-# asyncio.run(send_notice_message(['zhaogc88', 'zhaogc99'], ['michael.zhaogc@gmail.com'],'api', 'call_gpt', '0005', 'aaaa'))
