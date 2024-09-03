@@ -35,3 +35,9 @@ def get_days_diff(start_time, end_time):
     end_date = datetime.strptime(end_time, '%Y-%m-%d %H:%M:%S')
     difference = (end_date - start_date).days + 1
     return difference
+
+
+def modify_time_diff(start_time, diff_days):
+    start_date = datetime.strptime(start_time, '%Y-%m-%d %H:%M:%S')
+    final_date = start_date + timedelta(days=diff_days)
+    return final_date.strftime('%Y-%m-%d %H:%M:%S')
