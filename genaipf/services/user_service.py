@@ -183,6 +183,11 @@ async def user_register(email, password, verify_code, inviter):
             inviter
         )
         await add_user(user_info)
+        user_infos = await get_user_info_from_db(email)
+        if user_infos and len(user_infos) != 0:
+            user_info = user_infos[0]
+            from ml4gp.services.points_service import create_user_points_account
+            await create_user_points_account(user_info['id'])
         if inviter:
             from ml4gp.services.points_activity_service import create_user_points_act, POINTS_ACTIVITY_INVITATION
             await create_user_points_act({}, POINTS_ACTIVITY_INVITATION, inviter)
