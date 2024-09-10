@@ -476,7 +476,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
                 model = "claude"
         if used_graph_rag and is_need_search:
             sources_task_start_time = time.perf_counter()
-            related_qa = sources_task
+            related_qa = [sources_task]
             sources_task_end_time = time.perf_counter()
             elapsed_sources_task_time = (sources_task_end_time - sources_task_start_time) * 1000
             logger.info(f'=====================>sources_task耗时：{elapsed_sources_task_time:.3f}毫秒')
