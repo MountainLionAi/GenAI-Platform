@@ -382,7 +382,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         logger.info(f'=====================>premise_search2耗时：{elapsed_premise_search2:.3f}毫秒')
     elif used_graph_rag:
         is_need_search = is_need_rag_simple(newest_question)
-        sources_task = await get_answer(source, newest_question, front_messages[1:])
+        sources_task = await get_answer(source, newest_question, front_messages)
     else:
         is_need_search = False
         sources_task = None
