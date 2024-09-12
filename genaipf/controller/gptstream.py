@@ -28,11 +28,12 @@ from genaipf.utils.redis_utils import RedisConnectionPool
 from genaipf.conf.server import IS_INNER_DEBUG, IS_UNLIMIT_USAGE
 from genaipf.utils.speech_utils import transcribe, textToSpeech
 from genaipf.tools.search.utils.search_agent_utils import other_search
-from genaipf.tools.search.utils.search_agent_utils import premise_search, premise_search1, premise_search2, is_need_rag_simple, new_question_question, fixed_related_question
+from genaipf.tools.search.utils.search_agent_utils import premise_search, premise_search1, premise_search2, is_need_rag_simple, new_question_question, fixed_related_question, multi_rag
 from genaipf.tools.search.utils.search_task_manager import get_related_question_task
 from genaipf.utils.common_utils import contains_chinese
 from genaipf.utils.sensitive_util import isNormal
 import ml4gp.services.points_service as points_service
+from ml4gp.dispatcher.rag_read import get_answer
 import os
 import base64
 from copy import deepcopy
@@ -139,7 +140,6 @@ userid={userid},language={language},msggroup={msggroup},device_no={device_no},qu
                 await points_service.minus_user_can_use_time(_user_id, 'query', visitor_id)
             else:
                 return fail(ERROR_CODE['NO_REMAINING_TIMES'])
-                raise CustomerError(status_code=ERROR_CODE['NO_REMAINING_TIMES'])
     except Exception as e:
         logger.error(e)
         logger.error(traceback.format_exc())
@@ -264,6 +264,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     MAX_CH_LENGTH = 8000
     _ensure_ascii = False
     used_rag = True
+    used_graph_rag = False
     messages = []
     picked_content = ""
     isPreSwap = False
@@ -360,6 +361,8 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     if source == 'v005' or source == 'v006' or source == 'v008' or source == 'v009' or source == 'v010':
         used_rag = False
         need_qa = False
+    if source == 'v009' or source == 'v010':
+        used_graph_rag = True
     # 特殊处理swap前置问题
     if source == 'v101':
         source = 'v001'
@@ -373,10 +376,13 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     if used_rag:
         is_need_search = is_need_rag_simple(newest_question)
         premise_search2_start_time = time.perf_counter()
-        sources_task, related_questions_task = await premise_search2(front_messages, related_qa, language_, source)
+        sources_task, related_questions_task = await multi_rag(front_messages, related_qa, language_, source)
         premise_search2_end_time = time.perf_counter()
         elapsed_premise_search2 = (premise_search2_end_time - premise_search2_start_time) * 1000
         logger.info(f'=====================>premise_search2耗时：{elapsed_premise_search2:.3f}毫秒')
+    elif used_graph_rag:
+        is_need_search = is_need_rag_simple(newest_question)
+        sources_task = await get_answer(source, newest_question, front_messages)
     else:
         is_need_search = False
         sources_task = None
@@ -468,6 +474,13 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
                     related_qa[0] = '\n'.join([str(i) for i in _related_news])
                 yield json.dumps(get_format_output("source", "v004"))
                 model = "claude"
+        if used_graph_rag and is_need_search:
+            sources_task_start_time = time.perf_counter()
+            related_qa = [sources_task]
+            sources_task_end_time = time.perf_counter()
+            elapsed_sources_task_time = (sources_task_end_time - sources_task_start_time) * 1000
+            logger.info(f'=====================>sources_task耗时：{elapsed_sources_task_time:.3f}毫秒')
+            logger.info(f"userid={userid},本次聊天rag检索生成的rag_qa={related_qa}")
         # if last_front_msg.get('type') == 'image' and last_front_msg.get('base64content') is not None:
         #     msgs = msgs[:-1] + buildVisionMessage(last_front_msg)
         if has_image:

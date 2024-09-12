@@ -9,6 +9,7 @@ from genaipf.dispatcher.prompt_templates_common.swap_agent_question import _get_
 from genaipf.dispatcher.prompt_templates_common.nft_agent_question import _get_nft_agent_question_prompted_messages
 from genaipf.dispatcher.prompt_templates_common.recent_search import _get_recent_search_prompted_messages
 from genaipf.dispatcher.prompt_templates_common.share_summary import _get_share_summary_prompted_messages
+from genaipf.dispatcher.prompt_templates_common.divide_user_question import _get_divide_question_prompted_messages
 import typing
 
 _default_lang = "en"
@@ -16,7 +17,7 @@ class LionPromptCommon:
     default_lang = _default_lang
 
     @classmethod
-    def get_prompted_messages(cls, preset_name: str, data=typing.Mapping[str, typing.Any], language=None):
+    def get_prompted_messages(cls, preset_name: str, data=typing.Mapping[str, typing.Any], language=None, num=3):
         if preset_name=="enrich_question":
             return _get_enrich_question_prompted_messages(data, language)
         elif preset_name=="if_need_search":
@@ -39,6 +40,8 @@ class LionPromptCommon:
             return _get_recent_search_prompted_messages(data)
         elif preset_name=="share_summary":
             return _get_share_summary_prompted_messages(data, language)
+        elif preset_name=="divide_user_question":
+            return _get_divide_question_prompted_messages(data, language, num)
         else:
             raise Exception("has not")
 
