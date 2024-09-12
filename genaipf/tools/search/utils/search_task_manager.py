@@ -355,34 +355,23 @@ async def multi_search(questions: str, related_qa=[], language=None):
 
 async def multi_search_new(questions, related_qa=[], language=None):
     search_clients = ['Duckduckgo', 'SERPER']
-    sources = []
+    question_sources = {}
     for search_client in search_clients:
-        client = None
         if search_client == 'Duckduckgo':
             client = DuckduckgoClient()
         else:
             client = GoogleSerperClient()
         for question in questions:
+            if not question_sources.get(question):
+                question_sources[question] = []
             tmp_sources = await client.multi_search(question, language)
-            sources = sources + tmp_sources
-    results, content = parse_results(sources)
+            question_sources[question] = question_sources[question] + tmp_sources
+    results = parse_results(question_sources)
     final_sources = []
-    final_content = ''
-    if len(results) != 0:
-        for result in results:
-            # 检查sources
-            title = result['title']
-            content = result['body']
-            url = result['href']
-            if await sensitive_utils.isNormal(title) and await sensitive_utils.isNormal(content):
-                temp_source = {
-                    "title": title,
-                    "content": content,
-                    "url": url
-                }
-                final_sources.append(temp_source)
-    if len(final_sources) > 0:
-        related_qa.append(questions + ' : ' + final_content)
+    if results:
+        for question in results:
+            final_sources += results[question]['sources']
+            related_qa.append(question + ' : ' + results[question]['content'])
     logger.info(f'================最后的sources===============')
     logger.info(final_sources)
     logger.info(f'================最后的sources===============')
@@ -401,17 +390,31 @@ async def check_sensitive_words_in_sources(sources):
     return checked_sources
 
 
-def parse_results(results):
-    sources = []
-    content = ''
-    title_keys = []
-    if results and len(results) != 0:
-        for result in results:
-            if result['title'] in title_keys:
-                continue
-            else:
-                title_keys.append(result['title'])
-            sources.append(result)
-            content += result["body"] + "\n引用地址" + result["href"] + "\n"
+async def parse_results(question_sources):
+    sources = {}
+    if question_sources:
+        for key in question_sources:
+            sources = question_sources.get(key)
+            title_keys = []
+            question_source = []
+            question_content = ''
+            for source in sources:
+                if source['title'] in title_keys:
+                    continue
+                title_keys.append(source['title'])
+                title = source['title']
+                url = source['href']
+                tmp_content = source['body']
+                if await sensitive_utils.isNormal(title) and await sensitive_utils.isNormal(tmp_content):
+                    temp_source = {
+                        "title": title,
+                        "url": url
+                    }
+                    question_source.append(temp_source)
+                    question_content += tmp_content + "\n引用地址" + url + "\n"
+            sources[key] = {
+                "sources": question_source,
+                "content": question_content
+            }
 
-    return sources, content
+    return sources
