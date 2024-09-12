@@ -30,6 +30,8 @@ class CohereClient:
 
     async def rerank(self, question, related_sources, language, num=TOP_N):
         logger.info(f'cohere rerank function current key is {self._api_key}')
+        if len(related_sources) < TOP_N:
+            num = len(related_sources)
         model = DEFAULT_MODEL
         if language != 'en':
             model = MULTI_MODEL

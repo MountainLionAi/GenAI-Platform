@@ -41,10 +41,14 @@ class DuckduckgoClient:
         search_task.append(self.aget_results_origin(word, time_period='w', results_num=5))
         search_task.append(self.aget_results_origin(word, time_period='m', results_num=3))
         search_res = await asyncio.gather(*search_task)
+        title_keys = []
         for search_info in search_res:
             search_sources.extend(search_info)
         if search_sources and len(search_sources) != 0:
             for search_source in search_sources:
+                if search_source['title'] in title_keys:
+                    continue
+                title_keys.append(search_source['title'])
                 sources_content.append(search_source['body'])
             cohere_client = CohereClient()
             rerank_indexes = await cohere_client.rerank(word, sources_content, language)

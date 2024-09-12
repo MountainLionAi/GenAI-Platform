@@ -86,10 +86,13 @@ class GoogleSerperClient:
         search_task.append(self.search_origin(question, 'w', 5))
         search_task.append(self.search_origin(question, 'm', 3))
         search_res = await asyncio.gather(*search_task)
+        title_keys = []
         for search_info in search_res:
             search_sources.extend(search_info)
         if search_sources and len(search_sources) != 0:
             for search_source in search_sources:
+                if search_source['title'] in title_keys:
+                    continue
                 sources_content.append(search_source['snippet'])
             cohere_client = CohereClient()
             rerank_indexes = await cohere_client.rerank(question, sources_content, language)
