@@ -366,7 +366,7 @@ async def multi_search_new(questions, related_qa=[], language=None):
                 question_sources[question] = []
             tmp_sources = await client.multi_search(question, language)
             question_sources[question] = question_sources[question] + tmp_sources
-    results = parse_results(question_sources)
+    results = await parse_results(question_sources)
     final_sources = []
     if results:
         for question_info in results:
