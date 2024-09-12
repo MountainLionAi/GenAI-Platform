@@ -28,7 +28,7 @@ from genaipf.utils.redis_utils import RedisConnectionPool
 from genaipf.conf.server import IS_INNER_DEBUG, IS_UNLIMIT_USAGE
 from genaipf.utils.speech_utils import transcribe, textToSpeech
 from genaipf.tools.search.utils.search_agent_utils import other_search
-from genaipf.tools.search.utils.search_agent_utils import premise_search, premise_search1, premise_search2, is_need_rag_simple, new_question_question, fixed_related_question
+from genaipf.tools.search.utils.search_agent_utils import premise_search, premise_search1, premise_search2, is_need_rag_simple, new_question_question, fixed_related_question, multi_rag
 from genaipf.tools.search.utils.search_task_manager import get_related_question_task
 from genaipf.utils.common_utils import contains_chinese
 from genaipf.utils.sensitive_util import isNormal
@@ -372,7 +372,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     if used_rag:
         is_need_search = is_need_rag_simple(newest_question)
         premise_search2_start_time = time.perf_counter()
-        sources_task, related_questions_task = await premise_search2(front_messages, related_qa, language_, source)
+        sources_task, related_questions_task = await multi_rag(front_messages, related_qa, language_, source)
         premise_search2_end_time = time.perf_counter()
         elapsed_premise_search2 = (premise_search2_end_time - premise_search2_start_time) * 1000
         logger.info(f'=====================>premise_search2耗时：{elapsed_premise_search2:.3f}毫秒')

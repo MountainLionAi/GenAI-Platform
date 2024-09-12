@@ -1,10 +1,8 @@
 from genaipf.tools.search.utils.apikey_manager import get_api_key_by_type, set_api_key_unavaiable
-from metaphor_python import Metaphor
-from genaipf.utils.common_utils import sync_to_async
 from genaipf.utils.log_utils import logger
 from genaipf.utils.http_util import AsyncHTTPClient
-from genaipf.dispatcher.prompts_common import LionPromptCommon
-from genaipf.dispatcher.utils import simple_achat
+from genaipf.tools.search.rerank.cohere_client import CohereClient
+import asyncio
 
 CLIENT_TYPE = 'google_serper'
 REQUEST_URL = 'https://google.serper.dev/search'
@@ -51,6 +49,64 @@ class GoogleSerperClient:
                 set_api_key_unavaiable(self._api_key, CLIENT_TYPE)
             logger.error(f'google serper search error: {str(e)}')
             return search_result, ''
+
+    async def search_origin(self, question, time, k=5):
+        logger.info(f'google serper search current key is {self._api_key}')
+        search_result = []
+        try:
+            client = AsyncHTTPClient()
+            payload = {
+                "q": question,
+                "tbs": f"qdr:{time}"
+            }
+            # recent_search = LionPromptCommon.get_prompted_messages("recent_search", question)
+            # is_recent = await simple_achat(recent_search)
+            # if is_recent:
+            #     payload["tbs"] = "qdr:w"
+            logger.info(f'google serper search payload: {payload}')
+            headers = {
+                'X-API-KEY': self._api_key,
+                'Content-Type': 'application/json'
+            }
+            result = await client.post_json(REQUEST_URL, payload, headers)
+            if result and len(result['organic']) != 0:
+                search_result = result['organic']
+        except Exception as e:
+            if '429' in str(e):
+                set_api_key_unavaiable(self._api_key, CLIENT_TYPE)
+            logger.error(f'google serper search error: {str(e)}')
+        return search_result
+
+    async def multi_search(self, question, language):
+        search_task = []
+        search_sources = []
+        sources_content = []
+        final_sources = []
+        search_task.append(self.search_origin(question, 'd', 8))
+        search_task.append(self.search_origin(question, 'w', 5))
+        search_task.append(self.search_origin(question, 'm', 3))
+        search_res = await asyncio.gather(*search_task)
+        for search_info in search_res:
+            search_sources.extend(search_info)
+        if search_sources and len(search_sources) != 0:
+            for search_source in search_sources:
+                sources_content.append(search_source['snippet'])
+            cohere_client = CohereClient()
+            rerank_indexes = await cohere_client.rerank(question, sources_content, language)
+            if rerank_indexes and len(rerank_indexes) != 0:
+                for rerank_index in rerank_indexes:
+                    final_sources.append(search_sources[rerank_index])
+        format_final_sources = []
+        if final_sources and len(final_sources) != 0:
+            for final_source in final_sources:
+                tmp_source = {
+                    "title": final_source['title'],
+                    "href": final_source['link'],
+                    "body": final_source['snippet']
+                }
+                format_final_sources.append(tmp_source)
+        return format_final_sources
+
 
     async def news(self, question, k=5):
         logger.info(f'google serper search current key is {self._api_key}')

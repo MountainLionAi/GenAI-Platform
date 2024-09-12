@@ -161,7 +161,7 @@ async def multi_sources_task(front_messages, related_qa, language, source):
     final_related_qa = related_qa
     if enrich_questions and len(enrich_questions) != 0:
         multi_search_start_time = time.perf_counter()
-        sources, content = await multi_search_news(enrich_question, related_qa, language)
+        sources, content = await multi_search_new(enrich_questions, related_qa, language)
         multi_search_end_time = time.perf_counter()
         elapsed_multi_search_time = (multi_search_end_time - multi_search_start_time) * 1000
         logger.info(f'=====================>multi_search耗时：{elapsed_multi_search_time:.3f}毫秒')
@@ -354,9 +354,8 @@ async def multi_search(questions: str, related_qa=[], language=None):
 
 
 async def multi_search_new(questions, related_qa=[], language=None):
-    multi_search_task = []
     search_clients = ['Duckduckgo', 'SERPER']
-    search_tasks = []
+    sources = []
     for search_client in search_clients:
         client = None
         if search_client == 'Duckduckgo':
@@ -364,35 +363,9 @@ async def multi_search_new(questions, related_qa=[], language=None):
         else:
             client = GoogleSerperClient()
         for question in questions:
-            return True
-
-    if RAG_SEARCH_CLIENT == 'SERPER':
-        google_serper_client = GoogleSerperClient()
-        multi_search_task.append(google_serper_client.search(questions))
-    elif RAG_SEARCH_CLIENT == 'Duckduckgo':
-        ddk_client = DuckduckgoClient()
-        multi_search_task.append(ddk_client.aget_results(questions))
-    elif RAG_SEARCH_CLIENT == 'GOOGLE_SEARCH':
-        # multi_search_task.append(google_search(questions, 1, language, 'https://www.techflowpost.com/'))
-        # multi_search_task.append(google_search(questions, 1, language, 'https://foresightnews.pro/'))
-        # multi_search_task.append(google_search(questions, 1, language, 'https://www.coindesk.com/'))
-        # multi_search_task.append(google_search(questions, 1, language, 'https://www.reddit.com/'))
-        # multi_search_task.append(google_search(questions, 1, language, 'https://www.chaincatcher.com/'))
-        multi_search_task.append(google_search(questions, 4, language))
-    elif RAG_SEARCH_CLIENT == 'ALL':
-        google_serper_client = GoogleSerperClient()
-        multi_search_task.append(google_serper_client.search(questions))
-        multi_search_task.append(google_search(questions, 1, language, 'https://www.coindesk.com/'))
-        multi_search_task.append(google_search(questions, 1, language, 'https://www.theblock.co/'))
-        multi_search_task.append(google_search(questions, 1, language, 'https://decrypt.co/'))
-        multi_search_task.append(google_search(questions, 1, language, 'https://www.reddit.com/'))
-        multi_search_task.append(google_search(questions, 1, language, 'https://www.chaincatcher.com/'))
-        multi_search_task.append(google_search(questions, 1, language, 'https://www.odaily.news/'))
-        multi_search_task.append(google_search(questions, 1, language, 'https://www.panewslab.com/'))
-        # multi_search_task.append(google_search(questions))
-    #multi_search_task.append(metaphor_search2(questions, language))
-    results = await asyncio.gather(*multi_search_task)
-
+            tmp_sources = await client.multi_search(question, language)
+            sources.extend(tmp_sources)
+    results, content = parse_results(sources)
     final_sources = []
     final_content = ''
     if len(results) != 0:
@@ -423,3 +396,16 @@ async def check_sensitive_words_in_sources(sources):
         if await sensitive_utils.isNormal(title):
             checked_sources.append(source)
     return checked_sources
+
+
+def parse_results(results):
+    sources = []
+    content = ''
+    if results and len(results) != 0:
+        for result in results:
+            sources.append(
+                {"title": result["title"], "url": result["href"]}
+            )
+            content += result["body"] + "\n引用地址" + result["href"] + "\n"
+
+    return sources, content
