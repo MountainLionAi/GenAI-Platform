@@ -84,7 +84,7 @@ async def get_sources_tasks(front_messages, related_qa, language, source):
     logger.info(f'=====================>enrich_question耗时：{elapsed_enrich_question_time:.3f}毫秒')
     sources = []
     final_related_qa = related_qa
-    if enrich_question not in['False', 'False.'] :
+    if enrich_question not in ['False', 'False.']:
         # sources, content = await other_search(enrich_question, related_qa, language)
         multi_search_start_time = time.perf_counter()
         sources, content = await multi_search(enrich_question, related_qa, language)
@@ -94,20 +94,22 @@ async def get_sources_tasks(front_messages, related_qa, language, source):
         need_white_list = False
         try:
             for message in front_messages['messages']:
-                if message.get('role', '') == 'user' and ('trustwallet' in message.get('content', '').lower() or 'trust wallet' in message.get('content', '').lower()):
+                if message.get('role', '') == 'user' and (
+                        'trustwallet' in message.get('content', '').lower() or 'trust wallet' in message.get('content',
+                                                                                                             '').lower()):
                     need_white_list = True
                     break
             if need_white_list:
                 new_sources = []
-                for i,source in enumerate(sources):
+                for i, source in enumerate(sources):
                     url = source['url']
-                    url = url[url.find('//')+2:]
+                    url = url[url.find('//') + 2:]
                     url = url[0:url.find('/'):]
                     if url.count('.') > 1:
-                        url1 = url[url.rindex('.')+1:len(url)]
-                        tmp = url[ 0:url.rindex('.')]
-                        url = tmp[tmp.rindex('.')+1:]
-                        url = url+'.'+url1
+                        url1 = url[url.rindex('.') + 1:len(url)]
+                        tmp = url[0:url.rindex('.')]
+                        url = tmp[tmp.rindex('.') + 1:]
+                        url = url + '.' + url1
                     if url in WHITE_LIST_URL:
                         new_sources.append(source)
                 sources = new_sources
@@ -168,20 +170,22 @@ async def multi_sources_task(front_messages, related_qa, language, source):
         need_white_list = False
         try:
             for message in front_messages['messages']:
-                if message.get('role', '') == 'user' and ('trustwallet' in message.get('content', '').lower() or 'trust wallet' in message.get('content', '').lower()):
+                if message.get('role', '') == 'user' and (
+                        'trustwallet' in message.get('content', '').lower() or 'trust wallet' in message.get('content',
+                                                                                                             '').lower()):
                     need_white_list = True
                     break
             if need_white_list:
                 new_sources = []
-                for i,source in enumerate(sources):
+                for i, source in enumerate(sources):
                     url = source['url']
-                    url = url[url.find('//')+2:]
+                    url = url[url.find('//') + 2:]
                     url = url[0:url.find('/'):]
                     if url.count('.') > 1:
-                        url1 = url[url.rindex('.')+1:len(url)]
-                        tmp = url[ 0:url.rindex('.')]
-                        url = tmp[tmp.rindex('.')+1:]
-                        url = url+'.'+url1
+                        url1 = url[url.rindex('.') + 1:len(url)]
+                        tmp = url[0:url.rindex('.')]
+                        url = tmp[tmp.rindex('.') + 1:]
+                        url = url + '.' + url1
                     if url in WHITE_LIST_URL:
                         new_sources.append(source)
                 sources = new_sources
@@ -232,7 +236,8 @@ async def get_article_summary(front_messages):
     except Exception as e:
         logger.error(f'获取相关文章摘要失败: {e}')
         return None
-    
+
+
 # 获取分享内容总结
 async def get_share_summary(front_messages, language):
     try:
@@ -241,7 +246,8 @@ async def get_share_summary(front_messages, language):
         return summary_str
     except Exception as e:
         logger.error(f'获取分享内容总结失败: {e}')
-        return None   
+        return None
+
 
 async def aload_web(url):
     try:
@@ -327,7 +333,7 @@ async def multi_search(questions: str, related_qa=[], language=None):
         multi_search_task.append(google_search(questions, 1, language, 'https://www.odaily.news/'))
         multi_search_task.append(google_search(questions, 1, language, 'https://www.panewslab.com/'))
         # multi_search_task.append(google_search(questions))
-    #multi_search_task.append(metaphor_search2(questions, language))
+    # multi_search_task.append(metaphor_search2(questions, language))
     results = await asyncio.gather(*multi_search_task)
 
     final_sources = []
@@ -391,7 +397,7 @@ async def check_sensitive_words_in_sources(sources):
 
 
 async def parse_results(question_sources):
-    sources = []
+    final_sources = []
     if question_sources:
         for key in question_sources:
             sources = question_sources.get(key)
@@ -412,10 +418,10 @@ async def parse_results(question_sources):
                     }
                     question_source.append(temp_source)
                     question_content += tmp_content + "\n引用地址" + url + "\n"
-            sources.append({
+            final_sources.append({
                 "question": key,
                 "sources": question_source,
                 "content": question_content
             })
 
-    return sources
+    return final_sources
