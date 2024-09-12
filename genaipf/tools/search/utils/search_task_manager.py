@@ -369,9 +369,9 @@ async def multi_search_new(questions, related_qa=[], language=None):
     results = parse_results(question_sources)
     final_sources = []
     if results:
-        for question in results:
-            final_sources += results[question]['sources']
-            related_qa.append(question + ' : ' + results[question]['content'])
+        for question_info in results:
+            final_sources += question_info['sources']
+            related_qa.append(question_info['question'] + ' : ' + question_info['content'])
     logger.info(f'================最后的sources===============')
     logger.info(final_sources)
     logger.info(f'================最后的sources===============')
@@ -391,7 +391,7 @@ async def check_sensitive_words_in_sources(sources):
 
 
 async def parse_results(question_sources):
-    sources = {}
+    sources = []
     if question_sources:
         for key in question_sources:
             sources = question_sources.get(key)
@@ -412,9 +412,10 @@ async def parse_results(question_sources):
                     }
                     question_source.append(temp_source)
                     question_content += tmp_content + "\n引用地址" + url + "\n"
-            sources[key] = {
+            sources.append({
+                "question": key,
                 "sources": question_source,
                 "content": question_content
-            }
+            })
 
     return sources
