@@ -1,6 +1,7 @@
 from anthropic import AsyncAnthropic
 import os
 from genaipf.utils.log_utils import logger
+from genaipf.utils.common_utils import contains_chinese
 
 anthropic_api_key = os.getenv("ANTHROPIC_API_KEY")
 async_client = AsyncAnthropic(api_key=anthropic_api_key)
@@ -19,6 +20,10 @@ async def claude_cached_api_call(model_name="claude-3-5-sonnet-20240620", system
     #         ]
     #     }
     #     messages.append(message)
+    if contains_chinese(system_prompt):
+        system_prompt = system_prompt + "\n" + "输出格式要求：尽量使用两三个markdown的表格对分析进行描述或者总结。"
+    else:
+        system_prompt = system_prompt + "\n" + "Output format requirements: Try to use two or three markdown tables to describe or summarize the analysis as much as possible."
     logger.info(f"调用claude模型传入的消息列表:{ml_messages}")
     if system_prompt_ref:
         system = [
