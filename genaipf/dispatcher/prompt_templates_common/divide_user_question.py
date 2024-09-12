@@ -46,6 +46,7 @@ def _get_divide_question_prompted_messages(data, language, num):
 2. 输出的格式是相关问题的json数组！！！
 3. 如果没有可总结的关联问题，返回空json数组！！！
 4. 输出的问题中必须包含相关关键字，尤其和web3区块链领域相关联的！！！
+5. 输出的数量必须和上面要求的一致，例如当前是{num}
 
 **输出格式：**
 有关联问题的情况下：
