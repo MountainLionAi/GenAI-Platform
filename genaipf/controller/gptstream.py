@@ -139,7 +139,6 @@ userid={userid},language={language},msggroup={msggroup},device_no={device_no},qu
                 await points_service.minus_user_can_use_time(_user_id, 'query', visitor_id)
             else:
                 return fail(ERROR_CODE['NO_REMAINING_TIMES'])
-                raise CustomerError(status_code=ERROR_CODE['NO_REMAINING_TIMES'])
     except Exception as e:
         logger.error(e)
         logger.error(traceback.format_exc())
