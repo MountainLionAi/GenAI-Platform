@@ -25,6 +25,7 @@ WHITE_LIST_URL = [
     "chaincatcher.com"
 ]
 
+
 # 获取是否需要查询task
 async def get_is_need_search_task(front_messages):
     is_need_search = False
@@ -87,6 +88,80 @@ async def get_sources_tasks(front_messages, related_qa, language, source):
         # sources, content = await other_search(enrich_question, related_qa, language)
         multi_search_start_time = time.perf_counter()
         sources, content = await multi_search(enrich_question, related_qa, language)
+        multi_search_end_time = time.perf_counter()
+        elapsed_multi_search_time = (multi_search_end_time - multi_search_start_time) * 1000
+        logger.info(f'=====================>multi_search耗时：{elapsed_multi_search_time:.3f}毫秒')
+        need_white_list = False
+        try:
+            for message in front_messages['messages']:
+                if message.get('role', '') == 'user' and ('trustwallet' in message.get('content', '').lower() or 'trust wallet' in message.get('content', '').lower()):
+                    need_white_list = True
+                    break
+            if need_white_list:
+                new_sources = []
+                for i,source in enumerate(sources):
+                    url = source['url']
+                    url = url[url.find('//')+2:]
+                    url = url[0:url.find('/'):]
+                    if url.count('.') > 1:
+                        url1 = url[url.rindex('.')+1:len(url)]
+                        tmp = url[ 0:url.rindex('.')]
+                        url = tmp[tmp.rindex('.')+1:]
+                        url = url+'.'+url1
+                    if url in WHITE_LIST_URL:
+                        new_sources.append(source)
+                sources = new_sources
+        except Exception as e:
+            logger.error(f'白名单识别失败: {e}')
+        final_related_qa = content
+    get_sources_tasks_end_time = time.perf_counter()
+    elapsed_get_sources_tasks_time = (get_sources_tasks_end_time - enrich_question_start_time) * 1000
+    logger.info(f'=====================>get_sources_tasks耗时：{elapsed_get_sources_tasks_time:.3f}毫秒')
+    return sources, final_related_qa
+
+
+async def get_divide_questions(front_messages, language, source, context_length=4):
+    user_messages = front_messages['messages'][:context_length]
+    latest_user_msg = user_messages[-1]
+    final_question_arr = []
+    if source == 'v007':  # 单独处理空投的content
+        airdrop_info = json.loads(latest_user_msg['content'])
+        if language == 'zh':
+            add_question = f'请帮我介绍一下: {airdrop_info.get("title")}这个空投项目'
+        else:
+            add_question = f'Please introduce the {airdrop_info.get("title")} Airdrop Project'
+        final_question_arr.append(add_question)
+    else:
+        if latest_user_msg.get('quote_info'):
+            newest_question = latest_user_msg.get('quote_info')
+        else:
+            newest_question = latest_user_msg['content']
+        final_question_arr.append(newest_question)
+    try:
+        msgs = LionPromptCommon.get_prompted_messages("divide_user_question", user_messages, language, 3)
+        questions_result_str = await async_simple_chat(msgs)
+        logger.info(f'=====================>获取到的新问题数组是: {questions_result_str}')
+        questions_result = json.loads(questions_result_str)
+        if questions_result and len(questions_result) != 0:
+            final_question_arr.extend(questions_result)
+    except Exception as e:
+        logger.error(f'分析总结用户问题失败: {e}')
+    return final_question_arr
+
+
+# 新的多轮搜索的方法
+async def multi_sources_task(front_messages, related_qa, language, source):
+    enrich_question_start_time = time.perf_counter()
+    enrich_questions = await get_divide_questions(front_messages, language, source)  # 根据上下文生成新的问题数组
+    logger.info(f'丰富后的问题是: {enrich_questions}')
+    enrich_question_end_time = time.perf_counter()
+    elapsed_enrich_question_time = (enrich_question_end_time - enrich_question_start_time) * 1000
+    logger.info(f'=====================>enrich_question耗时：{elapsed_enrich_question_time:.3f}毫秒')
+    sources = []
+    final_related_qa = related_qa
+    if enrich_questions and len(enrich_questions) != 0:
+        multi_search_start_time = time.perf_counter()
+        sources, content = await multi_search_news(enrich_question, related_qa, language)
         multi_search_end_time = time.perf_counter()
         elapsed_multi_search_time = (multi_search_end_time - multi_search_start_time) * 1000
         logger.info(f'=====================>multi_search耗时：{elapsed_multi_search_time:.3f}毫秒')
@@ -228,6 +303,69 @@ async def summarize_urls_by_msg(urls_and_msgs, timeout=10.1):
 
 async def multi_search(questions: str, related_qa=[], language=None):
     multi_search_task = []
+    if RAG_SEARCH_CLIENT == 'SERPER':
+        google_serper_client = GoogleSerperClient()
+        multi_search_task.append(google_serper_client.search(questions))
+    elif RAG_SEARCH_CLIENT == 'Duckduckgo':
+        ddk_client = DuckduckgoClient()
+        multi_search_task.append(ddk_client.aget_results(questions))
+    elif RAG_SEARCH_CLIENT == 'GOOGLE_SEARCH':
+        # multi_search_task.append(google_search(questions, 1, language, 'https://www.techflowpost.com/'))
+        # multi_search_task.append(google_search(questions, 1, language, 'https://foresightnews.pro/'))
+        # multi_search_task.append(google_search(questions, 1, language, 'https://www.coindesk.com/'))
+        # multi_search_task.append(google_search(questions, 1, language, 'https://www.reddit.com/'))
+        # multi_search_task.append(google_search(questions, 1, language, 'https://www.chaincatcher.com/'))
+        multi_search_task.append(google_search(questions, 4, language))
+    elif RAG_SEARCH_CLIENT == 'ALL':
+        google_serper_client = GoogleSerperClient()
+        multi_search_task.append(google_serper_client.search(questions))
+        multi_search_task.append(google_search(questions, 1, language, 'https://www.coindesk.com/'))
+        multi_search_task.append(google_search(questions, 1, language, 'https://www.theblock.co/'))
+        multi_search_task.append(google_search(questions, 1, language, 'https://decrypt.co/'))
+        multi_search_task.append(google_search(questions, 1, language, 'https://www.reddit.com/'))
+        multi_search_task.append(google_search(questions, 1, language, 'https://www.chaincatcher.com/'))
+        multi_search_task.append(google_search(questions, 1, language, 'https://www.odaily.news/'))
+        multi_search_task.append(google_search(questions, 1, language, 'https://www.panewslab.com/'))
+        # multi_search_task.append(google_search(questions))
+    #multi_search_task.append(metaphor_search2(questions, language))
+    results = await asyncio.gather(*multi_search_task)
+
+    final_sources = []
+    final_content = ''
+    if len(results) != 0:
+        for result in results:
+            source_info = result[0]
+            source_content = result[1]
+            # 检查sources
+            checked_sources = await check_sensitive_words_in_sources(source_info)
+            final_sources = final_sources + checked_sources
+            # 检查内容
+            if await sensitive_utils.isNormal(source_content):
+                final_content += source_content
+    if len(final_sources) > 0:
+        related_qa.append(questions + ' : ' + final_content)
+    logger.info(f'================最后的sources===============')
+    logger.info(final_sources)
+    logger.info(f'================最后的sources===============')
+    logger.info(f'================最后的related_qa===============')
+    logger.info(related_qa)
+    logger.info(f'================最后的related_qa===============')
+    return final_sources, related_qa
+
+
+async def multi_search_new(questions, related_qa=[], language=None):
+    multi_search_task = []
+    search_clients = ['Duckduckgo', 'SERPER']
+    search_tasks = []
+    for search_client in search_clients:
+        client = None
+        if search_client == 'Duckduckgo':
+            client = DuckduckgoClient()
+        else:
+            client = GoogleSerperClient()
+        for question in questions:
+            return True
+
     if RAG_SEARCH_CLIENT == 'SERPER':
         google_serper_client = GoogleSerperClient()
         multi_search_task.append(google_serper_client.search(questions))
