@@ -364,20 +364,23 @@ async def multi_search_new(questions, related_qa=[], language=None):
             client = GoogleSerperClient()
         for question in questions:
             tmp_sources = await client.multi_search(question, language)
-            sources.extend(tmp_sources)
+            sources = sources + tmp_sources
     results, content = parse_results(sources)
     final_sources = []
     final_content = ''
     if len(results) != 0:
         for result in results:
-            source_info = result[0]
-            source_content = result[1]
             # 检查sources
-            checked_sources = await check_sensitive_words_in_sources(source_info)
-            final_sources = final_sources + checked_sources
-            # 检查内容
-            if await sensitive_utils.isNormal(source_content):
-                final_content += source_content
+            title = result['title']
+            content = result['body']
+            url = result['href']
+            if await sensitive_utils.isNormal(title) and await sensitive_utils.isNormal(content):
+                temp_source = {
+                    "title": title,
+                    "content": content,
+                    "url": url
+                }
+                final_sources.append(temp_source)
     if len(final_sources) > 0:
         related_qa.append(questions + ' : ' + final_content)
     logger.info(f'================最后的sources===============')
@@ -401,11 +404,14 @@ async def check_sensitive_words_in_sources(sources):
 def parse_results(results):
     sources = []
     content = ''
+    title_keys = []
     if results and len(results) != 0:
         for result in results:
-            sources.append(
-                {"title": result["title"], "url": result["href"]}
-            )
+            if result['title'] in title_keys:
+                continue
+            else:
+                title_keys.append(result['title'])
+            sources.append(result)
             content += result["body"] + "\n引用地址" + result["href"] + "\n"
 
     return sources, content
