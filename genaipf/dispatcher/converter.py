@@ -83,6 +83,9 @@ async def convert_func_out_to_stream(chunk, messages, newest_question, model, la
                 related_qa.append(f'相关问题: {picked_content}')
         elif len(reslt) == 3:
             presetContent, picked_content, _type = reslt
+            if _type == 'tx_hash_analysis':
+                func_name = _type
+                sub_func_name = _type
         if preset_conf.get("has_preset_content") and (_param.get("need_chart") or preset_conf.get("need_preset")) and presetContent != {}:
             _data.update({
                 'type' : _type,
