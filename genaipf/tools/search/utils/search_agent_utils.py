@@ -28,8 +28,8 @@ fixed_related_question = {
     }
 }
 
-not_need_search = ['generate_report', 'qrcode_address', 'wallet_balance', 'token_transfer', 'coin_swap', 'richer_prompt', 'get_gas', 'check_hash', 'check_address', 'check_order']
-not_need_sources = ['generate_report', 'qrcode_address', 'wallet_balance', 'token_transfer', 'coin_swap', 'richer_prompt', 'url_search', 'get_gas', 'check_hash', 'check_address', 'check_order']
+not_need_search = ['generate_report', 'qrcode_address', 'wallet_balance', 'token_transfer', 'coin_swap', 'richer_prompt', 'get_gas', 'check_hash', 'check_address', 'check_order', 'tx_hash_analysis']
+not_need_sources = ['generate_report', 'qrcode_address', 'wallet_balance', 'token_transfer', 'coin_swap', 'richer_prompt', 'url_search', 'get_gas', 'check_hash', 'check_address', 'check_order', 'tx_hash_analysis']
 need_gpt = ['get_gas', 'check_hash', 'check_address', 'check_order']
 
 # system_prompt = f"""

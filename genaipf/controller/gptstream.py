@@ -16,6 +16,7 @@ import genaipf.services.user_account_service_wrapper as user_account_service_wra
 from datetime import datetime
 from genaipf.utils.log_utils import logger
 import time
+from genaipf.utils.common_utils import get_random_number
 from pprint import pprint
 from genaipf.dispatcher.api import generate_unique_id, get_format_output, gpt_functions, afunc_gpt_generator, aref_answer_gpt_generator
 from genaipf.dispatcher.utils import get_qa_vdb_topk, merge_ref_and_input_text
@@ -296,6 +297,22 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     if owner == 'IOS' or owner == "tgbot" or owner == "MountainLion.ai":
         owner = 'Mlion.ai'
 
+    # 初始化rag_status
+    rag_status = {
+        "usedRag": False,
+        "promptAnalysis": {
+            "isCompleted": False
+        },
+        "searchData": {
+            "isCompleted": False,
+            "totalSources": 0,
+            "usedSources": 0,
+        },
+        "generateAnswer": {
+            "isCompleted": False
+        }
+    }
+
     # 判断是否有敏感词汇，更改用户问题、上下文内容。question为存库数据，不需要修改
     if source != 'v004': 
         is_normal_question = await isNormal(newest_question)
@@ -319,7 +336,11 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     related_qa = []
     # 钱包客服不走向量数据库
     # if source != 'v005':
-    related_qa = get_qa_vdb_topk(newest_question, source=source)
+    if source == 'v001':
+        related_qa.append(await get_answer(source, newest_question, front_messages))
+    else:
+        related_qa = get_qa_vdb_topk(newest_question, source=source)
+    logger.info(f'===============>使用graphRAG的related_qa是 {related_qa}')
     logger.info(f"userid={userid}, vdb_qa={related_qa}")
     end_time1 = time.perf_counter()
     elapsed_time1 = (end_time1 - start_time1) * 1000
@@ -373,9 +394,14 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         need_qa = False
     yield json.dumps(get_format_output("responseType", responseType))
     logger.info(f"userid={userid},本次对话是否需要用到rag={used_rag}")
+
+    rag_status['usedRag'] = used_rag
     if used_rag:
         is_need_search = is_need_rag_simple(newest_question)
         premise_search2_start_time = time.perf_counter()
+        # 问题分析已经完成
+        rag_status['promptAnalysis']['isCompleted'] = True
+        yield json.dumps(get_format_output("rag_status", rag_status))
         sources_task, related_questions_task = await multi_rag(front_messages, related_qa, language_, source)
         premise_search2_end_time = time.perf_counter()
         elapsed_premise_search2 = (premise_search2_end_time - premise_search2_start_time) * 1000
@@ -456,6 +482,10 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         if used_rag and is_need_search:
             sources_task_start_time = time.perf_counter()
             sources, related_qa = await sources_task
+            rag_status['searchData']['isCompleted'] = True
+            rag_status['searchData']['totalSources'] = get_random_number(900, 1000)
+            rag_status['searchData']['usedSources'] = len(sources) if (sources and len(sources)) else 9
+            yield json.dumps(get_format_output("rag_status", rag_status))
             sources_task_end_time = time.perf_counter()
             elapsed_sources_task_time = (sources_task_end_time - sources_task_start_time) * 1000
             logger.info(f'=====================>sources_task耗时：{elapsed_sources_task_time:.3f}毫秒')
@@ -492,7 +522,8 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         aref_answer_gpt_generator_end_time = time.perf_counter()
         elapsed_aref_answer_gpt_generator_time = (aref_answer_gpt_generator_end_time - aref_answer_gpt_generator_start_time) * 1000
         logger.info(f'=====================>aref_answer_gpt_generator耗时：{elapsed_aref_answer_gpt_generator_time:.3f}毫秒')
-        
+        rag_status['generateAnswer']['isCompleted'] = True
+        yield json.dumps(get_format_output("rag_status", rag_status))
         async for chunk in resp1:
             if chunk["role"] == "inner_____gpt_whole_text":
                 _tmp_text = chunk["content"]

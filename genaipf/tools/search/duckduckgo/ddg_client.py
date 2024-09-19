@@ -1,4 +1,6 @@
 import asyncio
+import json
+
 from genaipf.utils.log_utils import logger
 from genaipf.tools.search.rerank.cohere_client import CohereClient
 from duckduckgo_search import AsyncDDGS
@@ -44,6 +46,7 @@ class DuckduckgoClient:
         title_keys = []
         for search_info in search_res:
             search_sources.extend(search_info)
+        logger.info(f'使用duckduckgo的搜索结果是: {json.dumps(search_sources)}')
         if search_sources and len(search_sources) != 0:
             for search_source in search_sources:
                 if search_source['title'] in title_keys:
