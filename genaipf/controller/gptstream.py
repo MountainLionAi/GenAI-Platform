@@ -299,6 +299,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
 
     # 初始化rag_status
     rag_status = {
+        "usedRag": False,
         "promptAnalysis": {
             "isCompleted": False
         },
@@ -389,6 +390,8 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         need_qa = False
     yield json.dumps(get_format_output("responseType", responseType))
     logger.info(f"userid={userid},本次对话是否需要用到rag={used_rag}")
+
+    rag_status['usedRag'] = used_rag
     if used_rag:
         is_need_search = is_need_rag_simple(newest_question)
         premise_search2_start_time = time.perf_counter()
