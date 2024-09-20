@@ -340,6 +340,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         related_qa.append(await get_answer(source, newest_question, front_messages))
     else:
         related_qa = get_qa_vdb_topk(newest_question, source=source)
+    logger.info(f'===============>使用graphRAG的related_qa是 {related_qa}')
     logger.info(f"userid={userid}, vdb_qa={related_qa}")
     end_time1 = time.perf_counter()
     elapsed_time1 = (end_time1 - start_time1) * 1000
