@@ -6,6 +6,7 @@ from urllib.parse import urlparse
 from genaipf.utils.snowflake import SnowflakeIdWorker
 import functools
 import traceback
+import random
 
 def async_exception_handler(decorator_arg=None):
     def inner_function(func):
@@ -207,3 +208,7 @@ def get_uuid():
     uuid_str = str(unique_uuid)
     return uuid_str
 
+# 获取两个整数之间的随机数
+def get_random_number(from_num, end_num):
+    random_number = random.randint(from_num, end_num)
+    return random_number

@@ -11,7 +11,7 @@ import asyncio
 from genaipf.dispatcher.prompts_common import LionPromptCommon
 from genaipf.dispatcher.utils import async_simple_chat
 from genaipf.tools.search.utils.search_task_manager import get_related_question_task, get_sources_tasks, \
-    get_is_need_search_task
+    get_is_need_search_task, multi_sources_task
 from genaipf.tools.search.google_serper.google_serper_agent import google_serper
 
 client = OpenAI()
@@ -28,8 +28,8 @@ fixed_related_question = {
     }
 }
 
-not_need_search = ['generate_report', 'qrcode_address', 'wallet_balance', 'token_transfer', 'coin_swap', 'richer_prompt', 'get_gas', 'check_hash', 'check_address', 'check_order']
-not_need_sources = ['generate_report', 'qrcode_address', 'wallet_balance', 'token_transfer', 'coin_swap', 'richer_prompt', 'url_search', 'get_gas', 'check_hash', 'check_address', 'check_order']
+not_need_search = ['generate_report', 'qrcode_address', 'wallet_balance', 'token_transfer', 'coin_swap', 'richer_prompt', 'get_gas', 'check_hash', 'check_address', 'check_order', 'tx_hash_analysis']
+not_need_sources = ['generate_report', 'qrcode_address', 'wallet_balance', 'token_transfer', 'coin_swap', 'richer_prompt', 'url_search', 'get_gas', 'check_hash', 'check_address', 'check_order', 'tx_hash_analysis']
 need_gpt = ['get_gas', 'check_hash', 'check_address', 'check_order']
 
 # system_prompt = f"""
@@ -136,13 +136,22 @@ async def premise_search2(front_messages, related_qa=None, language=None, source
     data = {'messages': front_messages}
     # 相关问题取最新的
     newest_question_arr = {"messages": [data['messages'][-1]]}
-    # t1 = asyncio.create_task(get_is_need_search_task(data))
     t2 = asyncio.create_task(get_sources_tasks(data, related_qa, language, source))
     t3 = asyncio.create_task(get_related_question_task(newest_question_arr, fixed_related_question, language, source))
+    return t2, t3
+
+
+async def multi_rag(front_messages, related_qa=None, language=None, source=''):
+    data = {'messages': front_messages}
+    # 相关问题取最新的
+    newest_question_arr = {"messages": [data['messages'][-1]]}
+    t1 = asyncio.create_task(multi_sources_task(data, related_qa, language, source))
+    t2 = asyncio.create_task(get_related_question_task(newest_question_arr, fixed_related_question, language, source))
     # await t1
     # need_search = t1.result()
     # return need_search, t2, t3
-    return t2, t3
+    return t1, t2
+
 
 def is_need_rag_simple(message):
     l = ['hi', 'hello', '你好', '您好', '1 + 1 = ? 1 or 2?']

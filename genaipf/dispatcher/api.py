@@ -310,7 +310,7 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
         "role": "system",
         "content": content
     }
-    if 'cluade' in use_model:
+    if 'claude' in use_model and (source == 'v005' or source == 'v006'):
         logger.info(f"v005_006_system_prompt={v005_006_system_prompt}")
         logger.info(f"v005_006_system_prompt_ref={v005_006_system_prompt_ref}")
     else:
