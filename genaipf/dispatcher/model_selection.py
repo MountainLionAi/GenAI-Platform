@@ -9,5 +9,5 @@ async def check_and_pick_model(newest_question, model):
     if msg_type in MODEL_MAPPING:
         model = MODEL_MAPPING[msg_type]
     else:
-        model = 'ml-plus'
+        model = 'openai'
     return model 
