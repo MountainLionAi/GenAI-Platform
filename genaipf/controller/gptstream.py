@@ -33,6 +33,7 @@ from genaipf.tools.search.utils.search_agent_utils import premise_search, premis
 from genaipf.tools.search.utils.search_task_manager import get_related_question_task
 from genaipf.utils.common_utils import contains_chinese
 from genaipf.utils.sensitive_util import isNormal
+from genaipf.dispatcher.model_selection import check_and_pick_model
 import ml4gp.services.points_service as points_service
 from ml4gp.dispatcher.rag_read import get_answer
 import os
@@ -459,6 +460,11 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         if airdrop_info:
             picked_content = airdrop_info.get('content')
         logger.info(f'=====================>airdrop_picked_content：{picked_content}')
+    # 根据用户请求自动分辨使用哪个model
+    if model == 'auto':
+        model = await check_and_pick_model(newest_question, model)
+        logger.info(f"当前使用模型{model}")
+        yield get_format_output("gpt", model, type="model")
     afunc_gpt_generator_start_time = time.perf_counter()
     resp1 = await afunc_gpt_generator(msgs, used_gpt_functions, language_, model, picked_content, related_qa, source, owner)
     afunc_gpt_generator_end_time = time.perf_counter()
