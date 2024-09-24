@@ -464,7 +464,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     if llm_model == 'auto':
         llm_model = await check_and_pick_model(newest_question, llm_model)
         logger.info(f"当前使用模型{llm_model}")
-        yield get_format_output("model", llm_model)
+        yield json.dumps(get_format_output("model", llm_model))
     afunc_gpt_generator_start_time = time.perf_counter()
     resp1 = await afunc_gpt_generator(msgs, used_gpt_functions, language_, model, picked_content, related_qa, source, owner)
     afunc_gpt_generator_end_time = time.perf_counter()
