@@ -398,12 +398,15 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
 
     if used_rag:
         is_need_search = is_need_rag_simple(newest_question)
-        premise_search2_start_time = time.perf_counter()
-        # 问题分析已经完成
-        sources_task, related_questions_task = await multi_rag(front_messages, related_qa, language_, source)
-        premise_search2_end_time = time.perf_counter()
-        elapsed_premise_search2 = (premise_search2_end_time - premise_search2_start_time) * 1000
-        logger.info(f'=====================>premise_search2耗时：{elapsed_premise_search2:.3f}毫秒')
+        if is_need_search:
+            used_rag = False
+        else:
+            premise_search2_start_time = time.perf_counter()
+            # 问题分析已经完成
+            sources_task, related_questions_task = await multi_rag(front_messages, related_qa, language_, source)
+            premise_search2_end_time = time.perf_counter()
+            elapsed_premise_search2 = (premise_search2_end_time - premise_search2_start_time) * 1000
+            logger.info(f'=====================>premise_search2耗时：{elapsed_premise_search2:.3f}毫秒')
     elif used_graph_rag:
         is_need_search = is_need_rag_simple(newest_question)
         sources_task = await get_answer(source, newest_question, front_messages)
