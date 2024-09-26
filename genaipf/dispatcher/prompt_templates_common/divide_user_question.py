@@ -61,3 +61,14 @@ def _get_divide_question_prompted_messages(data, language, num):
         {"role": "system", "content": system_text},
         {"role": "user", "content": last_msg},
     ]
+
+
+def _get_question_type_prompted_messages(data):
+    system_text = f"""***角色***： 你现在需要分析用户得到问题，判断他属于哪种类型的问题，并返回该类型，诸如：金融，医疗等
+    ***约束***：仅返回一个代表类型的词即可, 不需要任何其他的。
+    """
+    last_msg = f"用户的消息为:{data}"
+    return [
+        {"role": "system", "content": system_text},
+        {"role": "user", "content": last_msg},
+    ]

@@ -1,6 +1,7 @@
 # 错误码
 ERROR_CODE = {
     "PARAMS_ERROR": 1001,
+    "INVALID_SIGNATURE": 1002,
     "USER_NOT_EXIST": 2001,
     "PWD_ERROR": 2002,
     "EMPTY_USER_TOKEN": 2003,
@@ -57,6 +58,7 @@ ERROR_CODE = {
 # 错误信息
 ERROR_MESSAGE = {
     1001: 'Params error',
+    1002: 'INVALID_SIGNATURE',
     2001: 'User not exist',
     2002: 'User password error',
     2003: 'User Token is empty',
