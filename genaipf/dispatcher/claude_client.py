@@ -40,7 +40,7 @@ async def claude_cached_api_call(model_name="claude-3-5-sonnet-20240620", system
     if system_prompt_ref:
         async with async_client.messages.stream(
             model=model_name,
-            max_tokens=1000,
+            max_tokens=2048,
             temperature=0,
             system=system,
             messages=ml_messages,
@@ -55,7 +55,7 @@ async def claude_cached_api_call(model_name="claude-3-5-sonnet-20240620", system
     else:
         async with async_client.messages.stream(
             model=model_name,
-            max_tokens=1000,
+            max_tokens=2048,
             temperature=0,
             system=system_prompt,
             messages=ml_messages
