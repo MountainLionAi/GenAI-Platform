@@ -53,11 +53,12 @@ class DuckduckgoClient:
                     continue
                 title_keys.append(search_source['title'])
                 sources_content.append(search_source['body'])
-            cohere_client = CohereClient()
-            rerank_indexes = await cohere_client.rerank(word, sources_content, language)
-            if rerank_indexes and len(rerank_indexes) != 0:
-                for rerank_index in rerank_indexes:
-                    final_sources.append(search_sources[rerank_index])
+            final_sources = search_sources
+            #cohere_client = CohereClient()
+            # rerank_indexes = await cohere_client.rerank(word, sources_content, language)
+            # if rerank_indexes and len(rerank_indexes) != 0:
+            #     for rerank_index in rerank_indexes:
+            #         final_sources.append(search_sources[rerank_index])
         return final_sources
 
     def parse_results(self, results):

@@ -1,6 +1,7 @@
 # 错误码
 ERROR_CODE = {
     "PARAMS_ERROR": 1001,
+    "INVALID_SIGNATURE": 1002,
     "USER_NOT_EXIST": 2001,
     "PWD_ERROR": 2002,
     "EMPTY_USER_TOKEN": 2003,
@@ -13,6 +14,7 @@ ERROR_CODE = {
     "MODIFY_PASSWORD_ERROR": 2010,
     "LOGIN_EXPIRED": 2011,
     "WALLET_SIGN_ERROR": 2012,
+    "GOOGLE_OAUTH_ERROR": 2013,
     "NOT_AUTHORIZED": 4001,
     "ILLEGAL_REQUEST": 4002,
     "REQUEST_FREQUENCY_TOO_HIGH": 4003,
@@ -57,6 +59,7 @@ ERROR_CODE = {
 # 错误信息
 ERROR_MESSAGE = {
     1001: 'Params error',
+    1002: 'INVALID_SIGNATURE',
     2001: 'User not exist',
     2002: 'User password error',
     2003: 'User Token is empty',
@@ -69,6 +72,7 @@ ERROR_MESSAGE = {
     2010: 'User Modify Password Error',
     2011: 'User Login Time Out',
     2012: 'User Wallet Sign Message Error',
+    2013: 'Request is missing required authentication credential',
     4001: 'User Not Authorized',
     4002: 'Illegal Request',
     4003: 'Request Frequency Is Too High',
