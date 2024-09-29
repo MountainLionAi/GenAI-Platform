@@ -80,7 +80,6 @@ async def user_login(email, password, signature, wallet_addr, access_token, oaut
         if oauth == 'google':
             google_user_info = await get_google_user_info(access_token)
             user = await get_user_info_by_oauth(google_user_info['id'], oauth)
-            print(user)
             email = google_user_info['email']
             if not user:
                 user_info = (
@@ -113,8 +112,6 @@ async def user_login(email, password, signature, wallet_addr, access_token, oaut
     user_id = user_info['id']
     user_key = email if login_type != 1 else wallet_addr
     jwt_manager = JWTManager()
-    print(user_info['id'])
-    print(user_key)
     jwt_token = jwt_manager.generate_token(user_info['id'], user_key)
     redis_client = RedisConnectionPool().get_connection()
     token_key = get_user_key(user_info['id'], user_key)
