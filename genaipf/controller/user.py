@@ -25,9 +25,14 @@ async def login(request: Request):
         if (not request_params.get('timestamp') or not request_params.get('signature')
                 or not request_params.get('wallet_address')):
             raise CustomerError(status_code=ERROR_CODE['PARAMS_ERROR'])
+    elif int(login_type) == 2:
+        if not request_params.get('access_token') or not request_params.get('oauth'):
+            raise CustomerError(status_code=ERROR_CODE['PARAMS_ERROR'])
     login_res = await user_service.user_login(request_params.get('email', ''), request_params.get('password', ''),
                                               request_params.get('signature', ''),
                                               request_params.get('wallet_address', ''),
+                                              request_params.get('access_token', ''),
+                                              request_params.get('oauth', ''),
                                               request_params.get('timestamp', ''), login_type)
     return success(login_res)
 

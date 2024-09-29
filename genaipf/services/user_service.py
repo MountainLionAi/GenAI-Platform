@@ -15,6 +15,7 @@ import genaipf.utils.hcaptcha_utils as hcaptcha
 import genaipf.utils.email_utils as email_utils
 from web3 import Web3
 from eth_account.messages import encode_defunct
+import requests
 
 ORIGIN_MESSAGE = "Welcome. Login Mountainlion. This is completely secure and doesn't cost anything! "
 
@@ -52,7 +53,7 @@ def check_user_signature(signature, wallet_addr, time_stamp):
 
 
 # 用户登陆
-async def user_login(email, password, signature, wallet_addr, timestamp, login_type):
+async def user_login(email, password, signature, wallet_addr, access_token, oauth, timestamp, login_type):
     if login_type == 1:
         if not check_user_signature(signature, wallet_addr, timestamp):
             raise CustomerError(status_code=ERROR_CODE['WALLET_SIGN_ERROR'])
@@ -67,13 +68,36 @@ async def user_login(email, password, signature, wallet_addr, timestamp, login_t
                 '',
                 wallet_addr,
                 '',
+                '',
                 get_format_time(),
                 ''
             )
             await add_user(user_info)
-        user = await get_user_info_by_address(wallet_addr)
+            user = await get_user_info_by_address(wallet_addr)
         user_info = user[0]
         account = wallet_addr
+    elif login_type == 2:
+        if oauth == 'google':
+            google_user_info = await get_google_user_info(access_token)
+            user = await get_user_info_by_oauth(google_user_info['id'], oauth)
+            email = google_user_info['email']
+            if not user:
+                user_info = (
+                    email,
+                    '',
+                    '',
+                    google_user_info['name'],
+                    '',
+                    '',
+                    oauth,
+                    google_user_info['id'],
+                    get_format_time(),
+                    ''
+                )
+                await add_user(user_info)
+                user = await get_user_info_by_oauth(google_user_info['id'], oauth)
+            user_info = user[0]
+            account = google_user_info['name']
     else:
         user = await get_user_info_from_db(email)
         if not user:
@@ -86,7 +110,7 @@ async def user_login(email, password, signature, wallet_addr, timestamp, login_t
             from ml4gp.services.user_account_service import create_ai_account
             await create_ai_account(user_info['id'])
     user_id = user_info['id']
-    user_key = email if login_type == 0 else wallet_addr
+    user_key = email if login_type != 1 else wallet_addr
     jwt_manager = JWTManager()
     jwt_token = jwt_manager.generate_token(user_info['id'], user_key)
     redis_client = RedisConnectionPool().get_connection()
@@ -95,6 +119,19 @@ async def user_login(email, password, signature, wallet_addr, timestamp, login_t
     redis_client.set(token_key_final, jwt_token, 3600 * 24 * 180)  # 设置登陆态到redis
     await update_user_token(user_info['id'], jwt_token)
     return {'user_token': jwt_token, 'account': account, 'user_id': user_id}
+
+# google oauth
+async def get_google_user_info(access_token):
+    api_url = 'https://www.googleapis.com/oauth2/v2/userinfo'
+    headers ={
+        "Authorization": f"Bearer {access_token}"
+    }
+    res_json = requests.get(api_url, headers=headers).json()
+    if res_json.get('id'):
+        return res_json
+    else:
+        raise CustomerError(status_code=ERROR_CODE['GOOGLE_OAUTH_ERROR'])
+
 
 # 用户三方登陆
 async def user_login_other(email, wallet_addr, source):
@@ -179,6 +216,7 @@ async def user_register(email, password, verify_code, inviter):
             '',
             '',
             '',
+            '',
             get_format_time(),
             inviter
         )
@@ -241,6 +279,15 @@ async def get_user_info_by_address(wallet_address):
     result = await CollectionPool().query(sql, (wallet_address, 0))
     return result
 
+# 根据oauth获取用户信息
+async def get_user_info_by_oauth(oauthid, oauth):
+    sql = 'SELECT id, email, password, auth_token, user_name, avatar_url, wallet_address, sub_id  FROM user_infos WHERE ' \
+          'oauth_id=%s ' \
+          'AND oauth=%s ' \
+          'AND status=%s'
+    result = await CollectionPool().query(sql, (oauthid, oauth, 0))
+    return result    
+
 
 # 根据userid获取用户信息
 async def get_user_info_by_userid(userid):
@@ -254,7 +301,7 @@ async def get_user_info_by_userid(userid):
 # 添加一个新用户
 async def add_user(user_info):
     sql = "INSERT INTO `user_infos` (`email`, `password`, `auth_token`, `user_name`, `avatar_url`, `wallet_address`, " \
-          "`oauth`, `create_time`, `inviter`) VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s)"
+          "`oauth`, `oauth_id`, `create_time`, `inviter`) VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
     res = await CollectionPool().insert(sql, user_info)
     return res
 
