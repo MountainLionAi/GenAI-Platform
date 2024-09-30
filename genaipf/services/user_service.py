@@ -101,7 +101,7 @@ async def user_login(email, password, signature, wallet_addr, access_token, oaut
             user_info = user[0]
             from ml4gp.services.points_service import create_user_points_account
             await create_user_points_account(user_info['id'])
-            account = google_user_info['name']
+            account = mask_email(email)
     else:
         user = await get_user_info_from_db(email)
         if not user:
@@ -122,7 +122,7 @@ async def user_login(email, password, signature, wallet_addr, access_token, oaut
     token_key_final = token_key + ':' + jwt_token
     redis_client.set(token_key_final, jwt_token, 3600 * 24 * 180)  # 设置登陆态到redis
     await update_user_token(user_info['id'], jwt_token)
-    return {'user_token': jwt_token, 'account': account, 'user_id': user_id}
+    return {'user_token': jwt_token, 'account': account, 'user_id': user_id, 'login_type': login_type}
 
 # google oauth
 async def get_google_user_info(access_token):
