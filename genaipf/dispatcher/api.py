@@ -22,6 +22,7 @@ from genaipf.utils.speech_utils import transcribe, textToSpeech
 from mistralai.async_client import MistralAsyncClient
 from mistralai.models.chat_completion import ChatMessage
 from genaipf.dispatcher.claude_client import claude_cached_api_call
+from genaipf.conf import server
 
 # temperature=2 # 值在[0,1]之间，越大表示回复越具有不确定性
 # max_tokens=2000 # 输出的最大 token 数
@@ -138,7 +139,60 @@ async def awrap_claude_generator(lc_response, output_type=""):
         for c in _tmp_voice_text:
             yield get_format_output("gpt", c)
     yield get_format_output("inner_____gpt_whole_text", _tmp_text)
+
+
+# 异步包装器
+class AsyncWrapper:
+    def __init__(self, sync_gen):
+        # 将生成器转换为迭代器
+        self.sync_gen = iter(sync_gen)
+
+    def __aiter__(self):
+        return self
+
+    async def __anext__(self):
+        # 模拟异步操作
+        await asyncio.sleep(0)  
+        try:
+            # 获取生成器的下一个值
+            return next(self.sync_gen)
+        except StopIteration:
+            # 如果生成器结束，抛出异步结束异常
+            raise StopAsyncIteration
+
+
+async def awrap_gml_generator(lc_response, output_type=""):
+    resp = lc_response
+    yield get_format_output("step", "llm_yielding")
     
+    # 将同步生成器转换为异步生成器
+    wrapped_sync_gen = AsyncWrapper(resp)
+    
+    _tmp_text = ""
+    _tmp_voice_text = ""
+    async for chunk in wrapped_sync_gen:
+        _gpt_letter = chunk.choices[0].delta.content
+        if _gpt_letter:
+            _tmp_text += _gpt_letter
+            _tmp_voice_text += _gpt_letter
+            if output_type != 'voice':
+                yield get_format_output("gpt", _gpt_letter)
+        if output_type == 'voice': 
+            if len(_tmp_voice_text) == 200:
+                base64_encoded_voice = textToSpeech(_tmp_voice_text)
+                yield get_format_output("tts", base64_encoded_voice, "voice_mp3_v001")
+                for c in _tmp_voice_text:
+                    yield get_format_output("gpt", c)
+                _tmp_voice_text = ""
+    if output_type == 'voice': 
+        base64_encoded_voice = textToSpeech(_tmp_voice_text)
+        yield get_format_output("tts", base64_encoded_voice, "voice_mp3_v001")
+        for c in _tmp_voice_text:
+            yield get_format_output("gpt", c)
+    yield get_format_output("inner_____gpt_whole_text", _tmp_text)
+
+
+
 async def awrap_gpt_generator(gpt_response, output_type=""):
     resp = gpt_response
     chunk = await resp.__anext__()
@@ -277,6 +331,8 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
         use_model = CLAUDE_MODEL
     elif llm_model == 'gemini':
         use_model = 'gemini-1.5-flash'
+    elif llm_model == 'glm':
+        use_model = 'glm-4'
     if isvision:
         # 图片处理专用模型
         use_model = 'gpt-4o'
@@ -422,6 +478,20 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
             g2 = async_wrap_string_generator(g1, output_type)
             logger.info(f'aref_answer_gpt called: gemini')
             return g2
+        except Exception as e:
+            logger.error(f'aref_answer_gpt_generator gemini call error {e}', e)
+            return aget_error_generator(str(e))
+    elif use_model.startswith('glm'):
+        try:
+            _messages = [system] + messages
+            from zhipuai import ZhipuAI
+            client = ZhipuAI(api_key=server.ZHIPU_GLM_API_KEY)  # 请填写您自己的APIKey
+            response = client.chat.completions.create(
+                model=use_model,  # 请填写您要调用的模型名称
+                messages=_messages,
+                stream=True,
+            )
+            return awrap_gml_generator(response, output_type)
         except Exception as e:
             logger.error(f'aref_answer_gpt_generator gemini call error {e}', e)
             return aget_error_generator(str(e))
