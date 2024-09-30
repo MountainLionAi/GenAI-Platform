@@ -332,7 +332,7 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
     elif llm_model == 'gemini':
         use_model = 'gemini-1.5-flash'
     elif llm_model == 'glm':
-        use_model = 'glm-4'
+        use_model = 'glm-4-flash'
     if isvision:
         # 图片处理专用模型
         use_model = 'gpt-4o'
