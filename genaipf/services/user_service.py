@@ -77,6 +77,8 @@ async def user_login(email, password, signature, wallet_addr, access_token, oaut
             user_info = user[0]
             from ml4gp.services.points_service import create_user_points_account
             await create_user_points_account(user_info['id'])
+        else:
+            user_info = user[0]
         account = wallet_addr
     elif login_type == 2:
         if oauth == 'google':
@@ -101,6 +103,8 @@ async def user_login(email, password, signature, wallet_addr, access_token, oaut
                 user_info = user[0]
                 from ml4gp.services.points_service import create_user_points_account
                 await create_user_points_account(user_info['id'])
+            else:
+                user_info = user[0]
             account = mask_email(email)
     else:
         user = await get_user_info_from_db(email)
