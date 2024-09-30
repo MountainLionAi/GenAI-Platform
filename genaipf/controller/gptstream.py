@@ -510,7 +510,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
                 else:
                     related_qa[0] = '\n'.join([str(i) for i in _related_news])
                 yield json.dumps(get_format_output("source", "v004"))
-                model = "claude"
+                llm_model = "openai"
         if used_graph_rag and is_need_search:
             sources_task_start_time = time.perf_counter()
             related_qa = [sources_task]
