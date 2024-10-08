@@ -1,8 +1,9 @@
 from zhipuai import ZhipuAI
+from genaipf.conf.server import ZHIPU_GLM_API_KEY
 
 
-client = ZhipuAI(api_key="ebfdabc3d2e6880623b093baaf388a11.1DgMT57pYD8Fx8Dt")  # 请填写您自己的APIKey
-response = client.chat.asyncCompletions.create(
+client = ZhipuAI(api_key=ZHIPU_GLM_API_KEY)  # 请填写您自己的APIKey
+response = client.chat.completions.create(
     model="glm-4",  # 请填写您要调用的模型名称
     messages=[
         {"role": "system", "content": "你是一个乐于回答各种问题的小助手，你的任务是提供专业、准确、有洞察力的建议。"},

@@ -192,6 +192,37 @@ async def awrap_gml_generator(lc_response, output_type=""):
     yield get_format_output("inner_____gpt_whole_text", _tmp_text)
 
 
+async def awrap_ernie_generator(lc_response, output_type=""):
+    resp = lc_response
+    yield get_format_output("step", "llm_yielding")
+    
+    # 将同步生成器转换为异步生成器
+    wrapped_sync_gen = AsyncWrapper(resp)
+    _tmp_text = ""
+    _tmp_voice_text = ""
+    async for chunk in wrapped_sync_gen:
+        body = chunk.body
+        if not body['is_end']:
+            _gpt_letter = chunk.body['result']
+            if _gpt_letter:
+                _tmp_text += _gpt_letter
+                _tmp_voice_text += _gpt_letter
+                if output_type != 'voice':
+                    yield get_format_output("gpt", _gpt_letter)
+            if output_type == 'voice': 
+                if len(_tmp_voice_text) == 200:
+                    base64_encoded_voice = textToSpeech(_tmp_voice_text)
+                    yield get_format_output("tts", base64_encoded_voice, "voice_mp3_v001")
+                    for c in _tmp_voice_text:
+                        yield get_format_output("gpt", c)
+                    _tmp_voice_text = ""
+    if output_type == 'voice': 
+        base64_encoded_voice = textToSpeech(_tmp_voice_text)
+        yield get_format_output("tts", base64_encoded_voice, "voice_mp3_v001")
+        for c in _tmp_voice_text:
+            yield get_format_output("gpt", c)
+    yield get_format_output("inner_____gpt_whole_text", _tmp_text)
+
 
 async def awrap_gpt_generator(gpt_response, output_type=""):
     resp = gpt_response
@@ -333,6 +364,8 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
         use_model = 'gemini-1.5-flash'
     elif llm_model == 'glm':
         use_model = 'glm-4-flash'
+    elif llm_model == 'ernie':
+        use_model = 'ERNIE-Speed-128K'
     if isvision:
         # 图片处理专用模型
         use_model = 'gpt-4o'
@@ -493,7 +526,16 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
             )
             return awrap_gml_generator(response, output_type)
         except Exception as e:
-            logger.error(f'aref_answer_gpt_generator gemini call error {e}', e)
+            logger.error(f'aref_answer_gpt_generator glm call error {e}', e)
+            return aget_error_generator(str(e))
+    elif use_model.startswith('ERNIE'):
+        try:
+            import qianfan
+            chat_comp = qianfan.ChatCompletion()
+            response = chat_comp.do(model=use_model, messages=messages, system=system['content'], stream=True)
+            return awrap_ernie_generator(response, output_type)
+        except Exception as e:
+            logger.error(f'aref_answer_gpt_generator ernie call error {e}', e)
             return aget_error_generator(str(e))
     return aget_error_generator("error after retry many times")
 
