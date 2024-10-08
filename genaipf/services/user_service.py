@@ -325,6 +325,11 @@ async def update_user_password(user_id, password):
     res = await CollectionPool().update(sql, (password, user_id))
     return res
 
+# 更新用户信息
+async def update_user_profile(user_id, user_name):
+    sql = "UPDATE `user_infos` SET `user_name`=%s WHERE id=%s"
+    res = await CollectionPool().update(sql, (user_name, user_id))
+    return res
 
 # 获取图形验证码
 def get_user_captcha(session_id):
