@@ -59,6 +59,7 @@ blueprint_v2 = Blueprint(name="v2_versions", url_prefix="api", version=2)
 
 # gpt相关接口
 # blueprint_v1.add_route(gpt.send_chat, "sendChat", methods=["POST"])
+blueprint_v2.add_route(gpt.add_message, "messages/add", methods=["POST"])
 blueprint_v2.add_route(gpt.get_message_list, "getMessageList", methods=["GET"])
 blueprint_v2.add_route(gpt.get_msggroup_list, "getMsgGroupList", methods=["GET"])
 blueprint_v2.add_route(gpt.del_msggroup_list, "delMsgGroupList", methods=["POST"])

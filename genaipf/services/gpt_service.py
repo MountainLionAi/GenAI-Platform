@@ -12,6 +12,13 @@ async def add_gpt_message_with_code(gpt_message):
     res = await CollectionPool().insert(sql, gpt_message)
     return res
 
+
+async def add_gpt_message_with_code_from_share_batch(gpt_messages):
+    sql = "INSERT INTO `gpt_messages` (`content`, `type`, `userid`, `msggroup`, `code`, `device_no`, `file_type`, `agent_id`) VALUES(%s, %s, %s, %s, %s, %s, %s, %s)"
+    res = await CollectionPool().insert_batch(sql, gpt_messages)
+    return res
+
+
 # 获取用户消息列表
 async def get_gpt_message(userid, msggroup):
     sql = 'SELECT id, content, type, msggroup, create_time, code FROM gpt_messages WHERE ' \
@@ -79,7 +86,7 @@ async def add_share_message(code, messages, userid, summary):
     return result
 
 async def get_share_msg(code):
-    sql = 'SELECT id, code, messages, summary FROM share_messages WHERE ' \
+    sql = 'SELECT sm.id, sm.code, sm.messages, sm.summary, ui.user_name FROM share_messages sm left join user_infos ui on sm.userid=ui.id WHERE ' \
           'code=%s'
     result = await CollectionPool().query(sql, (code))
     return result
