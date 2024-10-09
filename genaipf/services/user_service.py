@@ -16,7 +16,7 @@ import genaipf.utils.email_utils as email_utils
 from web3 import Web3
 from eth_account.messages import encode_defunct
 import requests
-
+from datetime import datetime
 ORIGIN_MESSAGE = "Welcome. Login Mountainlion. This is completely secure and doesn't cost anything! "
 
 
@@ -334,8 +334,8 @@ async def update_user_password(user_id, password):
     return res
 
 async def update_user_name(user_id, user_name):
-    sql = "UPDATE `user_infos` SET `user_name`=%s WHERE id=%s"
-    res = await CollectionPool().update(sql, (user_name, user_id))
+    sql = "UPDATE `user_infos` SET `user_name`=%s , `user_name_update_time`=%s WHERE id=%s"
+    res = await CollectionPool().update(sql, (user_name, datetime.now(), user_id))
     return res
 
 async def update_user_avatar(user_id, user_image):
