@@ -290,7 +290,7 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
     elif source == 'v004':
         content = prompts_v004.LionPrompt.get_aref_answer_prompt(language, preset_name, picked_content, related_qa, use_model, {}, quote_message)
     elif source == 'v005' or source == 'v006':
-        if 'claude' in use_model:
+        if 'claude' in use_model and (not preset_name or 'check' not in preset_name):
             content = None
             v005_006_system_prompt, v005_006_system_prompt_ref = prompts_v005.LionPrompt.get_aref_answer_prompt(language, preset_name, picked_content, related_qa, use_model, {}, quote_message)
         else:
@@ -310,7 +310,7 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
         "role": "system",
         "content": content
     }
-    if 'claude' in use_model and (source == 'v005' or source == 'v006'):
+    if 'claude' in use_model and (source == 'v005' or source == 'v006') and (not preset_name or 'check' not in preset_name):
         logger.info(f"v005_006_system_prompt={v005_006_system_prompt}")
         logger.info(f"v005_006_system_prompt_ref={v005_006_system_prompt_ref}")
     else:
@@ -400,7 +400,7 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
             # parser = StrOutputParser()
             # chain = prompt | chat | parser
             # response = chain.astream({})
-            if source == 'v005' or source == 'v006': 
+            if (source == 'v005' or source == 'v006') and (not preset_name or 'check' not in preset_name): 
                 response = claude_cached_api_call("claude-3-5-sonnet-20240620", v005_006_system_prompt, v005_006_system_prompt_ref, messages)
             else:
                 response = claude_cached_api_call("claude-3-5-sonnet-20240620", system_message, None, messages)
