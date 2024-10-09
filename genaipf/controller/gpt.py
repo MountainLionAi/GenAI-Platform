@@ -8,6 +8,10 @@ import json
 import genaipf.services.gpt_service as gpt_service
 from datetime import datetime
 from genaipf.conf.server import os
+from genaipf.utils.log_utils import logger
+import traceback
+
+
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 proxy = { 'https' : '127.0.0.1:8001'}
@@ -57,16 +61,28 @@ async def get_message_list(request: Request):
 
 
 async def add_message(request: Request):
-    userid = 0
-    if hasattr(request.ctx, 'user'):
-        userid = request.ctx.user['id']
-    request_params = request.json
-    messages = request_params.get("messages")
-    gpt_messages = []
-    for message in messages:
-        gpt_message = (message['content'], message['type'], userid, message['msggroup'], message['code'], message['device_no'], message['file_type'], message['agent_id'])
-        gpt_messages.append(gpt_message)
-    await gpt_service.add_gpt_message_with_code_from_share_batch(gpt_messages)
+    try:
+        userid = 0
+        if hasattr(request.ctx, 'user'):
+            userid = request.ctx.user['id']
+        request_params = request.json
+        logger.info(f'userid={userid}的用户添加聊天记录， request_params={request_params}')
+        messages = request_params.get("messages")
+        gpt_messages = []
+        for message in messages:
+            content = message['content']
+            if message['type'] == 'gpt':
+                content_gpt = {
+                    "type": "gpt",
+                    "content": content
+                }
+                content = json.dumps(content_gpt, ensure_ascii=False)
+            gpt_message = (content, message['type'], userid, message['msggroup'], message['code'], message['device_no'], message['file_type'], message['agent_id'])
+            gpt_messages.append(gpt_message)
+        await gpt_service.add_gpt_message_with_code_from_share_batch(gpt_messages)
+    except Exception as e:
+        logger.error(f'add_message error {e}')
+        logger.error(traceback.format_exc())
     return success(None)
 
 
