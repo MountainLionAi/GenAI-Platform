@@ -55,6 +55,21 @@ async def get_message_list(request: Request):
     }
     return success(data)
 
+
+async def add_message(request: Request):
+    userid = 0
+    if hasattr(request.ctx, 'user'):
+        userid = request.ctx.user['id']
+    request_params = request.json
+    messages = request_params.get("messages")
+    gpt_messages = []
+    for message in messages:
+        gpt_message = (message['content'], message['type'], userid, message['msggroup'], message['code'], message['device_no'], message['file_type'], message['agent_id'])
+        gpt_messages.append(gpt_message)
+    await gpt_service.add_gpt_message_with_code_from_share_batch(gpt_messages)
+    return success(None)
+
+
 async def get_msggroup_list(request: Request):
     userid = 0
     if hasattr(request.ctx, 'user'):
