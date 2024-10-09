@@ -13,7 +13,10 @@ async def add_gpt_message_with_code(gpt_message):
     return res
 
 
-
+async def add_gpt_message_with_code_from_share_batch(gpt_messages):
+    sql = "INSERT INTO `gpt_messages` (`content`, `type`, `userid`, `msggroup`, `code`, `device_no`, `file_type`, `agent_id`) VALUES(%s, %s, %s, %s, %s, %s, %s, %s)"
+    res = await CollectionPool().insert_batch(sql, gpt_messages)
+    return res
 
 
 # 获取用户消息列表
