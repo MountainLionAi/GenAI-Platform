@@ -41,3 +41,16 @@ def modify_time_diff(start_time, diff_days):
     start_date = datetime.strptime(start_time, '%Y-%m-%d %H:%M:%S')
     final_date = start_date + timedelta(days=diff_days)
     return final_date.strftime('%Y-%m-%d %H:%M:%S')
+
+
+def get_time_diff_seconds(start_time, end_time):
+    # 指定的目标日期时间
+    target_date = datetime.strptime(end_time, '%Y-%m-%d %H:%M:%S')
+    start_date = datetime.strptime(start_time, '%Y-%m-%d %H:%M:%S')
+
+    # 计算时间差
+    time_difference = target_date - start_date
+
+    # 获取相差的秒数
+    seconds_difference = time_difference.total_seconds()
+    return int(seconds_difference)
