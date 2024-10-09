@@ -191,6 +191,19 @@ async def user_login_other(email, wallet_addr, source):
     redis_client.set(token_key_final, jwt_token, 3600 * 24 * 180)  # 设置登陆态到redis
     await update_user_token(user_info['id'], jwt_token)
     return {'user_token': jwt_token, 'account': account, 'user_id': user_id}
+
+
+# 用户靠id和账号登录，用于三方情况
+async def user_login_by_id(user_id, account):
+    user_key = account
+    jwt_manager = JWTManager()
+    jwt_token = jwt_manager.generate_token(user_id, user_key)
+    redis_client = RedisConnectionPool().get_connection()
+    token_key = get_user_key(user_id, user_key)
+    token_key_final = token_key + ':' + jwt_token
+    redis_client.set(token_key_final, jwt_token, 3600 * 24 * 180)  # 设置登陆态到redis
+    await update_user_token(user_id, jwt_token)
+    return {'user_token': jwt_token, 'account': account, 'user_id': user_id}
         
 
 
