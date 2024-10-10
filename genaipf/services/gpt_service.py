@@ -86,7 +86,7 @@ async def add_share_message(code, messages, userid, summary):
     return result
 
 async def get_share_msg(code):
-    sql = 'SELECT sm.id, sm.code, sm.messages, sm.summary, ui.user_name FROM share_messages sm left join user_infos ui on sm.userid=ui.id WHERE ' \
+    sql = 'SELECT sm.id, sm.code, sm.messages, sm.summary, ui.user_name, ui.avatar_url FROM share_messages sm left join user_infos ui on sm.userid=ui.id WHERE ' \
           'code=%s'
     result = await CollectionPool().query(sql, (code))
     return result
