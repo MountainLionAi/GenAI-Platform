@@ -16,7 +16,7 @@ import genaipf.utils.email_utils as email_utils
 from web3 import Web3
 from eth_account.messages import encode_defunct
 import requests
-
+from datetime import datetime
 ORIGIN_MESSAGE = "Welcome. Login Mountainlion. This is completely secure and doesn't cost anything! "
 
 
@@ -191,6 +191,19 @@ async def user_login_other(email, wallet_addr, source):
     redis_client.set(token_key_final, jwt_token, 3600 * 24 * 180)  # 设置登陆态到redis
     await update_user_token(user_info['id'], jwt_token)
     return {'user_token': jwt_token, 'account': account, 'user_id': user_id}
+
+
+# 用户靠id和账号登录，用于三方情况
+async def user_login_by_id(user_id, account, expired_time_remain):
+    user_key = account
+    jwt_manager = JWTManager(expires_in_seconds=expired_time_remain)
+    jwt_token = jwt_manager.generate_token(user_id, user_key)
+    redis_client = RedisConnectionPool().get_connection()
+    token_key = get_user_key(user_id, user_key)
+    token_key_final = token_key + ':' + jwt_token
+    redis_client.set(token_key_final, jwt_token, expired_time_remain)  # 设置登陆态到redis
+    await update_user_token(user_id, jwt_token)
+    return {'user_token': jwt_token, 'account': account, 'user_id': user_id}
         
 
 
@@ -299,7 +312,7 @@ async def get_user_info_by_oauth(oauthid, oauth):
 
 # 根据userid获取用户信息
 async def get_user_info_by_userid(userid):
-    sql = 'SELECT id, wallet_address, create_time FROM user_infos WHERE ' \
+    sql = 'SELECT id, wallet_address, create_time, user_name, avatar_url, user_name_update_time FROM user_infos WHERE ' \
           'id=%s ' \
           'AND status=%s'
     result = await CollectionPool().query(sql, (userid, 0))
@@ -333,6 +346,15 @@ async def update_user_password(user_id, password):
     res = await CollectionPool().update(sql, (password, user_id))
     return res
 
+async def update_user_name(user_id, user_name):
+    sql = "UPDATE `user_infos` SET `user_name`=%s , `user_name_update_time`=%s WHERE id=%s"
+    res = await CollectionPool().update(sql, (user_name, datetime.now(), user_id))
+    return res
+
+async def update_user_avatar(user_id, user_image):
+    sql = "UPDATE `user_infos` SET avatar_url=%s WHERE id=%s"
+    res = await CollectionPool().update(sql, (user_image, user_id))
+    return res
 
 # 获取图形验证码
 def get_user_captcha(session_id):
