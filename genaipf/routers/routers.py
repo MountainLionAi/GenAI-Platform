@@ -91,6 +91,7 @@ blueprint_v2.add_route(user.modify_password, "modifyPassword", methods=["POST"])
 blueprint_v2.add_route(user.get_news, "newsbot", methods=["GET"])
 blueprint_v2.add_route(user.login_other, "userLoginOther", methods=["POST"])
 blueprint_v2.add_route(feedback.add_feedback, "addFeedback", methods=["POST"])
+blueprint_v2.add_route(user.send_verify_code_mobile, "sendAppEmailCode", methods=["POST"])
 
 # 支付相关接口
 blueprint_v2.add_route(pay.query_pay_card, "pay/cardInfo", methods=["GET"])

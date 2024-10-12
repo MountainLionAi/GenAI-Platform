@@ -419,6 +419,21 @@ async def send_verify_code_new(email, captcha_resp, language, scene, need_captch
                 raise CustomerError(status_code=ERROR_CODE['CAPTCHA_ERROR'])
             else:
                 captcha_verify_status = True
+
+        # 移动端uuid或者提现的的检测10分钟内请求次数
+        if not need_captcha and related_key:
+            unique_limit_key = REDIS_KEYS['USER_KEYS']['EMAIL_CODE_DEVICE_LIMIT'].format(scene, related_key)
+            unique_times = redis_client.get(unique_limit_key)
+            if unique_times:
+                unique_times = int(unique_times)
+            else:
+                unique_times = 0
+            current_times = unique_times + 1
+            if current_times > 3:
+                raise CustomerError(status_code=ERROR_CODE['EMAIL_TIME_LIMIT'])
+            redis_client.set(unique_limit_key, current_times)
+            redis_client.expire(unique_limit_key, 10 * 60)
+
         # 判断是否到达发送邮件数量的上线
         send_times = await email_utils.get_email_times(email, scene=email_utils.EMAIL_SCENES[scene])
         if not email_utils.check_time(send_times, email_utils.LIMIT_TIME_10MIN[scene]):
