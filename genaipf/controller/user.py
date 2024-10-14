@@ -128,7 +128,7 @@ async def send_verify_code_mobile(request: Request):
     uuid = request_params.get('uuid', '')
     if not email or not uuid:
         raise CustomerError(status_code=ERROR_CODE['PARAMS_ERROR'])
-    send_res = await user_service.send_verify_code_new(email, '', language, scene_type, False, {}, uuid)
+    send_res = await user_service.send_verify_code_new(email, '', language, scene_type, False, {}, uuid, True)
     return success(send_res)
 
 

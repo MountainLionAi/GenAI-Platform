@@ -396,7 +396,7 @@ async def send_verify_code(email, captcha_code, session_id):
 
 
 # 基于hcaptcha的图形验证
-async def send_verify_code_new(email, captcha_resp, language, scene, need_captcha = True, option_params = {}, related_key = ''):
+async def send_verify_code_new(email, captcha_resp, language, scene, need_captcha = True, option_params = {}, related_key = '', from_app = False):
     try:
         redis_client = RedisConnectionPool().get_connection()
         user = await get_user_info_from_db(email)
@@ -444,7 +444,10 @@ async def send_verify_code_new(email, captcha_resp, language, scene, need_captch
         subject = EMAIL_INFO[scene]['subject'][language]
         email_content = await email_utils.format_captcha_email(email, email_code, language, scene, option_params)
         if need_captcha == False:
-            email_key = REDIS_KEYS['USER_KEYS']['EMAIL_CODE_OTHER'].format(email, scene, related_key)
+            if from_app:
+                email_key = REDIS_KEYS['USER_KEYS']['EMAIL_CODE'].format(email, scene)
+            else:
+                email_key = REDIS_KEYS['USER_KEYS']['EMAIL_CODE_OTHER'].format(email, scene, related_key)
         else:
             email_key = REDIS_KEYS['USER_KEYS']['EMAIL_CODE'].format(email, scene)
         # 发送邮箱验证码
