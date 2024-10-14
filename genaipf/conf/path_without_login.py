@@ -49,6 +49,7 @@ PATH_WITHOUT_LOGIN = (
     '/v2/api/pay/account',
     '/v2/api/assistantChat',
     '/v2/api/getAssistantHistory',
+    '/v2/api/sendAppEmailCode',
 )
 
 if PLUGIN_NAME:

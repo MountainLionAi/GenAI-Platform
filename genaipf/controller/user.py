@@ -119,6 +119,19 @@ async def send_verify_code_new(request: Request):
     return success(send_res)
 
 
+async def send_verify_code_mobile(request: Request):
+    logger.info('send verify code from app')
+    request_params = request.json
+    email = request_params.get('email')
+    language = request_params.get('language', 'en')
+    scene_type = request_params.get('scene', 'REGISTER')
+    uuid = request_params.get('uuid', '')
+    if not email or not uuid:
+        raise CustomerError(status_code=ERROR_CODE['PARAMS_ERROR'])
+    send_res = await user_service.send_verify_code_new(email, '', language, scene_type, False, {}, uuid)
+    return success(send_res)
+
+
 # 获取图形验证码
 async def get_captcha(request: Request):
     logger.info('get captcha image')
