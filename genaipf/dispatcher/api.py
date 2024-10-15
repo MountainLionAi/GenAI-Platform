@@ -74,9 +74,10 @@ def get_format_output(role, content, mode=None, type=None, format=None):
         return {"role": role, "type": "text", "format": "text", "version": "v001", "content": content}
 
 async def aget_error_generator(msg="ERROR"):
-    for c in msg:
-        await asyncio.sleep(0.02)
-        yield get_format_output("error", c)
+    yield get_format_output("error", msg)
+    # for c in msg:
+    #     await asyncio.sleep(0.02)
+    #     yield get_format_output("error", c)
         
 
 async def awrap_mistral_generator(mi_response, output_type="", client:MistralAsyncClient=None ):

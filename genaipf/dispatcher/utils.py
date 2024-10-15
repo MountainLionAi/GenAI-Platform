@@ -164,7 +164,7 @@ async def openai_chat_completion_acreate(
             # print(f'>>>>>>>>>test001 async_openai_client.chat.completions.create, response: {response}')
     except asyncio.TimeoutError as e:
         logger.error(f'>>>>>>>>>test002 async_openai_client.chat.completions.create, e: {e}')
-        raise Exception("The request to OpenAI tgeimed out after 3 minutes.")
+        raise Exception("The request to OpenAI timed out after 3 minutes.")
     except Exception as e:
         logger.error(f'>>>>>>>>>test003 async_openai_client.chat.completions.create, e: {e}')
         raise e
