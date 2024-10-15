@@ -472,6 +472,9 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     chunk = await asyncio.wait_for(resp1.__anext__(), timeout=20)
     isvision = False
     func_chunk = None
+    if 'role' in chunk and chunk['role'] == 'error':
+        yield json.dumps(chunk)
+        return
     if chunk["content"] == "llm_yielding":
         route_mode = "text"
         if used_rag and is_need_search:
