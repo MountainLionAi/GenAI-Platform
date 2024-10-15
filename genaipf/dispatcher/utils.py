@@ -115,7 +115,7 @@ async def openai_chat_completion_acreate(
                         presence_penalty=presence_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
                         stream=stream
                     ),
-                    timeout=60  # 设置超时时间为180秒
+                    timeout=60.0  # 设置超时时间为180秒
                 )
             else:
                 # try:
