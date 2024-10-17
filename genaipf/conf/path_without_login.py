@@ -6,6 +6,7 @@ PATH_WITHOUT_LOGIN = (
     '/v1/api/sendVerifyCode',
     '/v1/api/userLogin',
     '/v1/api/userLoginOther',
+    '/v1/api/userCheckExist',
     '/v1/api/register',
     '/v1/api/getCaptcha',
     '/v1/api/testVerifyCode',
@@ -29,6 +30,7 @@ PATH_WITHOUT_LOGIN = (
     '/v2/api/sendVerifyCode',
     '/v2/api/userLogin',
     '/v2/api/userLoginOther',
+    '/v2/api/userCheckExist',
     '/v2/api/register',
     '/v2/api/getCaptcha',
     '/v2/api/testVerifyCode',
@@ -49,6 +51,7 @@ PATH_WITHOUT_LOGIN = (
     '/v2/api/pay/account',
     '/v2/api/assistantChat',
     '/v2/api/getAssistantHistory',
+    '/v2/api/sendAppEmailCode',
 )
 
 if PLUGIN_NAME:

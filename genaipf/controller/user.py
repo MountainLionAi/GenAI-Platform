@@ -59,6 +59,17 @@ async def check_login(request: Request):
     return success(
         {'is_login': True, 'account': account, 'user_id': request.ctx.user.get('id')})
 
+# 判断用户是否存在
+async def check_exist(request: Request):
+    logger.info('check_exist')
+    request_params = request.json
+    if not request_params or not request_params['email']:
+        raise CustomerError(status_code=ERROR_CODE['PARAMS_ERROR'])
+    exist = True
+    user = await user_service.get_user_info_from_db(request_params['email'])
+    if not user:
+        exist = False
+    return success({'exist': exist})
 
 # 用户注册
 async def register(request: Request):
@@ -116,6 +127,19 @@ async def send_verify_code_new(request: Request):
     if not email:
         raise CustomerError(status_code=ERROR_CODE['PARAMS_ERROR'])
     send_res = await user_service.send_verify_code_new(email, captcha_resp, language, scene_type)
+    return success(send_res)
+
+
+async def send_verify_code_mobile(request: Request):
+    logger.info('send verify code from app')
+    request_params = request.json
+    email = request_params.get('email')
+    language = request_params.get('language', 'en')
+    scene_type = request_params.get('scene', 'REGISTER')
+    uuid = request_params.get('uuid', '')
+    if not email or not uuid:
+        raise CustomerError(status_code=ERROR_CODE['PARAMS_ERROR'])
+    send_res = await user_service.send_verify_code_new(email, '', language, scene_type, False, {}, uuid, True)
     return success(send_res)
 
 
