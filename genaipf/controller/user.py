@@ -59,6 +59,17 @@ async def check_login(request: Request):
     return success(
         {'is_login': True, 'account': account, 'user_id': request.ctx.user.get('id')})
 
+# 判断用户是否存在
+async def check_exist(request: Request):
+    logger.info('check_exist')
+    request_params = request.json
+    if not request_params or not request_params['email']:
+        raise CustomerError(status_code=ERROR_CODE['PARAMS_ERROR'])
+    exist = True
+    user = await user_service.get_user_info_from_db(request_params['email'])
+    if not user:
+        exist = False
+    return success({'exist': exist})
 
 # 用户注册
 async def register(request: Request):
