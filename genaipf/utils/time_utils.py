@@ -89,3 +89,21 @@ def get_before_timestamp(date_str, days=0):
     # Get the timestamp of the new date
     timestamp = new_date.timestamp()
     return str(round(timestamp * 1000))
+
+
+def get_time_fraction():
+    # 获取当前时间
+    current_time = datetime.now()
+
+    # 提取小数秒部分
+    return str(current_time.microsecond)
+
+
+def timestamp_to_str(timestamp, format='%Y-%m-%d %H:%M:%S'):
+    # 将时间戳转换为 datetime 对象
+    dt_object = datetime.fromtimestamp(timestamp)
+
+    # 将 datetime 对象转换为指定格式的字符串
+    formatted_time = dt_object.strftime(format)
+
+    return formatted_time
