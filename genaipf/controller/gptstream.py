@@ -131,7 +131,8 @@ userid={userid},language={language},msggroup={msggroup},device_no={device_no},qu
     # messages = messages[-10:]
     messages = process_messages(messages)
     try:
-        source_list = ['v005','v006','v008','v009','v010','v201','v202','v203']
+        # v201、v202 swft移动端，v203 mlion tgbot，v210 swftGpt
+        source_list = ['v005','v006','v008','v009','v010','v201','v202','v203','v210']
         if (not IS_UNLIMIT_USAGE and not IS_INNER_DEBUG) and model == 'ml-plus' and source not in source_list:
             _user_id = ''
             if userid != 0:
@@ -183,7 +184,8 @@ async def send_chat(request: Request):
     # messages = messages[-10:]
     messages = process_messages(messages)
     try:
-        source_list = ['v005', 'v006', 'v008', 'v009', 'v010', 'v201', 'v202', 'v203']
+        # v201、v202 swft移动端，v203 mlion tgbot，v210 swftGpt
+        source_list = ['v005', 'v006', 'v008', 'v009', 'v010', 'v201', 'v202', 'v203', 'v210']
         if (not IS_UNLIMIT_USAGE and not IS_INNER_DEBUG) and model == 'ml-plus' and source not in source_list:
             _user_id = ''
             if userid != 0:
@@ -470,6 +472,9 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     chunk = await asyncio.wait_for(resp1.__anext__(), timeout=20)
     isvision = False
     func_chunk = None
+    if 'role' in chunk and chunk['role'] == 'error':
+        yield json.dumps(chunk)
+        return
     if chunk["content"] == "llm_yielding":
         route_mode = "text"
         if used_rag and is_need_search:

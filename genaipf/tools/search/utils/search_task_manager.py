@@ -360,7 +360,7 @@ async def multi_search(questions: str, related_qa=[], language=None):
 
 
 async def multi_search_new(questions, related_qa=[], language=None):
-    search_clients = ['Duckduckgo']  # 'SERPER' 由于apikey暂时去掉
+    search_clients = ['SERPER']  # 'SERPER' 由于apikey暂时去掉
     question_sources = {}
     for search_client in search_clients:
         if search_client == 'Duckduckgo':

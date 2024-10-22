@@ -90,15 +90,16 @@ class GoogleSerperClient:
         for search_info in search_res:
             search_sources.extend(search_info)
         if search_sources and len(search_sources) != 0:
-            for search_source in search_sources:
-                if search_source['title'] in title_keys:
-                    continue
-                sources_content.append(search_source['snippet'])
-            cohere_client = CohereClient()
-            rerank_indexes = await cohere_client.rerank(question, sources_content, language)
-            if rerank_indexes and len(rerank_indexes) != 0:
-                for rerank_index in rerank_indexes:
-                    final_sources.append(search_sources[rerank_index])
+            final_sources = search_sources
+            # for search_source in search_sources:
+            #     if search_source['title'] in title_keys:
+            #         continue
+            #     sources_content.append(search_source['snippet'])
+            # cohere_client = CohereClient()
+            # rerank_indexes = await cohere_client.rerank(question, sources_content, language)
+            # if rerank_indexes and len(rerank_indexes) != 0:
+            #     for rerank_index in rerank_indexes:
+            #         final_sources.append(search_sources[rerank_index])
         format_final_sources = []
         if final_sources and len(final_sources) != 0:
             for final_source in final_sources:

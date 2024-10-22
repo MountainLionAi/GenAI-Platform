@@ -191,6 +191,19 @@ async def user_login_other(email, wallet_addr, source):
     redis_client.set(token_key_final, jwt_token, 3600 * 24 * 180)  # 设置登陆态到redis
     await update_user_token(user_info['id'], jwt_token)
     return {'user_token': jwt_token, 'account': account, 'user_id': user_id}
+
+
+# 用户靠id和账号登录，用于三方情况
+async def user_login_by_id(user_id, account, expired_time_remain):
+    user_key = account
+    jwt_manager = JWTManager(expires_in_seconds=expired_time_remain)
+    jwt_token = jwt_manager.generate_token(user_id, user_key)
+    redis_client = RedisConnectionPool().get_connection()
+    token_key = get_user_key(user_id, user_key)
+    token_key_final = token_key + ':' + jwt_token
+    redis_client.set(token_key_final, jwt_token, expired_time_remain)  # 设置登陆态到redis
+    await update_user_token(user_id, jwt_token)
+    return {'user_token': jwt_token, 'account': account, 'user_id': user_id}
         
 
 
@@ -383,7 +396,7 @@ async def send_verify_code(email, captcha_code, session_id):
 
 
 # 基于hcaptcha的图形验证
-async def send_verify_code_new(email, captcha_resp, language, scene, need_captcha = True, option_params = {}, related_key = ''):
+async def send_verify_code_new(email, captcha_resp, language, scene, need_captcha = True, option_params = {}, related_key = '', from_app = False):
     try:
         redis_client = RedisConnectionPool().get_connection()
         user = await get_user_info_from_db(email)
@@ -406,6 +419,21 @@ async def send_verify_code_new(email, captcha_resp, language, scene, need_captch
                 raise CustomerError(status_code=ERROR_CODE['CAPTCHA_ERROR'])
             else:
                 captcha_verify_status = True
+
+        # 移动端uuid或者提现的的检测10分钟内请求次数
+        if not need_captcha and related_key:
+            unique_limit_key = REDIS_KEYS['USER_KEYS']['EMAIL_CODE_DEVICE_LIMIT'].format(scene, related_key)
+            unique_times = redis_client.get(unique_limit_key)
+            if unique_times:
+                unique_times = int(unique_times)
+            else:
+                unique_times = 0
+            current_times = unique_times + 1
+            if current_times > 3:
+                raise CustomerError(status_code=ERROR_CODE['EMAIL_TIME_LIMIT'])
+            redis_client.set(unique_limit_key, current_times)
+            redis_client.expire(unique_limit_key, 10 * 60)
+
         # 判断是否到达发送邮件数量的上线
         send_times = await email_utils.get_email_times(email, scene=email_utils.EMAIL_SCENES[scene])
         if not email_utils.check_time(send_times, email_utils.LIMIT_TIME_10MIN[scene]):
@@ -416,7 +444,10 @@ async def send_verify_code_new(email, captcha_resp, language, scene, need_captch
         subject = EMAIL_INFO[scene]['subject'][language]
         email_content = await email_utils.format_captcha_email(email, email_code, language, scene, option_params)
         if need_captcha == False:
-            email_key = REDIS_KEYS['USER_KEYS']['EMAIL_CODE_OTHER'].format(email, scene, related_key)
+            if from_app:
+                email_key = REDIS_KEYS['USER_KEYS']['EMAIL_CODE'].format(email, scene)
+            else:
+                email_key = REDIS_KEYS['USER_KEYS']['EMAIL_CODE_OTHER'].format(email, scene, related_key)
         else:
             email_key = REDIS_KEYS['USER_KEYS']['EMAIL_CODE'].format(email, scene)
         # 发送邮箱验证码
