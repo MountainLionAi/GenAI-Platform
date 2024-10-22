@@ -29,17 +29,17 @@ EMAIL_SCENES = {
 
 # 发送邮件的异步方法
 async def send_email(subject, content, to_email, source):
-    message = MIMEMultipart()
-    message["From"] = email_conf.SMTP_USER
-    message["To"] = to_email
-    message["Subject"] = subject
-    message.attach(MIMEText(content, 'html'))
-    logger.info(f'Send verify_code email to user: {message}')
     username = email_conf.SMTP_USER
     password = email_conf.SMTP_PASSWORD
     if source == EMAIL_SOURCE['SWFTGPT']:
         username = email_conf.SMTP_USER_SWFTGPT
         password = email_conf.SMTP_PASSWORD_SWFTGPT
+    message = MIMEMultipart()
+    message["From"] = username
+    message["To"] = to_email
+    message["Subject"] = subject
+    message.attach(MIMEText(content, 'html'))
+    logger.info(f'Send verify_code email to user: {message}')
     await aiosmtplib.send(
         message,
         hostname=email_conf.SMTP_HOST,
