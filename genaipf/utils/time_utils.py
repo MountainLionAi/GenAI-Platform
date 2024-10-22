@@ -107,3 +107,18 @@ def timestamp_to_str(timestamp, format='%Y-%m-%d %H:%M:%S'):
     formatted_time = dt_object.strftime(format)
 
     return formatted_time
+
+
+def get_time_delta(delta_num, period='h', format='%Y%m%d%H'):
+    # 获取当前时间
+    now = datetime.now()
+
+    if period == 'h':
+        next_time = now + timedelta(hours=delta_num)
+    elif period == 'd':
+        next_time = now + timedelta(days=delta_num)
+    elif period == 'm':
+        next_time = now + timedelta(minutes=delta_num)
+    # 格式化为 Ymdh 格式
+    formatted_time = next_time.strftime(format)
+    return formatted_time
