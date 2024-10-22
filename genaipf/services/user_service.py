@@ -447,7 +447,10 @@ async def send_verify_code_new(email, captcha_resp, language, scene, need_captch
             subject = subject.replace(SERVICE_NAME, source)
         email_content = await email_utils.format_captcha_email(email, email_code, language, scene, option_params, source)
         if need_captcha == False:
-            email_key = REDIS_KEYS['USER_KEYS']['EMAIL_CODE_OTHER'].format(email, scene, related_key)
+            if source == email_utils.EMAIL_SOURCE['SWFTGPT']:
+                email_key = REDIS_KEYS['USER_KEYS']['EMAIL_CODE'].format(email, scene)
+            else:
+                email_key = REDIS_KEYS['USER_KEYS']['EMAIL_CODE_OTHER'].format(email, scene, related_key)
         else:
             email_key = REDIS_KEYS['USER_KEYS']['EMAIL_CODE'].format(email, scene)
         # 发送邮箱验证码
