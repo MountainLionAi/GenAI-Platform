@@ -72,9 +72,10 @@ async def format_captcha_email(email, captcha_code, language, scene, option_para
             template_file = 'email_template_en_withdraw.html'
     
     company_name = os.getenv("COMPANY_NAME")
+    company_url = os.getenv("COMPANY_URL")
     if source == EMAIL_SOURCE['SWFTGPT']:
         company_name = os.getenv("COMPANY_NAME_SWFTGPT")
-    company_url = os.getenv("COMPANY_URL")
+        company_url = ''
 
     template = env.get_template(template_file)
     if scene not in [EMAIL_SCENES['REGISTER'], EMAIL_SCENES['FORGET_PASSWORD']]:
