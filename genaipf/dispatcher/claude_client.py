@@ -6,7 +6,7 @@ from genaipf.utils.common_utils import contains_chinese
 anthropic_api_key = os.getenv("ANTHROPIC_API_KEY")
 async_client = AsyncAnthropic(api_key=anthropic_api_key)
 
-async def claude_cached_api_call(model_name="claude-3-5-sonnet-20240620", system_prompt="", system_prompt_ref="", ml_messages=[]):
+async def claude_cached_api_call(model_name="claude-3-5-sonnet-20241022", system_prompt="", system_prompt_ref="", ml_messages=[]):
     # messages = []
     # for _m in ml_messages:
     #     message = {
