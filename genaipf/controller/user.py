@@ -9,6 +9,7 @@ from genaipf.utils.common_utils import mask_email
 import genaipf.utils.hcaptcha_utils as hcaptcha
 from genaipf.utils.bot_utils import CollectionPool, get_news_by_api
 from ml4gp.services.user_account_service import create_ai_account
+from genaipf.utils.email_utils import EMAIL_SOURCE
 
 
 # 用户登陆
@@ -139,7 +140,7 @@ async def send_verify_code_mobile(request: Request):
     uuid = request_params.get('uuid', '')
     if not email or not uuid:
         raise CustomerError(status_code=ERROR_CODE['PARAMS_ERROR'])
-    send_res = await user_service.send_verify_code_new(email, '', language, scene_type, False, {}, uuid, True)
+    send_res = await user_service.send_verify_code_new(email, '', language, scene_type, False, {}, uuid, EMAIL_SOURCE['SWFTGPT'])
     return success(send_res)
 
 
