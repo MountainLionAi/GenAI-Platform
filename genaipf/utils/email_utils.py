@@ -75,7 +75,6 @@ async def format_captcha_email(email, captcha_code, language, scene, option_para
     company_url = os.getenv("COMPANY_URL")
     if source == EMAIL_SOURCE['SWFTGPT']:
         company_name = os.getenv("COMPANY_NAME_SWFTGPT")
-        company_url = ''
 
     template = env.get_template(template_file)
     if scene not in [EMAIL_SCENES['REGISTER'], EMAIL_SCENES['FORGET_PASSWORD']]:
@@ -100,7 +99,9 @@ async def format_captcha_email(email, captcha_code, language, scene, option_para
                 'company_url': company_url
             }
         )
-
+    if source == EMAIL_SOURCE['SWFTGPT']:
+        email_content = email_content.replace(f'<a href="{company_url}">', '')
+        email_content = email_content.replace('</a>', '')
     return email_content
 
 
