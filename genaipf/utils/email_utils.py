@@ -100,7 +100,7 @@ async def format_captcha_email(email, captcha_code, language, scene, option_para
             }
         )
     if source == EMAIL_SOURCE['SWFTGPT']:
-        email_content = email_content.replace('<a href="{company_url}">', '')
+        email_content = email_content.replace(f'<a href="{company_url}">', '')
         email_content = email_content.replace('</a>', '')
     return email_content
 
