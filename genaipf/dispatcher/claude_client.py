@@ -6,7 +6,7 @@ from genaipf.utils.common_utils import contains_chinese
 anthropic_api_key = os.getenv("ANTHROPIC_API_KEY")
 async_client = AsyncAnthropic(api_key=anthropic_api_key)
 
-async def claude_cached_api_call(model_name="claude-3-5-sonnet-20240620", system_prompt="", system_prompt_ref="", ml_messages=[]):
+async def claude_cached_api_call(model_name="claude-3-5-sonnet-20241022", system_prompt="", system_prompt_ref="", ml_messages=[]):
     # messages = []
     # for _m in ml_messages:
     #     message = {
@@ -20,10 +20,10 @@ async def claude_cached_api_call(model_name="claude-3-5-sonnet-20240620", system
     #         ]
     #     }
     #     messages.append(message)
-    if contains_chinese(system_prompt):
-        system_prompt = system_prompt + "\n" + "输出格式要求：尽量使用两三个markdown的表格对分析进行描述或者总结。\n输出语言要求：以系统提示词的语言返回，不要以用户输入的语言返回，切记切记！！！"
-    else:
-        system_prompt = system_prompt + "\n" + "Output format requirements: Try to use two or three markdown tables to describe or summarize the analysis.\nOutput language requirement: Return in the language of the system prompt, do not return in the user's input language, remember, remember!!!"
+    # if contains_chinese(system_prompt):
+    #     system_prompt = system_prompt + "\n" + "输出格式要求：尽量使用两三个markdown的表格对分析进行描述或者总结。\n输出语言要求：以系统提示词的语言返回，不要以用户输入的语言返回，切记切记！！！"
+    # else:
+    #     system_prompt = system_prompt + "\n" + "Output format requirements: Try to use two or three markdown tables to describe or summarize the analysis.\nOutput language requirement: Return in the language of the system prompt, do not return in the user's input language, remember, remember!!!"
     logger.info(f"调用claude模型传入的消息列表:{ml_messages}")
     if system_prompt_ref:
         system = [
