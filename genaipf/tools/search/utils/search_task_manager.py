@@ -140,7 +140,7 @@ async def get_divide_questions(front_messages, language, source, context_length=
             newest_question = latest_user_msg['content']
         final_question_arr.append(newest_question)
     try:
-        msgs = LionPromptCommon.get_prompted_messages("divide_user_question", user_messages, language, 3)
+        msgs = LionPromptCommon.get_prompted_messages("divide_user_question", user_messages, language, 2)
         questions_result_str = await async_simple_chat(msgs)
         logger.info(f'=====================>获取到的新问题数组是: {questions_result_str}')
         questions_result = json.loads(questions_result_str)
