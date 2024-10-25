@@ -12,7 +12,13 @@ interface_error_notice_bot = aiogram.Bot(token=tg_bot_conf.INTERFACE_ERROR_NOTIC
 INTERFACE_ERROR_NOTICE_NUMBER_PREFIX="INTERFACE_ERROR_NOTICE_NUMBER_PREFIX_"
 INTERFACE_ERROR_NOTICE_SLEEP_PREFIX="INTERFACE_ERROR_NOTICE_SLEEP_PREFIX_"
 
-async def send_notice_message(user_name_arr: List[str], to_email_list: List[str], fileName: str, method: str, code: str, message: str):
+async def send_notice_message(fileName: str, method: str, code: int, message: str, level: int):
+    user_name_arr = [
+        'speakjan1024'
+    ]
+    to_email_list = [
+        '497000015@qq.com'
+    ]
     user_name_list = " ".join(['@'+ user_name for user_name in user_name_arr])
     text = f"""
 {user_name_list}
@@ -46,7 +52,7 @@ Mlion接口代码发生异常
 
 
 
-async def send_notice_email(to_email_list: List[str], fileName: str, method: str, code: str, message: str):
+async def send_notice_email(to_email_list: List[str], fileName: str, method: str, code: int, message: str):
     try:
         subject = "Mlion接口代码异常通知"
         content = f"""
