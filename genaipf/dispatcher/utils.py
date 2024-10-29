@@ -103,6 +103,37 @@ async def openai_chat_completion_acreate(
             )
             # print(f'>>>>>>>>>test001.1 async_openai_client.chat.completions.create')
             if functions:
+                try:
+                    _base_urls = os.getenv("COMPATABLE_OPENAI_BASE_URLS", [])
+                    _base_urls = json.loads(_base_urls)
+                    _api_keys = os.getenv("COMPATABLE_OPENAI_API_KEYS", [])
+                    _api_keys = json.loads(_api_keys)
+                    if len(_base_urls) == 0:
+                        raise
+                    import random
+                    i = random.randint(0, len(_base_urls) - 1)
+                    _base_url = _base_urls[i]
+                    _api_key = _api_keys[i]
+                    _client = AsyncOpenAI(api_key=_api_key, base_url=_base_url)
+                    response = await asyncio.wait_for(
+                        _client.chat.completions.create(
+                            model=model,
+                            messages=messages,
+                            functions=functions if functions else NOT_GIVEN,
+                            temperature=temperature,  # 值在[0,1]之间，越大表示回复越具有不确定性
+                            max_tokens=max_tokens, # 输出的最大 token 数
+                            top_p=top_p, # 过滤掉低于阈值的 token 确保结果不散漫
+                            frequency_penalty=frequency_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
+                            presence_penalty=presence_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
+                            stream=stream
+                        ),
+                        timeout=60.0  # 设置超时时间为180秒
+                    )
+                    logger.info(f'>>>>>>>>>other openai use {_base_url}')
+                    return response
+                except Exception as e:
+                    logger.error(f'>>>>>>>>>other openai error: {e}')
+                    pass
                 response = await asyncio.wait_for(
                     async_openai_client.chat.completions.create(
                         model=model,
@@ -118,36 +149,36 @@ async def openai_chat_completion_acreate(
                     timeout=60.0  # 设置超时时间为180秒
                 )
             else:
-                # try:
-                #     _base_urls = os.getenv("COMPATABLE_OPENAI_BASE_URLS", [])
-                #     _base_urls = json.loads(_base_urls)
-                #     _api_keys = os.getenv("COMPATABLE_OPENAI_API_KEYS", [])
-                #     _api_keys = json.loads(_api_keys)
-                #     if len(_base_urls) == 0:
-                #         raise
-                #     import random
-                #     i = random.randint(0, len(_base_urls) - 1)
-                #     _base_url = _base_urls[i]
-                #     _api_key = _api_keys[i]
-                #     _client = AsyncOpenAI(api_key=_api_key, base_url=_base_url)
-                #     response = await asyncio.wait_for(
-                #         _client.chat.completions.create(
-                #             model=model,
-                #             messages=messages,
-                #             temperature=temperature,  # 值在[0,1]之间，越大表示回复越具有不确定性
-                #             max_tokens=max_tokens, # 输出的最大 token 数
-                #             top_p=top_p, # 过滤掉低于阈值的 token 确保结果不散漫
-                #             frequency_penalty=frequency_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
-                #             presence_penalty=presence_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
-                #             stream=stream
-                #         ),
-                #         timeout=60.0  # 设置超时时间为180秒
-                #     )
-                #     logger.info(f'>>>>>>>>>other openai use {_base_url}')
-                #     return response
-                # except Exception as e:
-                #     logger.error(f'>>>>>>>>>other openai error: {e}')
-                #     pass
+                try:
+                    _base_urls = os.getenv("COMPATABLE_OPENAI_BASE_URLS", [])
+                    _base_urls = json.loads(_base_urls)
+                    _api_keys = os.getenv("COMPATABLE_OPENAI_API_KEYS", [])
+                    _api_keys = json.loads(_api_keys)
+                    if len(_base_urls) == 0:
+                        raise
+                    import random
+                    i = random.randint(0, len(_base_urls) - 1)
+                    _base_url = _base_urls[i]
+                    _api_key = _api_keys[i]
+                    _client = AsyncOpenAI(api_key=_api_key, base_url=_base_url)
+                    response = await asyncio.wait_for(
+                        _client.chat.completions.create(
+                            model=model,
+                            messages=messages,
+                            temperature=temperature,  # 值在[0,1]之间，越大表示回复越具有不确定性
+                            max_tokens=max_tokens, # 输出的最大 token 数
+                            top_p=top_p, # 过滤掉低于阈值的 token 确保结果不散漫
+                            frequency_penalty=frequency_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
+                            presence_penalty=presence_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
+                            stream=stream
+                        ),
+                        timeout=60.0  # 设置超时时间为180秒
+                    )
+                    logger.info(f'>>>>>>>>>other openai use {_base_url}')
+                    return response
+                except Exception as e:
+                    logger.error(f'>>>>>>>>>other openai error: {e}')
+                    pass
                 response = await asyncio.wait_for(
                     async_openai_client.chat.completions.create(
                         model=model,
@@ -184,34 +215,34 @@ async def simple_achat(messages: typing.List[typing.Mapping[str, str]], model: s
     return resp.message.content
 
 async def async_simple_chat(messages: typing.List[typing.Mapping[str, str]], stream: bool = False, model: str = 'gpt-4o-mini'):
-    # try:
-    #     _base_urls = os.getenv("COMPATABLE_OPENAI_BASE_URLS", [])
-    #     _base_urls = json.loads(_base_urls)
-    #     _api_keys = os.getenv("COMPATABLE_OPENAI_API_KEYS", [])
-    #     _api_keys = json.loads(_api_keys)
-    #     if len(_base_urls) == 0:
-    #         raise
-    #     import random
-    #     i = random.randint(0, len(_base_urls) - 1)
-    #     _base_url = _base_urls[i]
-    #     _api_key = _api_keys[i]
-    #     _client = AsyncOpenAI(api_key=_api_key, base_url=_base_url)
-    #     response = await asyncio.wait_for(
-    #         _client.chat.completions.create(
-    #             model=model,
-    #             messages=messages,
-    #             stream=stream
-    #         ),
-    #         timeout=60.0  # 设置超时时间为180秒
-    #     )
-    #     logger.info(f'>>>>>>>>>async_simple_chat openai use {_base_url}')
-    #     if stream:
-    #         return response
-    #     else:
-    #         return response.choices[0].message.content
-    # except Exception as e:
-    #     logger.error(f'>>>>>>>>>async_simple_chat openai error: {e}')
-    #     pass
+    try:
+        _base_urls = os.getenv("COMPATABLE_OPENAI_BASE_URLS", [])
+        _base_urls = json.loads(_base_urls)
+        _api_keys = os.getenv("COMPATABLE_OPENAI_API_KEYS", [])
+        _api_keys = json.loads(_api_keys)
+        if len(_base_urls) == 0:
+            raise
+        import random
+        i = random.randint(0, len(_base_urls) - 1)
+        _base_url = _base_urls[i]
+        _api_key = _api_keys[i]
+        _client = AsyncOpenAI(api_key=_api_key, base_url=_base_url)
+        response = await asyncio.wait_for(
+            _client.chat.completions.create(
+                model=model,
+                messages=messages,
+                stream=stream
+            ),
+            timeout=60.0  # 设置超时时间为180秒
+        )
+        logger.info(f'>>>>>>>>>async_simple_chat openai use {_base_url}')
+        if stream:
+            return response
+        else:
+            return response.choices[0].message.content
+    except Exception as e:
+        logger.error(f'>>>>>>>>>async_simple_chat openai error: {e}')
+        pass
     async_openai_client = AsyncOpenAI(
         api_key=OPENAI_API_KEY,
     )
