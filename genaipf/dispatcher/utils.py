@@ -52,6 +52,10 @@ client = QdrantClient(qdrant_url)
 @cache
 def get_embedding(text, model = "text-embedding-ada-002"):
     # result = openai.Embedding.create(
+    openai_client = OpenAI(
+        # defaults to os.environ.get("OPENAI_API_KEY")
+        api_key='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',
+    )
     result = openai_client.embeddings.create(
         input=text,
         model=model,
@@ -290,12 +294,12 @@ AI:
 
 
 def get_vdb_topk(text: str, cname: str, sim_th: float = 0.8, topk: int = 3) -> typing.List[typing.Mapping]:
-    # _vector = get_embedding(text)
-    # search_results = client.search(cname, _vector, limit=topk)
+    _vector = get_embedding(text)
+    search_results = client.search(cname, _vector, limit=topk)
     wrapper_result = []
-    # for result in search_results:
-    #     if result.score >= sim_th:
-    #         wrapper_result.append({'payload': result.payload, 'similarity': result.score})
+    for result in search_results:
+        if result.score >= sim_th:
+            wrapper_result.append({'payload': result.payload, 'similarity': result.score})
     return wrapper_result
 
 def get_qa_vdb_topk(text: str, sim_th: float = 0.85, topk: int = 3, source=None) -> typing.List[typing.Mapping]:
