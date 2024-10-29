@@ -229,7 +229,9 @@ async def awrap_gpt_generator(gpt_response, output_type=""):
     resp = gpt_response
     chunk = await resp.__anext__()
     _func_or_text = chunk.choices[0].delta.function_call
-    if _func_or_text:
+    # deepbricks格式处理
+    tool_calls = chunk.choices[0].delta.tool_calls
+    if _func_or_text or tool_calls:
         mode1 = "func"
     else:
         mode1 = "text"
@@ -265,17 +267,31 @@ async def awrap_gpt_generator(gpt_response, output_type=""):
         yield get_format_output("inner_____gpt_whole_text", _tmp_text)
     elif mode1 == "func":
         yield get_format_output("step", "agent_routing")
-        big_func_name = _func_or_text.name
-        func_name, sub_func_name = big_func_name.split("_____")
-        _arguments = _func_or_text.arguments
-        async for chunk in resp:
-            _func_json = chunk.choices[0].delta.function_call
-            if _func_json:
-                _arguments += _func_json.arguments
-        _param = json.loads(_arguments)
-        _param["func_name"] = func_name
-        _param["sub_func_name"] = sub_func_name
-        _param["subtype"] = sub_func_name
+        if _func_or_text:
+            big_func_name = _func_or_text.name
+            func_name, sub_func_name = big_func_name.split("_____")
+            _arguments = _func_or_text.arguments
+            async for chunk in resp:
+                _func_json = chunk.choices[0].delta.function_call
+                if _func_json:
+                    _arguments += _func_json.arguments
+            _param = json.loads(_arguments)
+            _param["func_name"] = func_name
+            _param["sub_func_name"] = sub_func_name
+            _param["subtype"] = sub_func_name
+        else:
+            # deepbricks格式处理
+            big_func_name = tool_calls[0].function.name
+            func_name, sub_func_name = big_func_name.split("_____")
+            _arguments = tool_calls[0].function.arguments
+            async for chunk in resp:
+                _func_json = chunk.choices[0].delta.tool_calls
+                if _func_json:
+                    _arguments += _func_json[0].function.arguments
+            _param = json.loads(_arguments)
+            _param["func_name"] = func_name
+            _param["sub_func_name"] = sub_func_name
+            _param["subtype"] = sub_func_name
         yield get_format_output("inner_____func_param", _param)
         
 
