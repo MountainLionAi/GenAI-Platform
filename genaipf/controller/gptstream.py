@@ -539,6 +539,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         logger.info(f'=====================>aref_answer_gpt_generator耗时：{elapsed_aref_answer_gpt_generator_time:.3f}毫秒')
         rag_status['generateAnswer']['isCompleted'] = True
         yield json.dumps(get_format_output("rag_status", rag_status))
+        _need_check_text = ''
         async for chunk in resp1:
             if chunk["role"] == "inner_____gpt_whole_text":
                 _tmp_text = chunk["content"]
@@ -547,7 +548,8 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
                 #     base64_encoded_voice = textToSpeech(_tmp_text)
                 #     yield json.dumps(get_format_output("tts", base64_encoded_voice, "voice_mp3_v001"))
             else:
-                _need_check_text = chunk['content']
+                if chunk["role"] == "gpt":
+                    _need_check_text += chunk['content']
                 if chunk["role"] != 'tts' and not await isNormal(_need_check_text):
                     logger.info(f'=====================>isNormal _need_check_text:{_need_check_text}')
                     has_sensitive_word = True
