@@ -52,7 +52,20 @@ client = QdrantClient(qdrant_url)
 @cache
 def get_embedding(text, model = "text-embedding-ada-002"):
     # result = openai.Embedding.create(
-    result = openai_client.embeddings.create(
+
+    _base_urls = os.getenv("COMPATABLE_OPENAI_BASE_URLS", [])
+    _base_urls = json.loads(_base_urls)
+    _api_keys = os.getenv("COMPATABLE_OPENAI_API_KEYS", [])
+    _api_keys = json.loads(_api_keys)
+    if len(_base_urls) == 0:
+        raise
+    import random
+    i = random.randint(0, len(_base_urls) - 1)
+    _base_url = _base_urls[i]
+    _api_key = _api_keys[i]
+    _client = AsyncOpenAI(api_key=_api_key, base_url=_base_url)
+
+    result = _client.embeddings.create(
         input=text,
         model=model,
     )
