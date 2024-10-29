@@ -52,20 +52,7 @@ client = QdrantClient(qdrant_url)
 @cache
 def get_embedding(text, model = "text-embedding-ada-002"):
     # result = openai.Embedding.create(
-
-    _base_urls = os.getenv("COMPATABLE_OPENAI_BASE_URLS", [])
-    _base_urls = json.loads(_base_urls)
-    _api_keys = os.getenv("COMPATABLE_OPENAI_API_KEYS", [])
-    _api_keys = json.loads(_api_keys)
-    if len(_base_urls) == 0:
-        raise
-    import random
-    i = random.randint(0, len(_base_urls) - 1)
-    _base_url = _base_urls[i]
-    _api_key = _api_keys[i]
-    _client = AsyncOpenAI(api_key=_api_key, base_url=_base_url)
-
-    result = _client.embeddings.create(
+    result = openai_client.embeddings.create(
         input=text,
         model=model,
     )
@@ -303,12 +290,12 @@ AI:
 
 
 def get_vdb_topk(text: str, cname: str, sim_th: float = 0.8, topk: int = 3) -> typing.List[typing.Mapping]:
-    _vector = get_embedding(text)
-    search_results = client.search(cname, _vector, limit=topk)
+    # _vector = get_embedding(text)
+    # search_results = client.search(cname, _vector, limit=topk)
     wrapper_result = []
-    for result in search_results:
-        if result.score >= sim_th:
-            wrapper_result.append({'payload': result.payload, 'similarity': result.score})
+    # for result in search_results:
+    #     if result.score >= sim_th:
+    #         wrapper_result.append({'payload': result.payload, 'similarity': result.score})
     return wrapper_result
 
 def get_qa_vdb_topk(text: str, sim_th: float = 0.85, topk: int = 3, source=None) -> typing.List[typing.Mapping]:
