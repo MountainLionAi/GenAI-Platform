@@ -54,7 +54,7 @@ def get_embedding(text, model = "text-embedding-ada-002"):
     # result = openai.Embedding.create(
     openai_client = OpenAI(
         # defaults to os.environ.get("OPENAI_API_KEY")
-        api_key='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',
+        api_key='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',
     )
     result = openai_client.embeddings.create(
         input=text,
