@@ -339,10 +339,12 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     related_qa = []
     # 钱包客服不走向量数据库
     # if source != 'v005':
-    if source == 'v001':
-        related_qa.append(await get_answer(source, newest_question, front_messages))
-    else:
-        related_qa = get_qa_vdb_topk(newest_question, source=source)
+    # 临时去掉
+    # if source == 'v001':
+    #     related_qa.append(await get_answer(source, newest_question, front_messages))
+    # else:
+    #     related_qa = get_qa_vdb_topk(newest_question, source=source)
+    related_qa = get_qa_vdb_topk(newest_question, source=source)
     logger.info(f'===============>使用graphRAG的related_qa是 {related_qa}')
     logger.info(f"userid={userid}, vdb_qa={related_qa}")
     end_time1 = time.perf_counter()
@@ -386,7 +388,8 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         used_rag = False
         need_qa = False
     if source == 'v009' or source == 'v010':
-        used_graph_rag = True
+        used_rag = True
+        # used_graph_rag = True
     # 特殊处理swap前置问题
     if source == 'v101':
         source = 'v001'
