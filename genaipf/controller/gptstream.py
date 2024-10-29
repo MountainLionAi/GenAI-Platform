@@ -549,6 +549,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
             else:
                 _need_check_text = chunk['content']
                 if not await isNormal(_need_check_text):
+                    logger.info(f'=====================>isNormal _need_check_text:{_need_check_text}')
                     has_sensitive_word = True
                     yield json.dumps(get_format_output("hasSensitiveWord", True))
                     _tmp_text = 'response has sensitive word'
