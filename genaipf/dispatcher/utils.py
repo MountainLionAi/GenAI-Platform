@@ -115,11 +115,21 @@ async def openai_chat_completion_acreate(
                     _base_url = _base_urls[i]
                     _api_key = _api_keys[i]
                     _client = AsyncOpenAI(api_key=_api_key, base_url=_base_url)
+                    tools = []
+                    tool_choice = 'auto'
+                    for function in functions:
+                        tools.append(
+                            {
+                                "type": "function",
+                                "function": function
+                            }
+                        )
                     response = await asyncio.wait_for(
                         _client.chat.completions.create(
                             model=model,
                             messages=messages,
-                            functions=functions if functions else NOT_GIVEN,
+                            tools=tools,
+                            tool_choice=tool_choice,
                             temperature=temperature,  # 值在[0,1]之间，越大表示回复越具有不确定性
                             max_tokens=max_tokens, # 输出的最大 token 数
                             top_p=top_p, # 过滤掉低于阈值的 token 确保结果不散漫
@@ -290,12 +300,12 @@ AI:
 
 
 def get_vdb_topk(text: str, cname: str, sim_th: float = 0.8, topk: int = 3) -> typing.List[typing.Mapping]:
-    # _vector = get_embedding(text)
-    # search_results = client.search(cname, _vector, limit=topk)
+    _vector = get_embedding(text)
+    search_results = client.search(cname, _vector, limit=topk)
     wrapper_result = []
-    # for result in search_results:
-    #     if result.score >= sim_th:
-    #         wrapper_result.append({'payload': result.payload, 'similarity': result.score})
+    for result in search_results:
+        if result.score >= sim_th:
+            wrapper_result.append({'payload': result.payload, 'similarity': result.score})
     return wrapper_result
 
 def get_qa_vdb_topk(text: str, sim_th: float = 0.85, topk: int = 3, source=None) -> typing.List[typing.Mapping]:
