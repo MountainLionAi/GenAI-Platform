@@ -119,11 +119,21 @@ async def openai_chat_completion_acreate(
                     _base_url = _base_urls[i]
                     _api_key = _api_keys[i]
                     _client = AsyncOpenAI(api_key=_api_key, base_url=_base_url)
+                    tools = []
+                    tool_choice = 'auto'
+                    for function in functions:
+                        tools.append(
+                            {
+                                "type": "function",
+                                "function": function
+                            }
+                        )
                     response = await asyncio.wait_for(
                         _client.chat.completions.create(
                             model=model,
                             messages=messages,
-                            functions=functions if functions else NOT_GIVEN,
+                            tools=tools,
+                            tool_choice=tool_choice,
                             temperature=temperature,  # 值在[0,1]之间，越大表示回复越具有不确定性
                             max_tokens=max_tokens, # 输出的最大 token 数
                             top_p=top_p, # 过滤掉低于阈值的 token 确保结果不散漫
