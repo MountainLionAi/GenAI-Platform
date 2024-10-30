@@ -339,10 +339,12 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     related_qa = []
     # 钱包客服不走向量数据库
     # if source != 'v005':
-    if source == 'v001':
-        related_qa.append(await get_answer(source, newest_question, front_messages))
-    else:
-        related_qa = get_qa_vdb_topk(newest_question, source=source)
+    # 临时去掉
+    # if source == 'v001':
+    #     related_qa.append(await get_answer(source, newest_question, front_messages))
+    # else:
+    #     related_qa = get_qa_vdb_topk(newest_question, source=source)
+    related_qa = get_qa_vdb_topk(newest_question, source=source)
     logger.info(f'===============>使用graphRAG的related_qa是 {related_qa}')
     logger.info(f"userid={userid}, vdb_qa={related_qa}")
     end_time1 = time.perf_counter()
@@ -386,7 +388,8 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         used_rag = False
         need_qa = False
     if source == 'v009' or source == 'v010':
-        used_graph_rag = True
+        used_rag = True
+        # used_graph_rag = True
     # 特殊处理swap前置问题
     if source == 'v101':
         source = 'v001'
@@ -536,6 +539,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         logger.info(f'=====================>aref_answer_gpt_generator耗时：{elapsed_aref_answer_gpt_generator_time:.3f}毫秒')
         rag_status['generateAnswer']['isCompleted'] = True
         yield json.dumps(get_format_output("rag_status", rag_status))
+        _need_check_text = ''
         async for chunk in resp1:
             if chunk["role"] == "inner_____gpt_whole_text":
                 _tmp_text = chunk["content"]
@@ -544,10 +548,13 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
                 #     base64_encoded_voice = textToSpeech(_tmp_text)
                 #     yield json.dumps(get_format_output("tts", base64_encoded_voice, "voice_mp3_v001"))
             else:
-                _need_check_text = chunk['content']
-                if not await isNormal(_need_check_text):
+                if chunk["role"] == "gpt":
+                    _need_check_text += chunk['content']
+                if chunk["role"] != 'tts' and not await isNormal(_need_check_text):
+                    logger.info(f'=====================>isNormal _need_check_text:{_need_check_text}')
                     has_sensitive_word = True
                     yield json.dumps(get_format_output("hasSensitiveWord", True))
+                    yield json.dumps(get_format_output("step", "done"))
                     _tmp_text = 'response has sensitive word'
                     await resp1.aclose()
                 else:
