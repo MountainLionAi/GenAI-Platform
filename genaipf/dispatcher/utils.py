@@ -15,6 +15,8 @@ from genaipf.conf.server import os
 from genaipf.utils.log_utils import logger
 import json
 from genaipf.utils.common_utils import check_is_json
+from genaipf.utils.interface_error_notice_tg_bot_util import send_notice_message
+import traceback
 
 PERPLEXITY_API_KEY=os.getenv("PERPLEXITY_API_KEY")
 PERPLEXITY_URL=os.getenv("PERPLEXITY_URL", "https://api.perplexity.ai")
@@ -68,34 +70,41 @@ async def openai_chat_completion_acreate(
         if model == PERPLEXITY_MODEL:
             logger.info(f"调用perplexity模型传入的消息列表:{messages}")
             async_openai_client = AsyncOpenAI(api_key=PERPLEXITY_API_KEY, base_url=PERPLEXITY_URL)
-            if functions:
-                response = await asyncio.wait_for(
-                    async_openai_client.chat.completions.create(
-                        model=model,
-                        messages=messages,
-                        functions=functions if functions else NOT_GIVEN,
-                        temperature=temperature,  # 值在[0,1]之间，越大表示回复越具有不确定性
-                        max_tokens=max_tokens, # 输出的最大 token 数
-                        top_p=top_p, # 过滤掉低于阈值的 token 确保结果不散漫
-                        presence_penalty=presence_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
-                        stream=stream
-                    ),
-                    timeout=60.0  # 设置超时时间为180秒
-                )
-            else:
-                logger.info(f"调用OPENAI模型传入的消息列表:{messages}")
-                response = await asyncio.wait_for(
-                    async_openai_client.chat.completions.create(
-                        model=model,
-                        messages=messages,
-                        temperature=temperature,  # 值在[0,1]之间，越大表示回复越具有不确定性
-                        max_tokens=max_tokens, # 输出的最大 token 数
-                        top_p=top_p, # 过滤掉低于阈值的 token 确保结果不散漫
-                        presence_penalty=presence_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
-                        stream=stream
-                    ),
-                    timeout=60.0  # 设置超时时间为180秒
-                )
+            try:
+                if functions:
+                    response = await asyncio.wait_for(
+                        async_openai_client.chat.completions.create(
+                            model=model,
+                            messages=messages,
+                            functions=functions if functions else NOT_GIVEN,
+                            temperature=temperature,  # 值在[0,1]之间，越大表示回复越具有不确定性
+                            max_tokens=max_tokens, # 输出的最大 token 数
+                            top_p=top_p, # 过滤掉低于阈值的 token 确保结果不散漫
+                            presence_penalty=presence_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
+                            stream=stream
+                        ),
+                        timeout=60.0  # 设置超时时间为180秒
+                    )
+                else:
+                    logger.info(f"调用perplexity模型传入的消息列表:{messages}")
+                    response = await asyncio.wait_for(
+                        async_openai_client.chat.completions.create(
+                            model=model,
+                            messages=messages,
+                            temperature=temperature,  # 值在[0,1]之间，越大表示回复越具有不确定性
+                            max_tokens=max_tokens, # 输出的最大 token 数
+                            top_p=top_p, # 过滤掉低于阈值的 token 确保结果不散漫
+                            presence_penalty=presence_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
+                            stream=stream
+                        ),
+                        timeout=60.0  # 设置超时时间为180秒
+                    )
+            except Exception as e:
+                err_message = f"调用perplexity模型出现异常：{e}"
+                logger.error(err_message)
+                logger.error(traceback.format_exc())
+                await send_notice_message('genai_utils', 'openai_chat_completion_acreate', 0, err_message, 3)
+                raise e
         else:
             async_openai_client = AsyncOpenAI(
                 # defaults to os.environ.get("OPENAI_API_KEY")
@@ -143,7 +152,11 @@ async def openai_chat_completion_acreate(
                     return response
                 except Exception as e:
                     logger.error(f'>>>>>>>>>other openai error: {e}')
-                    pass
+                    err_message = f"调用other openai模型出现异常：{e}"
+                    logger.error(err_message)
+                    logger.error(traceback.format_exc())
+                    await send_notice_message('genai_utils', 'openai_chat_completion_acreate', 0, err_message, 3)
+                    raise e
                 response = await asyncio.wait_for(
                     async_openai_client.chat.completions.create(
                         model=model,
@@ -188,7 +201,11 @@ async def openai_chat_completion_acreate(
                     return response
                 except Exception as e:
                     logger.error(f'>>>>>>>>>other openai error: {e}')
-                    pass
+                    err_message = f"调用other openai模型出现异常：{e}"
+                    logger.error(err_message)
+                    logger.error(traceback.format_exc())
+                    await send_notice_message('genai_utils', 'openai_chat_completion_acreate', 0, err_message, 3)
+                    raise e
                 response = await asyncio.wait_for(
                     async_openai_client.chat.completions.create(
                         model=model,
@@ -252,7 +269,11 @@ async def async_simple_chat(messages: typing.List[typing.Mapping[str, str]], str
             return response.choices[0].message.content
     except Exception as e:
         logger.error(f'>>>>>>>>>async_simple_chat openai error: {e}')
-        pass
+        err_message = f"调用async_simple_chat出现异常：{e}"
+        logger.error(err_message)
+        logger.error(traceback.format_exc())
+        await send_notice_message('genai_utils', 'async_simple_chat', 0, err_message, 3)
+        raise e
     async_openai_client = AsyncOpenAI(
         api_key=OPENAI_API_KEY,
     )
