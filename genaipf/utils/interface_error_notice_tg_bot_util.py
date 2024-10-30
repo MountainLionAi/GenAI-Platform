@@ -14,10 +14,10 @@ INTERFACE_ERROR_NOTICE_SLEEP_PREFIX="INTERFACE_ERROR_NOTICE_SLEEP_PREFIX_"
 
 async def send_notice_message(fileName: str, method: str, code: int, message: str, level: int):
     user_name_arr = [
-        'speakjan1024'
+        'speakjan1024', 'zhaogc88'
     ]
     to_email_list = [
-        '497000015@qq.com'
+        '497000015@qq.com', 'michael.zhaogc@gmail.com'
     ]
     user_name_list = " ".join(['@'+ user_name for user_name in user_name_arr])
     text = f"""
