@@ -139,7 +139,7 @@ async def get_divide_questions(front_messages, language, source, context_length=
         else:
             newest_question = latest_user_msg['content']
         final_question_arr.append(newest_question)
-    logger.info(f'=====================>获取到的新问题数组是: {questions_result_str}')
+    logger.info(f'=====================>获取到的新问题数组是: {final_question_arr}')
     #  TODO 丰富问题先注释掉
     # try:
     #     msgs = LionPromptCommon.get_prompted_messages("divide_user_question", user_messages, language, 2)
