@@ -112,51 +112,47 @@ async def openai_chat_completion_acreate(
             )
             # print(f'>>>>>>>>>test001.1 async_openai_client.chat.completions.create')
             if functions:
-                try:
-                    _base_urls = os.getenv("COMPATABLE_OPENAI_BASE_URLS", [])
-                    _base_urls = json.loads(_base_urls)
-                    _api_keys = os.getenv("COMPATABLE_OPENAI_API_KEYS", [])
-                    _api_keys = json.loads(_api_keys)
-                    if len(_base_urls) == 0:
-                        raise
-                    import random
-                    i = random.randint(0, len(_base_urls) - 1)
-                    _base_url = _base_urls[i]
-                    _api_key = _api_keys[i]
-                    _client = AsyncOpenAI(api_key=_api_key, base_url=_base_url)
-                    tools = []
-                    tool_choice = 'auto'
-                    for function in functions:
-                        tools.append(
-                            {
-                                "type": "function",
-                                "function": function
-                            }
-                        )
-                    response = await asyncio.wait_for(
-                        _client.chat.completions.create(
-                            model=model,
-                            messages=messages,
-                            tools=tools,
-                            tool_choice=tool_choice,
-                            temperature=temperature,  # 值在[0,1]之间，越大表示回复越具有不确定性
-                            max_tokens=max_tokens, # 输出的最大 token 数
-                            top_p=top_p, # 过滤掉低于阈值的 token 确保结果不散漫
-                            frequency_penalty=frequency_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
-                            presence_penalty=presence_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
-                            stream=stream
-                        ),
-                        timeout=60.0  # 设置超时时间为180秒
-                    )
-                    logger.info(f'>>>>>>>>>other openai use {_base_url}')
-                    return response
-                except Exception as e:
-                    logger.error(f'>>>>>>>>>other openai error: {e}')
-                    err_message = f"调用other openai模型出现异常：{e}"
-                    logger.error(err_message)
-                    logger.error(traceback.format_exc())
-                    await send_notice_message('genai_utils', 'openai_chat_completion_acreate', 0, err_message, 3)
-                    raise e
+                # try:
+                #     _base_urls = os.getenv("COMPATABLE_OPENAI_BASE_URLS", [])
+                #     _base_urls = json.loads(_base_urls)
+                #     _api_keys = os.getenv("COMPATABLE_OPENAI_API_KEYS", [])
+                #     _api_keys = json.loads(_api_keys)
+                #     if len(_base_urls) == 0:
+                #         raise
+                #     import random
+                #     i = random.randint(0, len(_base_urls) - 1)
+                #     _base_url = _base_urls[i]
+                #     _api_key = _api_keys[i]
+                #     _client = AsyncOpenAI(api_key=_api_key, base_url=_base_url)
+                #     tools = []
+                #     tool_choice = 'auto'
+                #     for function in functions:
+                #         tools.append(
+                #             {
+                #                 "type": "function",
+                #                 "function": function
+                #             }
+                #         )
+                #     response = await asyncio.wait_for(
+                #         _client.chat.completions.create(
+                #             model=model,
+                #             messages=messages,
+                #             tools=tools,
+                #             tool_choice=tool_choice,
+                #             temperature=temperature,  # 值在[0,1]之间，越大表示回复越具有不确定性
+                #             max_tokens=max_tokens, # 输出的最大 token 数
+                #             top_p=top_p, # 过滤掉低于阈值的 token 确保结果不散漫
+                #             frequency_penalty=frequency_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
+                #             presence_penalty=presence_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
+                #             stream=stream
+                #         ),
+                #         timeout=60.0  # 设置超时时间为180秒
+                #     )
+                #     logger.info(f'>>>>>>>>>other openai use {_base_url}')
+                #     return response
+                # except Exception as e:
+                #     logger.error(f'>>>>>>>>>other openai error: {e}')
+                #     pass
                 response = await asyncio.wait_for(
                     async_openai_client.chat.completions.create(
                         model=model,
