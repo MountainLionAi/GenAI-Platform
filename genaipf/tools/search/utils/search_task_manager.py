@@ -122,8 +122,8 @@ async def get_sources_tasks(front_messages, related_qa, language, source):
     return sources, final_related_qa
 
 
-async def get_divide_questions(front_messages, language, source, context_length=4):
-    user_messages = front_messages['messages'][:context_length]
+async def get_divide_questions(front_messages, language, source, context_length=-4):
+    user_messages = front_messages['messages'][context_length:]
     latest_user_msg = user_messages[-1]
     final_question_arr = []
     if source == 'v007':  # 单独处理空投的content
