@@ -3,6 +3,7 @@ from genaipf.utils.log_utils import logger
 from genaipf.utils.http_util import AsyncHTTPClient
 from genaipf.tools.search.rerank.cohere_client import CohereClient
 import asyncio
+from genaipf.utils.interface_error_notice_tg_bot_util import send_notice_message
 
 CLIENT_TYPE = 'google_serper'
 REQUEST_URL = 'https://google.serper.dev/search'
@@ -75,6 +76,7 @@ class GoogleSerperClient:
             if '429' in str(e):
                 set_api_key_unavaiable(self._api_key, CLIENT_TYPE)
             logger.error(f'google serper search error: {str(e)}')
+            await send_notice_message('google_serper_client', 'search_origin', 0, err_message, 3)
         return search_result
 
     async def multi_search(self, question, language):
