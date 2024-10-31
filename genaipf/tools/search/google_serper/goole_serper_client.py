@@ -75,7 +75,8 @@ class GoogleSerperClient:
         except Exception as e:
             if '429' in str(e):
                 set_api_key_unavaiable(self._api_key, CLIENT_TYPE)
-            logger.error(f'google serper search error: {str(e)}')
+            err_message = f'google serper search error: {str(e)}'
+            logger.error(err_message)
             await send_notice_message('google_serper_client', 'search_origin', 0, err_message, 3)
         return search_result
 
