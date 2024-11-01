@@ -122,8 +122,8 @@ async def get_sources_tasks(front_messages, related_qa, language, source):
     return sources, final_related_qa
 
 
-async def get_divide_questions(front_messages, language, source, context_length=4):
-    user_messages = front_messages['messages'][:context_length]
+async def get_divide_questions(front_messages, language, source, context_length=-4):
+    user_messages = front_messages['messages'][context_length:]
     latest_user_msg = user_messages[-1]
     final_question_arr = []
     if source == 'v007':  # 单独处理空投的content
@@ -139,15 +139,17 @@ async def get_divide_questions(front_messages, language, source, context_length=
         else:
             newest_question = latest_user_msg['content']
         final_question_arr.append(newest_question)
-    try:
-        msgs = LionPromptCommon.get_prompted_messages("divide_user_question", user_messages, language, 3)
-        questions_result_str = await async_simple_chat(msgs)
-        logger.info(f'=====================>获取到的新问题数组是: {questions_result_str}')
-        questions_result = json.loads(questions_result_str)
-        if questions_result and len(questions_result) != 0:
-            final_question_arr.extend(questions_result)
-    except Exception as e:
-        logger.error(f'分析总结用户问题失败: {e}')
+    logger.info(f'=====================>获取到的新问题数组是: {final_question_arr}')
+    #  TODO 丰富问题先注释掉
+    # try:
+    #     msgs = LionPromptCommon.get_prompted_messages("divide_user_question", user_messages, language, 2)
+    #     questions_result_str = await async_simple_chat(msgs)
+    #     logger.info(f'=====================>获取到的新问题数组是: {questions_result_str}')
+    #     questions_result = json.loads(questions_result_str)
+    #     if questions_result and len(questions_result) != 0:
+    #         final_question_arr.extend(questions_result)
+    # except Exception as e:
+    #     logger.error(f'分析总结用户问题失败: {e}')
     return final_question_arr
 
 

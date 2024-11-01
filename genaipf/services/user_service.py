@@ -17,6 +17,7 @@ from web3 import Web3
 from eth_account.messages import encode_defunct
 import requests
 from datetime import datetime
+from genaipf.conf.server import SERVICE_NAME
 ORIGIN_MESSAGE = "Welcome. Login Mountainlion. This is completely secure and doesn't cost anything! "
 
 
@@ -396,7 +397,7 @@ async def send_verify_code(email, captcha_code, session_id):
 
 
 # 基于hcaptcha的图形验证
-async def send_verify_code_new(email, captcha_resp, language, scene, need_captcha = True, option_params = {}, related_key = '', from_app = False):
+async def send_verify_code_new(email, captcha_resp, language, scene, need_captcha = True, option_params = {}, related_key = '', source = ''):
     try:
         redis_client = RedisConnectionPool().get_connection()
         user = await get_user_info_from_db(email)
@@ -442,16 +443,18 @@ async def send_verify_code_new(email, captcha_resp, language, scene, need_captch
         # 生成发送验证码邮件相关的模版
         email_code = generate_email_code()
         subject = EMAIL_INFO[scene]['subject'][language]
-        email_content = await email_utils.format_captcha_email(email, email_code, language, scene, option_params)
+        if source == email_utils.EMAIL_SOURCE['SWFTGPT']:
+            subject = subject.replace(SERVICE_NAME, source)
+        email_content = await email_utils.format_captcha_email(email, email_code, language, scene, option_params, source)
         if need_captcha == False:
-            if from_app:
+            if source == email_utils.EMAIL_SOURCE['SWFTGPT']:
                 email_key = REDIS_KEYS['USER_KEYS']['EMAIL_CODE'].format(email, scene)
             else:
                 email_key = REDIS_KEYS['USER_KEYS']['EMAIL_CODE_OTHER'].format(email, scene, related_key)
         else:
             email_key = REDIS_KEYS['USER_KEYS']['EMAIL_CODE'].format(email, scene)
         # 发送邮箱验证码
-        await email_utils.send_email(subject, email_content, email)
+        await email_utils.send_email(subject, email_content, email, source)
         redis_client.setex(email_key, 60 * 15, email_code)
 
         # 增加发送验证码的限制次数
