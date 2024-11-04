@@ -23,6 +23,8 @@ from mistralai.async_client import MistralAsyncClient
 from mistralai.models.chat_completion import ChatMessage
 from genaipf.dispatcher.claude_client import claude_cached_api_call
 from genaipf.conf import server
+from genaipf.utils.interface_error_notice_tg_bot_util import send_notice_message
+import traceback
 
 # temperature=2 # 值在[0,1]之间，越大表示回复越具有不确定性
 # max_tokens=2000 # 输出的最大 token 数
@@ -440,6 +442,10 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
             return g2
         except Exception as e:
             logger.error(f'aref_answer_gpt_generator gemini call error {e}', e)
+            err_message = f"调用aref_answer_gpt_generator gemini call 出现异常：{e}"
+            logger.error(err_message)
+            logger.error(traceback.format_exc())
+            await send_notice_message('genai_api', 'aref_answer_gpt_generator', 0, err_message, 3)
             return aget_error_generator(str(e))
     elif use_model.startswith("gpt") or use_model == PERPLEXITY_MODEL:
         for i in range(5):
@@ -483,7 +489,11 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
             )
             return awrap_mistral_generator(response, output_type, client)
         except Exception as e:
-            logger.error(f'aref_answer_gpt_generator question_JSON call mistral error {e}', e)
+            logger.error(f'aref_answer_gpt_generator call mistral error {e}', e)
+            err_message = f"调用aref_answer_gpt_generator mistral call 出现异常：{e}"
+            logger.error(err_message)
+            logger.error(traceback.format_exc())
+            await send_notice_message('genai_api', 'aref_answer_gpt_generator', 0, err_message, 3)
             return aget_error_generator(str(e))
     elif use_model.startswith("claude"):
         try:
@@ -515,6 +525,10 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
         except Exception as e:
             print(e)
             logger.error(f'aref_answer_gpt_generator claude error {e}', e)
+            err_message = f"调用aref_answer_gpt_generator claude call 出现异常：{e}"
+            logger.error(err_message)
+            logger.error(traceback.format_exc())
+            await send_notice_message('genai_api', 'aref_answer_gpt_generator', 0, err_message, 3)
             return aget_error_generator(str(e))
     elif use_model == "gemini-1.5-flash":
         try:
@@ -530,6 +544,10 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
             return g2
         except Exception as e:
             logger.error(f'aref_answer_gpt_generator gemini call error {e}', e)
+            err_message = f"调用aref_answer_gpt_generator gemini call 出现异常：{e}"
+            logger.error(err_message)
+            logger.error(traceback.format_exc())
+            await send_notice_message('genai_api', 'aref_answer_gpt_generator', 0, err_message, 3)
             return aget_error_generator(str(e))
     elif use_model.startswith('glm'):
         try:
