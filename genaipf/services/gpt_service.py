@@ -104,3 +104,17 @@ async def update_gpt_message_content(userid, message_id, content):
           'userid=%s AND id=%s and deleted=0'
     result = await CollectionPool().update(sql, (content, userid, message_id))
     return result
+
+# 获取用户某条消息
+async def get_gpt_message_by_code(userid, code):
+    sql = 'SELECT id, content, type, msggroup, create_time, code FROM gpt_messages WHERE ' \
+          'userid=%s AND code=%s and deleted=0'
+    result = await CollectionPool().query(sql, (userid, code))
+    return result
+
+# 修改用户某条消息
+async def update_gpt_message_content_by_code(userid, code, content):
+    sql = 'UPDATE gpt_messages SET content=%s WHERE ' \
+          'userid=%s AND code=%s and deleted=0'
+    result = await CollectionPool().update(sql, (content, userid, code))
+    return result
