@@ -387,7 +387,8 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     if source == 'v005' or source == 'v006' or source == 'v008' or source == 'v009' or source == 'v010':
         used_rag = False
         need_qa = False
-        newest_question = newest_question + f'\nsource:{source}'
+        newest_question = newest_question + f'\nsource 来源信息:{source}'
+        logger.info(f">>>>> add source newest_question: {newest_question}")
     if source == 'v009' or source == 'v010':
         used_rag = True
         # used_graph_rag = True
@@ -732,7 +733,8 @@ async def  getAnswerAndCallGptData(question, userid, msggroup, language, front_m
             messages.append({"role": x["role"], "content": x["content"]})
     user_history_l = [x["content"] for x in messages if x["role"] == "user"]
     newest_question = user_history_l[-1]
-    
+    if source in ('v005', 'v006', 'v008', 'v009', 'v010'):
+        newest_question = newest_question + f'\nsource:{source}'
     last_front_msg = front_messages[-1]
     question = last_front_msg['content']
     
