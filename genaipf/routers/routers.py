@@ -106,5 +106,10 @@ if PLUGIN_NAME:
     plugin_submodule = import_module(plugin_submodule_name)
     plugin_router_mapping = plugin_submodule.plugin_router_mapping
     for v in plugin_router_mapping.values():
-        blueprint_v1.add_route(v["handler"], v["uri"], v["methods"])
-        blueprint_v2.add_route(v["handler"], v["uri"], v["methods"])
+        entry_name = v.get('name', '')
+        if entry_name:
+            blueprint_v1.add_route(v["handler"], v["uri"], v["methods"], name=entry_name)
+            blueprint_v2.add_route(v["handler"], v["uri"], v["methods"], name=entry_name)
+        else:
+            blueprint_v1.add_route(v["handler"], v["uri"], v["methods"])
+            blueprint_v2.add_route(v["handler"], v["uri"], v["methods"])

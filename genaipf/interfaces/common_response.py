@@ -21,3 +21,20 @@ def fail(code=500, message="fail", status="false"):
         "status": status
     }
     return response.json(format_response)
+
+
+def success_for_path(data, message="Success", code='100'):
+    format_response = {
+        "resCode": code,
+        "resMsg": message,
+        "data": data,
+    }
+    return response.json(format_response)
+
+# 错误返回
+def fail_for_path(code='500', message="fail", data=''):
+    format_response = {
+        "resCode": code,
+        "resMsg": f'{data} {message}',
+    }
+    return response.json(format_response)
