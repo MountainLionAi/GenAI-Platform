@@ -387,6 +387,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     if source == 'v005' or source == 'v006' or source == 'v008' or source == 'v009' or source == 'v010':
         used_rag = False
         need_qa = False
+        newest_question = newest_question + f'source:{source}'
     if source == 'v009' or source == 'v010':
         used_rag = True
         # used_graph_rag = True
