@@ -387,6 +387,8 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     if source == 'v005' or source == 'v006' or source == 'v008' or source == 'v009' or source == 'v010':
         used_rag = False
         need_qa = False
+        newest_question = newest_question + f'\nsource 来源信息:{source}'
+        logger.info(f">>>>> add source newest_question: {newest_question}")
     if source == 'v009' or source == 'v010':
         used_rag = True
         # used_graph_rag = True
@@ -403,12 +405,13 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
 
     if used_rag:
         is_need_search = is_need_rag_simple(newest_question)
-        premise_search2_start_time = time.perf_counter()
-        # 问题分析已经完成
-        sources_task, related_questions_task = await multi_rag(front_messages, related_qa, language_, source)
-        premise_search2_end_time = time.perf_counter()
-        elapsed_premise_search2 = (premise_search2_end_time - premise_search2_start_time) * 1000
-        logger.info(f'=====================>premise_search2耗时：{elapsed_premise_search2:.3f}毫秒')
+        if is_need_search:
+            premise_search2_start_time = time.perf_counter()
+            # 问题分析已经完成
+            sources_task, related_questions_task = await multi_rag(front_messages, related_qa, language_, source)
+            premise_search2_end_time = time.perf_counter()
+            elapsed_premise_search2 = (premise_search2_end_time - premise_search2_start_time) * 1000
+            logger.info(f'=====================>premise_search2耗时：{elapsed_premise_search2:.3f}毫秒')
     elif used_graph_rag:
         is_need_search = is_need_rag_simple(newest_question)
         sources_task = await get_answer(source, newest_question, front_messages)
@@ -655,12 +658,15 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     if not has_sensitive_word: # 如果没有敏感词
         if need_qa:
             related_questions_task_start_time = time.perf_counter()
-            await related_questions_task
-            related_questions = related_questions_task.result()
-            related_questions_task_end_time = time.perf_counter()
-            elapsed_related_questions_task_time = (related_questions_task_end_time - related_questions_task_start_time) * 1000
-            logger.info(f'=====================>related_questions_task耗时：{elapsed_related_questions_task_time:.3f}毫秒')
-            logger.info(f"userid={userid},related_questions={related_questions}")
+            if not is_need_search:
+                related_questions = []
+            else:
+                await related_questions_task
+                related_questions = related_questions_task.result()
+                related_questions_task_end_time = time.perf_counter()
+                elapsed_related_questions_task_time = (related_questions_task_end_time - related_questions_task_start_time) * 1000
+                logger.info(f'=====================>related_questions_task耗时：{elapsed_related_questions_task_time:.3f}毫秒')
+                logger.info(f"userid={userid},related_questions={related_questions}")
             yield json.dumps(get_format_output("chatRelatedResults", related_questions))
         elif not related_questions:
             yield json.dumps(get_format_output("chatRelatedResults", related_questions))
@@ -731,7 +737,8 @@ async def  getAnswerAndCallGptData(question, userid, msggroup, language, front_m
             messages.append({"role": x["role"], "content": x["content"]})
     user_history_l = [x["content"] for x in messages if x["role"] == "user"]
     newest_question = user_history_l[-1]
-    
+    if source in ('v005', 'v006', 'v008', 'v009', 'v010'):
+        newest_question = newest_question + f'\nsource:{source}'
     last_front_msg = front_messages[-1]
     question = last_front_msg['content']
     
