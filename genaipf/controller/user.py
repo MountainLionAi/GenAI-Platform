@@ -43,7 +43,7 @@ async def login_other(request: Request):
     request_params = request.json
     if not request_params:
         raise CustomerError(status_code=ERROR_CODE['PARAMS_ERROR'])
-    login_res = await user_service.user_login_other(request_params.get('email', ''), request_params.get('wallet_address', ''), request_params.get('source', ''))
+    login_res = await user_service.user_login_other(request_params.get('email', ''), request_params.get('wallet_address', ''), request_params.get('source', ''), request_params.get('data', {}))
     return success(login_res)
 
 

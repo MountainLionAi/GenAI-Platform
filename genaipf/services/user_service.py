@@ -18,6 +18,7 @@ from eth_account.messages import encode_defunct
 import requests
 from datetime import datetime
 from genaipf.conf.server import SERVICE_NAME
+from ml4gp.services.swftgpt_service import swftgpt_login
 ORIGIN_MESSAGE = "Welcome. Login Mountainlion. This is completely secure and doesn't cost anything! "
 
 
@@ -143,14 +144,14 @@ async def get_google_user_info(access_token):
 
 
 # 用户三方登陆
-async def user_login_other(email, wallet_addr, source):
+async def user_login_other(email, wallet_addr, source, data):
     user = None
     if email:
         user = await get_user_info_from_db(email)
         account = mask_email(email)
         user_key = email
     else:
-        user = await get_user_info_by_address(wallet_addr)
+        user = await get_user_info_by_address(wallet_addr, source)
         account = wallet_addr
         user_key = wallet_addr
     if not user:
@@ -169,19 +170,7 @@ async def user_login_other(email, wallet_addr, source):
             await add_user_source(user_info)
             user = await get_user_info_from_db(email)
         else:
-            user_info = (
-                '',
-                '',
-                '',
-                '',
-                '',
-                wallet_addr,
-                '',
-                get_format_time(),
-                source
-            )
-            await add_user_source(user_info)
-            user = await get_user_info_by_address(wallet_addr)
+            return swftgpt_login(data)
     user_info = user[0]
     user_id = user_info['id']
     jwt_manager = JWTManager()
@@ -191,7 +180,7 @@ async def user_login_other(email, wallet_addr, source):
     token_key_final = token_key + ':' + jwt_token
     redis_client.set(token_key_final, jwt_token, 3600 * 24 * 180)  # 设置登陆态到redis
     await update_user_token(user_info['id'], jwt_token)
-    return {'user_token': jwt_token, 'account': account, 'user_id': user_id}
+    return {'userToken': jwt_token, 'account': account, 'userId': user_id}
 
 
 # 用户靠id和账号登录，用于三方情况
@@ -294,11 +283,12 @@ async def get_user_info_from_db(email):
 
 
 # 根据wallet_address获取用户信息
-async def get_user_info_by_address(wallet_address):
+async def get_user_info_by_address(wallet_address, source=''):
     sql = 'SELECT id, email, password, auth_token, user_name, avatar_url, wallet_address  FROM user_infos WHERE ' \
           'wallet_address=%s ' \
-          'AND status=%s'
-    result = await CollectionPool().query(sql, (wallet_address, 0))
+          'AND status=%s' \
+          'AND source=%s'
+    result = await CollectionPool().query(sql, (wallet_address, 0, source))
     return result
 
 # 根据oauth获取用户信息
