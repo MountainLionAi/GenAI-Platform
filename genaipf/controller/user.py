@@ -47,7 +47,7 @@ async def login_other(request: Request):
     return success(login_res)
 
 async def plugin_login(request: Request):
-    logger.info('user_login_other')
+    logger.info('user_plugin_login')
     request_params = request.json
     if not request_params:
         raise CustomerError(status_code=ERROR_CODE['PARAMS_ERROR'])
