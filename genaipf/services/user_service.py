@@ -170,7 +170,21 @@ async def user_login_other(email, wallet_addr, source, data):
             await add_user_source(user_info)
             user = await get_user_info_from_db(email)
         else:
-            return await plugin_login(data)
+            account = data.get('account', '')
+            expiration_data = data.get('expirationData', '')
+            sign = data.get('sign', '')
+            source = data.get('source', '')
+            timestamp = data.get('timestamp', 0)
+            if not account or not expiration_data or not sign or not source or not timestamp:
+                raise CustomerError(status_code=ERROR_CODE['PARAMS_ERROR'])
+            current_date = get_format_time()
+            current_timestamp = get_current_timestamp()
+            if current_date > expiration_data or abs(current_timestamp - int(timestamp)) > 60:
+                raise CustomerError(status_code=ERROR_CODE['PARAMS_ERROR'])
+            if check_user_signature(sign, account.upper(), timestamp):
+                return await plugin_login(data)
+            else:
+                raise CustomerError(status_code=ERROR_CODE['INVALID_SIGNATURE'])
     user_info = user[0]
     user_id = user_info['id']
     jwt_manager = JWTManager()
