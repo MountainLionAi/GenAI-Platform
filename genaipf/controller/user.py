@@ -43,9 +43,16 @@ async def login_other(request: Request):
     request_params = request.json
     if not request_params:
         raise CustomerError(status_code=ERROR_CODE['PARAMS_ERROR'])
-    login_res = await user_service.user_login_other(request_params.get('email', ''), request_params.get('wallet_address', ''), request_params.get('source', ''), request_params.get('data', {}))
+    login_res = await user_service.user_login_other(request_params.get('email', ''), request_params.get('wallet_address', ''), request_params.get('source', ''), None)
     return success(login_res)
 
+async def plugin_login(request: Request):
+    logger.info('user_login_other')
+    request_params = request.json
+    if not request_params:
+        raise CustomerError(status_code=ERROR_CODE['PARAMS_ERROR'])
+    login_res = await user_service.user_login_other(request_params.get('email', ''), request_params.get('wallet_address', ''), request_params.get('source', ''), request_params.get('data', {}))
+    return success(login_res)
 
 # 判断用户是否登陆
 async def check_login(request: Request):

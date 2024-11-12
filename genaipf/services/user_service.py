@@ -18,7 +18,7 @@ from eth_account.messages import encode_defunct
 import requests
 from datetime import datetime
 from genaipf.conf.server import SERVICE_NAME
-from ml4gp.services.swftgpt_service import swftgpt_login
+from ml4gp.services.plugin_service import plugin_login
 ORIGIN_MESSAGE = "Welcome. Login Mountainlion. This is completely secure and doesn't cost anything! "
 
 
@@ -170,7 +170,7 @@ async def user_login_other(email, wallet_addr, source, data):
             await add_user_source(user_info)
             user = await get_user_info_from_db(email)
         else:
-            return swftgpt_login(data)
+            return plugin_login(data)
     user_info = user[0]
     user_id = user_info['id']
     jwt_manager = JWTManager()
