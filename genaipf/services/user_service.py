@@ -286,7 +286,7 @@ async def get_user_info_from_db(email):
 async def get_user_info_by_address(wallet_address, source=''):
     sql = 'SELECT id, email, password, auth_token, user_name, avatar_url, wallet_address  FROM user_infos WHERE ' \
           'wallet_address=%s ' \
-          'AND status=%s' \
+          'AND status=%s  '  \
           'AND source=%s'
     result = await CollectionPool().query(sql, (wallet_address, 0, source))
     return result
