@@ -737,7 +737,7 @@ async def  getAnswerAndCallGptData(question, userid, msggroup, language, front_m
             messages.append({"role": x["role"], "content": x["content"]})
     user_history_l = [x["content"] for x in messages if x["role"] == "user"]
     newest_question = user_history_l[-1]
-    if source in ('v005', 'v006', 'v008', 'v009', 'v010'):
+    if source in ('v005', 'v006', 'v008', 'v009', 'v010', 'v301'):
         newest_question = newest_question + f'\nsource:{source}'
     last_front_msg = front_messages[-1]
     question = last_front_msg['content']
