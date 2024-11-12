@@ -170,7 +170,7 @@ async def user_login_other(email, wallet_addr, source, data):
             await add_user_source(user_info)
             user = await get_user_info_from_db(email)
         else:
-            return plugin_login(data)
+            return await plugin_login(data)
     user_info = user[0]
     user_id = user_info['id']
     jwt_manager = JWTManager()
