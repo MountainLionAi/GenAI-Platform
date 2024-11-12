@@ -181,7 +181,7 @@ async def user_login_other(email, wallet_addr, source, data):
             current_timestamp = get_current_timestamp()
             if current_date > expiration_data or abs(current_timestamp - int(timestamp)) > 60:
                 raise CustomerError(status_code=ERROR_CODE['PARAMS_ERROR'])
-            if check_user_signature(sign, account.upper(), timestamp):
+            if check_user_signature(sign, account, timestamp):
                 return await plugin_login(data)
             else:
                 raise CustomerError(status_code=ERROR_CODE['INVALID_SIGNATURE'])
