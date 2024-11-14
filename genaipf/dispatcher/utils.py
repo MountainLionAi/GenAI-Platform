@@ -266,7 +266,7 @@ async def openai_chat_completion_acreate(
                 err_message = f"调用other openai functions模型出现异常：{e}"
                 logger.error(err_message)
                 logger.error(traceback.format_exc())
-                await send_notice_message('genai_utils', 'openai_chat_completion_acreate', 0, err_message, 3)
+                await send_notice_message('genai_utils', 'openai_chat_completion_acreate', 0, err_message, 4)
                 raise e
         else:
             try:
@@ -301,7 +301,7 @@ async def openai_chat_completion_acreate(
                 err_message = f"调用other openai模型出现异常：{e}"
                 logger.error(err_message)
                 logger.error(traceback.format_exc())
-                await send_notice_message('genai_utils', 'openai_chat_completion_acreate', 0, err_message, 3)
+                await send_notice_message('genai_utils', 'openai_chat_completion_acreate', 0, err_message, 4)
                 raise e
         raise e
     return response

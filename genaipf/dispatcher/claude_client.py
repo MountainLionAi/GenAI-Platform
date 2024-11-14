@@ -60,7 +60,7 @@ async def claude_cached_api_call(model_name="claude-3-5-sonnet-20241022", system
             logger.error(err_message)
             err_message = traceback.format_exc()
             logger.error(err_message)
-            await send_notice_message('genai_claude_client', 'claude_cached_api_call', 0, err_message, 3)
+            await send_notice_message('genai_claude_client', 'claude_cached_api_call', 0, err_message, 4)
             raise e
     else:
         try:
@@ -79,7 +79,7 @@ async def claude_cached_api_call(model_name="claude-3-5-sonnet-20241022", system
             logger.error(err_message)
             err_message = traceback.format_exc()
             logger.error(err_message)
-            await send_notice_message('genai_claude_client', 'claude_cached_api_call', 0, err_message, 3)
+            await send_notice_message('genai_claude_client', 'claude_cached_api_call', 0, err_message, 4)
             raise e
 
 
