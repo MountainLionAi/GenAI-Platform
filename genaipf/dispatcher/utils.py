@@ -23,6 +23,7 @@ PERPLEXITY_URL=os.getenv("PERPLEXITY_URL", "https://api.perplexity.ai")
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+OPENAI_API_KEY_FOR_PREDICT = os.getenv("OPENAI_API_KEY_FOR_PREDICT")
 MAX_CH_LENGTH_GPT3 = 8000
 MAX_CH_LENGTH_GPT4 = 3000
 MAX_CH_LENGTH_QA_GPT3 = 3000
@@ -321,8 +322,9 @@ async def simple_achat(messages: typing.List[typing.Mapping[str, str]], model: s
 
 async def async_simple_chat(messages: typing.List[typing.Mapping[str, str]], stream: bool = False, model: str = 'gpt-4o-mini'):
     try:
+        api_key = OPENAI_API_KEY if key_type == 'normal' else OPENAI_API_KEY_FOR_PREDICT
         async_openai_client = AsyncOpenAI(
-            api_key=OPENAI_API_KEY,
+            api_key=api_key,
         )
         response = await asyncio.wait_for(
             async_openai_client.chat.completions.create(
