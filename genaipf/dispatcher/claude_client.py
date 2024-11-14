@@ -1,7 +1,9 @@
 from anthropic import AsyncAnthropic
 import os
 from genaipf.utils.log_utils import logger
-from genaipf.utils.common_utils import contains_chinese
+import traceback
+from genaipf.utils.interface_error_notice_tg_bot_util import send_notice_message
+
 
 anthropic_api_key = os.getenv("ANTHROPIC_API_KEY")
 async_client = AsyncAnthropic(api_key=anthropic_api_key)
@@ -38,30 +40,46 @@ async def claude_cached_api_call(model_name="claude-3-5-sonnet-20241022", system
             }
         ]
     if system_prompt_ref:
-        async with async_client.messages.stream(
-            model=model_name,
-            max_tokens=2048,
-            temperature=0,
-            system=system,
-            messages=ml_messages,
-            extra_headers={"anthropic-beta": "prompt-caching-2024-07-31"}
-        ) as stream:
-            async for event in stream:
-                if event.type == 'text':
-                    yield event.text
-            if stream._AsyncMessageStream__final_message_snapshot:
-                usage = stream._AsyncMessageStream__final_message_snapshot.usage
-                logger.info(f"claude usage={usage}")
+        try:
+            async with async_client.messages.stream(
+                model=model_name,
+                max_tokens=2048,
+                temperature=0,
+                system=system,
+                messages=ml_messages,
+                extra_headers={"anthropic-beta": "prompt-caching-2024-07-31"}
+            ) as stream:
+                async for event in stream:
+                    if event.type == 'text':
+                        yield event.text
+                if stream._AsyncMessageStream__final_message_snapshot:
+                    usage = stream._AsyncMessageStream__final_message_snapshot.usage
+                    logger.info(f"claude usage={usage}")
+        except Exception as e:
+            err_message = f"调用claude_cached_api_call带缓存api出现异常：{e}"
+            logger.error(err_message)
+            err_message = traceback.format_exc()
+            logger.error(err_message)
+            await send_notice_message('genai_claude_client', 'claude_cached_api_call', 0, err_message, 3)
+            raise e
     else:
-        async with async_client.messages.stream(
-            model=model_name,
-            max_tokens=2048,
-            temperature=0,
-            system=system_prompt,
-            messages=ml_messages
-        ) as stream:
-            async for event in stream:
-                if event.type == 'text':
-                    yield event.text
+        try:
+            async with async_client.messages.stream(
+                model=model_name,
+                max_tokens=2048,
+                temperature=0,
+                system=system_prompt,
+                messages=ml_messages
+            ) as stream:
+                async for event in stream:
+                    if event.type == 'text':
+                        yield event.text
+        except Exception as e:
+            err_message = f"调用claude_cached_api_call无缓存api出现异常：{e}"
+            logger.error(err_message)
+            err_message = traceback.format_exc()
+            logger.error(err_message)
+            await send_notice_message('genai_claude_client', 'claude_cached_api_call', 0, err_message, 3)
+            raise e
 
 
