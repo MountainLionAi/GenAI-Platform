@@ -19,8 +19,6 @@ async def send_notice_message(fileName: str, method: str, code: int, message: st
     to_email_list = [
         '497000015@qq.com', 'michael.zhaogc@gmail.com', 'twbest1@qq.com'
     ]
-    if level == 4:
-        to_email_list.append('duty@swftc.info')
     user_name_list = " ".join(['@'+ user_name for user_name in user_name_arr])
     text = f"""
 {user_name_list}
@@ -29,6 +27,17 @@ Mlion接口代码发生异常
 方法：{method}
 异常编码:{code}
 异常信息:\n{message}
+"""
+    if level == 4:
+        to_email_list.append('duty@swftc.info')
+        text = f"""
+Mlion接口代码发生异常
+文件：{fileName}
+方法：{method}
+异常编码:{code}
+异常信息:\n{message}
+
+重要信息，如果短时间内重复报警，请联系mlion后端开发人员        
 """
     try:
         INTERFACE_ERROR_NOTICE_SLEEP_KEY = INTERFACE_ERROR_NOTICE_SLEEP_PREFIX + fileName + "_" + method
