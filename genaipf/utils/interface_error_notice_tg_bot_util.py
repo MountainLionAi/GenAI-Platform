@@ -19,6 +19,8 @@ async def send_notice_message(fileName: str, method: str, code: int, message: st
     to_email_list = [
         '497000015@qq.com', 'michael.zhaogc@gmail.com', 'twbest1@qq.com'
     ]
+    if level == 4:
+        to_email_list.append('duty@swftc.info')
     user_name_list = " ".join(['@'+ user_name for user_name in user_name_arr])
     text = f"""
 {user_name_list}
