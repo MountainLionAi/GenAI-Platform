@@ -53,9 +53,9 @@ def get_logger():
     logger.addHandler(handler)
 
     # 添加异步日志处理器
-    async_handler = AsyncLoggingHandler(loop)
-    async_handler.setFormatter(formatter)
-    logger.addHandler(async_handler)
+    # async_handler = AsyncLoggingHandler(loop)
+    # async_handler.setFormatter(formatter)
+    # logger.addHandler(async_handler)
 
     return logger
 
