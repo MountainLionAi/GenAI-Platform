@@ -33,7 +33,7 @@ Mlion接口代码发生异常
 Mlion接口代码发生异常
 文件：{fileName}
 方法：{method}
-异常编码:{code}
+错误行数:{code}
 异常信息:\n{message}
 
 重要信息，如果短时间内重复报警，请联系mlion后端开发人员        
@@ -59,4 +59,20 @@ Mlion接口代码发生异常
                 await send_notice_email(to_email_list, fileName, method, code, message)
     except Exception as e:
         print(e)
+
+async def send_notice_email(to_email_list: List[str], fileName: str, method: str, code: int, message: str):
+    try:
+        subject = "Mlion接口代码异常通知"
+        content = f"""
+<h2>Mlion接口代码发生异常</h2>
+<p>
+<b>文件</b>:\t{fileName}<br><br>
+<b>方法</b>:\t{method}<br><br>
+<b>错误行数</b>:\t{code}<br><br>
+<b>异常信息<b>:<br><br>{message}
+</p>
+        """
+        await send_email(subject, content, ",".join(to_email_list))
+    except Exception as e:
+        print(f"send interface error notice email error: {e}")
     

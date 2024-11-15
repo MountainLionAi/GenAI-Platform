@@ -21,7 +21,7 @@ class AsyncLoggingHandler(logging.Handler):
         try:
             if record.levelno == logging.ERROR:
                 # 异步调用处理函数
-                self.loop.create_task(async_error_handler(record))
+                asyncio.ensure_future(async_error_handler(record))
         except Exception:
             self.handleError(record)
 
