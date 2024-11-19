@@ -339,10 +339,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
             logger.info(f"userid={userid},is_safe_intent={is_safe}")
             
             if not is_safe:
-                if language_ == 'zh' or language_ == 'cn':
-                    newest_question = '检测到您的意图可能不恰当，请确保您的问题遵循道德和法律准则。您可以换个更正向的方式提问。'
-                else:
-                    newest_question = 'Your intent appears to be inappropriate. Please ensure your questions follow ethical and legal guidelines. You can rephrase your question in a more positive way.'
+                newest_question = '检测到您的意图可能不恰当，请确保您的问题遵循道德和法律准则。您可以换个更正向的方式提问。'
                 front_messages = [
                     {"role": "user", "content": newest_question}
                 ]
