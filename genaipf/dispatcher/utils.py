@@ -23,6 +23,7 @@ PERPLEXITY_URL=os.getenv("PERPLEXITY_URL", "https://api.perplexity.ai")
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+OPENAI_API_KEY_FOR_PREDICT = os.getenv("OPENAI_API_KEY_FOR_PREDICT")
 MAX_CH_LENGTH_GPT3 = 8000
 MAX_CH_LENGTH_GPT4 = 3000
 MAX_CH_LENGTH_QA_GPT3 = 3000
@@ -266,7 +267,7 @@ async def openai_chat_completion_acreate(
                 err_message = f"调用other openai functions模型出现异常：{e}"
                 logger.error(err_message)
                 logger.error(traceback.format_exc())
-                await send_notice_message('genai_utils', 'openai_chat_completion_acreate', 0, err_message, 3)
+                await send_notice_message('genai_utils', 'openai_chat_completion_acreate', 0, err_message, 4)
                 raise e
         else:
             try:
@@ -301,7 +302,7 @@ async def openai_chat_completion_acreate(
                 err_message = f"调用other openai模型出现异常：{e}"
                 logger.error(err_message)
                 logger.error(traceback.format_exc())
-                await send_notice_message('genai_utils', 'openai_chat_completion_acreate', 0, err_message, 3)
+                await send_notice_message('genai_utils', 'openai_chat_completion_acreate', 0, err_message, 4)
                 raise e
         raise e
     return response
@@ -319,54 +320,62 @@ async def simple_achat(messages: typing.List[typing.Mapping[str, str]], model: s
     resp = await OpenAI2(model=model, api_key=OPENAI_API_KEY).achat(_msgs)
     return resp.message.content
 
-async def async_simple_chat(messages: typing.List[typing.Mapping[str, str]], stream: bool = False, model: str = 'gpt-4o-mini'):
+async def async_simple_chat(messages: typing.List[typing.Mapping[str, str]], stream: bool = False, model: str = 'gpt-4o-mini', key_type: str = 'normal'):
     try:
-        _base_urls = os.getenv("COMPATABLE_OPENAI_BASE_URLS", [])
-        _base_urls = json.loads(_base_urls)
-        _api_keys = os.getenv("COMPATABLE_OPENAI_API_KEYS", [])
-        _api_keys = json.loads(_api_keys)
-        if len(_base_urls) == 0:
-            raise
-        import random
-        i = random.randint(0, len(_base_urls) - 1)
-        _base_url = _base_urls[i]
-        _api_key = _api_keys[i]
-        _client = AsyncOpenAI(api_key=_api_key, base_url=_base_url)
+        api_key = OPENAI_API_KEY if key_type == 'normal' else OPENAI_API_KEY_FOR_PREDICT
+        async_openai_client = AsyncOpenAI(
+            api_key=api_key,
+        )
         response = await asyncio.wait_for(
-            _client.chat.completions.create(
+            async_openai_client.chat.completions.create(
                 model=model,
                 messages=messages,
                 stream=stream
             ),
             timeout=60.0  # 设置超时时间为180秒
         )
-        logger.info(f'>>>>>>>>>async_simple_chat openai use {_base_url}')
         if stream:
             return response
         else:
             return response.choices[0].message.content
+    except asyncio.TimeoutError as e:
+        logger.error(f'>>>>>>>>>async_simple_chat:test002 async_openai_client.chat.completions.create, e: {e}')
+        raise Exception("async_simple_chat:The request to OpenAI timed out after 3 minutes.")
     except Exception as e:
-        logger.error(f'>>>>>>>>>async_simple_chat openai error: {e}')
-        err_message = f"调用async_simple_chat出现异常：{e}"
-        logger.error(err_message)
-        logger.error(traceback.format_exc())
-        await send_notice_message('genai_utils', 'async_simple_chat', 0, err_message, 3)
-        raise e
-    async_openai_client = AsyncOpenAI(
-        api_key=OPENAI_API_KEY,
-    )
-    response = await asyncio.wait_for(
-        async_openai_client.chat.completions.create(
-            model=model,
-            messages=messages,
-            stream=stream
-        ),
-        timeout=60.0  # 设置超时时间为180秒
-    )
-    if stream:
-        return response
-    else:
-        return response.choices[0].message.content
+        logger.error(f'>>>>>>>>>async_simple_chat:test003 async_openai_client.chat.completions.create, e: {e}')
+        try:
+            _base_urls = os.getenv("COMPATABLE_OPENAI_BASE_URLS", [])
+            _base_urls = json.loads(_base_urls)
+            _api_keys = os.getenv("COMPATABLE_OPENAI_API_KEYS", [])
+            _api_keys = json.loads(_api_keys)
+            if len(_base_urls) == 0:
+                raise
+            import random
+            i = random.randint(0, len(_base_urls) - 1)
+            _base_url = _base_urls[i]
+            _api_key = _api_keys[i]
+            _client = AsyncOpenAI(api_key=_api_key, base_url=_base_url)
+            response = await asyncio.wait_for(
+                _client.chat.completions.create(
+                    model=model,
+                    messages=messages,
+                    stream=stream
+                ),
+                timeout=60.0  # 设置超时时间为180秒
+            )
+            logger.info(f'>>>>>>>>>async_simple_chat openai use {_base_url}')
+            if stream:
+                return response
+            else:
+                return response.choices[0].message.content
+        except Exception as e:
+            logger.error(f'>>>>>>>>>async_simple_chat openai error: {e}')
+            err_message = f"调用async_simple_chat出现异常：{e}"
+            logger.error(err_message)
+            err_message = traceback.format_exc()
+            logger.error(err_message)
+            await send_notice_message('genai_utils', 'async_simple_chat', 0, err_message, 3)
+            raise e
 
 async def async_simple_chat_stream(messages: typing.List[typing.Mapping[str, str]], model: str='gpt-4o-mini'):
     from genaipf.dispatcher.api import awrap_gpt_generator

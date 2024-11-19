@@ -237,6 +237,14 @@ async def awrap_gpt_generator(gpt_response, output_type=""):
         mode1 = "func"
     else:
         mode1 = "text"
+        # deepbricks匹配tool_calls时有可能第1条数据为空，后续输出tool_calls格式
+        if chunk.choices[0].delta.content is None:
+            chunk = await resp.__anext__()
+            _func_or_text = chunk.choices[0].delta.function_call
+            # deepbricks格式处理
+            tool_calls = chunk.choices[0].delta.tool_calls
+            if _func_or_text or tool_calls:
+                mode1 = "func"
     if mode1 == "text":
         yield get_format_output("step", "llm_yielding")
         c0 = chunk.choices[0].delta.content
@@ -290,6 +298,9 @@ async def awrap_gpt_generator(gpt_response, output_type=""):
                 _func_json = chunk.choices[0].delta.tool_calls
                 if _func_json:
                     _arguments += _func_json[0].function.arguments
+                    # 处理tool_calls多个function的问题，兼容openai function call
+                    if _func_json[0].function.name:
+                        break
             _param = json.loads(_arguments)
             _param["func_name"] = func_name
             _param["sub_func_name"] = sub_func_name
@@ -524,11 +535,7 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
             return awrap_claude_generator(response, output_type)
         except Exception as e:
             print(e)
-            logger.error(f'aref_answer_gpt_generator claude error {e}', e)
-            err_message = f"调用aref_answer_gpt_generator claude call 出现异常：{e}"
-            logger.error(err_message)
-            logger.error(traceback.format_exc())
-            await send_notice_message('genai_api', 'aref_answer_gpt_generator', 0, err_message, 3)
+            logger.error(f'aref_answer_gpt_generator claude error {e}')
             return aget_error_generator(str(e))
     elif use_model == "gemini-1.5-flash":
         try:

@@ -28,7 +28,7 @@ EMAIL_SCENES = {
 
 
 # 发送邮件的异步方法
-async def send_email(subject, content, to_email, source):
+async def send_email(subject, content, to_email, source=''):
     username = email_conf.SMTP_USER
     password = email_conf.SMTP_PASSWORD
     if source == EMAIL_SOURCE['SWFTGPT']:

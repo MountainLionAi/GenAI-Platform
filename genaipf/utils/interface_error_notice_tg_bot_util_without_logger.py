@@ -1,6 +1,5 @@
 from genaipf.conf import tg_bot_conf
 import aiogram
-from genaipf.utils.log_utils import logger
 from typing import List
 from genaipf.utils.redis_utils import RedisConnectionPool
 from genaipf.utils.email_utils import send_email
@@ -25,19 +24,8 @@ async def send_notice_message(fileName: str, method: str, code: int, message: st
 Mlion接口代码发生异常
 文件：{fileName}
 方法：{method}
-异常编码:{code}
+错误行数:{code}
 异常信息:\n{message}
-"""
-    if level == 4:
-        to_email_list.append('duty@swftc.info')
-        text = f"""
-Mlion接口代码发生异常
-文件：{fileName}
-方法：{method}
-异常编码:{code}
-异常信息:\n{message}
-
-重要信息，如果短时间内重复报警，请联系mlion后端开发人员        
 """
     try:
         INTERFACE_ERROR_NOTICE_SLEEP_KEY = INTERFACE_ERROR_NOTICE_SLEEP_PREFIX + fileName + "_" + method
@@ -50,7 +38,7 @@ Mlion接口代码发生异常
         if notice_num and int(notice_num) >= tg_bot_conf.INTERFACE_ERROR_NOTICE_ALLOW_NUM:
             redis_client.set(INTERFACE_ERROR_NOTICE_SLEEP_KEY, 1, tg_bot_conf.INTERFACE_ERROR_NOTICE_ALLOW_INTERVAL_SECONDS)
             redis_client.delete(INTERFACE_ERROR_NOTICE_NUMBER_KEY)
-            logger.info(f'{fileName}_{method}_{code}报警次数超过{notice_num}次，睡眠{tg_bot_conf.INTERFACE_ERROR_NOTICE_ALLOW_INTERVAL_SECONDS}秒')
+            print(f'{fileName}_{method}_{code}报警次数超过{notice_num}次，睡眠{tg_bot_conf.INTERFACE_ERROR_NOTICE_ALLOW_INTERVAL_SECONDS}秒')
             return
         else:
             redis_client.incr(INTERFACE_ERROR_NOTICE_NUMBER_KEY)
@@ -59,9 +47,7 @@ Mlion接口代码发生异常
             if to_email_list:
                 await send_notice_email(to_email_list, fileName, method, code, message)
     except Exception as e:
-        logger.error(f"send interface error notice message error: {e}")
-
-
+        print(e)
 
 async def send_notice_email(to_email_list: List[str], fileName: str, method: str, code: int, message: str):
     try:
@@ -71,11 +57,11 @@ async def send_notice_email(to_email_list: List[str], fileName: str, method: str
 <p>
 <b>文件</b>:\t{fileName}<br><br>
 <b>方法</b>:\t{method}<br><br>
-<b>异常编码</b>:\t{code}<br><br>
+<b>错误行数</b>:\t{code}<br><br>
 <b>异常信息<b>:<br><br>{message}
 </p>
         """
         await send_email(subject, content, ",".join(to_email_list))
     except Exception as e:
-        logger.error(f"send interface error notice email error: {e}")
+        print(f"send interface error notice email error: {e}")
     
