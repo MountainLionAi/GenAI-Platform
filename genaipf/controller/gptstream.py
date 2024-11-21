@@ -40,6 +40,7 @@ import os
 import base64
 from copy import deepcopy
 from genaipf.conf.server import os, AI_ANALYSIS_USE_MODEL
+from genaipf.utils.malicious_intent_util import safety_checker
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 proxy = { 'https' : '127.0.0.1:8001'}
@@ -318,9 +319,12 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
 
     # 判断是否有敏感词汇，更改用户问题、上下文内容。question为存库数据，不需要修改
     if source != 'v004': 
+        # 先进行敏感词检查
         is_normal_question = await isNormal(newest_question)
         logger.info(f"userid={userid},is_normal_question={is_normal_question}")
+        
         if not is_normal_question:
+            # 如果检测到敏感词，直接执行敏感词的处理逻辑
             newest_question = '用户的问题中涉及敏感词汇，明确告知用户他的问题中有敏感词汇，并且不能使用敏感词汇'
             front_messages = [
                 {"role": "user", "content": newest_question}
@@ -328,6 +332,20 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
             messages = [
                 {"role": "user", "content": newest_question}
             ]
+        else:
+            # 只有在没有敏感词的情况下，才进行安全意图检查
+            user_messages = [msg["content"] for msg in front_messages if msg["role"] == "user"]
+            is_safe = await safety_checker.is_safe_intent(user_messages)
+            logger.info(f"userid={userid},is_safe_intent={is_safe}")
+            
+            if not is_safe:
+                newest_question = '检测到用户的问题包含了一些敏感不适合系统回答的内容。有礼貌的请用户理解，并引导用户重新提出问题。换个更正向的方式提问，或者避免讨论敏感话题。'
+                front_messages = [
+                    {"role": "user", "content": newest_question}
+                ]
+                messages = [
+                    {"role": "user", "content": newest_question}
+                ]
 
     if last_front_msg.get("need_whisper"):
         yield json.dumps(get_format_output("whisper", last_front_msg['content']))
