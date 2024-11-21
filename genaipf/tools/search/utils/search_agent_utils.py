@@ -28,9 +28,9 @@ fixed_related_question = {
     }
 }
 
-not_need_search = ['generate_report', 'qrcode_address', 'wallet_balance', 'token_transfer', 'coin_swap', 'richer_prompt', 'get_gas', 'check_hash', 'check_address', 'check_order', 'tx_hash_analysis']
-not_need_sources = ['generate_report', 'qrcode_address', 'wallet_balance', 'token_transfer', 'coin_swap', 'richer_prompt', 'url_search', 'get_gas', 'check_hash', 'check_address', 'check_order', 'tx_hash_analysis']
-need_gpt = ['get_gas', 'check_hash', 'check_address', 'check_order']
+not_need_search = ['generate_report', 'qrcode_address', 'wallet_balance', 'token_transfer', 'coin_swap', 'richer_prompt', 'get_gas', 'check_hash', 'check_address', 'check_order', 'tx_hash_analysis', 'black_address']
+not_need_sources = ['generate_report', 'qrcode_address', 'wallet_balance', 'token_transfer', 'coin_swap', 'richer_prompt', 'url_search', 'get_gas', 'check_hash', 'check_address', 'check_order', 'tx_hash_analysis', 'black_address']
+need_gpt = ['get_gas', 'check_hash', 'check_address', 'check_order', 'black_address']
 
 # system_prompt = f"""
 # 今天是 {get_format_time_YYYY_mm_dd()}，你是个工具人，你既能联网，也能给用户推荐其他感兴趣的问题，必须调t用工具 function，有 2 种情况 SCENE_1 和 SCENE_2：
