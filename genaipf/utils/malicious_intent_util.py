@@ -9,16 +9,20 @@ import time
 class PromptSafetyChecker:
     _instance = None
     _init_lock = asyncio.Lock()
+    _initialized = False
 
     def __new__(cls):
         if cls._instance is None:
             cls._instance = super().__new__(cls)
         return cls._instance
 
-    async def __init__(self):
-        if not hasattr(self, 'initialized'):
+    def __init__(self):
+        pass  # __init__必须是同步的
+
+    async def async_init(self):
+        if not self._initialized:
             async with self._init_lock:
-                if not hasattr(self, 'initialized'):
+                if not self._initialized:
                     try:
                         self.api_key = os.getenv('ANTHROPIC_API_KEY')
                         if not self.api_key:
@@ -28,6 +32,7 @@ class PromptSafetyChecker:
                     except Exception as e:
                         logger.error(f"初始化PromptSafetyChecker失败: {str(e)}")
                         raise
+                    self._initialized = True
 
     @cached(ttl=300)  # 缓存5分钟
     async def check_messages(self, message_history):
@@ -102,9 +107,9 @@ class PromptSafetyChecker:
 
     async def is_safe_intent(self, message_history):
         recent_messages = message_history[-5:] if len(message_history) > 5 else message_history
-        # 初始化（如果尚未初始化）
-        await self.__init__()
+        # 确保实例已初始化
+        await self.async_init()
         return await self.check_messages(recent_messages)
 
-# 创建全局单例
+# 创建全局单例实例
 safety_checker = PromptSafetyChecker()
