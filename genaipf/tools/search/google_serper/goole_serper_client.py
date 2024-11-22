@@ -109,7 +109,7 @@ class GoogleSerperClient:
                 tmp_source = {
                     "title": final_source['title'],
                     "href": final_source['link'],
-                    "body": final_source['snippet']
+                    "body": final_source.get('snippet', '')
                 }
                 format_final_sources.append(tmp_source)
         return format_final_sources
