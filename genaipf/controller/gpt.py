@@ -33,12 +33,9 @@ async def get_message_list(request: Request):
         userid = request.ctx.user['id']
     args = request.args
     msggroup = args['msggroup'][0]
-    time_zone = args.get('time_zone', 'Asia/Shanghai')
     messageList = await gpt_service.get_gpt_message_limit(userid, msggroup, 20)
     for message in messageList:
         message['create_time'] = message['create_time'].strftime('%Y-%m-%d %H:%M:%S')
-        if message['chat_time']:
-            message['chat_time'] = time_utils.format_datetime_with_timezone_2_yyyy_MM_dd_HH_mm_ss(message['chat_time'], time_zone)
         if message['type'] == 'user_isDeep':
             message['content'] = {
                 'type': 'user_isDeep',
