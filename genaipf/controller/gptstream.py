@@ -223,7 +223,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     if chat_time:
         chat_time_utc_0 = time_utils.convert_to_utc_yyyy_MM_dd_HH_mm_ss(chat_time, time_zone)
     else:
-        chat_time_utc_0 = time_utils.convert_to_utc_yyyy_MM_dd_HH_mm_ss(time_utils.get_format_time())
+        chat_time_utc_0 = time_utils.get_format_time()
     if last_sp_msg.get("type") in stylized_process_mapping.keys():
         _t = last_sp_msg.get("type")
         last_sp_msg["language"] = language
@@ -271,7 +271,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
                 None,
                 agent_id,
                 None,
-                time_utils.convert_to_utc_yyyy_MM_dd_HH_mm_ss(time_utils.get_format_time())
+                time_utils.get_format_time()
             )
             await gpt_service.add_gpt_message_with_code(gpt_message)
         return
@@ -746,7 +746,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
                 None,
                 agent_id,
                 None,
-                time_utils.convert_to_utc_yyyy_MM_dd_HH_mm_ss(time_utils.get_format_time())
+                time_utils.get_format_time()
             )
             await gpt_service.add_gpt_message_with_code(gpt_message)
     else:
