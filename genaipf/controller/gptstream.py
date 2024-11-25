@@ -41,6 +41,8 @@ import base64
 from copy import deepcopy
 from genaipf.conf.server import os, AI_ANALYSIS_USE_MODEL
 from genaipf.utils.malicious_intent_util import safety_checker
+from genaipf.utils import time_utils
+
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 proxy = { 'https' : '127.0.0.1:8001'}
@@ -122,9 +124,10 @@ async def send_stream_chat(request: Request):
     wallet_type = request_params.get('wallet_type', 'AI')
     visitor_id = request_params.get('visitor_id', '')
     regenerate_response = request_params.get('regenerate_response', None)
+    time_zone = request_params.get("time_zone")
     logger_content = f"""
 input_params:
-userid={userid},language={language},msggroup={msggroup},device_no={device_no},question_code={question_code},model={model},source={source},chain_id={chain_id},owner={owner},agent_id={agent_id},output_type={output_type},llm_model={llm_model},wallet_type={wallet_type},regenerate_response={regenerate_response}
+userid={userid},language={language},msggroup={msggroup},device_no={device_no},question_code={question_code},model={model},source={source},chain_id={chain_id},owner={owner},agent_id={agent_id},output_type={output_type},llm_model={llm_model},wallet_type={wallet_type},regenerate_response={regenerate_response},time_zone={time_zone}
     """
     logger.info(logger_content)
 
@@ -151,7 +154,7 @@ userid={userid},language={language},msggroup={msggroup},device_no={device_no},qu
     try:
         async def event_generator(_response):
             # async for _str in getAnswerAndCallGpt(request_params['content'], userid, msggroup, language, messages):
-            async for _str in getAnswerAndCallGpt(request_params.get('content'), userid, msggroup, language, messages, device_no, question_code, model, output_type, source, owner, agent_id, chain_id, llm_model, wallet_type, regenerate_response):
+            async for _str in getAnswerAndCallGpt(request_params.get('content'), userid, msggroup, language, messages, device_no, question_code, model, output_type, source, owner, agent_id, chain_id, llm_model, wallet_type, regenerate_response, time_zone):
                 await _response.write(f"data:{_str}\n\n")
                 await asyncio.sleep(0.01)
         return ResponseStream(event_generator, headers={"accept": "application/json"}, content_type="text/event-stream")
@@ -213,9 +216,14 @@ async def send_chat(request: Request):
         logger.error(traceback.format_exc())
    
 
-async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messages, device_no, question_code, model, output_type, source, owner, agent_id, chain_id, llm_model, wallet_type, regenerate_response):
+async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messages, device_no, question_code, model, output_type, source, owner, agent_id, chain_id, llm_model, wallet_type, regenerate_response, time_zone):
     from genaipf.dispatcher.stylized_process import stylized_process_mapping
     last_sp_msg = front_messages[-1]
+    chat_time = last_sp_msg.get('chat_time')
+    if chat_time:
+        chat_time_utc_0 = time_utils.convert_to_utc_yyyy_MM_dd_HH_mm_ss(chat_time, time_zone)
+    else:
+        chat_time_utc_0 = time_utils.get_format_time()
     if last_sp_msg.get("type") in stylized_process_mapping.keys():
         _t = last_sp_msg.get("type")
         last_sp_msg["language"] = language
@@ -240,7 +248,8 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
             None,
             None,
             agent_id,
-            None
+            None,
+            chat_time_utc_0
             )
             await gpt_service.add_gpt_message_with_code(gpt_message)
             _code = generate_unique_id()
@@ -261,7 +270,8 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
                 None,
                 None,
                 agent_id,
-                None
+                None,
+                time_utils.get_format_time()
             )
             await gpt_service.add_gpt_message_with_code(gpt_message)
         return
@@ -709,7 +719,8 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
             quote_info,
             file_type,
             agent_id,
-            regenerate_response
+            regenerate_response,
+            chat_time_utc_0
             )
             if not isPreSwap:
                 await gpt_service.add_gpt_message_with_code(gpt_message)
@@ -734,7 +745,8 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
                 None,
                 None,
                 agent_id,
-                None
+                None,
+                time_utils.get_format_time()
             )
             await gpt_service.add_gpt_message_with_code(gpt_message)
     else:
