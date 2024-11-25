@@ -390,7 +390,8 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
         use_model = MISTRAL_MODEL
     elif llm_model == 'claude':
         # claude挂了临时修改
-        use_model = OPENAI_PLUS_MODEL
+        # use_model = OPENAI_PLUS_MODEL
+        use_model = CLAUDE_MODEL
     elif llm_model == 'gemini':
         use_model = 'gemini-1.5-flash'
     elif llm_model == 'glm':
