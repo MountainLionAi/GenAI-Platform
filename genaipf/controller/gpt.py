@@ -11,6 +11,8 @@ from genaipf.conf.server import os
 from genaipf.utils.log_utils import logger
 import traceback
 from genaipf.utils import time_utils
+from datetime import datetime, timedelta
+from collections import defaultdict
 
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
@@ -94,8 +96,37 @@ async def get_msggroup_list(request: Request):
     else:
         return success({"messageList" : []})
     messageList = await gpt_service.get_msggroup(userid)
+        # 获取当前时间
+    now = datetime.now()
+    # 定义存放结果的字典
+    result = defaultdict(list)
+    for message in messageList:
+        create_time = message['create_time']
+        if now.date() == create_time.date():
+            result['今天'].append(message)
+        elif now - create_time <= timedelta(days=7):
+            result['前七天'].append(message)
+        elif create_time.year == now.year and create_time.month == now.month:
+            result['前30天'].append(message)
+        elif create_time.year == now.year:
+            month_key = f"{create_time.month}月"
+            result[month_key].append(message)
+        else:
+            year_key = f"{create_time.year}年"
+            result[year_key].append(message)
+        message['create_time'] = message['create_time'].strftime('%Y-%m-%d %H:%M:%S')
+    # 对每个分组内部的数据按 create_time 倒序排序
+    for key in result:
+        result[key] = sorted(result[key], key=lambda x: x['create_time'], reverse=True)
+    # 自定义排序规则
+    sorted_keys = ['今天', '前七天', '前30天'] + [f"{i}月" for i in range(12, 0, -1)] + [f"{year}年" for year in range(now.year, now.year - 10, -1)]
+    # 排序结果
+    sorted_result = []
+    for key in sorted_keys:
+        if key in result:
+            sorted_result.append({key: result[key]})
     data = {
-        "messageList" : messageList
+        "messageList" : sorted_result
     }
     return success(data)
 
