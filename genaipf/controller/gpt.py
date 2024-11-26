@@ -103,23 +103,25 @@ async def get_msggroup_list(request: Request):
     for message in messageList:
         create_time = message['create_time']
         if now.date() == create_time.date():
-            result['今天'].append(message)
+            result['today'].append(message)
+        elif now.date() - create_time.date() == timedelta(days=1):
+            result['yesterday'].append(message)
         elif now - create_time <= timedelta(days=7):
-            result['前七天'].append(message)
+            result['seven'].append(message)
         elif create_time.year == now.year and create_time.month == now.month:
-            result['前30天'].append(message)
+            result['thirty'].append(message)
         elif create_time.year == now.year:
-            month_key = f"{create_time.month}月"
+            month_key = f"m-{create_time.month}"
             result[month_key].append(message)
         else:
-            year_key = f"{create_time.year}年"
+            year_key = f"y-{create_time.year}"
             result[year_key].append(message)
         message['create_time'] = message['create_time'].strftime('%Y-%m-%d %H:%M:%S')
     # 对每个分组内部的数据按 create_time 倒序排序
     for key in result:
         result[key] = sorted(result[key], key=lambda x: x['create_time'], reverse=True)
     # 自定义排序规则
-    sorted_keys = ['今天', '前七天', '前30天'] + [f"{i}月" for i in range(12, 0, -1)] + [f"{year}年" for year in range(now.year, now.year - 10, -1)]
+    sorted_keys = ['today', 'yesterday', 'seven', 'thirty'] + [f"m-{i}" for i in range(12, 0, -1)] + [f"y-{year}" for year in range(now.year, now.year - 10, -1)]
     # 排序结果
     sorted_result = []
     for key in sorted_keys:
