@@ -45,10 +45,11 @@ async def get_message_list(request: Request):
         elif message['type'] != 'user':
             message['content'] = json.loads(message['content'])
         else:
+            base64content_array = message.get('base64content').split()
             message['content'] = {
                 'type': 'user',
                 'content': message['content'],
-                'base64content': message.get('base64content'),
+                'base64content': base64content_array,
                 'quote_info': message.get('quoteInfo')
             }
             del message['base64content']
