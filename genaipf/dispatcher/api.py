@@ -649,12 +649,14 @@ def make_calling_messages_based_on_model(messages, use_model: str) -> List:
     if use_model.startswith("gpt-4o") or use_model.startswith("gpt-4-vision"):
         for x in messages:
             if x.get("type") == "image":
+                content = [
+                    {"type": "text", "text": x.get("content", "")}
+                ]
+                for base64 in x.get('base64content'):
+                    content.append({"type": "image_url", "image_url": {"url": base64}})
                 out_msgs.append({
                     "role": x["role"],
-                    "content": [
-                        {"type": "text", "text": x.get("content", "")},
-                        {"type": "image_url", "image_url": {"url": x.get('base64content')}}
-                    ],
+                    "content": content
                 })
             else:
                 out_msgs.append({"role": x["role"], "content": x["content"]})
