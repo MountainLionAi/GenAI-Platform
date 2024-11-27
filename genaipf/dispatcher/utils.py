@@ -322,7 +322,11 @@ async def simple_achat(messages: typing.List[typing.Mapping[str, str]], model: s
 
 async def async_simple_chat(messages: typing.List[typing.Mapping[str, str]], stream: bool = False, model: str = 'gpt-4o-mini', key_type: str = 'normal'):
     try:
-        api_key = OPENAI_API_KEY if key_type == 'normal' else OPENAI_API_KEY_FOR_PREDICT
+        expired_time = 30.0
+        api_key = OPENAI_API_KEY
+        if key_type != 'normal':
+            expired_time = 60.0
+            api_key = OPENAI_API_KEY_FOR_PREDICT
         async_openai_client = AsyncOpenAI(
             api_key=api_key,
         )
@@ -332,7 +336,7 @@ async def async_simple_chat(messages: typing.List[typing.Mapping[str, str]], str
                 messages=messages,
                 stream=stream
             ),
-            timeout=60.0  # 设置超时时间为180秒
+            timeout=expired_time  # 设置超时时间为180秒
         )
         if stream:
             return response
