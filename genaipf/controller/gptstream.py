@@ -696,6 +696,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         if last_front_msg.get('type') == 'image':
             base64_type = 1
         base64_content = last_front_msg.get('base64content')
+        base64_content_str = ' '.join(base64_content)
         quote_info = last_front_msg.get('quote_info', None)
         file_type = last_front_msg.get('format')
         if question and msggroup :
@@ -707,7 +708,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
             question_code,
             device_no,
             base64_type,
-            base64_content,
+            base64_content_str,
             quote_info,
             file_type,
             agent_id,
