@@ -691,9 +691,10 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         yield json.dumps(get_format_output("step", "done"))
         logger.info(f'>>>>> userid={userid}, func & ref _tmp_text & output_type: {output_type}: {_tmp_text}')
         base64_type = 0
-        base64_content = last_front_msg.get('base64content')
+        base64_content_str = ''
         if last_front_msg.get('type') == 'image':
             base64_type = 1
+            base64_content = last_front_msg.get('base64content')
             base64_content_str = ' '.join(base64_content)
         quote_info = last_front_msg.get('quote_info', None)
         file_type = last_front_msg.get('format')
