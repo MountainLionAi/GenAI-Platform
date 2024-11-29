@@ -77,9 +77,9 @@ async def add_message(request: Request):
         gpt_messages = []
         for message in messages:
             content = message['content']
-            if message['type'] == 'gpt':
+            if message['type'] in ['gpt', 'eth_addresses_label_analyse', 'trx_addresses_label_analyse', 'btc_addresses_label_analyse', 'preset1', 'preset2', 'preset3', 'preset4', 'preset5', 'preset6', 'preset7']:
                 content_gpt = {
-                    "type": "gpt",
+                    "type": message['type'],
                     "content": content
                 }
                 content = json.dumps(content_gpt, ensure_ascii=False)
