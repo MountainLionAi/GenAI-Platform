@@ -54,7 +54,8 @@ ERROR_CODE = {
     "POINTS_EXCHANGE_BALANCE_NOT_ENOUGH_ERROR": 20004,
     "POINTS_EXCHANGE_SCENARIO_NOT_EXIST_ERROR": 20005,
     "POINTS_EXCHANGE_TIMES_LIMITED": 20006,
-    "SERVICE_UPDATING": 99999
+    "SERVICE_UPDATING": 99999,
+    "UPLOAD_FAIL": 1201
 }
 
 # 错误信息
@@ -113,5 +114,6 @@ ERROR_MESSAGE = {
     20004: "User's Points Not Enough",
     20005: 'Points Exchange Scenario Not Exist',
     20006: 'Points Activity Times Limited',
-    99999: 'Service Updating'
+    99999: 'Service Updating',
+    1201: 'Upload fail'
 }
