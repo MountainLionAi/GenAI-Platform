@@ -52,7 +52,8 @@ async def get_related_question_task(newest_question_arr, fixed_related_question,
         if questions_result != 'False':
             for question in json.loads(questions_result):
                 related_questions.append({"title": question})
-            related_questions.insert(1, fixed_related_question[language])
+            # AIswap用的少，先去掉
+            # related_questions.insert(1, fixed_related_question[language])
     except Exception as e:
         logger.error(f'解析相关问题失败: {e}')
     return related_questions
