@@ -684,4 +684,5 @@ def make_calling_messages_based_on_model(messages, use_model: str) -> List:
     else:
         for x in messages:
             out_msgs.append({"role": x["role"], "content": x["content"]})
+    logger.info(f'messages 完整参数，make_calling_messages_based_on_model out_msgs:{out_msgs}')
     return out_msgs
