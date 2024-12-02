@@ -223,6 +223,8 @@ async def openai_chat_completion_acreate(
     except Exception as e:
         logger.error(f'>>>>>>>>>test003 async_openai_client.chat.completions.create, e: {e}')
         # openai失败用deepbricks
+        if model == OPENAI_PLUS_MODEL:
+            model = 'gpt-4o-2024-08-06'
         if functions:
             try:
                 _base_urls = os.getenv("COMPATABLE_OPENAI_BASE_URLS", [])
@@ -347,6 +349,8 @@ async def async_simple_chat(messages: typing.List[typing.Mapping[str, str]], str
         raise Exception("async_simple_chat:The request to OpenAI timed out after 3 minutes.")
     except Exception as e:
         logger.error(f'>>>>>>>>>async_simple_chat:test003 async_openai_client.chat.completions.create, e: {e}')
+        if model == OPENAI_PLUS_MODEL:
+            model = 'gpt-4o-2024-08-06'
         try:
             _base_urls = os.getenv("COMPATABLE_OPENAI_BASE_URLS", [])
             _base_urls = json.loads(_base_urls)
