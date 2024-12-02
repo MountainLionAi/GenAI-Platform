@@ -648,26 +648,25 @@ def make_calling_messages_based_on_model(messages, use_model: str) -> List:
     """
     out_msgs = []
     if use_model.startswith("gpt-4o") or use_model.startswith("gpt-4-vision"):
-        modified_data = messages.copy()
         matching_indices = []
-        for i in range(len(modified_data) - 1, -1, -1):
-            if modified_data[i]['type'] == "image":
+        for i in range(len(messages) - 1, -1, -1):
+            if messages[i].get("type", "") == "image":
                 matching_indices.append(i)
                 if len(matching_indices) == 2:
                     break
         for i in range(len(messages)):
-            if messages[i].get("type") == "image" and i in matching_indices:
+            if messages[i].get("type", "") == "image" and i in matching_indices:
                 content = [
                     {"type": "text", "text": messages[i].get("content", "")}
                 ]
-                for base64 in messages[i].get('base64content'):
+                for base64 in messages[i].get("base64content", ""):
                     content.append({"type": "image_url", "image_url": {"url": base64}})
                 out_msgs.append({
                     "role": messages[i]["role"],
                     "content": content
                 })
             else:
-                out_msgs.append({"role": messages[i]["role"], "content": messages[i]["content"]})
+                out_msgs.append({"role": messages[i]["role"], "content": messages[i].get("content", "")})
         # for x in messages:
         #     if x.get("type") == "image":
         #         content = [
