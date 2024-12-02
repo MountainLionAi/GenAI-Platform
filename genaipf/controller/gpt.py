@@ -34,7 +34,12 @@ async def get_message_list(request: Request):
     if hasattr(request.ctx, 'user'):
         userid = request.ctx.user['id']
     args = request.args
-    msggroup = args['msggroup'][0]
+    msggroup = args.get('msggroup', '')
+    if not msggroup:
+        data = {
+            "messageList" : []
+        }
+        return success(data)
     messageList = await gpt_service.get_gpt_message_limit(userid, msggroup, 20)
     for message in messageList:
         message['create_time'] = message['create_time'].strftime('%Y-%m-%d %H:%M:%S')
