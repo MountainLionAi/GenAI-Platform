@@ -336,7 +336,9 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
             ]
         else:
             # 只有在没有敏感词的情况下，才进行安全意图检查
-            user_messages = [msg["content"] for msg in front_messages if msg["role"] == "user"]
+            # user_messages = [msg["content"] for msg in front_messages if msg["role"] == "user"]
+            # 传历史记录过去会导致在上下文存在不安全问题时，无法回答安全问题
+            user_messages = [newest_question]
             is_safe = await safety_checker.is_safe_intent(user_messages)
             logger.info(f"userid={userid},is_safe_intent={is_safe}")
             
