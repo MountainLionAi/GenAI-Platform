@@ -27,7 +27,7 @@ async def http4gpt4(request: Request):
 
 
 async def get_message_list(request: Request):
-    userid = 13
+    userid = 0
     if hasattr(request.ctx, 'user'):
         userid = request.ctx.user['id']
     args = request.args
