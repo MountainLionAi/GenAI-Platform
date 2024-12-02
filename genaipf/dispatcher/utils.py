@@ -55,6 +55,7 @@ client = QdrantClient(qdrant_url)
 @cache
 def get_embedding(text, model = "text-embedding-ada-002"):
     # result = openai.Embedding.create(
+    text = limit_tokens_from_string(text, model, 8192)
     result = openai_client.embeddings.create(
         input=text,
         model=model,
