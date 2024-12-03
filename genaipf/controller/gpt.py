@@ -81,14 +81,26 @@ async def add_message(request: Request):
         messages = request_params.get("messages")
         gpt_messages = []
         for message in messages:
+            base64_content = None
             content = message['content']
-            if message['type'] in ['gpt', 'eth_addresses_label_analyse', 'trx_addresses_label_analyse', 'btc_addresses_label_analyse', 'preset1', 'preset2', 'preset3', 'preset4', 'preset5', 'preset6', 'preset7']:
-                content_gpt = {
-                    "type": message['type'],
-                    "content": content
-                }
-                content = json.dumps(content_gpt, ensure_ascii=False)
-            gpt_message = (content, message['type'], userid, message['msggroup'], message['code'], message['device_no'], message['file_type'], message['agent_id'])
+            role = message['role']
+            if role == 'assistant':
+                if message['type'] in ['text', 'eth_addresses_label_analyse', 'trx_addresses_label_analyse', 'btc_addresses_label_analyse', 'preset1', 'preset2', 'preset3', 'preset4', 'preset5', 'preset6', 'preset7']:
+                    type = message['type']
+                    if type == 'text':
+                        type = 'gpt'
+                    content_gpt = {
+                        "type": type,
+                        "content": content
+                    }
+                    content = json.dumps(content_gpt, ensure_ascii=False)
+            elif role == 'user':
+                type = 'user'
+                if message['type'] in ['image']:
+                    base64_content = " ".join(message['base64Content'])
+                if message['type'] in ['pdf']:
+                    base64_content = message['extra_content']
+            gpt_message = (content, type, userid, message['msggroup'], message['code'], message['device_no'], message['file_type'], message['agent_id'], base64_content)
             gpt_messages.append(gpt_message)
         await gpt_service.add_gpt_message_with_code_from_share_batch(gpt_messages)
     except Exception as e:
