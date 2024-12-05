@@ -28,7 +28,7 @@ MAX_CH_LENGTH_GPT3 = 8000
 MAX_CH_LENGTH_GPT4 = 3000
 MAX_CH_LENGTH_QA_GPT3 = 3000
 MAX_CH_LENGTH_QA_GPT4 = 1500
-OPENAI_PLUS_MODEL = "gpt-4o-2024-08-06"
+OPENAI_PLUS_MODEL = "gpt-4o-2024-11-20"
 CLAUDE_MODEL = "claude-3-5-sonnet-20241022"
 PERPLEXITY_MODEL = "llama-3.1-sonar-small-128k-chat"  # "sonar-small-online"
 MISTRAL_MODEL = "open-mixtral-8x22b"
@@ -55,6 +55,7 @@ client = QdrantClient(qdrant_url)
 @cache
 def get_embedding(text, model = "text-embedding-ada-002"):
     # result = openai.Embedding.create(
+    text = limit_tokens_from_string(text, model, 8192)
     result = openai_client.embeddings.create(
         input=text,
         model=model,
@@ -223,6 +224,8 @@ async def openai_chat_completion_acreate(
     except Exception as e:
         logger.error(f'>>>>>>>>>test003 async_openai_client.chat.completions.create, e: {e}')
         # openai失败用deepbricks
+        if model == OPENAI_PLUS_MODEL:
+            model = 'gpt-4o-2024-08-06'
         if functions:
             try:
                 _base_urls = os.getenv("COMPATABLE_OPENAI_BASE_URLS", [])
@@ -322,7 +325,11 @@ async def simple_achat(messages: typing.List[typing.Mapping[str, str]], model: s
 
 async def async_simple_chat(messages: typing.List[typing.Mapping[str, str]], stream: bool = False, model: str = 'gpt-4o-mini', key_type: str = 'normal'):
     try:
-        api_key = OPENAI_API_KEY if key_type == 'normal' else OPENAI_API_KEY_FOR_PREDICT
+        expired_time = 30.0
+        api_key = OPENAI_API_KEY
+        if key_type != 'normal':
+            expired_time = 60.0
+            api_key = OPENAI_API_KEY_FOR_PREDICT
         async_openai_client = AsyncOpenAI(
             api_key=api_key,
         )
@@ -332,7 +339,7 @@ async def async_simple_chat(messages: typing.List[typing.Mapping[str, str]], str
                 messages=messages,
                 stream=stream
             ),
-            timeout=60.0  # 设置超时时间为180秒
+            timeout=expired_time  # 设置超时时间为180秒
         )
         if stream:
             return response
@@ -343,6 +350,8 @@ async def async_simple_chat(messages: typing.List[typing.Mapping[str, str]], str
         raise Exception("async_simple_chat:The request to OpenAI timed out after 3 minutes.")
     except Exception as e:
         logger.error(f'>>>>>>>>>async_simple_chat:test003 async_openai_client.chat.completions.create, e: {e}')
+        if model == OPENAI_PLUS_MODEL:
+            model = 'gpt-4o-2024-08-06'
         try:
             _base_urls = os.getenv("COMPATABLE_OPENAI_BASE_URLS", [])
             _base_urls = json.loads(_base_urls)
@@ -409,12 +418,15 @@ AI:
 
 def get_vdb_topk(text: str, cname: str, sim_th: float = 0.8, topk: int = 3) -> typing.List[typing.Mapping]:
     _vector = get_embedding(text)
-    search_results = client.search(cname, _vector, limit=topk)
-    wrapper_result = []
-    for result in search_results:
-        if result.score >= sim_th:
-            wrapper_result.append({'payload': result.payload, 'similarity': result.score})
-    return wrapper_result
+    try:
+        search_results = client.search(cname, _vector, limit=topk)
+        wrapper_result = []
+        for result in search_results:
+            if result.score >= sim_th:
+                wrapper_result.append({'payload': result.payload, 'similarity': result.score})
+        return wrapper_result
+    except:
+        return []
 
 def get_qa_vdb_topk(text: str, sim_th: float = 0.85, topk: int = 3, source=None) -> typing.List[typing.Mapping]:
     from genaipf.dispatcher.source_mapping import source_mapping

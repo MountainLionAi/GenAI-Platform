@@ -14,7 +14,7 @@ async def add_gpt_message_with_code(gpt_message):
 
 
 async def add_gpt_message_with_code_from_share_batch(gpt_messages):
-    sql = "INSERT INTO `gpt_messages` (`content`, `type`, `userid`, `msggroup`, `code`, `device_no`, `file_type`, `agent_id`) VALUES(%s, %s, %s, %s, %s, %s, %s, %s)"
+    sql = "INSERT INTO `gpt_messages` (`content`, `type`, `userid`, `msggroup`, `code`, `device_no`, `file_type`, `agent_id`, `base64_content`) VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s)"
     res = await CollectionPool().insert_batch(sql, gpt_messages)
     return res
 
@@ -46,7 +46,7 @@ async def get_gpt_message_limit(userid, msggroup, limit):
 
 # 获取用户对话列表
 async def get_msggroup(userid):
-    sql = "SELECT id, content, type, msggroup, agent_id FROM gpt_messages WHERE " \
+    sql = "SELECT id, content, type, msggroup, agent_id, create_time FROM gpt_messages WHERE " \
           "userid=%s and type = 'user' and deleted=0 GROUP BY msggroup"
     result = await CollectionPool().query(sql, (userid))
     return result

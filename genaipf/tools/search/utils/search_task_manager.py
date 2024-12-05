@@ -46,14 +46,16 @@ async def get_related_question_task(newest_question_arr, fixed_related_question,
         return related_questions
     msgs = LionPromptCommon.get_prompted_messages("related_question", newest_question_arr, language)
     # questions_result = await async_simple_chat(msgs, 'gpt-4')
-    questions_result = await async_simple_chat(msgs)
-    if questions_result != 'False':
-        try:
+    try:
+        questions_result = await async_simple_chat(msgs)
+        logger.info(f'===========>async_simple_chat介些相关问题的结果是: {questions_result}')
+        if questions_result != 'False':
             for question in json.loads(questions_result):
                 related_questions.append({"title": question})
-            related_questions.insert(1, fixed_related_question[language])
-        except Exception as e:
-            logger.error(f'解析相关问题失败: {e}')
+            # AIswap用的少，先去掉
+            # related_questions.insert(1, fixed_related_question[language])
+    except Exception as e:
+        logger.error(f'解析相关问题失败: {e}')
     return related_questions
 
 

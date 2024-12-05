@@ -47,6 +47,7 @@ ERROR_CODE = {
     "PAY_SCENARIO_DUPLICATED": 9004,
     "PAY_SUB_ID_GET_ERROR": 9005,
     "PAY_CHARGE_BIND_INFO_ERROR": 9006,
+    "PAY_UPLOAD_HASH_EXIST": 9007,
     "USER_ALREADY_SIGNED": 10001,
     "CHARGE_POINTS_PRODUCT_NOT_EXIST": 20001,
     "CONFIRM_CHARGE_POINTS_ERROR": 20002,
@@ -54,7 +55,9 @@ ERROR_CODE = {
     "POINTS_EXCHANGE_BALANCE_NOT_ENOUGH_ERROR": 20004,
     "POINTS_EXCHANGE_SCENARIO_NOT_EXIST_ERROR": 20005,
     "POINTS_EXCHANGE_TIMES_LIMITED": 20006,
-    "SERVICE_UPDATING": 99999
+    "SERVICE_UPDATING": 99999,
+    "UPLOAD_FAIL": 1201,
+    "BASE64_FORMAT_ERROR": 1202
 }
 
 # 错误信息
@@ -106,6 +109,7 @@ ERROR_MESSAGE = {
     9004: 'Pay Product Duplicated',
     9005: 'Get Pay Sub Id Error',
     9006: 'Pay Charge Bind Info Error',
+    9007: 'The Hash You Uploaded Is Already Existed',
     10001: 'User is Signed Already',
     20001: 'Charge Product Not Exist',
     20002: 'Confirm Charge Points Error',
@@ -113,5 +117,7 @@ ERROR_MESSAGE = {
     20004: "User's Points Not Enough",
     20005: 'Points Exchange Scenario Not Exist',
     20006: 'Points Activity Times Limited',
-    99999: 'Service Updating'
+    99999: 'Service Updating',
+    1201: 'Upload fail',
+    1202: 'Base64 decode fail'
 }

@@ -389,6 +389,8 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
     elif llm_model == 'mistral':
         use_model = MISTRAL_MODEL
     elif llm_model == 'claude':
+        # claude挂了临时修改
+        # use_model = OPENAI_PLUS_MODEL
         use_model = CLAUDE_MODEL
     elif llm_model == 'gemini':
         use_model = 'gemini-1.5-flash'
@@ -398,7 +400,8 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
         use_model = 'ERNIE-Speed-128K'
     if isvision:
         # 图片处理专用模型
-        use_model = 'gpt-4o'
+        # use_model = 'gpt-4o'
+        use_model = OPENAI_PLUS_MODEL
     if source == 'v002':
         content = prompts_v002.LionPrompt.get_aref_answer_prompt(language, preset_name, picked_content, related_qa, use_model, {}, quote_message)
     elif source == 'v003':
@@ -645,18 +648,40 @@ def make_calling_messages_based_on_model(messages, use_model: str) -> List:
     """
     out_msgs = []
     if use_model.startswith("gpt-4o") or use_model.startswith("gpt-4-vision"):
-        for x in messages:
-            if x.get("type") == "image":
+        matching_indices = []
+        for i in range(len(messages) - 1, -1, -1):
+            if messages[i].get("type", "") == "image":
+                matching_indices.append(i)
+                if len(matching_indices) == 2:
+                    break
+        for i in range(len(messages)):
+            if messages[i].get("type", "") == "image" and i in matching_indices:
+                content = [
+                    {"type": "text", "text": messages[i].get("content", "")}
+                ]
+                for base64 in messages[i].get("base64content", ""):
+                    content.append({"type": "image_url", "image_url": {"url": base64}})
                 out_msgs.append({
-                    "role": x["role"],
-                    "content": [
-                        {"type": "text", "text": x.get("content", "")},
-                        {"type": "image_url", "image_url": {"url": x.get('base64content')}}
-                    ],
+                    "role": messages[i]["role"],
+                    "content": content
                 })
             else:
-                out_msgs.append({"role": x["role"], "content": x["content"]})
+                out_msgs.append({"role": messages[i]["role"], "content": messages[i].get("content", "")})
+        # for x in messages:
+        #     if x.get("type") == "image":
+        #         content = [
+        #             {"type": "text", "text": x.get("content", "")}
+        #         ]
+        #         for base64 in x.get('base64content'):
+        #             content.append({"type": "image_url", "image_url": {"url": base64}})
+        #         out_msgs.append({
+        #             "role": x["role"],
+        #             "content": content
+        #         })
+        #     else:
+        #         out_msgs.append({"role": x["role"], "content": x["content"]})
     else:
         for x in messages:
             out_msgs.append({"role": x["role"], "content": x["content"]})
+    logger.info(f'messages 完整参数，make_calling_messages_based_on_model out_msgs:{out_msgs}')
     return out_msgs

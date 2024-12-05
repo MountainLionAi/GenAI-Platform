@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+import pytz
 
 
 # 获取当前时间
@@ -122,3 +123,45 @@ def get_time_delta(delta_num, period='h', format='%Y%m%d%H'):
     # 格式化为 Ymdh 格式
     formatted_time = next_time.strftime(format)
     return formatted_time
+
+
+def convert_to_utc_yyyy_MM_dd_HH_mm_ss(time_string: str, timezone: str) -> str:
+    """
+    将指定时区的时间字符串转换为UTC-0时间字符串。
+    参数:
+        time_string (str): 输入的时间字符串，格式为 'yyyy-MM-dd HH:mm:ss'。
+        timezone (str): 输入时间所属的时区，例如 'Asia/Shanghai'。
+        
+    返回:
+        str: 转换为UTC-0时区的时间字符串，格式为 'yyyy-MM-dd HH:mm:ss'。
+    """
+    # 定义输入时间的格式
+    time_format = "%Y-%m-%d %H:%M:%S"
+    # 解析输入的时间字符串为 datetime 对象
+    local_tz = pytz.timezone(timezone)
+    local_time = datetime.strptime(time_string, time_format)
+    # 添加时区信息
+    localized_time = local_tz.localize(local_time)
+    # 转换为UTC时间
+    utc_time = localized_time.astimezone(pytz.utc)
+    # 格式化为字符串返回
+    return utc_time.strftime(time_format)
+
+
+def format_datetime_with_timezone_2_yyyy_MM_dd_HH_mm_ss(dt: datetime, time_zone: str) -> str:
+    """
+    将 datetime 对象按照指定时区格式化为 'yyyy-MM-dd HH:mm:ss'。
+    
+    参数:
+        dt (datetime): 需要转换的 datetime 对象。
+        time_zone (str): 目标时区，例如 'Asia/Shanghai'。
+        
+    返回:
+        str: 转换后的时间字符串，格式为 'yyyy-MM-dd HH:mm:ss'。
+    """
+    # 获取目标时区对象
+    target_tz = pytz.timezone(time_zone)
+    # 将 datetime 对象转换为目标时区
+    localized_time = dt.astimezone(target_tz)
+    # 格式化为字符串
+    return localized_time.strftime('%Y-%m-%d %H:%M:%S')
