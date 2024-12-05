@@ -402,10 +402,7 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
     if isvision:
         # 图片处理专用模型
         # use_model = 'gpt-4o'
-        if source != 'v011':
-            use_model = OPENAI_PLUS_MODEL
-        else:
-            use_model = CLAUDE_MODEL
+        use_model = OPENAI_PLUS_MODEL
     if source == 'v002':
         content = prompts_v002.LionPrompt.get_aref_answer_prompt(language, preset_name, picked_content, related_qa, use_model, {}, quote_message)
     elif source == 'v003':
