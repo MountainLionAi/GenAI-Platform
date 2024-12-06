@@ -662,8 +662,8 @@ def make_calling_messages_based_on_model(messages, use_model: str) -> List:
                 content = [
                     {"type": "text", "text": messages[i].get("content", "")}
                 ]
-                for base64 in messages[i].get("base64content", ""):
-                    content.append({"type": "image_url", "image_url": {"url": base64}})
+                for image_url in messages[i].get("base64content", ""):
+                    content.append({"type": "image_url", "image_url": {"url": image_url}})
                 out_msgs.append({
                     "role": messages[i]["role"],
                     "content": content
