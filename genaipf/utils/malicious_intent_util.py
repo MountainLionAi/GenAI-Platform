@@ -95,6 +95,9 @@ Do not include any explanations or additional text, only return the number 0 or 
                     
                     process_time = time.time() - start_time
                     if first_char == '0':
+                        # 找出违规的消息
+                        for i, msg in enumerate(message_history):
+                            logger.info(f"检查的消息 {i+1}: {msg}")
                         logger.info(f"安全检查发现不安全内容: {result_text}")
                         logger.info(f"安全检查耗时: {process_time:.2f}秒")
                         return 0
