@@ -12,6 +12,7 @@ import google.generativeai as genai
 from google.generativeai import caching
 import datetime
 import time
+import httpx
 from genaipf.utils.common_utils import sync_to_async, aget_multi_coro
 _genaipf_dir = Path(genaipf.__path__[0]).parent
 user_upload_files_cache_dir = Path(_genaipf_dir, ".cache/temp_user_upload_files")
@@ -353,25 +354,35 @@ async def async_make_gemini_contents_from_ml_messages(messages):
         else:
             role = x["role"]
         if x.get("type") == "image":
-            # b64s = x.get('base64content').strip("data:image/png;base64,")
-            b64s = x.get('base64content').split("base64,")[-1]
-            text = x.get("content", "")
-            out_msgs.append(
-                genai.protos.Content(
-                    role=role,
-                    parts=[
-                        genai.protos.Part(
-                            inline_data=genai.protos.Blob(
-                                # mime_type='image/jpeg',
-                                # data=pathlib.Path('image.jpg').read_bytes()
-                                mime_type='image/png',
-                                data=base64.b64decode(b64s)
-                            )
-                        ), 
-                        genai.protos.Part(text=text)
-                    ]
+            # b64s = x.get('base64content').split("base64,")[-1]
+            # text = x.get("content", "")
+            # out_msgs.append(
+            #     genai.protos.Content(
+            #         role=role,
+            #         parts=[
+            #             genai.protos.Part(
+            #                 inline_data=genai.protos.Blob(
+            #                     # mime_type='image/jpeg',
+            #                     # data=pathlib.Path('image.jpg').read_bytes()
+            #                     mime_type='image/png',
+            #                     data=base64.b64decode(b64s)
+            #                 )
+            #             ), 
+            #             genai.protos.Part(text=text)
+            #         ]
+            #     )
+            # )
+            parts = []
+            for image_url in x.get('base64content'):
+                image = httpx.get(image_url)
+                part = genai.protos.Part(
+                    inline_data=genai.protos.Blob(
+                        mime_type='image/png',
+                        data=base64.b64encode(image.content).decode('utf-8')
+                    )
                 )
-            )
+                parts.append(part)
+            parts.append(genai.protos.Part(text=text))
         elif x.get("type") == "pdf":
             b64s = x["extra_content"]["base64"]
             filename = x["extra_content"]["filename"]
