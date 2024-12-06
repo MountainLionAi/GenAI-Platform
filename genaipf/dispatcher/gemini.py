@@ -383,6 +383,12 @@ async def async_make_gemini_contents_from_ml_messages(messages):
                 )
                 parts.append(part)
             parts.append(genai.protos.Part(text=text))
+            out_msgs.append(
+                genai.protos.Content(
+                    role=role,
+                    parts=parts
+                )
+            )
         elif x.get("type") == "pdf":
             b64s = x["extra_content"]["base64"]
             filename = x["extra_content"]["filename"]
