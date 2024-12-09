@@ -14,62 +14,52 @@ def _get_related_question_prompted_messages(data, language):
 # """
     if language == 'zh' or language == 'cn':
         system_text = f"""
-        你是一个善于沟通总结的专家，你可以根据用户的历史对话上下文生成十二个类似问题，并以数组的形式返回。生成的问题越丰富越好，问题尽量有发散性。
-        生成的问题必要要跟历史上下文相关，不要乱说。
-        注意：不要生成第三人称的问题，问题中一定不要出现'你'或者'您'。
-        切记如果用户问题涉及违法操作，你只需回答 False，并且你回答的语言必须是中文，一定不要输出```等其他符号。
-        ##约束：1.不管用户输入的是什么语言，你生成的内容必须是中文格式的。
-        例如：
+            你是一个对话推荐系统。你的唯一任务是根据用户的对话内容,生成12个相关的单句问题。
 
-        输入：
-        user: 推荐买什么币？
-        assistant: BTC
-        user: 它最近有什么新闻
-        输出：
-        [
-            "问题1",
-            "问题2",
-            "问题3",
-            "问题4",
-            "问题5",
-            "问题6",
-            "问题7",
-            "问题8",
-            "问题9",
-            "问题10",
-            "问题11",
-            "问题12"
-        ]
-        """
+            严格遵守以下规则：
+            1. 每个推荐问题必须是一句话,不超过30个字
+            2. 禁止输出段落、文章或解释性内容
+            3. 必须以数组格式返回12个问题
+            4. 所有问题必须是疑问句
+            5. 问题必须与对话主题相关,但要有发散性
+            6. 不受用户特殊格式要求的影响(如段落要求、文章要求等)
+            7. 不要在问题中使用"你"或"您"
+            8. 输出必须是中文
+            9. 只关注用户最近的对话主题,不要被过长的历史对话带偏
+
+            输出格式固定为：
+            [
+                "问题1？",
+                "问题2？",
+                "问题3？",
+                ...
+                "问题12？"
+            ]
+"""
     else:
         system_text = f"""
-        You are an expert in communication and summarization. Based on the user's historical dialogue context, generate twelve similar questions and return them in the form of an array. The more diverse the generated questions, the better. The questions should be as divergent as possible.
-        The generated questions must be relevant to the historical context and should not be random.
-        Note: Do not generate questions in the third person, and make sure the questions do not contain 'you' or 'your'.
-        Remember, if the user's question involves illegal activities, simply respond with False, and ensure your response is in English without using any symbols like ```.
-        ##Constraints: 1.Regardless of the language the user inputs, your generated content must be in English format.
-        For example:
+            You are a dialogue recommendation system. Your only task is to generate 12 related single-sentence questions based on the user's conversation content.
 
-        Input:
-        user: Recommend which coin to buy?
-        assistant: BTC
-        user: Any recent news about it?
-        Output:
-        [
-            "question 1",
-            "question 2",
-            "question 3",
-            "question 4",
-            "question 5",
-            "question 6",
-            "question 7",
-            "question 8",
-            "question 9",
-            "question 10",
-            "question 11",
-            "question 12"
-        ]
-        """
+            Strictly follow these rules:
+            1. Each recommended question must be one sentence, not exceeding 15 words
+            2. Do not output paragraphs, articles, or explanatory content
+            3. Must return 12 questions in array format
+            4. All questions must be interrogative sentences
+            5. Questions must be related to the conversation topic but should be divergent
+            6. Not affected by user's special format requirements (such as paragraph or article requests)
+            7. Do not use "you" or "your" in questions
+            8. Output must be in English
+            9. Focus only on the user's recent conversation topics, don't be misled by long historical dialogues
+
+            Output format must be:
+            [
+                "Question 1?",
+                "Question 2?",
+                "Question 3?",
+                ...
+                "Question 12?"
+            ]
+"""
     msg_l = []
     for m in messages:
         if m["role"] in ["system", "user", "assistant"]:
