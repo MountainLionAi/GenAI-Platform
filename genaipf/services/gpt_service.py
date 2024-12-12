@@ -7,6 +7,11 @@ async def add_gpt_message(gpt_message):
     res = await CollectionPool().insert(sql, gpt_message)
     return res
 
+async def add_gpt_message_with_agentid(gpt_message):
+    sql = "INSERT INTO `gpt_messages` (`content`, `type`, `userid`, `msggroup`, `device_no`, `agent_id`) VALUES(%s, %s, %s, %s, %s, %s)"
+    res = await CollectionPool().insert(sql, gpt_message)
+    return res
+
 async def add_gpt_message_with_code(gpt_message):
     sql = "INSERT INTO `gpt_messages` (`content`, `type`, `userid`, `msggroup`, `code`, `device_no`, `base64_type`, `base64_content`, `quote_info`, `file_type`, `agent_id`, `regenerate_response`) VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
     res = await CollectionPool().insert(sql, gpt_message)
@@ -48,6 +53,13 @@ async def get_gpt_message_limit(userid, msggroup, limit):
 async def get_msggroup(userid):
     sql = "SELECT id, content, type, msggroup, agent_id, create_time FROM gpt_messages WHERE " \
           "userid=%s and type = 'user' and deleted=0 GROUP BY msggroup"
+    result = await CollectionPool().query(sql, (userid))
+    return result
+
+# 插件渠道获取用户对话列表（不返回币价预测,agent_id为'1099'）
+async def get_msggrou_plugin(userid):
+    sql = "SELECT id, content, type, msggroup, agent_id, create_time FROM gpt_messages WHERE " \
+          "userid=%s and type = 'user' and deleted=0 and agent_id != '1099' GROUP BY msggroup"
     result = await CollectionPool().query(sql, (userid))
     return result
 
