@@ -319,6 +319,8 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         }
     }
 
+    language_ = language
+
     # 判断是否有敏感词汇，更改用户问题、上下文内容。question为存库数据，不需要修改
     if source != 'v004': 
         # 先进行敏感词检查
