@@ -115,8 +115,13 @@ async def get_msggroup_list(request: Request):
         userid = request.ctx.user['id']
     else:
         return success({"messageList" : []})
-    messageList = await gpt_service.get_msggroup(userid)
-        # 获取当前时间
+    args = request.args
+    fixed_source = args.get('fixedSource', '')
+    if fixed_source:
+        messageList = await gpt_service.get_msggrou_plugin(userid)
+    else:
+        messageList = await gpt_service.get_msggroup(userid)
+    # 获取当前时间
     now = datetime.now()
     # 定义存放结果的字典
     result = defaultdict(list)
