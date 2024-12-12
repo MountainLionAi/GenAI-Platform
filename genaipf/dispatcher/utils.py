@@ -417,8 +417,8 @@ AI:
 
 
 def get_vdb_topk(text: str, cname: str, sim_th: float = 0.8, topk: int = 3) -> typing.List[typing.Mapping]:
-    _vector = get_embedding(text)
     try:
+        _vector = get_embedding(text)
         search_results = client.search(cname, _vector, limit=topk)
         wrapper_result = []
         for result in search_results:
