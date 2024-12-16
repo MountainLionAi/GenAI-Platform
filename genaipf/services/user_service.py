@@ -15,6 +15,11 @@ import genaipf.utils.hcaptcha_utils as hcaptcha
 import genaipf.utils.email_utils as email_utils
 from web3 import Web3
 from eth_account.messages import encode_defunct
+from eth_utils import decode_hex
+from tronpy import Tron
+from tronpy.abi import trx_abi
+from tronpy import keys
+import hashlib
 import requests
 from datetime import datetime
 from genaipf.conf.server import SERVICE_NAME
@@ -44,13 +49,26 @@ def check_user_signature(signature, wallet_addr, time_stamp):
     time_stamp = str(time_stamp)
     if get_current_timestamp() - int(time_stamp) > 1800:
         raise CustomerError(status_code=ERROR_CODE['LOGIN_EXPIRED'])
-    w3 = Web3()
     original_message = ORIGIN_MESSAGE + time_stamp
-    message = encode_defunct(text=original_message)
-    recovered_signer = w3.eth.account.recover_message(message, signature=signature)
-    # 判断签名的钱包地址
-    if wallet_addr.lower() == recovered_signer.lower():
-        is_valid = True
+    from ml4gp.util.web3.web3_utils import is_valid_evm_address, verify_tron_signature
+    if is_valid_evm_address(wallet_addr):
+        try:
+            w3 = Web3()
+            message = encode_defunct(text=original_message)
+            recovered_signer = w3.eth.account.recover_message(message, signature=signature)
+            # 判断签名的钱包地址
+            if wallet_addr.lower() == recovered_signer.lower():
+                is_valid = True
+        except Exception as e:
+            logger.error(f'验证evm链签名错误, {signature}, {original_message}: {e}')
+    else:
+        try:
+            recovered_addr = verify_tron_signature(original_message, signature)
+            if wallet_addr.lower() == recovered_addr.lower():
+                is_valid = True
+        except Exception as e:
+            logger.error(f'验证tron链签名错误, {signature}, {original_message}: {e}')
+
     return is_valid
 
 
