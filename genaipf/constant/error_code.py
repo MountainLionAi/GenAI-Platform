@@ -55,6 +55,7 @@ ERROR_CODE = {
     "POINTS_EXCHANGE_BALANCE_NOT_ENOUGH_ERROR": 20004,
     "POINTS_EXCHANGE_SCENARIO_NOT_EXIST_ERROR": 20005,
     "POINTS_EXCHANGE_TIMES_LIMITED": 20006,
+    "POINTS_SHARE_COUNT_LIMITED": 20007,
     "SERVICE_UPDATING": 99999,
     "UPLOAD_FAIL": 1201,
     "BASE64_FORMAT_ERROR": 1202
@@ -117,6 +118,7 @@ ERROR_MESSAGE = {
     20004: "User's Points Not Enough",
     20005: 'Points Exchange Scenario Not Exist',
     20006: 'Points Activity Times Limited',
+    20007: 'Points share count limited',
     99999: 'Service Updating',
     1201: 'Upload fail',
     1202: 'Base64 decode fail'
