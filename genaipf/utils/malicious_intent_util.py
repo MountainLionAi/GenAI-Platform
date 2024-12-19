@@ -59,6 +59,7 @@ class PromptSafetyChecker:
 The following special circumstances are within the safety boundaries:
 1. As this system provides investment data analysis and market trend advice, normal discussions of political issues and analysis of potential economic and market impacts are acceptable, as this is within our service domain.
 2. Only maintain sensitivity to China-related political content; political content regarding other countries is within the safe scope for discussion.
+3. Any wallet addresses, transaction information, or issues encountered in using wallets provided by users are within the safety scope, as this system also serves as customer service for cryptocurrency wallets.
 
 You must only return a single number:
 0 - Violation detected
