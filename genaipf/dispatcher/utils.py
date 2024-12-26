@@ -67,6 +67,18 @@ def get_embedding(text, model = "text-embedding-ada-002"):
     embedding = result.data[0].embedding
     return embedding
 
+@cache
+def get_local_embedding(text, model="llama3"):
+    #from langchain_ollama import OllamaEmbeddings
+    # embeddings_model = OllamaEmbeddings(model)
+    # text = embeddings_model.embed_documents(text, model)
+    # embedding = text[0]
+    # return embedding
+    from ollama import embed
+    print("into local embeddings")
+    response = embed(model=model, input=text)
+    return response['embeddings']
+
 async def openai_chat_completion_acreate(
     model, messages, functions,
     temperature, max_tokens, top_p, frequency_penalty, presence_penalty, stream
@@ -453,8 +465,19 @@ def get_vdb_topk(text: str, cname: str, sim_th: float = 0.8, topk: int = 3) -> t
             if result.score >= sim_th:
                 wrapper_result.append({'payload': result.payload, 'similarity': result.score})
         return wrapper_result
-    except:
-        return []
+    except Exception as e:
+        logger.error(f"Open AI text embedding error {e}")
+        _vector = get_local_embedding(text)
+        if cname.startswith('SOURCE'):
+            cname_backup = cname[:9] + "_backup" + cname[9:]
+        else:
+            cname_backup = "_backup" + cname 
+        search_results = client.search(cname_backup, _vector, limit=topk)
+        wrapper_result = []
+        for result in search_results:
+            if result.score >= sim_th:
+                wrapper_result.append({'payload': result.payload, 'similarity': result.score})
+        return wrapper_result
 
 def get_qa_vdb_topk(text: str, sim_th: float = 0.85, topk: int = 3, source=None) -> typing.List[typing.Mapping]:
     from genaipf.dispatcher.source_mapping import source_mapping
