@@ -351,30 +351,21 @@ async def async_simple_chat(messages: typing.List[typing.Mapping[str, str]], str
                 return response.choices[0].message.content
         elif SIMPLE_CHAT_MODEL == 'claude':
             model = CLAUDE_MODEL
-            expired_time = 30.0
-            api_key = ANTHROPIC_API_KEY
-            claude_client = AsyncAnthropic(api_key)
+            expired_time = 60.0
+            claude_client = AsyncAnthropic(api_key=ANTHROPIC_API_KEY)
+            response = await asyncio.wait_for(
+                claude_client.messages.create(
+                    model=model,
+                    max_tokens=2048,
+                    temperature=0,
+                    messages=messages,
+                    stream=stream
+                ),
+                timeout=expired_time  # 设置超时时间为180秒
+            )
             if stream:
-                response = await asyncio.wait_for(
-                    claude_client.messages.stream(
-                        model=model,
-                        max_tokens=2048,
-                        temperature=0,
-                        messages=messages
-                    ),
-                    timeout=expired_time  # 设置超时时间为180秒
-                )
                 return response
             else:
-                response = await asyncio.wait_for(
-                    claude_client.messages.create(
-                        model=model,
-                        max_tokens=2048,
-                        temperature=0,
-                        messages=messages
-                    ),
-                    timeout=expired_time  # 设置超时时间为180秒
-                )
                 return response.content[0]['text']
 
     except asyncio.TimeoutError as e:
@@ -384,7 +375,10 @@ async def async_simple_chat(messages: typing.List[typing.Mapping[str, str]], str
         raise Exception("async_simple_chat:The request to OpenAI timed out after 3 minutes.")
     except Exception as e:
         logger.error(f'>>>>>>>>>async_simple_chat:test003 async_openai_client.chat.completions.create, e: {e}')
-        if model == OPENAI_PLUS_MODEL:
+        if SIMPLE_CHAT_MODEL == 'openai':
+            if model == OPENAI_PLUS_MODEL:
+                model = 'gpt-4o-2024-08-06'
+        else:
             model = 'gpt-4o-2024-08-06'
         try:
             _base_urls = os.getenv("COMPATABLE_OPENAI_BASE_URLS", [])
