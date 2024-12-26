@@ -7,6 +7,7 @@ from genaipf.dispatcher.utils import (
     client,
     models,
     get_embedding,
+    get_local_embedding
 )
 import tqdm
 
@@ -17,7 +18,7 @@ import tqdm
 # collection_name = gpt_func_coll_name
 dimension = 1536
 
-def update_vdb(collection_name):
+def update_vdb(collection_name, embedding_func):
     if collection_name == qa_coll_name:
         from genaipf.dispatcher.vdb_pairs.qa import vdb_map
     elif collection_name == gpt_func_coll_name:
@@ -41,7 +42,7 @@ def update_vdb(collection_name):
     inc_texts = [x for x in vdb_map.keys() if x not in existing_texts]
     tobe_vectors = []
     for text in tqdm.tqdm(inc_texts):
-        emb_v = get_embedding(text)
+        emb_v = embedding_func(text)
         vector_dict = {
             "id": id_cur,
             "vector": emb_v,
@@ -58,5 +59,8 @@ def update_vdb(collection_name):
 def update_all_vdb():
     for collection_name in [qa_coll_name, gpt_func_coll_name]:
         print(f'>>>>> update vdb {collection_name} start.')
-        update_vdb(collection_name)
+        if 'backup' in collection_name:
+            update_vdb(collection_name, get_local_embedding)
+        else:
+            update_vdb(collection_name, get_embedding)
         print(f'>>>>> update vdb {collection_name} end.')
