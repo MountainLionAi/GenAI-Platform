@@ -68,3 +68,4 @@ nano-graphrag==0.0.7
 qianfan==0.4.9.1
 zhipuai==3.20.0
 oss2==2.19.1
+imgkit==1.2.3

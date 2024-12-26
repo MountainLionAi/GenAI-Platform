@@ -319,6 +319,8 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         }
     }
 
+    language_ = language
+
     # 判断是否有敏感词汇，更改用户问题、上下文内容。question为存库数据，不需要修改
     if source != 'v004': 
         # 先进行敏感词检查
@@ -336,14 +338,17 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
             ]
         else:
             # 只有在没有敏感词的情况下，才进行安全意图检查
-            # user_messages = [msg["content"] for msg in front_messages if msg["role"] == "user"]
-            # 传历史记录过去会导致在上下文存在不安全问题时，无法回答安全问题
             user_messages = [newest_question]
             is_safe = await safety_checker.is_safe_intent(user_messages)
             logger.info(f"userid={userid},is_safe_intent={is_safe}")
-            
+
             if not is_safe:
-                newest_question = '检测到用户的问题包含了一些敏感不适合系统回答的内容。有礼貌的请用户理解，并引导用户重新提出问题。换个更正向的方式提问，或者避免讨论敏感话题。'
+                # 根据用户最新输入语言选择不同提示
+                if language_ in ['zh', 'cn']:
+                    newest_question = '检测到用户的问题包含了一些敏感不适合系统回答的内容。有礼貌地请用户理解，并引导用户重新提出问题。请尝试用更正向的方式提问，或者避免讨论敏感话题。'
+                else:
+                    newest_question = 'Detected that the user’s question contains sensitive content not suitable for the system to answer. Please politely ask the user for understanding and encourage them to rephrase the question in a more positive manner or avoid discussing sensitive topics.'
+                
                 front_messages = [
                     {"role": "user", "content": newest_question}
                 ]
