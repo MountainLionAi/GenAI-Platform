@@ -315,7 +315,7 @@ async def get_user_info_from_db(email):
 
 
 # 根据wallet_address获取用户信息
-async def get_user_info_by_address(wallet_address, source=''):
+async def get_user_info_by_address(wallet_address, source='MLION'):
     sql = 'SELECT id, email, password, auth_token, user_name, avatar_url, wallet_address  FROM user_infos WHERE ' \
           'wallet_address=%s ' \
           'AND status=%s  '  \
