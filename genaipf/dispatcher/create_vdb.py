@@ -26,6 +26,8 @@ def update_vdb(collection_name, embedding_func):
 
     colls = client.get_collections()
     if collection_name not in [x.name for x in colls.collections]:
+        if 'backup' in collection_name:
+            dimension = 4096
         client.create_collection(
             collection_name=collection_name,
             vectors_config=models.VectorParams(
