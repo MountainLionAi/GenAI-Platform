@@ -25,6 +25,7 @@ from mistralai.models.chat_completion import ChatMessage
 from genaipf.dispatcher.claude_client import claude_cached_api_call
 from genaipf.conf import server
 from genaipf.utils.interface_error_notice_tg_bot_util import send_notice_message
+from genaipf.dispatcher.claude_client import claude_tools_call
 import traceback
 
 # temperature=2 # 值在[0,1]之间，越大表示回复越具有不确定性
@@ -346,19 +347,25 @@ async def afunc_gpt_generator(messages_in, functions=gpt_functions, language=Lio
             _messages = [system] + messages
             # print(f'>>>>>test 004 : {_messages}')
             logger.info("functions sent to gpt {}".format(functions))
-            response = await openai_chat_completion_acreate(
-                model=use_model,
-                messages=_messages,
-                functions=functions,
-                temperature=temperature,  # 值在[0,1]之间，越大表示回复越具有不确定性
-                max_tokens=max_tokens, # 输出的最大 token 数
-                top_p=top_p, # 过滤掉低于阈值的 token 确保结果不散漫
-                frequency_penalty=frequency_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
-                presence_penalty=presence_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
-                stream=True
-            )
-            logger.info('afunc_gpt_generator called')
-            return awrap_gpt_generator(response, output_type)
+            simple_chat_model = os.getenv('SIMPLE_CHAT_MODEL')
+            if simple_chat_model == 'claude':
+                response = claude_tools_call(functions, content, messages)
+                logger.info('afunc_gpt_generator called: claude')
+            else:
+                openai_res = await openai_chat_completion_acreate(
+                    model=use_model,
+                    messages=_messages,
+                    functions=functions,
+                    temperature=temperature,  # 值在[0,1]之间，越大表示回复越具有不确定性
+                    max_tokens=max_tokens, # 输出的最大 token 数
+                    top_p=top_p, # 过滤掉低于阈值的 token 确保结果不散漫
+                    frequency_penalty=frequency_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
+                    presence_penalty=presence_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
+                    stream=True
+                )
+                response = awrap_gpt_generator(openai_res, output_type)
+                logger.info('afunc_gpt_generator called: openai')
+            return response
         except BadRequestError as e:
             print(e)
             logger.error(f'afunc_gpt_generator BadRequestError {e}', e)
