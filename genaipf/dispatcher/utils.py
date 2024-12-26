@@ -74,7 +74,7 @@ def get_local_embedding(text, model="llama3"):
     from ollama import embed
     print("into local embeddings")
     response = embed(model=model, input=text)
-    return response['embeddings']
+    return response['embeddings'][0]
 
 async def openai_chat_completion_acreate(
     model, messages, functions,
@@ -438,7 +438,7 @@ def get_vdb_topk(text: str, cname: str, sim_th: float = 0.8, topk: int = 3) -> t
                 wrapper_result.append({'payload': result.payload, 'similarity': result.score})
         return wrapper_result
     except Exception as e:
-        logger.error(f"Open AI text embedding error {e}")
+        logger.error(f"Open AI text embedding error {e}, use llama3 as backup")
         _vector = get_local_embedding(text)
         if cname.startswith('SOURCE'):
             cname_backup = cname[:9] + "_backup" + cname[9:]
@@ -446,6 +446,8 @@ def get_vdb_topk(text: str, cname: str, sim_th: float = 0.8, topk: int = 3) -> t
             cname_backup = "_backup" + cname 
         search_results = client.search(cname_backup, _vector, limit=topk)
         wrapper_result = []
+        if not cname.endswith('func'):
+            sim_th = 0.25
         for result in search_results:
             if result.score >= sim_th:
                 wrapper_result.append({'payload': result.payload, 'similarity': result.score})
