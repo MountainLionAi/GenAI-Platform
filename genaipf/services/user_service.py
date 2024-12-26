@@ -15,6 +15,11 @@ import genaipf.utils.hcaptcha_utils as hcaptcha
 import genaipf.utils.email_utils as email_utils
 from web3 import Web3
 from eth_account.messages import encode_defunct
+from eth_utils import decode_hex
+from tronpy import Tron
+from tronpy.abi import trx_abi
+from tronpy import keys
+import hashlib
 import requests
 from datetime import datetime
 from genaipf.conf.server import SERVICE_NAME
@@ -44,13 +49,26 @@ def check_user_signature(signature, wallet_addr, time_stamp):
     time_stamp = str(time_stamp)
     if get_current_timestamp() - int(time_stamp) > 1800:
         raise CustomerError(status_code=ERROR_CODE['LOGIN_EXPIRED'])
-    w3 = Web3()
     original_message = ORIGIN_MESSAGE + time_stamp
-    message = encode_defunct(text=original_message)
-    recovered_signer = w3.eth.account.recover_message(message, signature=signature)
-    # 判断签名的钱包地址
-    if wallet_addr.lower() == recovered_signer.lower():
-        is_valid = True
+    from ml4gp.util.web3.web3_utils import is_valid_evm_address, verify_tron_signature
+    if is_valid_evm_address(wallet_addr):
+        try:
+            w3 = Web3()
+            message = encode_defunct(text=original_message)
+            recovered_signer = w3.eth.account.recover_message(message, signature=signature)
+            # 判断签名的钱包地址
+            if wallet_addr.lower() == recovered_signer.lower():
+                is_valid = True
+        except Exception as e:
+            logger.error(f'验证evm链签名错误, {signature}, {original_message}: {e}')
+    else:
+        try:
+            recovered_addr = verify_tron_signature(original_message, signature)
+            if wallet_addr.lower() == recovered_addr.lower():
+                is_valid = True
+        except Exception as e:
+            logger.error(f'验证tron链签名错误, {signature}, {original_message}: {e}')
+
     return is_valid
 
 
@@ -180,7 +198,7 @@ async def user_login_other(email, wallet_addr, source, data):
             current_date = get_format_time()
             current_timestamp = get_current_timestamp()
             if current_date > expiration_data or abs(current_timestamp - int(timestamp)) > 60:
-                raise CustomerError(status_code=ERROR_CODE['PARAMS_ERROR'])
+                raise CustomerError(status_code=ERROR_CODE['LOGIN_EXPIRED'])
             if check_user_signature(sign, account, timestamp):
                 return await plugin_login(data)
             else:
@@ -297,7 +315,7 @@ async def get_user_info_from_db(email):
 
 
 # 根据wallet_address获取用户信息
-async def get_user_info_by_address(wallet_address, source=''):
+async def get_user_info_by_address(wallet_address, source='MLION'):
     sql = 'SELECT id, email, password, auth_token, user_name, avatar_url, wallet_address  FROM user_infos WHERE ' \
           'wallet_address=%s ' \
           'AND status=%s  '  \
