@@ -366,7 +366,7 @@ async def async_simple_chat(messages: typing.List[typing.Mapping[str, str]], str
             if stream:
                 return response
             else:
-                return response.content[0]['text']
+                return response.content[0].text
 
     except asyncio.TimeoutError as e:
         err_message = f'>>>>>>>>>async_simple_chat:test002 创建对话失败,出现超时异常，当前使用模型{SIMPLE_CHAT_MODEL}，模型版本: {model}, e: {e}'
