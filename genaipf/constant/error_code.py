@@ -57,6 +57,8 @@ ERROR_CODE = {
     "POINTS_EXCHANGE_TIMES_LIMITED": 20006,
     "POINTS_SHARE_COUNT_LIMITED": 20007,
     "POINTS_EXCHANGE_TO_5_OR_3_DAYS_VIP_TIME_LIMITED": 20008,
+    "VERIFICATION_FAILED": 20009,
+    'DUPLICATED_BINDING': 20010,
     "SERVICE_UPDATING": 99999,
     "UPLOAD_FAIL": 1201,
     "BASE64_FORMAT_ERROR": 1202
@@ -121,6 +123,8 @@ ERROR_MESSAGE = {
     20006: 'Points Activity Times Limited',
     20007: 'Points share count limited',
     20008: 'Redeem points for a 3-day or 5-day membership up to 5 times per day',
+    20009: 'Verification Failed',
+    20010: 'Duplicated Binding',
     99999: 'Service Updating',
     1201: 'Upload fail',
     1202: 'Base64 decode fail'
