@@ -145,8 +145,6 @@ userid={userid},language={language},msggroup={msggroup},device_no={device_no},qu
             if can_use:
                 await points_service.minus_user_can_use_time(_user_id, 'query', visitor_id)
             else:
-                if owner == 'izumi':
-                    return fail(ERROR_CODE['NO_REMAINING_QUERIES_TIME'])
                 return fail(ERROR_CODE['NO_REMAINING_TIMES'])
     except Exception as e:
         logger.error(e)
