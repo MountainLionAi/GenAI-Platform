@@ -28,6 +28,7 @@ PATH_WITHOUT_LOGIN = (
     '/v1/api/pay/account',
     '/v1/api/assistantChat',
     '/v1/api/getAssistantHistory',
+    '/v1/api/tw/feedback',
     '/v2/api/sendVerifyCode',
     '/v2/api/userLogin',
     '/v2/api/userLoginOther',
@@ -54,6 +55,7 @@ PATH_WITHOUT_LOGIN = (
     '/v2/api/assistantChat',
     '/v2/api/getAssistantHistory',
     '/v2/api/sendAppEmailCode',
+    '/v2/api/tw/feedback',
 )
 
 if PLUGIN_NAME:
