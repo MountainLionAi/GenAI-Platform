@@ -27,6 +27,7 @@ blueprint_v1.add_route(userRate.user_rate, 'userRate', methods=["POST"])
 blueprint_v1.add_route(userRate.del_message_by_codes, 'delMessages', methods=["POST"])
 blueprint_v1.add_route(userRate.share_message, 'shareMessages', methods=["POST"])
 blueprint_v1.add_route(userRate.get_share_message, 'getShareMessages', methods=["POST"])
+blueprint_v1.add_route(userRate.user_opinion_for_tw, 'tw/feedback', methods=["POST"])
 
 # Assistant API 相关接口
 blueprint_v1.add_route(assistant_api.assistant_chat, "assistantChat", methods=["POST"])
@@ -73,6 +74,7 @@ blueprint_v2.add_route(userRate.user_rate, 'userRate', methods=["POST"])
 blueprint_v2.add_route(userRate.del_message_by_codes, 'delMessages', methods=["POST"])
 blueprint_v2.add_route(userRate.share_message, 'shareMessages', methods=["POST"])
 blueprint_v2.add_route(userRate.get_share_message, 'getShareMessages', methods=["POST"])
+blueprint_v2.add_route(userRate.user_opinion_for_tw, 'tw/feedback', methods=["POST"])
 
 # Assistant API 相关接口
 blueprint_v2.add_route(assistant_api.assistant_chat, "assistantChat", methods=["POST"])
