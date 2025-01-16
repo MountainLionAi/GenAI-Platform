@@ -36,10 +36,10 @@ async def user_opinion_for_tw(request: Request):
     code = params.get('code', '')
     opinion = params.get('opinion', '')
     comment = params.get('comment', '')
-    if not request_params or not code or not opinion:
+    if not params or not code or not opinion:
         raise CustomerError(status_code=ERROR_CODE['PARAMS_ERROR'])
     msgid = str(code)
-    if len(opinion) <= 0:
+    if int(opinion) not in [1, -1]:
         raise CustomerError(status_code=ERROR_CODE['PARAMS_ERROR'])
     try:
         result = await set_gpt_gmessage_rate_by_id(opinion, comment, msgid)
