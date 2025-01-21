@@ -11,6 +11,7 @@ import tiktoken
 from openai import OpenAI, AsyncOpenAI
 from openai._types import NOT_GIVEN
 from genaipf.conf.server import os
+from anthropic import AsyncAnthropic
 
 from genaipf.utils.log_utils import logger
 import json
@@ -23,7 +24,9 @@ PERPLEXITY_URL=os.getenv("PERPLEXITY_URL", "https://api.perplexity.ai")
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
 OPENAI_API_KEY_FOR_PREDICT = os.getenv("OPENAI_API_KEY_FOR_PREDICT")
+SIMPLE_CHAT_MODEL = os.getenv("SIMPLE_CHAT_MODEL")
 MAX_CH_LENGTH_GPT3 = 8000
 MAX_CH_LENGTH_GPT4 = 3000
 MAX_CH_LENGTH_QA_GPT3 = 3000
@@ -337,32 +340,57 @@ async def simple_achat(messages: typing.List[typing.Mapping[str, str]], model: s
 
 async def async_simple_chat(messages: typing.List[typing.Mapping[str, str]], stream: bool = False, model: str = 'gpt-4o-mini', key_type: str = 'normal'):
     try:
-        expired_time = 30.0
-        api_key = OPENAI_API_KEY
-        if key_type != 'normal':
+        if SIMPLE_CHAT_MODEL == 'openai':
+            expired_time = 30.0
+            api_key = OPENAI_API_KEY
+            if key_type != 'normal':
+                expired_time = 60.0
+                api_key = OPENAI_API_KEY_FOR_PREDICT
+            async_openai_client = AsyncOpenAI(
+                api_key=api_key,
+            )
+            response = await asyncio.wait_for(
+                async_openai_client.chat.completions.create(
+                    model=model,
+                    messages=messages,
+                    stream=stream
+                ),
+                timeout=expired_time  # 设置超时时间为180秒
+            )
+            if stream:
+                return response
+            else:
+                return response.choices[0].message.content
+        elif SIMPLE_CHAT_MODEL == 'claude':
+            model = CLAUDE_MODEL
             expired_time = 60.0
-            api_key = OPENAI_API_KEY_FOR_PREDICT
-        async_openai_client = AsyncOpenAI(
-            api_key=api_key,
-        )
-        response = await asyncio.wait_for(
-            async_openai_client.chat.completions.create(
-                model=model,
-                messages=messages,
-                stream=stream
-            ),
-            timeout=expired_time  # 设置超时时间为180秒
-        )
-        if stream:
-            return response
-        else:
-            return response.choices[0].message.content
+            claude_client = AsyncAnthropic(api_key=ANTHROPIC_API_KEY)
+            response = await asyncio.wait_for(
+                claude_client.messages.create(
+                    model=model,
+                    max_tokens=2048,
+                    temperature=0,
+                    messages=messages,
+                    stream=stream
+                ),
+                timeout=expired_time  # 设置超时时间为180秒
+            )
+            if stream:
+                return response
+            else:
+                return response.content[0].text
+
     except asyncio.TimeoutError as e:
-        logger.error(f'>>>>>>>>>async_simple_chat:test002 async_openai_client.chat.completions.create, e: {e}')
+        err_message = f'>>>>>>>>>async_simple_chat:test002 创建对话失败,出现超时异常，当前使用模型{SIMPLE_CHAT_MODEL}，模型版本: {model}, e: {e}'
+        logger.error(err_message)
+        await send_notice_message('genai_utils', 'async_simple_chat', 0, err_message, 3)
         raise Exception("async_simple_chat:The request to OpenAI timed out after 3 minutes.")
     except Exception as e:
         logger.error(f'>>>>>>>>>async_simple_chat:test003 async_openai_client.chat.completions.create, e: {e}')
-        if model == OPENAI_PLUS_MODEL:
+        if SIMPLE_CHAT_MODEL == 'openai':
+            if model == OPENAI_PLUS_MODEL:
+                model = 'gpt-4o-2024-08-06'
+        else:
             model = 'gpt-4o-2024-08-06'
         try:
             _base_urls = os.getenv("COMPATABLE_OPENAI_BASE_URLS", [])

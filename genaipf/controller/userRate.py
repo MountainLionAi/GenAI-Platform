@@ -29,6 +29,27 @@ async def user_rate(request: Request):
         logger.error(e)
 
 
+async def user_opinion_for_tw(request: Request):
+    logger.info("======start userRate for tw==========")
+
+    params = request.json
+    code = params.get('code', '')
+    opinion = params.get('opinion', '')
+    comment = params.get('comment', '')
+    if not params or not code or not opinion:
+        raise CustomerError(status_code=ERROR_CODE['PARAMS_ERROR'])
+    msgid = str(code)
+    if int(opinion) not in [1, -1]:
+        raise CustomerError(status_code=ERROR_CODE['PARAMS_ERROR'])
+    try:
+        result = await set_gpt_gmessage_rate_by_id(opinion, comment, msgid)
+        if not result:
+            return success('already recorded')
+        return success(True)
+    except Exception as e:
+        logger.error(e)
+
+
 async def share_message(request: Request):
     userid = request.ctx.user['id']
     request_params = request.json
