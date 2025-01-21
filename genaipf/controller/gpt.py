@@ -85,7 +85,7 @@ async def add_message(request: Request):
             content = message['content']
             role = message['role']
             if role == 'assistant':
-                if message['type'] in ['text', 'eth_addresses_label_analyse', 'trx_addresses_label_analyse', 'btc_addresses_label_analyse', 'preset1', 'preset2', 'preset3', 'preset4', 'preset5', 'preset6', 'preset7']:
+                if message['type'] in ['isDeep','text', 'eth_addresses_label_analyse', 'trx_addresses_label_analyse', 'btc_addresses_label_analyse', 'preset1', 'preset2', 'preset3', 'preset4', 'preset5', 'preset6', 'preset7']:
                     type = message['type']
                     if type == 'text':
                         type = 'gpt'
