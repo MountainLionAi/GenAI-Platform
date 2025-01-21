@@ -343,9 +343,10 @@ async def get_user_info_by_userid(userid):
 
 
 # 添加一个新用户
-async def add_user(user_info):
+async def add_user(user_info, source='MLION'):
+    user_info = user_info + (source,)
     sql = "INSERT INTO `user_infos` (`email`, `password`, `auth_token`, `user_name`, `avatar_url`, `wallet_address`, " \
-          "`oauth`, `oauth_id`, `create_time`, `inviter`) VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+          "`oauth`, `oauth_id`, `create_time`, `inviter`, `source`) VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
     res = await CollectionPool().insert(sql, user_info)
     return res
 
