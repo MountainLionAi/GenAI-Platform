@@ -22,7 +22,7 @@ import traceback
 PERPLEXITY_API_KEY=os.getenv("PERPLEXITY_API_KEY")
 PERPLEXITY_URL=os.getenv("PERPLEXITY_URL", "https://api.perplexity.ai")
 DEEPSEEK_API_KEY=os.getenv("DEEPSEEK_API_KEY")
-DEEPSEEK_URL=os.getenv("PERPLEXITY_URL", "https://api.deepseek.com")
+DEEPSEEK_URL=os.getenv("DEEPSEEK_URL", "https://api.deepseek.com")
 openai.api_key = os.getenv("OPENAI_API_KEY")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
@@ -36,6 +36,7 @@ OPENAI_PLUS_MODEL = "gpt-4o-2024-11-20"
 CLAUDE_MODEL = "claude-3-5-sonnet-20241022"
 PERPLEXITY_MODEL = "llama-3.1-sonar-small-128k-chat"  # "sonar-small-online"
 MISTRAL_MODEL = "open-mixtral-8x22b"
+DEEPSEEK_V3_MODEL = "deepseek-chat"
 qdrant_url = "http://localhost:6333"
 
 openai_client = OpenAI(
@@ -123,7 +124,7 @@ async def openai_chat_completion_acreate(
                 logger.error(traceback.format_exc())
                 await send_notice_message('genai_utils', 'openai_chat_completion_acreate', 0, err_message, 3)
                 raise e
-        elif model == "deepseek-chat":
+        elif model == DEEPSEEK_V3_MODEL:
             logger.info(f"调用deepseek模型传入的消息列表:{messages}")
             async_openai_client = AsyncOpenAI(
                 api_key=DEEPSEEK_API_KEY, base_url=DEEPSEEK_URL
