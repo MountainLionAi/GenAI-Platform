@@ -3,7 +3,7 @@ import asyncio
 from typing import List
 from genaipf.conf.server import os
 from genaipf.dispatcher.functions import gpt_functions
-from genaipf.dispatcher.utils import openai, OPENAI_PLUS_MODEL, CLAUDE_MODEL, openai_chat_completion_acreate, PERPLEXITY_MODEL, MISTRAL_MODEL
+from genaipf.dispatcher.utils import openai, OPENAI_PLUS_MODEL, CLAUDE_MODEL, openai_chat_completion_acreate, PERPLEXITY_MODEL, MISTRAL_MODEL, DEEPSEEK_V3_MODEL
 from genaipf.utils.log_utils import logger
 from datetime import datetime
 from genaipf.dispatcher.prompts_v001 import LionPrompt
@@ -406,6 +406,8 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
         use_model = 'glm-4-flash'
     elif llm_model == 'ernie':
         use_model = 'ERNIE-Speed-128K'
+    elif llm_model == 'deepseek':
+        use_model = 'deepseek-chat'
     if isvision:
         # 图片处理专用模型
         # use_model = 'gpt-4o'
@@ -471,7 +473,7 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
             logger.error(traceback.format_exc())
             await send_notice_message('genai_api', 'aref_answer_gpt_generator', 0, err_message, 3)
             return aget_error_generator(str(e))
-    elif use_model.startswith("gpt") or use_model == PERPLEXITY_MODEL:
+    elif use_model.startswith("gpt") or use_model == PERPLEXITY_MODEL or use_model == DEEPSEEK_V3_MODEL:
         for i in range(5):
             mlength = len(messages)
             try:
