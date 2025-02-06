@@ -168,3 +168,23 @@ def format_datetime_with_timezone_2_yyyy_MM_dd_HH_mm_ss(dt: datetime, time_zone:
     localized_time = dt.astimezone(target_tz)
     # 格式化为字符串
     return localized_time.strftime('%Y-%m-%d %H:%M:%S')
+
+
+def utc_to_shanghai(utc_time_str):
+    """
+    将UTC时间字符串（格式：%Y-%m-%d %H:%M:%S）转换为上海时间（北京时间）。
+
+    :param utc_time_str: UTC时间字符串，例如 "2025-02-06 09:41:21"
+    :return: 上海时间字符串，格式为 "%Y-%m-%d %H:%M:%S"
+    """
+    # 解析UTC时间字符串
+    utc_time = datetime.strptime(utc_time_str, "%Y-%m-%d %H:%M:%S")
+
+    # 设置UTC时区
+    utc_time = utc_time.replace(tzinfo=pytz.UTC)
+
+    # 转换为上海时间
+    shanghai_time = utc_time.astimezone(pytz.timezone('Asia/Shanghai'))
+
+    # 返回格式化后的上海时间
+    return shanghai_time.strftime("%Y-%m-%d %H:%M:%S")
