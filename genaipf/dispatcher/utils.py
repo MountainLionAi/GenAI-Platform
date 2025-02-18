@@ -37,7 +37,7 @@ CLAUDE_MODEL = "claude-3-5-sonnet-20241022"
 PERPLEXITY_MODEL = "llama-3.1-sonar-small-128k-chat"  # "sonar-small-online"
 MISTRAL_MODEL = "open-mixtral-8x22b"
 DEEPSEEK_V3_MODEL = "deepseek-chat"
-DEEPSEEK_R1_MODEL = "deepseek-reasoner"
+DEEPSEEK_R1_MODEL = "DeepSeek-reasoner"
 qdrant_url = "http://localhost:6333"
 
 openai_client = OpenAI(
