@@ -421,8 +421,8 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
         use_model = 'ERNIE-Speed-128K'
     elif llm_model == 'deepseek':
         use_model = 'deepseek-chat'
-    elif llm_model == 'deepseek-reasoner':
-        use_model = 'deepseek-reasoner'
+    elif llm_model == 'DeepSeek-reasoner':
+        use_model = 'DeepSeek-reasoner'
     if isvision:
         # 图片处理专用模型
         # use_model = 'gpt-4o'
