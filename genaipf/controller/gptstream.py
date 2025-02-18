@@ -457,10 +457,12 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     elapsed_gpt_function_filter_time = (gpt_function_filter_end_time - gpt_function_filter_start_time) * 1000
     logger.info(f'=====================>gpt_function_filter耗时：{elapsed_gpt_function_filter_time:.3f}毫秒')
     _tmp_text = ""
+    _reasoner_tmp_text = ""
     isPresetTop = False
     data = {
         'type' : 'gpt',
-        'content' : _tmp_text
+        'content' : _tmp_text,
+        'reasoner': _reasoner_tmp_text
     }
     sources = []
     related_questions = []
@@ -577,6 +579,8 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
                 #     # 对于语音输出，将文本转换为语音并编码
                 #     base64_encoded_voice = textToSpeech(_tmp_text)
                 #     yield json.dumps(get_format_output("tts", base64_encoded_voice, "voice_mp3_v001"))
+            elif chunk["role"] == "inner_____reasoner_whole_text":
+                _reasoner_tmp_text = chunk["content"]
             else:
                 if chunk["role"] == "gpt":
                     _need_check_text += chunk['content']
@@ -618,6 +622,8 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
                 #     # 对于语音输出，将文本转换为语音并编码
                 #     base64_encoded_voice = textToSpeech(_tmp_text)
                 #     yield json.dumps(get_format_output("tts", base64_encoded_voice, "voice_mp3_v001"))
+            elif item["role"] == "inner_____reasoner_whole_text":
+                _reasoner_tmp_text = item["content"]
             elif item["role"] == "inner_____preset":
                 data.update(item["content"])
             elif item["role"] == "inner_____preset_top":
@@ -658,6 +664,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         _tmp_text = picked_content + "\n" + _tmp_text
     data.update({
         'content' : _tmp_text,
+        'reasoner': _reasoner_tmp_text,
         'code' : _code
     })
     if data["type"] != "gpt" and not isPresetTop:
@@ -801,12 +808,16 @@ async def  getAnswerAndCallGptData(question, userid, msggroup, language, front_m
         async for chunk in resp1:
             if chunk["role"] == "inner_____gpt_whole_text":
                 _tmp_text = chunk["content"]
+            elif chunk["role"] == "inner_____reasoner_whole_text":
+                _reasoner_tmp_text = chunk["content"]
     elif chunk["content"] == "agent_routing":
         chunk = await resp1.__anext__()
         stream_gen = convert_func_out_to_stream(chunk, messages, newest_question, model, language_, related_qa, source, owner)
         async for item in stream_gen:
             if item["role"] == "inner_____gpt_whole_text":
                 _tmp_text = item["content"]
+            elif item["role"] == "inner_____reasoner_whole_text":
+                _reasoner_tmp_text = item["content"]
             elif item["role"] == "inner_____preset":
                 data.update(item["content"])
             elif item["role"] == "inner_____preset_top":
@@ -825,6 +836,7 @@ async def  getAnswerAndCallGptData(question, userid, msggroup, language, front_m
     await resp1.aclose()
     data.update({
         'content' : _tmp_text,
+        'reasoner': _reasoner_tmp_text,
         'code' : _code
     })
     logger.info(f'>>>>> func & ref _tmp_text & output_type: {output_type}: {_tmp_text}')
@@ -856,7 +868,7 @@ async def  getAnswerAndCallGptData(question, userid, msggroup, language, front_m
             device_no,
             agent_id,
             None
-        )
+        ) 
         await gpt_service.add_gpt_message_with_code(gpt_message)
     # else :
     #     data['chatSerpResults'] = sources

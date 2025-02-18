@@ -3,7 +3,7 @@ import asyncio
 from typing import List
 from genaipf.conf.server import os
 from genaipf.dispatcher.functions import gpt_functions
-from genaipf.dispatcher.utils import openai, OPENAI_PLUS_MODEL, CLAUDE_MODEL, openai_chat_completion_acreate, PERPLEXITY_MODEL, MISTRAL_MODEL, DEEPSEEK_V3_MODEL
+from genaipf.dispatcher.utils import openai, OPENAI_PLUS_MODEL, CLAUDE_MODEL, openai_chat_completion_acreate, PERPLEXITY_MODEL, MISTRAL_MODEL, DEEPSEEK_V3_MODEL, DEEPSEEK_R1_MODEL
 from genaipf.utils.log_utils import logger
 from datetime import datetime
 from genaipf.dispatcher.prompts_v001 import LionPrompt
@@ -252,30 +252,43 @@ async def awrap_gpt_generator(gpt_response, output_type=""):
         c0 = chunk.choices[0].delta.content
         _tmp_text = ""
         _tmp_voice_text = ""
+        _tmp_reasoning_content = ""
         if c0:
             _tmp_text += c0
             _tmp_voice_text += c0
             if output_type != 'voice':
                 yield get_format_output("gpt", c0)
-        async for chunk in resp:
-            _gpt_letter = chunk.choices[0].delta.content
-            if _gpt_letter:
-                _tmp_text += _gpt_letter
-                _tmp_voice_text += _gpt_letter
+        async for chunk in resp: 
+            choice = chunk.choices[0]
+            delta = choice.delta
+            # 安全获取 reasoning_content
+            _reasoning_letter = getattr(delta, 'reasoning_content', None)
+            if _reasoning_letter:
+                _tmp_reasoning_content += _reasoning_letter
                 if output_type != 'voice':
-                    yield get_format_output("gpt", _gpt_letter)
-            if output_type == 'voice': 
-                if len(_tmp_voice_text) == 200:
-                    base64_encoded_voice = textToSpeech(_tmp_voice_text)
-                    yield get_format_output("tts", base64_encoded_voice, "voice_mp3_v001")
-                    for c in _tmp_voice_text:
-                        yield get_format_output("gpt", c)
-                    _tmp_voice_text = ""
+                    yield get_format_output("reasoner", _reasoning_letter)
+            else:
+                # 安全获取普通 content
+                _gpt_letter = getattr(delta, 'content', None)
+                if _gpt_letter:
+                    _tmp_text += _gpt_letter
+                    _tmp_voice_text += _gpt_letter
+                    if output_type != 'voice':
+                        yield get_format_output("gpt", _gpt_letter)
+                if output_type == 'voice': 
+                    if len(_tmp_voice_text) == 200:
+                        base64_encoded_voice = textToSpeech(_tmp_voice_text)
+                        yield get_format_output("tts", base64_encoded_voice, "voice_mp3_v001")
+                        for c in _tmp_voice_text:
+                            yield get_format_output("gpt", c)
+                        _tmp_voice_text = ""
         if output_type == 'voice': 
             base64_encoded_voice = textToSpeech(_tmp_voice_text)
             yield get_format_output("tts", base64_encoded_voice, "voice_mp3_v001")
             for c in _tmp_voice_text:
                 yield get_format_output("gpt", c)
+        if _tmp_reasoning_content:
+            yield get_format_output("inner_____reasoner_whole_text", _tmp_reasoning_content)
         yield get_format_output("inner_____gpt_whole_text", _tmp_text)
     elif mode1 == "func":
         yield get_format_output("step", "agent_routing")
@@ -408,6 +421,8 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
         use_model = 'ERNIE-Speed-128K'
     elif llm_model == 'deepseek':
         use_model = 'deepseek-chat'
+    elif llm_model == 'deepseek-reasoner':
+        use_model = 'deepseek-reasoner'
     if isvision:
         # 图片处理专用模型
         # use_model = 'gpt-4o'
@@ -473,7 +488,7 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
             logger.error(traceback.format_exc())
             await send_notice_message('genai_api', 'aref_answer_gpt_generator', 0, err_message, 3)
             return aget_error_generator(str(e))
-    elif use_model.startswith("gpt") or use_model == PERPLEXITY_MODEL or use_model == DEEPSEEK_V3_MODEL:
+    elif use_model.startswith("gpt") or use_model == PERPLEXITY_MODEL or use_model == DEEPSEEK_V3_MODEL or use_model ==  DEEPSEEK_R1_MODEL:
         for i in range(5):
             mlength = len(messages)
             try:
