@@ -249,10 +249,17 @@ async def awrap_gpt_generator(gpt_response, output_type=""):
                 mode1 = "func"
     if mode1 == "text":
         yield get_format_output("step", "llm_yielding")
-        c0 = chunk.choices[0].delta.content
         _tmp_text = ""
         _tmp_voice_text = ""
         _tmp_reasoning_content = ""
+        choice = chunk.choices[0]
+        delta = choice.delta
+        c0 = delta.content
+        _reasoning_letter = getattr(delta, 'reasoning_content', None)
+        if _reasoning_letter:
+            _tmp_reasoning_content  += _reasoning_letter
+            if output_type != 'voice':
+                    yield get_format_output("reasoner", _reasoning_letter)
         if c0:
             _tmp_text += c0
             _tmp_voice_text += c0
