@@ -37,6 +37,7 @@ CLAUDE_MODEL = "claude-3-5-sonnet-20241022"
 PERPLEXITY_MODEL = "llama-3.1-sonar-small-128k-chat"  # "sonar-small-online"
 MISTRAL_MODEL = "open-mixtral-8x22b"
 DEEPSEEK_V3_MODEL = "deepseek-chat"
+DEEPSEEK_R1_MODEL = "deepseek-reasoner"
 qdrant_url = "http://localhost:6333"
 
 openai_client = OpenAI(
@@ -149,6 +150,46 @@ async def openai_chat_completion_acreate(
                     response = await asyncio.wait_for(
                         async_openai_client.chat.completions.create(
                             model=model,
+                            messages=messages,
+                            temperature=temperature,  # 值在[0,1]之间，越大表示回复越具有不确定性
+                            max_tokens=max_tokens, # 输出的最大 token 数
+                            top_p=top_p, # 过滤掉低于阈值的 token 确保结果不散漫
+                            presence_penalty=presence_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
+                            stream=stream
+                        ),
+                        timeout=60.0  # 设置超时时间为180秒
+                    )
+            except Exception as e:
+                err_message = f"调用deepseek模型出现异常：{e}"
+                logger.error(err_message)
+                logger.error(traceback.format_exc())
+                await send_notice_message('genai_utils', 'openai_chat_completion_acreate', 0, err_message, 3)
+                raise e
+        elif model == DEEPSEEK_R1_MODEL:
+            logger.info(f"调用deepseek模型传入的消息列表:{messages}")
+            async_openai_client = AsyncOpenAI(
+                api_key=DEEPSEEK_API_KEY, base_url=DEEPSEEK_URL
+            )
+            try:
+                if functions:
+                    response = await asyncio.wait_for(
+                        async_openai_client.chat.completions.create(
+                            model="DMXAPI-DeepSeek-R1",
+                            messages=messages,
+                            functions=functions if functions else NOT_GIVEN,
+                            temperature=temperature,  # 值在[0,1]之间，越大表示回复越具有不确定性
+                            max_tokens=max_tokens, # 输出的最大 token 数
+                            top_p=top_p, # 过滤掉低于阈值的 token 确保结果不散漫
+                            presence_penalty=presence_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
+                            stream=stream
+                        ),
+                        timeout=60.0  # 设置超时时间为180秒
+                    )
+                else:
+                    logger.info(f"调用deepseek模型传入的消息列表:{messages}")
+                    response = await asyncio.wait_for(
+                        async_openai_client.chat.completions.create(
+                            model="DMXAPI-DeepSeek-R1",
                             messages=messages,
                             temperature=temperature,  # 值在[0,1]之间，越大表示回复越具有不确定性
                             max_tokens=max_tokens, # 输出的最大 token 数
