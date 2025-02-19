@@ -252,7 +252,8 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
                     'code': _code,
                     'chatSerpResults': [],
                     'chatRelatedResults': [],
-                    'content': data
+                    'content': data,
+                    'type': 'ai_swap_recommand'
                 }
                 data = temp_data  # TODO 临时兼容修改
             else:
