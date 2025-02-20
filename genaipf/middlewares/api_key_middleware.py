@@ -27,12 +27,22 @@ async def check_api_key(request: Request):
     is_valida = redis_client.sismember(api_set_key, api_key)
     if not is_valida:
         return fail(ERROR_CODE['ILLEGAL_REQUEST'], '')
+
+    # 检查是否被封禁
+    forbid_api_key = REDIS_KEYS['REQUEST_API_KEYS']['FORBID_API_KEYS'].format(api_key, request_ip)
+    forbid = redis_client.get(forbid_api_key)
+    if forbid:
+        return fail(ERROR_CODE['REQUEST_FREQUENCY_TOO_HIGH'], '')
+
+    # 增加访问次数
     api_frequency_key = REDIS_KEYS['REQUEST_API_KEYS']['API_KEY_LIMIT'].format(api_key, request_ip)
     request_time = redis_client.incr(api_frequency_key, 1)
     if int(request_time) == 1:
         redis_client.expire(api_frequency_key, 60)
     else:
         if int(request_time) > MAX_LIMIT_PER_MINUTE:
+            redis_client.set(forbid_api_key, 1)
+            redis_client.expire(forbid_api_key, 15 * 60)
             return fail(ERROR_CODE['REQUEST_FREQUENCY_TOO_HIGH'], '')
 
 
