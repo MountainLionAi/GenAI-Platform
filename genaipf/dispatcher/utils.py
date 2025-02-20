@@ -36,7 +36,8 @@ OPENAI_PLUS_MODEL = "gpt-4o-2024-11-20"
 CLAUDE_MODEL = "claude-3-5-sonnet-20241022"
 PERPLEXITY_MODEL = "llama-3.1-sonar-small-128k-chat"  # "sonar-small-online"
 MISTRAL_MODEL = "open-mixtral-8x22b"
-DEEPSEEK_V3_MODEL = "deepseek-chat"
+DEEPSEEK_V3_MODEL = os.getenv("DEEPSEEK_V3_MODEL")
+DEEPSEEK_R1_MODEL = os.getenv("DEEPSEEK_R1_MODEL")
 qdrant_url = "http://localhost:6333"
 
 openai_client = OpenAI(
@@ -125,6 +126,46 @@ async def openai_chat_completion_acreate(
                 await send_notice_message('genai_utils', 'openai_chat_completion_acreate', 0, err_message, 3)
                 raise e
         elif model == DEEPSEEK_V3_MODEL:
+            logger.info(f"调用deepseek模型传入的消息列表:{messages}")
+            async_openai_client = AsyncOpenAI(
+                api_key=DEEPSEEK_API_KEY, base_url=DEEPSEEK_URL
+            )
+            try:
+                if functions:
+                    response = await asyncio.wait_for(
+                        async_openai_client.chat.completions.create(
+                            model=model,
+                            messages=messages,
+                            functions=functions if functions else NOT_GIVEN,
+                            temperature=temperature,  # 值在[0,1]之间，越大表示回复越具有不确定性
+                            max_tokens=max_tokens, # 输出的最大 token 数
+                            top_p=top_p, # 过滤掉低于阈值的 token 确保结果不散漫
+                            presence_penalty=presence_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
+                            stream=stream
+                        ),
+                        timeout=60.0  # 设置超时时间为180秒
+                    )
+                else:
+                    logger.info(f"调用deepseek模型传入的消息列表:{messages}")
+                    response = await asyncio.wait_for(
+                        async_openai_client.chat.completions.create(
+                            model=model,
+                            messages=messages,
+                            temperature=temperature,  # 值在[0,1]之间，越大表示回复越具有不确定性
+                            max_tokens=max_tokens, # 输出的最大 token 数
+                            top_p=top_p, # 过滤掉低于阈值的 token 确保结果不散漫
+                            presence_penalty=presence_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
+                            stream=stream
+                        ),
+                        timeout=60.0  # 设置超时时间为180秒
+                    )
+            except Exception as e:
+                err_message = f"调用deepseek模型出现异常：{e}"
+                logger.error(err_message)
+                logger.error(traceback.format_exc())
+                await send_notice_message('genai_utils', 'openai_chat_completion_acreate', 0, err_message, 3)
+                raise e
+        elif model == DEEPSEEK_R1_MODEL:
             logger.info(f"调用deepseek模型传入的消息列表:{messages}")
             async_openai_client = AsyncOpenAI(
                 api_key=DEEPSEEK_API_KEY, base_url=DEEPSEEK_URL
@@ -430,6 +471,96 @@ async def async_simple_chat(messages: typing.List[typing.Mapping[str, str]], str
     except Exception as e:
         logger.error(f'>>>>>>>>>async_simple_chat:test003 async_openai_client.chat.completions.create, e: {e}')
         if SIMPLE_CHAT_MODEL == 'openai':
+            if model == OPENAI_PLUS_MODEL:
+                model = 'gpt-4o-2024-08-06'
+        else:
+            model = 'gpt-4o-2024-08-06'
+        try:
+            _base_urls = os.getenv("COMPATABLE_OPENAI_BASE_URLS", [])
+            _base_urls = json.loads(_base_urls)
+            _api_keys = os.getenv("COMPATABLE_OPENAI_API_KEYS", [])
+            _api_keys = json.loads(_api_keys)
+            if len(_base_urls) == 0:
+                raise
+            import random
+            i = random.randint(0, len(_base_urls) - 1)
+            _base_url = _base_urls[i]
+            _api_key = _api_keys[i]
+            _client = AsyncOpenAI(api_key=_api_key, base_url=_base_url)
+            response = await asyncio.wait_for(
+                _client.chat.completions.create(
+                    model=model,
+                    messages=messages,
+                    stream=stream
+                ),
+                timeout=60.0  # 设置超时时间为180秒
+            )
+            logger.info(f'>>>>>>>>>async_simple_chat openai use {_base_url}')
+            if stream:
+                return response
+            else:
+                return response.choices[0].message.content
+        except Exception as e:
+            logger.error(f'>>>>>>>>>async_simple_chat openai error: {e}')
+            err_message = f"调用async_simple_chat出现异常：{e}"
+            logger.error(err_message)
+            err_message = traceback.format_exc()
+            logger.error(err_message)
+            await send_notice_message('genai_utils', 'async_simple_chat', 0, err_message, 3)
+            raise e
+
+
+async def async_simple_chat_with_model(messages: typing.List[typing.Mapping[str, str]], stream: bool = False, model: str = 'gpt-4o-mini', base_model:str = 'openai', key_type: str = 'normal'):
+    try:
+        simple_achat_model = base_model
+        if simple_achat_model == 'openai':
+            expired_time = 30.0
+            api_key = OPENAI_API_KEY
+            if key_type != 'normal':
+                expired_time = 60.0
+                api_key = OPENAI_API_KEY_FOR_PREDICT
+            async_openai_client = AsyncOpenAI(
+                api_key=api_key,
+            )
+            response = await asyncio.wait_for(
+                async_openai_client.chat.completions.create(
+                    model=model,
+                    messages=messages,
+                    stream=stream
+                ),
+                timeout=expired_time  # 设置超时时间为180秒
+            )
+            if stream:
+                return response
+            else:
+                return response.choices[0].message.content
+        elif simple_achat_model == 'claude':
+            model = CLAUDE_MODEL
+            expired_time = 60.0
+            claude_client = AsyncAnthropic(api_key=ANTHROPIC_API_KEY)
+            response = await asyncio.wait_for(
+                claude_client.messages.create(
+                    model=model,
+                    max_tokens=2048,
+                    temperature=0,
+                    messages=messages,
+                    stream=stream
+                ),
+                timeout=expired_time  # 设置超时时间为180秒
+            )
+            if stream:
+                return response
+            else:
+                return response.content[0].text
+
+    except asyncio.TimeoutError as e:
+        err_message = f'>>>>>>>>>async_simple_chat:test002 创建对话失败,出现超时异常，当前使用模型{SIMPLE_CHAT_MODEL}，模型版本: {model}, e: {e}'
+        logger.error(err_message)
+        await send_notice_message('genai_utils', 'async_simple_chat', 0, err_message, 3)
+        raise Exception("async_simple_chat:The request to OpenAI timed out after 3 minutes.")
+    except Exception as e:
+        logger.error(f'>>>>>>>>>async_simple_chat:test003 async_openai_client.chat.completions.create, e: {e}')
+        if simple_achat_model == 'openai':
             if model == OPENAI_PLUS_MODEL:
                 model = 'gpt-4o-2024-08-06'
         else:

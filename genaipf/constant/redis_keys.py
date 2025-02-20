@@ -14,5 +14,6 @@ REDIS_KEYS = {
     'REQUEST_API_KEYS': {
         'API_KEYS': 'API_KEYS',
         'API_KEY_LIMIT': 'REQUEST_API_KEYS:{}_{}',
+        'FORBID_API_KEYS': 'FORBID_API_KEYS:{}_{}',
     }
 }
