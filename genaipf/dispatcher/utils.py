@@ -36,8 +36,8 @@ OPENAI_PLUS_MODEL = "gpt-4o-2024-11-20"
 CLAUDE_MODEL = "claude-3-5-sonnet-20241022"
 PERPLEXITY_MODEL = "llama-3.1-sonar-small-128k-chat"  # "sonar-small-online"
 MISTRAL_MODEL = "open-mixtral-8x22b"
-DEEPSEEK_V3_MODEL = "deepseek-chat"
-DEEPSEEK_R1_MODEL = "DeepSeek-reasoner"
+DEEPSEEK_V3_MODEL = os.getenv("DEEPSEEK_V3_MODEL")
+DEEPSEEK_R1_MODEL = os.getenv("DEEPSEEK_R1_MODEL")
 qdrant_url = "http://localhost:6333"
 
 openai_client = OpenAI(
@@ -174,7 +174,7 @@ async def openai_chat_completion_acreate(
                 if functions:
                     response = await asyncio.wait_for(
                         async_openai_client.chat.completions.create(
-                            model="DMXAPI-DeepSeek-R1",
+                            model=model,
                             messages=messages,
                             functions=functions if functions else NOT_GIVEN,
                             temperature=temperature,  # 值在[0,1]之间，越大表示回复越具有不确定性
@@ -189,7 +189,7 @@ async def openai_chat_completion_acreate(
                     logger.info(f"调用deepseek模型传入的消息列表:{messages}")
                     response = await asyncio.wait_for(
                         async_openai_client.chat.completions.create(
-                            model="DMXAPI-DeepSeek-R1",
+                            model=model,
                             messages=messages,
                             temperature=temperature,  # 值在[0,1]之间，越大表示回复越具有不确定性
                             max_tokens=max_tokens, # 输出的最大 token 数
