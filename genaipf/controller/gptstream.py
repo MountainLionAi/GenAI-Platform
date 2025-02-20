@@ -795,6 +795,7 @@ async def  getAnswerAndCallGptData(question, userid, msggroup, language, front_m
     # ^^^^^^^^ 在第一次 func gpt 就准备好数据 ^^^^^^^^
     used_gpt_functions = gpt_function_filter(gpt_functions_mapping, _messages, source=source)
     _tmp_text = ""
+    _reasoner_tmp_text = ""
     _code = generate_unique_id()
     isPresetTop = False
     data = {
