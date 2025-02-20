@@ -246,7 +246,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
             )
             await gpt_service.add_gpt_message_with_code(gpt_message)
             _code = generate_unique_id()
-            if last_sp_msg.get("type") == 'ai_swap_recommand':
+            if last_sp_msg.get("type") in ['ai_swap_recommand', 'ai_swap_scene']:
                 temp_data = {
                     'responseType': 0,
                     'code': _code,
