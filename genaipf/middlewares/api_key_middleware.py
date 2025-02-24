@@ -9,7 +9,7 @@ from genaipf.utils.log_utils import logger
 from genaipf.routers.routers import blueprint_v2
 import asyncio
 
-MAX_LIMIT_PER_MINUTE = 80
+MAX_LIMIT_PER_MINUTE = 200
 STATUS_AVAILABLE = 0
 STATUS_UNAVAILABLE = 1
 
