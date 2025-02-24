@@ -252,6 +252,8 @@ async def awrap_gpt_generator(gpt_response, output_type=""):
         _tmp_text = ""
         _tmp_voice_text = ""
         _tmp_reasoning_content = ""
+        _tag_buffer = ""
+        in_think_tag = False
         choice = chunk.choices[0]
         delta = choice.delta
         c0 = delta.content
@@ -278,10 +280,20 @@ async def awrap_gpt_generator(gpt_response, output_type=""):
                 # 安全获取普通 content
                 _gpt_letter = getattr(delta, 'content', None)
                 if _gpt_letter:
-                    _tmp_text += _gpt_letter
-                    _tmp_voice_text += _gpt_letter
+                    _tag_buffer += _gpt_letter
+                    if '<think>' in _tag_buffer and not in_think_tag:
+                        in_think_tag = True
+                    # 检查是否退出think标签
+                    if '</think>' in _tag_buffer and in_think_tag:
+                        in_think_tag = False
                     if output_type != 'voice':
-                        yield get_format_output("gpt", _gpt_letter)
+                        if in_think_tag:
+                            _tmp_reasoning_content += _gpt_letter
+                            yield get_format_output("reasoner", _gpt_letter)
+                        else:
+                            _tmp_text += _gpt_letter
+                            _tmp_voice_text += _gpt_letter
+                            yield get_format_output("gpt", _gpt_letter)
                 if output_type == 'voice': 
                     if len(_tmp_voice_text) == 200:
                         base64_encoded_voice = textToSpeech(_tmp_voice_text)
