@@ -428,7 +428,7 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
         use_model = PERPLEXITY_MODEL
     elif llm_model == 'mistral':
         use_model = MISTRAL_MODEL
-    elif llm_model == 'claude' or 'Mlion-C1':
+    elif llm_model == 'claude' or llm_model == 'Mlion-C1':
         # claude挂了临时修改
         # use_model = OPENAI_PLUS_MODEL
         use_model = CLAUDE_MODEL
@@ -440,7 +440,7 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
         use_model = 'ERNIE-Speed-128K'
     elif llm_model == 'deepseek':
         use_model = DEEPSEEK_V3_MODEL
-    elif llm_model == 'DeepSeek-reasoner' or 'Mlion-C1-D':
+    elif llm_model == 'DeepSeek-reasoner' or llm_model == 'Mlion-C1-D':
         use_model = DEEPSEEK_R1_MODEL
     if isvision:
         # 图片处理专用模型
