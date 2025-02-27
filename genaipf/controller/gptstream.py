@@ -246,10 +246,21 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
             )
             await gpt_service.add_gpt_message_with_code(gpt_message)
             _code = generate_unique_id()
-            data['responseType'] = 0
-            data['code'] = _code
-            data['chatSerpResults'] = []
-            data['chatRelatedResults'] = []
+            if last_sp_msg.get("type") in ['ai_swap_recommand', 'ai_swap_scene']:
+                temp_data = {
+                    'responseType': 0,
+                    'code': _code,
+                    'chatSerpResults': [],
+                    'chatRelatedResults': [],
+                    'content': data,
+                    'type': 'ai_swap_recommand'
+                }
+                data = temp_data  # TODO 临时兼容修改
+            else:
+                data['responseType'] = 0
+                data['code'] = _code
+                data['chatSerpResults'] = []
+                data['chatRelatedResults'] = []
             messageContent = json.dumps(data)
             gpt_message = (
                 messageContent,
