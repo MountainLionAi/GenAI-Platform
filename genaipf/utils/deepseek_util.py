@@ -141,6 +141,7 @@ class AsyncDeepSeekClient:
 
     async def _dmxapi_request(self, messages, model, stream, temperature, max_tokens, top_p, presence_penalty):
         """DMXAPI异步请求实现"""
+        logger.info(f'正在使用{ProviderPriority.DMXAPI.name}')
         final_model = self.api_infos[ProviderPriority.DMXAPI]['MODEL'][model]
         if self.client_type == CLIENT_TYPE_OPENAI:
             self.client.base_url = self.api_infos[ProviderPriority.DMXAPI]['API_URL']
@@ -181,6 +182,7 @@ class AsyncDeepSeekClient:
 
     async def _openrouter_request(self, messages, model, stream, temperature, max_tokens, top_p, presence_penalty):
         """OpenRouter异步请求实现"""
+        logger.info(f'正在使用{ProviderPriority.OPENROUTER.name}')
         final_model = self.api_infos[ProviderPriority.OPENROUTER]['MODEL'][model]
         if self.client_type == CLIENT_TYPE_OPENAI:
             self.client.base_url = self.api_infos[ProviderPriority.OPENROUTER]['API_URL']
@@ -218,6 +220,7 @@ class AsyncDeepSeekClient:
 
     async def _deepseek_official_request(self, messages, model, stream, temperature, max_tokens, top_p, presence_penalty):
         """DeepSeek官方API异步请求实现"""
+        logger.info(f'正在使用{ProviderPriority.DEEPSEEK_OFFICIAL.name}')
         final_model = self.api_infos[ProviderPriority.DEEPSEEK_OFFICIAL]['MODEL'][model]
         if self.client_type == CLIENT_TYPE_OPENAI:
             self.client.base_url = self.api_infos[ProviderPriority.DEEPSEEK_OFFICIAL]['API_URL']
