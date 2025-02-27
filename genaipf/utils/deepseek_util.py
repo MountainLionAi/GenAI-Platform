@@ -68,16 +68,16 @@ proxy_client = httpx.AsyncClient(
 
 class AsyncDeepSeekClient:
     def __init__(self,
-                 api_infos: Dict = API_INFOs,
                  timeout: int = 60,
                  max_retries: int = 1,
-                 client_type: int = CLIENT_TYPE_OPENAI):
+                 client_type: int = CLIENT_TYPE_OPENAI,
+                 api_infos: Dict = API_INFOs):
         """
         初始化异步DeepSeek客户端
-        :param api_infos: 包含不同供应商API密钥和URL的字典
         :param timeout: 请求超时时间（秒）
         :param max_retries: 最大重试次数
         :param client_type: 客户端类型0--AsyncOpenAI 1--http请求类型
+        :param api_infos: 包含不同供应商API密钥和URL的字典
         """
         self.api_infos = api_infos
         self.timeout = timeout
