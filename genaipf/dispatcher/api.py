@@ -3,7 +3,7 @@ import asyncio
 from typing import List
 from genaipf.conf.server import os
 from genaipf.dispatcher.functions import gpt_functions
-from genaipf.dispatcher.utils import openai, OPENAI_PLUS_MODEL, CLAUDE_MODEL, openai_chat_completion_acreate, PERPLEXITY_MODEL, MISTRAL_MODEL, DEEPSEEK_V3_MODEL, DEEPSEEK_R1_MODEL
+from genaipf.dispatcher.utils import openai, OPENAI_PLUS_MODEL, CLAUDE_MODEL, openai_chat_completion_acreate, PERPLEXITY_MODEL, MISTRAL_MODEL, DEEPSEEK_V3_MODEL, DEEPSEEK_R1_MODEL, MOUNTAINLION_C1_MODEL, MOUNTAINLION_C1_D_MODEL
 from genaipf.utils.log_utils import logger
 from datetime import datetime
 from genaipf.dispatcher.prompts_v001 import LionPrompt
@@ -428,7 +428,7 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
         use_model = PERPLEXITY_MODEL
     elif llm_model == 'mistral':
         use_model = MISTRAL_MODEL
-    elif llm_model == 'claude':
+    elif llm_model == 'claude' :
         # claude挂了临时修改
         # use_model = OPENAI_PLUS_MODEL
         use_model = CLAUDE_MODEL
@@ -442,6 +442,11 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
         use_model = DEEPSEEK_V3_MODEL
     elif llm_model == 'DeepSeek-reasoner':
         use_model = DEEPSEEK_R1_MODEL
+    elif llm_model == 'MountainLion-C1':
+        use_model = MOUNTAINLION_C1_MODEL
+    elif llm_model == 'MountainLion-C1-D':
+        use_model = MOUNTAINLION_C1_D_MODEL
+
     if isvision:
         # 图片处理专用模型
         # use_model = 'gpt-4o'
