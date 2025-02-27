@@ -130,6 +130,7 @@ class AsyncDeepSeekClient:
 
                 except Exception as e:
                     err_message = f"调用{provider.name}出现异常，当前第 {attempt}次尝试：{str(e)}"
+                    logger.error(err_message)
                     if attempt == self.max_retries - 1:
                         logger.error(f"All retries exhausted for {provider.name}")
                         continue
