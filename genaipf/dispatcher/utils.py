@@ -38,6 +38,9 @@ PERPLEXITY_MODEL = "llama-3.1-sonar-small-128k-chat"  # "sonar-small-online"
 MISTRAL_MODEL = "open-mixtral-8x22b"
 DEEPSEEK_V3_MODEL = os.getenv("DEEPSEEK_V3_MODEL")
 DEEPSEEK_R1_MODEL = os.getenv("DEEPSEEK_R1_MODEL")
+MOUNTAINLION_C1_MODEL = os.getenv("DEEPSEEK_C1_MODEL")
+MOUNTAINLION_C1_D_MODEL = os.getenv("DEEPSEEK_C1_D_MODEL")
+
 qdrant_url = "http://localhost:6333"
 
 openai_client = OpenAI(
