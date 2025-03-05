@@ -126,7 +126,7 @@ class AsyncDeepSeekClient:
                         response = await self._deepseek_official_request(
                             messages, model, stream, temperature, max_tokens, top_p, presence_penalty)
 
-                    return self._format_text_response(response)
+                    return self._format_text_response(response, stream)
 
                 except Exception as e:
                     err_message = f"调用{provider.name}出现异常，当前第 {attempt}次尝试：{str(e)}"
@@ -257,8 +257,10 @@ class AsyncDeepSeekClient:
             response = await self.client.post(url, headers=headers, json=payload)
             return response.json()
 
-    def _format_text_response(self, raw_response) -> str:
+    def _format_text_response(self, raw_response, stream) -> str:
         """标准化响应格式（异步版本）"""
+        if stream:
+            return raw_response
         if isinstance(raw_response, dict):
             return raw_response['choices'][0]['message']['content']
         else:
