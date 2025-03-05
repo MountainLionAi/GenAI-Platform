@@ -109,7 +109,7 @@ class AsyncDeepSeekClient:
         :param presence_penalty: [-2,2]之间，该值越大则更倾向于产生不同的内容
         :return: 标准化响应格式
         """
-        logger.info(f"调用deepseek模型传入的消息列表:{messages}")
+        # logger.info(f"调用deepseek模型传入的消息列表:{messages}")
         for provider in self.provider_order:
             if provider not in self.api_infos:
                 continue
@@ -126,7 +126,7 @@ class AsyncDeepSeekClient:
                         response = await self._deepseek_official_request(
                             messages, model, stream, temperature, max_tokens, top_p, presence_penalty)
 
-                    return self._format_text_response(response)
+                    return self._format_text_response(response, stream)
 
                 except Exception as e:
                     err_message = f"调用{provider.name}出现异常，当前第 {attempt}次尝试：{str(e)}"
@@ -142,8 +142,8 @@ class AsyncDeepSeekClient:
 
     async def _dmxapi_request(self, messages, model, stream, temperature, max_tokens, top_p, presence_penalty):
         """DMXAPI异步请求实现"""
-        logger.info(f'正在使用{ProviderPriority.DMXAPI.name}')
         final_model = self.api_infos[ProviderPriority.DMXAPI]['MODEL'][model]
+        logger.info(f'正在使用{ProviderPriority.DMXAPI.name}, model: {final_model}')
         if self.client_type == CLIENT_TYPE_OPENAI:
             self.client.base_url = self.api_infos[ProviderPriority.DMXAPI]['API_URL']
             self.client.api_key = self.api_infos[ProviderPriority.DMXAPI]['API_KEY']
@@ -183,8 +183,8 @@ class AsyncDeepSeekClient:
 
     async def _openrouter_request(self, messages, model, stream, temperature, max_tokens, top_p, presence_penalty):
         """OpenRouter异步请求实现"""
-        logger.info(f'正在使用{ProviderPriority.OPENROUTER.name}')
         final_model = self.api_infos[ProviderPriority.OPENROUTER]['MODEL'][model]
+        logger.info(f'正在使用{ProviderPriority.OPENROUTER.name}, model: {final_model}')
         if self.client_type == CLIENT_TYPE_OPENAI:
             self.client.base_url = self.api_infos[ProviderPriority.OPENROUTER]['API_URL']
             self.client.api_key = self.api_infos[ProviderPriority.OPENROUTER]['API_KEY']
@@ -221,8 +221,8 @@ class AsyncDeepSeekClient:
 
     async def _deepseek_official_request(self, messages, model, stream, temperature, max_tokens, top_p, presence_penalty):
         """DeepSeek官方API异步请求实现"""
-        logger.info(f'正在使用{ProviderPriority.DEEPSEEK_OFFICIAL.name}')
         final_model = self.api_infos[ProviderPriority.DEEPSEEK_OFFICIAL]['MODEL'][model]
+        logger.info(f'正在使用{ProviderPriority.DEEPSEEK_OFFICIAL.name}, model: {final_model}')
         if self.client_type == CLIENT_TYPE_OPENAI:
             self.client.base_url = self.api_infos[ProviderPriority.DEEPSEEK_OFFICIAL]['API_URL']
             self.client.api_key = self.api_infos[ProviderPriority.DEEPSEEK_OFFICIAL]['API_KEY']
@@ -257,8 +257,10 @@ class AsyncDeepSeekClient:
             response = await self.client.post(url, headers=headers, json=payload)
             return response.json()
 
-    def _format_text_response(self, raw_response) -> str:
+    def _format_text_response(self, raw_response, stream) -> str:
         """标准化响应格式（异步版本）"""
+        if stream:
+            return raw_response
         if isinstance(raw_response, dict):
             return raw_response['choices'][0]['message']['content']
         else:
