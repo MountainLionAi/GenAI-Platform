@@ -55,7 +55,10 @@ async def get_message_list(request: Request):
         else:
             base64content_array = ''
             if message.get('base64content'):
-                base64content_array = message.get('base64content').split()
+                if message.get('base64_type') == 1: # 1图片
+                    base64content_array = message.get('base64content').split()
+                elif message.get('base64_type') == 3: # 3-pdf
+                    base64content_array = message.get('base64content')
             message['content'] = {
                 'type': 'user',
                 'content': message['content'],

@@ -733,7 +733,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
             base64_type = 3
             extra_content = last_front_msg.get('extra_content')
             base64_content = extra_content.get('base64')
-            base64_content_str = ' '.join(base64_content)
+            base64_content_str = base64_content
             file_name = extra_content.get('filename')
             file_size = extra_content.get('size')
             file_type = 'pdf'
