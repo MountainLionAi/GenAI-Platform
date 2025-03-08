@@ -60,7 +60,11 @@ async def get_message_list(request: Request):
                 'type': 'user',
                 'content': message['content'],
                 'base64content': base64content_array,
-                'quote_info': message.get('quoteInfo')
+                'quote_info': message.get('quoteInfo'),
+                'file_type': message.get('file_type'),
+                'file_name': message.get('file_name'),
+                'file_size': message.get('file_size'),
+                'base64_type': message.get('base64_type')
             }
             del message['base64content']
             del message['quoteInfo']

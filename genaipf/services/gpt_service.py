@@ -13,7 +13,7 @@ async def add_gpt_message_with_agentid(gpt_message):
     return res
 
 async def add_gpt_message_with_code(gpt_message):
-    sql = "INSERT INTO `gpt_messages` (`content`, `type`, `userid`, `msggroup`, `code`, `device_no`, `base64_type`, `base64_content`, `quote_info`, `file_type`, `agent_id`, `regenerate_response`) VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+    sql = "INSERT INTO `gpt_messages` (`content`, `type`, `userid`, `msggroup`, `code`, `device_no`, `base64_type`, `base64_content`, `quote_info`, `file_type`, `agent_id`, `regenerate_response`, `file_name`, `file_size`) VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
     res = await CollectionPool().insert(sql, gpt_message)
     return res
 
