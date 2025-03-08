@@ -512,7 +512,7 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
             logger.error(traceback.format_exc())
             await send_notice_message('genai_api', 'aref_answer_gpt_generator', 0, err_message, 3)
             return aget_error_generator(str(e))
-    elif use_model.startswith("gpt") or use_model == PERPLEXITY_MODEL or use_model == DEEPSEEK_V3_MODEL or use_model ==  DEEPSEEK_R1_MODEL:
+    elif use_model.startswith("gpt") or use_model == PERPLEXITY_MODEL:
         for i in range(5):
             mlength = len(messages)
             try:
@@ -540,6 +540,35 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
                 print(e)
                 logger.error(f'aref_answer_gpt_generator question_JSON call gpt4 error {e}', e)
                 return aget_error_generator(str(e))
+    elif use_model == DEEPSEEK_V3_MODEL or use_model ==  DEEPSEEK_R1_MODEL:
+        from genaipf.utils.deepseek_util import AsyncDeepSeekClient
+        cleint = AsyncDeepSeekClient()
+        for i in range(5):
+            mlength = len(messages)
+            try:
+                # messages.insert(0, system)
+                # print(f'>>>>>test 003 : {messages}')
+                _messages = [system] + messages
+                response = await cleint.chat_completion(
+                    model= 'V3' if use_model == DEEPSEEK_V3_MODEL else 'R1',
+                    messages=_messages,
+                    temperature=temperature,  # 值在[0,1]之间，越大表示回复越具有不确定性
+                    max_tokens=max_tokens, # 输出的最大 token 数
+                    top_p=top_p, # 过滤掉低于阈值的 token 确保结果不散漫
+                    presence_penalty=presence_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
+                    stream=True
+                )
+                logger.info(f'aref_answer_gpt called')
+                return awrap_gpt_generator(response, output_type)
+            except BadRequestError as e:
+                print(e)
+                logger.error(f'aref_answer_gpt_generator BadRequestError {e}', e)
+                messages = messages[mlength // 2:]
+            except Exception as e:
+                print(e)
+                logger.error(f'aref_answer_gpt_generator question_JSON call gpt4 error {e}', e)
+                return aget_error_generator(str(e))
+
     elif use_model == MISTRAL_MODEL:
         client = None
         try:
