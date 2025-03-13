@@ -242,6 +242,8 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
             None,
             None,
             agent_id,
+            None,
+            None,
             None
             )
             await gpt_service.add_gpt_message_with_code(gpt_message)
@@ -274,6 +276,8 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
                 None,
                 None,
                 agent_id,
+                None,
+                None,
                 None
             )
             await gpt_service.add_gpt_message_with_code(gpt_message)
@@ -440,7 +444,6 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         need_qa = False
     yield json.dumps(get_format_output("responseType", responseType))
     logger.info(f"userid={userid},本次对话是否需要用到rag={used_rag}")
-
     if used_rag:
         is_need_search = is_need_rag_simple(newest_question)
         if is_need_search:
@@ -719,12 +722,22 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         logger.info(f'>>>>> userid={userid}, func & ref _tmp_text & output_type: {output_type}: {_tmp_text}')
         base64_type = 0
         base64_content_str = ''
+        file_name = None
+        file_size = None
+        file_type = last_front_msg.get('format')
         if last_front_msg.get('type') == 'image':
             base64_type = 1
             base64_content = last_front_msg.get('base64content')
             base64_content_str = ' '.join(base64_content)
+        if last_front_msg.get('type') == 'pdf':
+            base64_type = 3
+            extra_content = last_front_msg.get('extra_content')
+            base64_content = extra_content.get('base64')
+            base64_content_str = base64_content
+            file_name = extra_content.get('filename')
+            file_size = extra_content.get('size')
+            file_type = 'pdf'
         quote_info = last_front_msg.get('quote_info', None)
-        file_type = last_front_msg.get('format')
         if question and msggroup :
             gpt_message = (
             question,
@@ -738,7 +751,9 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
             quote_info,
             file_type,
             agent_id,
-            regenerate_response
+            regenerate_response,
+            file_name,
+            file_size
             )
             if not isPreSwap:
                 await gpt_service.add_gpt_message_with_code(gpt_message)
@@ -763,9 +778,12 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
                 None,
                 None,
                 agent_id,
+                None,
+                None,
                 None
             )
-            await gpt_service.add_gpt_message_with_code(gpt_message)
+            if data['content'] or data['type'] != 'gpt':
+                await gpt_service.add_gpt_message_with_code(gpt_message)
     else:
         logger.info(f'>>>>> userid={userid}, query={newest_question}, func & ref _tmp_text & output_type & has sensitive word in response: {output_type}: {_tmp_text}')
 
@@ -881,7 +899,8 @@ async def  getAnswerAndCallGptData(question, userid, msggroup, language, front_m
             agent_id,
             None
         ) 
-        await gpt_service.add_gpt_message_with_code(gpt_message)
+        if  data['content'] or data['type'] != 'gpt':
+            await gpt_service.add_gpt_message_with_code(gpt_message)
     # else :
     #     data['chatSerpResults'] = sources
     #     data['chatRelatedResults'] = related_questions

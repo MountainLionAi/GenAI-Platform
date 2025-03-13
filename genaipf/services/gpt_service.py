@@ -13,7 +13,7 @@ async def add_gpt_message_with_agentid(gpt_message):
     return res
 
 async def add_gpt_message_with_code(gpt_message):
-    sql = "INSERT INTO `gpt_messages` (`content`, `type`, `userid`, `msggroup`, `code`, `device_no`, `base64_type`, `base64_content`, `quote_info`, `file_type`, `agent_id`, `regenerate_response`) VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+    sql = "INSERT INTO `gpt_messages` (`content`, `type`, `userid`, `msggroup`, `code`, `device_no`, `base64_type`, `base64_content`, `quote_info`, `file_type`, `agent_id`, `regenerate_response`, `file_name`, `file_size`) VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
     res = await CollectionPool().insert(sql, gpt_message)
     return res
 
@@ -40,7 +40,7 @@ async def get_gpt_message_last_by_type(userid, msggroup, type):
 
 # 获取用户消息列表用作上下文
 async def get_gpt_message_limit(userid, msggroup, limit):
-    sql = 'SELECT id, content, type, msggroup, create_time, code, base64_type, base64_content as base64content, quote_info as quoteInfo, file_type, agent_id,regenerate_response FROM gpt_messages WHERE ' \
+    sql = 'SELECT id, content, type, msggroup, create_time, code, base64_type, base64_content as base64content, quote_info as quoteInfo, file_type, agent_id,regenerate_response,file_name,file_size FROM gpt_messages WHERE ' \
           'userid=%s AND msggroup=%s and deleted=0 ORDER BY id DESC LIMIT %s'
     result = await CollectionPool().query(sql, (userid, msggroup, limit))
     if len(result) > 0 :
