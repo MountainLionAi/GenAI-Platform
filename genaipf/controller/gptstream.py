@@ -782,7 +782,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
                 None,
                 None
             )
-            if data['content']:
+            if data['content'] or data['type'] != 'gpt':
                 await gpt_service.add_gpt_message_with_code(gpt_message)
     else:
         logger.info(f'>>>>> userid={userid}, query={newest_question}, func & ref _tmp_text & output_type & has sensitive word in response: {output_type}: {_tmp_text}')
@@ -899,7 +899,7 @@ async def  getAnswerAndCallGptData(question, userid, msggroup, language, front_m
             agent_id,
             None
         ) 
-        if data['content']:
+        if  data['content'] or data['type'] != 'gpt':
             await gpt_service.add_gpt_message_with_code(gpt_message)
     # else :
     #     data['chatSerpResults'] = sources
