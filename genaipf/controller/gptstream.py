@@ -123,6 +123,7 @@ async def send_stream_chat(request: Request):
     llm_model = request_params.get('llm_model', 'openai') # openai | perplexity | claude
     wallet_type = request_params.get('wallet_type', 'AI')
     visitor_id = request_params.get('visitor_id', '')
+    without_minus = int(request_params.get('without_minus', 0))
     regenerate_response = request_params.get('regenerate_response', None)
     logger_content = f"""
 input_params:
@@ -136,7 +137,7 @@ userid={userid},language={language},msggroup={msggroup},device_no={device_no},qu
     try:
         # v201、v202 swft移动端，v203 mlion tgbot，v204 external对外开放，v210 swftGpt
         source_list = ['v005','v006','v008','v009','v010','v201','v202','v203','v204','v210']
-        if (not IS_UNLIMIT_USAGE and not IS_INNER_DEBUG) and model == 'ml-plus' and source not in source_list:
+        if (not IS_UNLIMIT_USAGE and not IS_INNER_DEBUG) and model == 'ml-plus' and source not in source_list and without_minus == 0:
             _user_id = ''
             if userid != 0:
                 _user_id = userid
