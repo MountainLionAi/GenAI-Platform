@@ -51,7 +51,9 @@ async def user_opinion_for_tw(request: Request):
 
 
 async def share_message(request: Request):
-    userid = request.ctx.user['id']
+    userid = 0
+    if hasattr(request.ctx, 'user'):
+        userid = request.ctx.user['id']
     request_params = request.json
     _code = request_params.get("code")
     messages = request_params.get("messages")
