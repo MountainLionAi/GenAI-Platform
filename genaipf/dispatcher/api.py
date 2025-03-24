@@ -294,6 +294,12 @@ async def awrap_gpt_generator(gpt_response, output_type=""):
                             _tmp_text += _gpt_letter
                             _tmp_voice_text += _gpt_letter
                             yield get_format_output("gpt", _gpt_letter)
+                    else:
+                        if in_think_tag:
+                            _tmp_reasoning_content += _gpt_letter
+                            yield get_format_output("reasoner", _gpt_letter)
+                        else:
+                            _tmp_voice_text += _gpt_letter
                 if output_type == 'voice': 
                     if len(_tmp_voice_text) == 200:
                         base64_encoded_voice = textToSpeech(_tmp_voice_text)
