@@ -223,7 +223,15 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         _t = last_sp_msg.get("type")
         last_sp_msg["language"] = language
         last_sp_msg['user_id'] = userid
-        g = stylized_process_mapping[_t](last_sp_msg)
+        if _t == 'ai_auto_recommand':
+            temp_params = {
+                "messages": front_messages,
+                "wallet_type": wallet_type,
+                "language": language
+            }
+            g = stylized_process_mapping[_t](temp_params)
+        else:
+            g = stylized_process_mapping[_t](last_sp_msg)
         data = {}
         async for _x in g:
             _d = json.loads(_x)
