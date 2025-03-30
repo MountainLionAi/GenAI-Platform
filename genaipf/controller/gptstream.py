@@ -227,7 +227,8 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
             temp_params = {
                 "messages": front_messages,
                 "wallet_type": wallet_type,
-                "language": language
+                "language": language,
+                "user_id": userid
             }
             g = stylized_process_mapping[_t](temp_params)
         else:
