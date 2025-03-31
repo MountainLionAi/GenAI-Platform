@@ -123,6 +123,7 @@ async def send_stream_chat(request: Request):
     llm_model = request_params.get('llm_model', 'openai') # openai | perplexity | claude
     wallet_type = request_params.get('wallet_type', 'AI')
     visitor_id = request_params.get('visitor_id', '')
+    without_minus = int(request_params.get('without_minus', 0))
     regenerate_response = request_params.get('regenerate_response', None)
     logger_content = f"""
 input_params:
@@ -136,7 +137,7 @@ userid={userid},language={language},msggroup={msggroup},device_no={device_no},qu
     try:
         # v201、v202 swft移动端，v203 mlion tgbot，v204 external对外开放，v210 swftGpt
         source_list = ['v005','v006','v008','v009','v010','v201','v202','v203','v204','v210']
-        if (not IS_UNLIMIT_USAGE and not IS_INNER_DEBUG) and model == 'ml-plus' and source not in source_list:
+        if (not IS_UNLIMIT_USAGE and not IS_INNER_DEBUG) and model == 'ml-plus' and source not in source_list and without_minus == 0:
             _user_id = ''
             if userid != 0:
                 _user_id = userid
@@ -222,12 +223,24 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         _t = last_sp_msg.get("type")
         last_sp_msg["language"] = language
         last_sp_msg['user_id'] = userid
-        g = stylized_process_mapping[_t](last_sp_msg)
+        if _t == 'ai_auto_recommand':
+            temp_params = {
+                "messages": front_messages,
+                "wallet_type": wallet_type,
+                "language": language,
+                "user_id": userid
+            }
+            g = stylized_process_mapping[_t](temp_params)
+        else:
+            g = stylized_process_mapping[_t](last_sp_msg)
         data = {}
         async for _x in g:
             _d = json.loads(_x)
             if _d['role'] == 'preset':
                 data = _d['content']
+            if _d['role'] == 'ai_swap_task_update':
+                if _d['content']['summary']['detail']['status'] == 'success':
+                    data = _d['content']
             yield _x
         if question and msggroup :
             gpt_message = (
@@ -242,11 +255,13 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
             None,
             None,
             agent_id,
+            None,
+            None,
             None
             )
             await gpt_service.add_gpt_message_with_code(gpt_message)
             _code = generate_unique_id()
-            if last_sp_msg.get("type") in ['ai_swap_recommand', 'ai_swap_scene']:
+            if last_sp_msg.get("type") in ['ai_swap_recommand', 'ai_swap_scene', 'ai_auto_recommand']:
                 temp_data = {
                     'responseType': 0,
                     'code': _code,
@@ -274,6 +289,8 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
                 None,
                 None,
                 agent_id,
+                None,
+                None,
                 None
             )
             await gpt_service.add_gpt_message_with_code(gpt_message)
@@ -440,7 +457,6 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         need_qa = False
     yield json.dumps(get_format_output("responseType", responseType))
     logger.info(f"userid={userid},本次对话是否需要用到rag={used_rag}")
-
     if used_rag:
         is_need_search = is_need_rag_simple(newest_question)
         if is_need_search:
@@ -719,12 +735,22 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         logger.info(f'>>>>> userid={userid}, func & ref _tmp_text & output_type: {output_type}: {_tmp_text}')
         base64_type = 0
         base64_content_str = ''
+        file_name = None
+        file_size = None
+        file_type = last_front_msg.get('format')
         if last_front_msg.get('type') == 'image':
             base64_type = 1
             base64_content = last_front_msg.get('base64content')
             base64_content_str = ' '.join(base64_content)
+        if last_front_msg.get('type') == 'pdf':
+            base64_type = 3
+            extra_content = last_front_msg.get('extra_content')
+            base64_content = extra_content.get('base64')
+            base64_content_str = base64_content
+            file_name = extra_content.get('filename')
+            file_size = extra_content.get('size')
+            file_type = 'pdf'
         quote_info = last_front_msg.get('quote_info', None)
-        file_type = last_front_msg.get('format')
         if question and msggroup :
             gpt_message = (
             question,
@@ -738,7 +764,9 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
             quote_info,
             file_type,
             agent_id,
-            regenerate_response
+            regenerate_response,
+            file_name,
+            file_size
             )
             if not isPreSwap:
                 await gpt_service.add_gpt_message_with_code(gpt_message)
@@ -763,6 +791,8 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
                 None,
                 None,
                 agent_id,
+                None,
+                None,
                 None
             )
             if data['content'] or data['type'] != 'gpt':
