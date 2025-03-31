@@ -238,6 +238,9 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
             _d = json.loads(_x)
             if _d['role'] == 'preset':
                 data = _d['content']
+            if _d['role'] == 'ai_swap_task_update':
+                if _d['content']['summary']['detail']['status'] == 'success':
+                    data = _d['content']
             yield _x
         if question and msggroup :
             gpt_message = (
