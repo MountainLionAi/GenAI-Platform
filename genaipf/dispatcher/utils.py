@@ -513,7 +513,7 @@ async def async_simple_chat(messages: typing.List[typing.Mapping[str, str]], str
             raise e
 
 
-async def async_simple_chat_with_model(messages: typing.List[typing.Mapping[str, str]], stream: bool = False, model: str = 'gpt-4o-mini', base_model:str = 'openai', key_type: str = 'normal'):
+async def async_simple_chat_with_model(messages: typing.List[typing.Mapping[str, str]], stream: bool = False, model: str = 'gpt-4o-mini', base_model:str = 'openai', key_type: str = 'normal', system_msg=''):
     try:
         simple_achat_model = base_model
         if simple_achat_model == 'openai':
@@ -541,16 +541,29 @@ async def async_simple_chat_with_model(messages: typing.List[typing.Mapping[str,
             model = CLAUDE_MODEL
             expired_time = 60.0
             claude_client = AsyncAnthropic(api_key=ANTHROPIC_API_KEY)
-            response = await asyncio.wait_for(
-                claude_client.messages.create(
-                    model=model,
-                    max_tokens=2048,
-                    temperature=0,
-                    messages=messages,
-                    stream=stream
-                ),
-                timeout=expired_time  # 设置超时时间为180秒
-            )
+            if system_msg:
+                response = await asyncio.wait_for(
+                    claude_client.messages.create(
+                        model=model,
+                        max_tokens=2048,
+                        temperature=0,
+                        messages=messages,
+                        stream=stream,
+                        system=system_msg
+                    ),
+                    timeout=expired_time  # 设置超时时间为180秒
+                )
+            else:
+                response = await asyncio.wait_for(
+                    claude_client.messages.create(
+                        model=model,
+                        max_tokens=2048,
+                        temperature=0,
+                        messages=messages,
+                        stream=stream
+                    ),
+                    timeout=expired_time  # 设置超时时间为180秒
+                )
             if stream:
                 return response
             else:
