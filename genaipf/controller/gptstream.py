@@ -137,7 +137,7 @@ userid={userid},language={language},msggroup={msggroup},device_no={device_no},qu
     try:
         # v201、v202 swft移动端，v203 mlion tgbot，v204 external对外开放，v210 swftGpt
         source_list = ['v005','v006','v008','v009','v010','v201','v202','v203','v204','v210']
-        if (not IS_UNLIMIT_USAGE and not IS_INNER_DEBUG) and model == 'ml-plus' and source not in source_list and without_minus == 0:
+        if (not IS_UNLIMIT_USAGE and not IS_INNER_DEBUG) and model == 'ml-plus' and source not in source_list and without_minus == 0 and not any(item.get("type") == "ai_auto_recommand" for item in messages):
             _user_id = ''
             if userid != 0:
                 _user_id = userid
