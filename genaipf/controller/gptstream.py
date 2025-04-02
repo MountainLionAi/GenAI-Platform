@@ -271,18 +271,35 @@ async def getAnswerAndCallGpt(question, userid, msggroup, language, front_messag
         async for _x in g:
             _d = json.loads(_x)
             _code = generate_unique_id()
+            need_insert = False
             if _d['role'] == 'preset':
                 data = _d['content']
-            if _d['role'] == 'ai_swap_task_update':
-                if _d['content']['summary']['detail']['status'] == 'success':
-                    data = _d['content']
             if _d['role'] == 'gpt':
+                need_insert = True
                 data['type'] = _d['role']
                 data['content'] = _d['content']
                 data['code'] = _code
                 data['responseType'] = 0
                 data['chatSerpResults'] = []
                 data['chatRelatedResults'] = []
+            if _d['role'] == 'ai_swap_task_update':
+                if _d['content']['summary']['detail']['status'] == 'finished':
+                    need_insert = True
+                data['type'] = _d['role']
+                data['content'] = _d['content']
+                data['code'] = _code
+                data['responseType'] = 0
+            if _d['role'] == 'ai_trading_task':
+                if len(_d['content']) != 0:
+                    last_step = _d['content'][-1]
+                    if last_step['detail']['status'] == 'finished':
+                        need_insert = True
+                data['type'] = _d['role']
+                data['content'] = _d['content']
+                data['code'] = _code
+                data['responseType'] = 0
+            yield _x
+            if need_insert:
                 messageContent = json.dumps(data)
                 gpt_message = (
                     messageContent,
@@ -301,7 +318,6 @@ async def getAnswerAndCallGpt(question, userid, msggroup, language, front_messag
                     None
                 )
                 await gpt_service.add_gpt_message_with_code(gpt_message)
-            yield _x
         return
     t0 = time.time()
     MAX_CH_LENGTH = 8000
