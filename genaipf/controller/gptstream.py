@@ -241,7 +241,9 @@ async def getAnswerAndCallGpt(question, userid, msggroup, language, front_messag
             voice_content = transcribe(last_sp_msg['content'])
             last_sp_msg['format'] = 'text'
             last_sp_msg['content'] = voice_content
-            yield json.dumps(get_format_output("whisper", last_sp_msg['content']))
+            out_put = get_format_output("whisper", last_sp_msg['content'])
+            out_put['no_tts'] = '1'
+            yield json.dumps(out_put)
         if _t == 'ai_auto_recommand':
             temp_params = {
                 "messages": front_messages,
