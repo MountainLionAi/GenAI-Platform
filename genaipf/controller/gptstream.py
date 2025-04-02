@@ -239,6 +239,7 @@ async def getAnswerAndCallGpt(question, userid, msggroup, language, front_messag
         last_sp_msg['user_id'] = userid
         if last_sp_msg['format'] == 'voice':
             voice_content = transcribe(last_sp_msg['content'])
+            question = voice_content
             last_sp_msg['format'] = 'text'
             last_sp_msg['content'] = voice_content
             out_put = get_format_output("whisper", last_sp_msg['content'])
