@@ -18,7 +18,7 @@ def transcribe(base64_audio):
     # 使用临时文件进行 API 调用
     with open(tmp_file_path, "rb") as audio_file:
         transcript = client.audio.transcriptions.create(
-            model="whisper-1",
+            model="gpt-4o-transcribe",
             file=audio_file
         )
 
