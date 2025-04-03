@@ -6,7 +6,7 @@ from sanic import Request, response
 from sanic.response import ResponseStream
 from genaipf.exception.customer_exception import CustomerError
 from genaipf.constant.error_code import ERROR_CODE
-from genaipf.interfaces.common_response import success,fail
+from genaipf.interfaces.common_response import success, fail
 import requests
 import json
 # import snowflake.client
@@ -18,7 +18,8 @@ from genaipf.utils.log_utils import logger
 import time
 from genaipf.utils.common_utils import get_random_number
 from pprint import pprint
-from genaipf.dispatcher.api import generate_unique_id, get_format_output, gpt_functions, afunc_gpt_generator, aref_answer_gpt_generator
+from genaipf.dispatcher.api import generate_unique_id, get_format_output, gpt_functions, afunc_gpt_generator, \
+    aref_answer_gpt_generator
 from genaipf.dispatcher.utils import get_qa_vdb_topk, merge_ref_and_input_text
 from genaipf.dispatcher.prompts_v001 import LionPrompt
 # from dispatcher.gptfunction import unfiltered_gpt_functions, gpt_function_filter
@@ -29,7 +30,8 @@ from genaipf.utils.redis_utils import RedisConnectionPool
 from genaipf.conf.server import IS_INNER_DEBUG, IS_UNLIMIT_USAGE
 from genaipf.utils.speech_utils import transcribe, textToSpeech
 from genaipf.tools.search.utils.search_agent_utils import other_search
-from genaipf.tools.search.utils.search_agent_utils import premise_search, premise_search1, premise_search2, is_need_rag_simple, new_question_question, fixed_related_question, multi_rag
+from genaipf.tools.search.utils.search_agent_utils import premise_search, premise_search1, premise_search2, \
+    is_need_rag_simple, new_question_question, fixed_related_question, multi_rag
 from genaipf.tools.search.utils.search_task_manager import get_related_question_task
 from genaipf.utils.common_utils import contains_chinese
 from genaipf.utils.sensitive_util import isNormal
@@ -45,11 +47,12 @@ from genaipf.utils import time_utils
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
-proxy = { 'https' : '127.0.0.1:8001'}
+proxy = {'https': '127.0.0.1:8001'}
 
 executor = ThreadPoolExecutor(max_workers=10)
 
 redis_client = RedisConnectionPool().get_connection()
+
 
 async def http(request: Request):
     return response.json({"http": "sendchat"})
@@ -57,6 +60,7 @@ async def http(request: Request):
 
 async def http4gpt4(request: Request):
     return response.json({"http4gpt4": "sendchat_gpt4"})
+
 
 def process_messages(messages):
     processed_messages = []
@@ -98,6 +102,7 @@ def process_messages(messages):
             break
     return processed_messages
 
+
 async def send_stream_chat(request: Request):
     logger.info("======start gptstream===========")
 
@@ -119,8 +124,8 @@ async def send_stream_chat(request: Request):
     owner = request_params.get('owner', 'Mlion.ai')
     agent_id = request_params.get('agent_id', None)
     # messages = process_messages(messages)
-    output_type = request_params.get('output_type', 'text') # text or voice; (voice is mp3)
-    llm_model = request_params.get('llm_model', 'openai') # openai | perplexity | claude
+    output_type = request_params.get('output_type', 'text')  # text or voice; (voice is mp3)
+    llm_model = request_params.get('llm_model', 'openai')  # openai | perplexity | claude
     wallet_type = request_params.get('wallet_type', 'AI')
     visitor_id = request_params.get('visitor_id', '')
     without_minus = int(request_params.get('without_minus', 0))
@@ -136,8 +141,10 @@ userid={userid},language={language},msggroup={msggroup},device_no={device_no},qu
     messages = process_messages(messages)
     try:
         # v201、v202 swft移动端，v203 mlion tgbot，v204 external对外开放，v210 swftGpt
-        source_list = ['v005','v006','v008','v009','v010','v201','v202','v203','v204','v210']
-        if (not IS_UNLIMIT_USAGE and not IS_INNER_DEBUG) and model == 'ml-plus' and source not in source_list and without_minus == 0 and not any(item.get("type") == "ai_auto_recommand" for item in messages):
+        source_list = ['v005', 'v006', 'v008', 'v009', 'v010', 'v201', 'v202', 'v203', 'v204', 'v210']
+        if (
+                not IS_UNLIMIT_USAGE and not IS_INNER_DEBUG) and model == 'ml-plus' and source not in source_list and without_minus == 0 and not any(
+                item.get("type") == "ai_auto_recommand" for item in messages):
             _user_id = ''
             if userid != 0:
                 _user_id = userid
@@ -154,14 +161,18 @@ userid={userid},language={language},msggroup={msggroup},device_no={device_no},qu
     try:
         async def event_generator(_response):
             # async for _str in getAnswerAndCallGpt(request_params['content'], userid, msggroup, language, messages):
-            async for _str in getAnswerAndCallGpt(request_params.get('content'), userid, msggroup, language, messages, device_no, question_code, model, output_type, source, owner, agent_id, chain_id, llm_model, wallet_type, regenerate_response):
+            async for _str in getAnswerAndCallGpt(request_params.get('content'), userid, msggroup, language, messages,
+                                                  device_no, question_code, model, output_type, source, owner, agent_id,
+                                                  chain_id, llm_model, wallet_type, regenerate_response):
                 await _response.write(f"data:{_str}\n\n")
                 await asyncio.sleep(0.01)
+
         return ResponseStream(event_generator, headers={"accept": "application/json"}, content_type="text/event-stream")
 
     except Exception as e:
         logger.error(e)
         logger.error(traceback.format_exc())
+
 
 async def send_chat(request: Request):
     logger.info("======start gptstream===========")
@@ -183,7 +194,7 @@ async def send_chat(request: Request):
     owner = request_params.get('owner', 'Mlion.ai')
     agent_id = request_params.get('agent_id', None)
     # messages = process_messages(messages)
-    output_type = request_params.get('output_type', 'text') # text or voice; (voice is mp3)
+    output_type = request_params.get('output_type', 'text')  # text or voice; (voice is mp3)
     # messages = [{"role": msg["role"], "content": msg["content"]} for msg in process_messages(messages)]
     # messages = messages[-10:]
     messages = process_messages(messages)
@@ -208,21 +219,32 @@ async def send_chat(request: Request):
     try:
         if owner == 'IOS' or owner == "tgbot" or owner == "MountainLion.ai":
             owner = 'Mlion.ai'
-        response = await getAnswerAndCallGptData(request_params.get('content'), userid, msggroup, language, messages, device_no, question_code, model, output_type, source, owner, agent_id)
+        response = await getAnswerAndCallGptData(request_params.get('content'), userid, msggroup, language, messages,
+                                                 device_no, question_code, model, output_type, source, owner, agent_id)
         return response
 
     except Exception as e:
         logger.error(e)
         logger.error(traceback.format_exc())
-   
 
-async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messages, device_no, question_code, model, output_type, source, owner, agent_id, chain_id, llm_model, wallet_type, regenerate_response):
+
+async def getAnswerAndCallGpt(question, userid, msggroup, language, front_messages, device_no, question_code, model,
+                              output_type, source, owner, agent_id, chain_id, llm_model, wallet_type,
+                              regenerate_response):
     from genaipf.dispatcher.stylized_process import stylized_process_mapping
     last_sp_msg = front_messages[-1]
     if last_sp_msg.get("type") in stylized_process_mapping.keys():
         _t = last_sp_msg.get("type")
         last_sp_msg["language"] = language
         last_sp_msg['user_id'] = userid
+        if last_sp_msg['format'] == 'voice':
+            voice_content = transcribe(last_sp_msg['content'])
+            question = voice_content
+            last_sp_msg['format'] = 'text'
+            last_sp_msg['content'] = voice_content
+            out_put = get_format_output("whisper", last_sp_msg['content'])
+            out_put['no_tts'] = '1'
+            yield json.dumps(out_put)
         if _t == 'ai_auto_recommand':
             temp_params = {
                 "messages": front_messages,
@@ -234,55 +256,15 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         else:
             g = stylized_process_mapping[_t](last_sp_msg)
         data = {}
-        async for _x in g:
-            _d = json.loads(_x)
-            if _d['role'] == 'preset':
-                data = _d['content']
-            if _d['role'] == 'ai_swap_task_update':
-                if _d['content']['summary']['detail']['status'] == 'success':
-                    data = _d['content']
-            yield _x
-        if question and msggroup :
+
+        # 先存用户的
+        if question and msggroup:
             gpt_message = (
-            question,
-            'user',
-            userid,
-            msggroup,
-            question_code,
-            device_no,
-            None,
-            None,
-            None,
-            None,
-            agent_id,
-            None,
-            None,
-            None
-            )
-            await gpt_service.add_gpt_message_with_code(gpt_message)
-            _code = generate_unique_id()
-            if last_sp_msg.get("type") in ['ai_swap_recommand', 'ai_swap_scene', 'ai_auto_recommand']:
-                temp_data = {
-                    'responseType': 0,
-                    'code': _code,
-                    'chatSerpResults': [],
-                    'chatRelatedResults': [],
-                    'content': data,
-                    'type': 'ai_swap_recommand'
-                }
-                data = temp_data  # TODO 临时兼容修改
-            else:
-                data['responseType'] = 0
-                data['code'] = _code
-                data['chatSerpResults'] = []
-                data['chatRelatedResults'] = []
-            messageContent = json.dumps(data)
-            gpt_message = (
-                messageContent,
-                data['type'],
+                question,
+                'user',
                 userid,
                 msggroup,
-                data['code'],
+                question_code,
                 device_no,
                 None,
                 None,
@@ -294,6 +276,56 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
                 None
             )
             await gpt_service.add_gpt_message_with_code(gpt_message)
+        async for _x in g:
+            _d = json.loads(_x)
+            _code = generate_unique_id()
+            need_insert = False
+            if _d['role'] == 'preset':
+                data = _d['content']
+            if _d['role'] == 'gpt':
+                need_insert = True
+                data['type'] = _d['role']
+                data['content'] = _d['content']
+                data['code'] = _code
+                data['responseType'] = 0
+                data['chatSerpResults'] = []
+                data['chatRelatedResults'] = []
+            if _d['role'] == 'ai_swap_task_update':
+                if _d['content']['summary']['detail']['status'] == 'finished':
+                    need_insert = True
+                data['type'] = _d['role']
+                data['content'] = _d['content']
+                data['code'] = _code
+                data['responseType'] = 0
+            if _d['role'] == 'ai_trading_task':
+                if len(_d['content']) != 0:
+                    last_step = _d['content'][-1]
+                    if last_step['detail']['status'] == 'finished':
+                        need_insert = True
+                data['type'] = _d['role']
+                data['content'] = _d['content']
+                data['code'] = _code
+                data['responseType'] = 0
+            yield _x
+            if need_insert:
+                messageContent = json.dumps(data)
+                gpt_message = (
+                    messageContent,
+                    data['type'],
+                    userid,
+                    msggroup,
+                    data['code'],
+                    device_no,
+                    None,
+                    None,
+                    None,
+                    None,
+                    agent_id,
+                    None,
+                    None,
+                    None
+                )
+                await gpt_service.add_gpt_message_with_code(gpt_message)
         return
     t0 = time.time()
     MAX_CH_LENGTH = 8000
@@ -350,11 +382,11 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     language_ = language
 
     # 判断是否有敏感词汇，更改用户问题、上下文内容。question为存库数据，不需要修改
-    if source != 'v004': 
+    if source != 'v004':
         # 先进行敏感词检查
         is_normal_question = await isNormal(newest_question)
         logger.info(f"userid={userid},is_normal_question={is_normal_question}")
-        
+
         if not is_normal_question:
             # 如果检测到敏感词，直接执行敏感词的处理逻辑
             newest_question = '用户的问题中涉及敏感词汇，明确告知用户他的问题中有敏感词汇，并且不能使用敏感词汇'
@@ -376,7 +408,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
                     newest_question = '检测到用户的问题包含了一些敏感不适合系统回答的内容。有礼貌地请用户理解，并引导用户重新提出问题。请尝试用更正向的方式提问，或者避免讨论敏感话题。'
                 else:
                     newest_question = 'Detected that the user’s question contains sensitive content not suitable for the system to answer. Please politely ask the user for understanding and encourage them to rephrase the question in a more positive manner or avoid discussing sensitive topics.'
-                
+
                 front_messages = [
                     {"role": "user", "content": newest_question}
                 ]
@@ -386,7 +418,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
 
     if last_front_msg.get("need_whisper"):
         yield json.dumps(get_format_output("whisper", last_front_msg['content']))
-    
+
     # vvvvvvvv 在第一次 func gpt 就准备好数据 vvvvvvvv
     logger.info(f'>>>>> newest_question: {newest_question}')
     logger.info(f'>>>>>>>>>>>>>>>>>> quote_message: {quote_message}')
@@ -472,7 +504,8 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     else:
         is_need_search = False
         sources_task = None
-        related_questions_task = asyncio.create_task(get_related_question_task({"messages": [front_messages[-1]]}, fixed_related_question, language_))
+        related_questions_task = asyncio.create_task(
+            get_related_question_task({"messages": [front_messages[-1]]}, fixed_related_question, language_))
     logger.info(f"userid={userid},本次对话是否需要用到rag中的检索={is_need_search}")
     _messages = [x for x in messages if x["role"] != "system"]
     msgs = _messages[::]
@@ -487,8 +520,8 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     _reasoner_tmp_text = ""
     isPresetTop = False
     data = {
-        'type' : 'gpt',
-        'content' : _tmp_text,
+        'type': 'gpt',
+        'content': _tmp_text,
         'reasoner': _reasoner_tmp_text
     }
     sources = []
@@ -496,7 +529,8 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     _related_news = []
     if source == 'v004':
         from genaipf.dispatcher.callgpt import DispatcherCallGpt
-        _data = {"msgs": msgs, "model": model, "preset_name": "attitude", "source": source, "owner": owner, "llm_model": AI_ANALYSIS_USE_MODEL}
+        _data = {"msgs": msgs, "model": model, "preset_name": "attitude", "source": source, "owner": owner,
+                 "llm_model": AI_ANALYSIS_USE_MODEL}
         _tmp_attitude, _related_news = await DispatcherCallGpt.get_subtype_task_result(source, language_, _data)
         yield json.dumps(get_format_output("attitude", _tmp_attitude))
         yield json.dumps(get_format_output("chatRelatedNews", _related_news))
@@ -527,7 +561,8 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     #     logger.info(f"当前使用模型{llm_model}")
     #     yield json.dumps(get_format_output("model", llm_model))
     afunc_gpt_generator_start_time = time.perf_counter()
-    resp1 = await afunc_gpt_generator(msgs, used_gpt_functions, language_, model, picked_content, related_qa, source, owner)
+    resp1 = await afunc_gpt_generator(msgs, used_gpt_functions, language_, model, picked_content, related_qa, source,
+                                      owner)
     afunc_gpt_generator_end_time = time.perf_counter()
     elapsed_afunc_gpt_generator_time = (afunc_gpt_generator_end_time - afunc_gpt_generator_start_time) * 1000
     logger.info(f'=====================>afunc_gpt_generator耗时：{elapsed_afunc_gpt_generator_time:.3f}毫秒')
@@ -592,10 +627,13 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
             used_gpt_functions = None
 
         aref_answer_gpt_generator_start_time = time.perf_counter()
-        resp1 = await aref_answer_gpt_generator(msgs, model, language_, None, picked_content, related_qa, source, owner, isvision, output_type, llm_model, quote_message)
+        resp1 = await aref_answer_gpt_generator(msgs, model, language_, None, picked_content, related_qa, source, owner,
+                                                isvision, output_type, llm_model, quote_message)
         aref_answer_gpt_generator_end_time = time.perf_counter()
-        elapsed_aref_answer_gpt_generator_time = (aref_answer_gpt_generator_end_time - aref_answer_gpt_generator_start_time) * 1000
-        logger.info(f'=====================>aref_answer_gpt_generator耗时：{elapsed_aref_answer_gpt_generator_time:.3f}毫秒')
+        elapsed_aref_answer_gpt_generator_time = (
+                                                             aref_answer_gpt_generator_end_time - aref_answer_gpt_generator_start_time) * 1000
+        logger.info(
+            f'=====================>aref_answer_gpt_generator耗时：{elapsed_aref_answer_gpt_generator_time:.3f}毫秒')
         rag_status['generateAnswer']['isCompleted'] = True
         yield json.dumps(get_format_output("rag_status", rag_status))
         _need_check_text = ''
@@ -628,16 +666,22 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
             logger.info(f"userid={userid},本次聊天触发function,whole_func_name={whole_func_name}")
             if func_name in need_tool_agent_l or whole_func_name in need_tool_agent_l:
                 run_tool_agent_start_time = time.perf_counter()
-                stream_gen = run_tool_agent(func_chunk , messages, newest_question, model, language_, related_qa, source, owner, sources, is_need_search, sources_task, chain_id)
+                stream_gen = run_tool_agent(func_chunk, messages, newest_question, model, language_, related_qa, source,
+                                            owner, sources, is_need_search, sources_task, chain_id)
                 run_tool_agent_end_time = time.perf_counter()
                 elapsed_run_tool_agent_time = (run_tool_agent_end_time - run_tool_agent_start_time) * 1000
                 logger.info(f'=====================>run_tool_agent耗时：{elapsed_run_tool_agent_time:.3f}毫秒')
             else:
                 convert_func_out_to_stream_start_time = time.perf_counter()
-                stream_gen = convert_func_out_to_stream(func_chunk , messages, newest_question, model, language_, related_qa, source, owner, sources, is_need_search, sources_task, chain_id, output_type, llm_model, userid, wallet_type)
+                stream_gen = convert_func_out_to_stream(func_chunk, messages, newest_question, model, language_,
+                                                        related_qa, source, owner, sources, is_need_search,
+                                                        sources_task, chain_id, output_type, llm_model, userid,
+                                                        wallet_type)
                 convert_func_out_to_stream_time_end_time = time.perf_counter()
-                elapsed_convert_func_out_to_stream_time = (convert_func_out_to_stream_time_end_time - convert_func_out_to_stream_start_time) * 1000
-                logger.info(f'=====================>convert_func_out_to_stream耗时：{elapsed_convert_func_out_to_stream_time:.3f}毫秒')
+                elapsed_convert_func_out_to_stream_time = (
+                                                                      convert_func_out_to_stream_time_end_time - convert_func_out_to_stream_start_time) * 1000
+                logger.info(
+                    f'=====================>convert_func_out_to_stream耗时：{elapsed_convert_func_out_to_stream_time:.3f}毫秒')
         except Exception as e:
             logger.error(f'error: {e} \n func_chunk: {func_chunk}')
             raise e
@@ -657,13 +701,13 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
                 isPresetTop = True
                 data.update(item["content"])
                 data.update({
-                    'code' : _code
+                    'code': _code
                 })
                 _tmp = {
-                    "role": "preset", 
-                    "type": data["type"], 
-                    "format": data["subtype"], 
-                    "version": "v001", 
+                    "role": "preset",
+                    "type": data["type"],
+                    "format": data["subtype"],
+                    "version": "v001",
                     "content": data
                 }
                 yield json.dumps(_tmp)
@@ -675,12 +719,16 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
                     await related_questions_task
                     related_questions = related_questions_task.result()
                     related_questions_task_end_time = time.perf_counter()
-                    elapsed_related_questions_task_time = (related_questions_task_end_time - related_questions_task_start_time) * 1000
-                    logger.info(f'=====================>related_questions_task耗时：{elapsed_related_questions_task_time:.3f}毫秒')
+                    elapsed_related_questions_task_time = (
+                                                                      related_questions_task_end_time - related_questions_task_start_time) * 1000
+                    logger.info(
+                        f'=====================>related_questions_task耗时：{elapsed_related_questions_task_time:.3f}毫秒')
                     yield json.dumps(get_format_output("chatRelatedResults", related_questions))
 
-                    subtype_task_result = await DispatcherCallGpt.get_subtype_task_result(data["subtype"], language_, data)
-                    preset_type, preset_content, data = DispatcherCallGpt.gen_preset_content(data["subtype"], subtype_task_result, data)
+                    subtype_task_result = await DispatcherCallGpt.get_subtype_task_result(data["subtype"], language_,
+                                                                                          data)
+                    preset_type, preset_content, data = DispatcherCallGpt.gen_preset_content(data["subtype"],
+                                                                                             subtype_task_result, data)
                     yield json.dumps(get_format_output("preset", preset_content, type=preset_type))
             elif item["role"] == "sources":
                 sources = item["content"]
@@ -690,16 +738,16 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
     if source == 'v004':
         _tmp_text = picked_content + "\n" + _tmp_text
     data.update({
-        'content' : _tmp_text,
+        'content': _tmp_text,
         'reasoner': _reasoner_tmp_text,
-        'code' : _code
+        'code': _code
     })
     if data["type"] != "gpt" and not isPresetTop:
         _tmp = {
-            "role": "preset", 
-            "type": data["type"], 
-            "format": data["subtype"], 
-            "version": "v001", 
+            "role": "preset",
+            "type": data["type"],
+            "format": data["subtype"],
+            "version": "v001",
             "content": data
         }
         yield json.dumps(_tmp)
@@ -707,8 +755,8 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
         v101_content = await get_swap_preset_info(language_)
         v101_content['content'].update(
             {
-                'content' : _tmp_text,
-                'code' : _code
+                'content': _tmp_text,
+                'code': _code
             }
         )
         yield json.dumps(v101_content)
@@ -716,7 +764,7 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
 
     # 把相关问题放到这里 节省执行时间
     logger.info(f"userid={userid},本次对话是否需要qa={need_qa}")
-    if not has_sensitive_word: # 如果没有敏感词
+    if not has_sensitive_word:  # 如果没有敏感词
         if need_qa:
             related_questions_task_start_time = time.perf_counter()
             if not is_need_search:
@@ -725,8 +773,10 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
                 await related_questions_task
                 related_questions = related_questions_task.result()
                 related_questions_task_end_time = time.perf_counter()
-                elapsed_related_questions_task_time = (related_questions_task_end_time - related_questions_task_start_time) * 1000
-                logger.info(f'=====================>related_questions_task耗时：{elapsed_related_questions_task_time:.3f}毫秒')
+                elapsed_related_questions_task_time = (
+                                                                  related_questions_task_end_time - related_questions_task_start_time) * 1000
+                logger.info(
+                    f'=====================>related_questions_task耗时：{elapsed_related_questions_task_time:.3f}毫秒')
                 logger.info(f"userid={userid},related_questions={related_questions}")
             yield json.dumps(get_format_output("chatRelatedResults", related_questions))
         elif not related_questions:
@@ -751,22 +801,22 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
             file_size = extra_content.get('size')
             file_type = 'pdf'
         quote_info = last_front_msg.get('quote_info', None)
-        if question and msggroup :
+        if question and msggroup:
             gpt_message = (
-            question,
-            'user',
-            userid,
-            msggroup,
-            question_code,
-            device_no,
-            base64_type,
-            base64_content_str,
-            quote_info,
-            file_type,
-            agent_id,
-            regenerate_response,
-            file_name,
-            file_size
+                question,
+                'user',
+                userid,
+                msggroup,
+                question_code,
+                device_no,
+                base64_type,
+                base64_content_str,
+                quote_info,
+                file_type,
+                agent_id,
+                regenerate_response,
+                file_name,
+                file_size
             )
             if not isPreSwap:
                 await gpt_service.add_gpt_message_with_code(gpt_message)
@@ -798,10 +848,12 @@ async def  getAnswerAndCallGpt(question, userid, msggroup, language, front_messa
             if data['content'] or data['type'] != 'gpt':
                 await gpt_service.add_gpt_message_with_code(gpt_message)
     else:
-        logger.info(f'>>>>> userid={userid}, query={newest_question}, func & ref _tmp_text & output_type & has sensitive word in response: {output_type}: {_tmp_text}')
+        logger.info(
+            f'>>>>> userid={userid}, query={newest_question}, func & ref _tmp_text & output_type & has sensitive word in response: {output_type}: {_tmp_text}')
 
 
-async def  getAnswerAndCallGptData(question, userid, msggroup, language, front_messages, device_no, question_code, model, output_type, source, owner, agent_id):
+async def getAnswerAndCallGptData(question, userid, msggroup, language, front_messages, device_no, question_code, model,
+                                  output_type, source, owner, agent_id):
     t0 = time.time()
     MAX_CH_LENGTH = 8000
     _ensure_ascii = False
@@ -819,7 +871,7 @@ async def  getAnswerAndCallGptData(question, userid, msggroup, language, front_m
         newest_question = newest_question + f'\nsource:{source}'
     last_front_msg = front_messages[-1]
     question = last_front_msg['content']
-    
+
     # vvvvvvvv 在第一次 func gpt 就准备好数据 vvvvvvvv
     logger.info(f'>>>>> newest_question: {newest_question}')
     related_qa = get_qa_vdb_topk(newest_question, source=source)
@@ -841,8 +893,8 @@ async def  getAnswerAndCallGptData(question, userid, msggroup, language, front_m
     _code = generate_unique_id()
     isPresetTop = False
     data = {
-        'type' : 'gpt',
-        'content' : _tmp_text
+        'type': 'gpt',
+        'content': _tmp_text
     }
     resp1 = await afunc_gpt_generator(msgs, used_gpt_functions, language_, model, "", related_qa, source, owner)
     chunk = await asyncio.wait_for(resp1.__anext__(), timeout=20)
@@ -855,7 +907,8 @@ async def  getAnswerAndCallGptData(question, userid, msggroup, language, front_m
                 _reasoner_tmp_text = chunk["content"]
     elif chunk["content"] == "agent_routing":
         chunk = await resp1.__anext__()
-        stream_gen = convert_func_out_to_stream(chunk, messages, newest_question, model, language_, related_qa, source, owner)
+        stream_gen = convert_func_out_to_stream(chunk, messages, newest_question, model, language_, related_qa, source,
+                                                owner)
         async for item in stream_gen:
             if item["role"] == "inner_____gpt_whole_text":
                 _tmp_text = item["content"]
@@ -867,33 +920,33 @@ async def  getAnswerAndCallGptData(question, userid, msggroup, language, front_m
                 isPresetTop = True
                 data.update(item["content"])
                 data.update({
-                    'code' : _code
+                    'code': _code
                 })
                 _tmp = {
-                    "role": "preset", 
-                    "type": data["type"], 
-                    "format": data["subtype"], 
-                    "version": "v001", 
+                    "role": "preset",
+                    "type": data["type"],
+                    "format": data["subtype"],
+                    "version": "v001",
                     "content": data
                 }
     await resp1.aclose()
     data.update({
-        'content' : _tmp_text,
+        'content': _tmp_text,
         'reasoner': _reasoner_tmp_text,
-        'code' : _code
+        'code': _code
     })
     logger.info(f'>>>>> func & ref _tmp_text & output_type: {output_type}: {_tmp_text}')
 
-    if question and msggroup :
+    if question and msggroup:
         gpt_message = (
-        question,
-        'user',
-        userid,
-        msggroup,
-        question_code,
-        device_no,
-        agent_id,
-        None
+            question,
+            'user',
+            userid,
+            msggroup,
+            question_code,
+            device_no,
+            agent_id,
+            None
         )
         await gpt_service.add_gpt_message_with_code(gpt_message)
         if data['type'] == 'coin_swap':  # 如果是兑换类型，存库时候需要加一个过期字段，前端用于判断不再发起交易
@@ -911,17 +964,17 @@ async def  getAnswerAndCallGptData(question, userid, msggroup, language, front_m
             device_no,
             agent_id,
             None
-        ) 
-        if  data['content'] or data['type'] != 'gpt':
+        )
+        if data['content'] or data['type'] != 'gpt':
             await gpt_service.add_gpt_message_with_code(gpt_message)
     # else :
     #     data['chatSerpResults'] = sources
     #     data['chatRelatedResults'] = related_questions
-    
+
     if source == 'v003':
         return data
     return success(data)
-    
+
 
 def buildVisionMessage(_type_message):
     base64_image = _type_message.get('base64content')

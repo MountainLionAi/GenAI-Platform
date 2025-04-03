@@ -10,6 +10,7 @@ import genaipf.utils.hcaptcha_utils as hcaptcha
 from genaipf.utils.bot_utils import CollectionPool, get_news_by_api
 from ml4gp.services.user_account_service import create_ai_account
 from genaipf.utils.email_utils import EMAIL_SOURCE
+import asyncio
 
 
 # 用户登陆
@@ -63,7 +64,7 @@ async def check_login(request: Request):
     else:
         account = user_key
     user_id = request.ctx.user.get('id')
-    await create_ai_account(user_id)
+    asyncio.create_task(create_ai_account(user_id))
     return success(
         {'is_login': True, 'account': account, 'user_id': request.ctx.user.get('id')})
 

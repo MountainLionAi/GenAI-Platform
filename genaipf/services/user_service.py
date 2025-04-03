@@ -1,3 +1,5 @@
+import asyncio
+
 import bcrypt
 import random
 from genaipf.utils.mysql_utils import CollectionPool
@@ -136,7 +138,7 @@ async def user_login(email, password, signature, wallet_addr, access_token, oaut
         account = mask_email(email)
         if not user_info['sub_id']:
             from ml4gp.services.user_account_service import create_ai_account
-            await create_ai_account(user_info['id'])
+            asyncio.create_task(create_ai_account(user_info['id']))
     user_id = user_info['id']
     user_key = email if login_type != 1 else wallet_addr
     jwt_manager = JWTManager()
