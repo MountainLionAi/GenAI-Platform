@@ -44,6 +44,16 @@ Mlion.ai最近在AI交易板块的"AI一键买币"功能中推出了重大更新
 - **丰富的币种支持**：支持BTC、ETH（ERC20、BSC、Polygon）、BNB（BSC）、POL（Polygon）、USDT（ERC20、BSC、Polygon）等多种币种
 - **Agent工作流程可视化**：推荐币的整个流程会清晰地展示给用户，让用户更直观地了解Agent选币的底层逻辑
 
+📌 **AI 选币交易产品展示图:**
+![Recommend_UI_1](genaipf/static/recommend_ui_1_cn.png)
+
+![Recommend_UI_2](genaipf/static/recommend_ui_2_cn.png)
+
+![Recommend_UI_3](genaipf/static/recommend_ui_3_cn.png)
+
+📌 **AI SWAP产品展示图:**
+![AI_Swap_UI](genaipf/static/swap_ui.png)
+
 更多详情和演示视频，请访问：[https://x.com/MLion_AI](https://x.com/MLion_AI)
 
 ## 目录
