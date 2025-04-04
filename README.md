@@ -44,6 +44,16 @@ Mlion.ai has recently launched a major update to its "AI One-Click Trading" feat
 - **Extensive Currency Support**: Supports BTC, ETH (ERC20, BSC, Polygon), BNB (BSC), POL (Polygon), USDT (ERC20, BSC, Polygon), and more
 - **Agent Workflow Visualization**: The entire coin recommendation process is clearly displayed to users, providing transparent insight into the Agent's underlying selection logic
 
+📌 **AI Cryptocurrency  Recommendation:**
+![Recommend_UI_1](genaipf/static/recommend_ui_1.png)
+
+![Recommend_UI_2](genaipf/static/recommend_ui_2.png)
+
+![Recommend_UI_3](genaipf/static/recommend_ui_3.png)
+
+📌 **AI SWAP:**
+![AI_Swap_UI](genaipf/static/swap_ui.png)
+
 For more details and demonstration videos, visit: [https://x.com/MLion_AI](https://x.com/MLion_AI)
 
 ## Contents
