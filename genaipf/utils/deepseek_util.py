@@ -26,19 +26,19 @@ DS_OFFICIAL_MODEL_V3 = os.getenv("DS_OFFICIAL_MODEL_V3")
 DS_OFFICIAL_MODEL_R1 = os.getenv("DS_OFFICIAL_MODEL_R1")
 
 class ProviderPriority(Enum):
-    DMXAPI = 1
-    OPENROUTER = 2
-    DEEPSEEK_OFFICIAL = 3
+    # DMXAPI = 3
+    OPENROUTER = 1
+    DEEPSEEK_OFFICIAL = 2
 
 API_INFOs = {
-    ProviderPriority.DMXAPI: {
-        'API_KEY': DS_DMX_API_KEY,
-        'API_URL': DS_DMX_API_URL,
-        'MODEL': {
-            'V3': DS_DMX_MODEL_V3,
-            'R1': DS_DMX_MODEL_R1,
-        }
-    },
+    # ProviderPriority.DMXAPI: {
+    #     'API_KEY': DS_DMX_API_KEY,
+    #     'API_URL': DS_DMX_API_URL,
+    #     'MODEL': {
+    #         'V3': DS_DMX_MODEL_V3,
+    #         'R1': DS_DMX_MODEL_R1,
+    #     }
+    # },
     ProviderPriority.OPENROUTER: {
         'API_KEY': DS_OPENROUTER_API_KEY,
         'API_URL': DS_OPENROUTER_API_URL,
@@ -116,10 +116,10 @@ class AsyncDeepSeekClient:
 
             for attempt in range(self.max_retries):
                 try:
-                    if provider == ProviderPriority.DMXAPI:
-                        response = await self._dmxapi_request(
-                            messages, model, stream, temperature, max_tokens, top_p, presence_penalty)
-                    elif provider == ProviderPriority.OPENROUTER:
+                    # if provider == ProviderPriority.DMXAPI:
+                    #     response = await self._dmxapi_request(
+                    #         messages, model, stream, temperature, max_tokens, top_p, presence_penalty)
+                    if provider == ProviderPriority.OPENROUTER:
                         response = await self._openrouter_request(
                             messages, model, stream, temperature, max_tokens, top_p, presence_penalty)
                     elif provider == ProviderPriority.DEEPSEEK_OFFICIAL:
