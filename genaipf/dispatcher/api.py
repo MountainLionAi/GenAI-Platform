@@ -257,7 +257,9 @@ async def awrap_gpt_generator(gpt_response, output_type=""):
         choice = chunk.choices[0]
         delta = choice.delta
         c0 = delta.content
-        _reasoning_letter = getattr(delta, 'reasoning_content', None)
+        _reasoning_letter = getattr(delta, 'reasoning', None)
+        if not _reasoning_letter:
+            _reasoning_letter = getattr(delta, 'reasoning_content', None)
         if _reasoning_letter:
             _tmp_reasoning_content  += _reasoning_letter
             if output_type != 'voice':
@@ -271,7 +273,9 @@ async def awrap_gpt_generator(gpt_response, output_type=""):
             choice = chunk.choices[0]
             delta = choice.delta
             # 安全获取 reasoning_content
-            _reasoning_letter = getattr(delta, 'reasoning_content', None)
+            _reasoning_letter = getattr(delta, 'reasoning', None)
+            if not _reasoning_letter:
+                _reasoning_letter = getattr(delta, 'reasoning_content', None)
             if _reasoning_letter:
                 _tmp_reasoning_content += _reasoning_letter
                 yield get_format_output("reasoner", _reasoning_letter)
