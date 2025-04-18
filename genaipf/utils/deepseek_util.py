@@ -116,10 +116,10 @@ class AsyncDeepSeekClient:
 
             for attempt in range(self.max_retries):
                 try:
-                    if provider == ProviderPriority.DMXAPI:
-                        response = await self._dmxapi_request(
-                            messages, model, stream, temperature, max_tokens, top_p, presence_penalty)
-                    elif provider == ProviderPriority.OPENROUTER:
+                    # if provider == ProviderPriority.DMXAPI:
+                    #     response = await self._dmxapi_request(
+                    #         messages, model, stream, temperature, max_tokens, top_p, presence_penalty)
+                    if provider == ProviderPriority.OPENROUTER:
                         response = await self._openrouter_request(
                             messages, model, stream, temperature, max_tokens, top_p, presence_penalty)
                     elif provider == ProviderPriority.DEEPSEEK_OFFICIAL:
