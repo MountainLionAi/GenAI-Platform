@@ -26,19 +26,19 @@ DS_OFFICIAL_MODEL_V3 = os.getenv("DS_OFFICIAL_MODEL_V3")
 DS_OFFICIAL_MODEL_R1 = os.getenv("DS_OFFICIAL_MODEL_R1")
 
 class ProviderPriority(Enum):
-    # DMXAPI = 3
-    OPENROUTER = 1
-    DEEPSEEK_OFFICIAL = 2
+    DMXAPI = 1
+    OPENROUTER = 2
+    DEEPSEEK_OFFICIAL = 3
 
 API_INFOs = {
-    # ProviderPriority.DMXAPI: {
-    #     'API_KEY': DS_DMX_API_KEY,
-    #     'API_URL': DS_DMX_API_URL,
-    #     'MODEL': {
-    #         'V3': DS_DMX_MODEL_V3,
-    #         'R1': DS_DMX_MODEL_R1,
-    #     }
-    # },
+    ProviderPriority.DMXAPI: {
+        'API_KEY': DS_DMX_API_KEY,
+        'API_URL': DS_DMX_API_URL,
+        'MODEL': {
+            'V3': DS_DMX_MODEL_V3,
+            'R1': DS_DMX_MODEL_R1,
+        }
+    },
     ProviderPriority.OPENROUTER: {
         'API_KEY': DS_OPENROUTER_API_KEY,
         'API_URL': DS_OPENROUTER_API_URL,
