@@ -27,8 +27,8 @@ DS_OFFICIAL_MODEL_R1 = os.getenv("DS_OFFICIAL_MODEL_R1")
 
 class ProviderPriority(Enum):
     # DMXAPI = 3
-    OPENROUTER = 1
-    DEEPSEEK_OFFICIAL = 2
+    OPENROUTER = 2
+    DEEPSEEK_OFFICIAL = 1
 
 API_INFOs = {
     # ProviderPriority.DMXAPI: {
