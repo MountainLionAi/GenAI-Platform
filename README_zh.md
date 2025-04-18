@@ -28,11 +28,33 @@
     </a>
   </p>
   <p>
-    <a href="https://www.mlion.ai/#/">MountainLion AI</a> 基于此平台技术构建
+    <a href="https://www.mlion.ai/#/">mlion.ai</a> 基于此平台技术构建
   </p>
 
 [**English**](README.md)
 </div>
+
+## Mlion.ai最新更新：AI推荐虚拟币，以及AI一键买币功能增强
+
+Mlion.ai最近在AI交易板块的"AI一键买币"功能中推出了重大更新，进一步提升了用户体验和交易便捷性。这次更新提供了以下新特性：
+
+- **AI自动化交易支持多种订单类型**：支持通过自然语言下达市价单、限价单、跨链限价单等交易指令
+- **多场景交易支持**：提供钱包操作、多轮对话、余额不足提示、不在兑换范围、不支持兑换币种等多种场景处理
+- **自然语言交易示例**：用户可以直接使用自然语言如"买15U的BNB"、"当BNB涨到800U时卖出0.03个BNB"等方式进行交易
+- **丰富的币种支持**：支持BTC、ETH（ERC20、BSC、Polygon）、BNB（BSC）、POL（Polygon）、USDT（ERC20、BSC、Polygon）等多种币种
+- **Agent工作流程可视化**：推荐币的整个流程会清晰地展示给用户，让用户更直观地了解Agent选币的底层逻辑
+
+📌 **AI 选币交易产品展示图:**
+![Recommend_UI_1](genaipf/static/recommend_ui_1_cn.png)
+
+![Recommend_UI_2](genaipf/static/recommend_ui_2_cn.png)
+
+![Recommend_UI_3](genaipf/static/recommend_ui_3_cn.png)
+
+📌 **AI SWAP产品展示图:**
+![AI_Swap_UI](genaipf/static/swap_ui.png)
+
+更多详情和演示视频，请访问：[https://x.com/MLion_AI](https://x.com/MLion_AI)
 
 ## 目录
 - [GenAI-Platform 简介](#genai-platform-简介)

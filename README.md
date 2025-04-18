@@ -28,11 +28,33 @@
     </a>
   </p>
   <p>
-    <a href="https://www.mlion.ai/#/">MountainLion AI</a> has built on this platform technology
+    <a href="https://www.mlion.ai/#/">mlion.ai</a> has built on this platform technology
   </p>
 
 [**简体中文**](README_zh.md)
 </div>
+
+## Latest Mlion.ai Update: Enhanced AI One-Click Trading
+
+Mlion.ai has recently launched a major update to its "AI One-Click Trading" feature in the AI trading section, significantly improving user experience and trading convenience. This update introduces the following new features:
+
+- **AI Automated Trading with Multiple Order Types**: Support for market orders, limit orders, and cross-chain limit orders through natural language commands
+- **Multi-Scenario Trading Support**: Provides wallet operations, multi-round dialogues, insufficient balance notifications, exchange range limitations, and unsupported currency exchange scenarios
+- **Natural Language Trading Examples**: Users can directly trade using natural language such as "buy $15 worth of BNB" or "sell 0.03 BNB when BNB rises to $800"
+- **Extensive Currency Support**: Supports BTC, ETH (ERC20, BSC, Polygon), BNB (BSC), POL (Polygon), USDT (ERC20, BSC, Polygon), and more
+- **Agent Workflow Visualization**: The entire coin recommendation process is clearly displayed to users, providing transparent insight into the Agent's underlying selection logic
+
+📌 **AI Cryptocurrency  Recommendation:**
+![Recommend_UI_1](genaipf/static/recommend_ui_1.png)
+
+![Recommend_UI_2](genaipf/static/recommend_ui_2.png)
+
+![Recommend_UI_3](genaipf/static/recommend_ui_3.png)
+
+📌 **AI SWAP:**
+![AI_Swap_UI](genaipf/static/swap_ui.png)
+
+For more details and demonstration videos, visit: [https://x.com/MLion_AI](https://x.com/MLion_AI)
 
 ## Contents
 - [Introduction to GenAI Platform](#introduction-to-genai-platform)
