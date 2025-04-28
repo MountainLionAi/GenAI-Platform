@@ -245,12 +245,13 @@ async def getAnswerAndCallGpt(question, userid, msggroup, language, front_messag
             out_put = get_format_output("whisper", last_sp_msg['content'])
             out_put['no_tts'] = '1'
             yield json.dumps(out_put)
-        if _t == 'ai_auto_recommand':
+        if _t in ['ai_auto_recommand', 'ai_plugin_swap']:
             temp_params = {
                 "messages": front_messages,
                 "wallet_type": wallet_type,
                 "language": language,
-                "user_id": userid
+                "user_id": userid,
+                "chain_id": chain_id
             }
             g = stylized_process_mapping[_t](temp_params)
         else:
