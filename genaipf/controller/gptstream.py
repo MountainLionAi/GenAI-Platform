@@ -144,7 +144,7 @@ userid={userid},language={language},msggroup={msggroup},device_no={device_no},qu
         source_list = ['v005', 'v006', 'v008', 'v009', 'v010', 'v201', 'v202', 'v203', 'v204', 'v210']
         if (
                 not IS_UNLIMIT_USAGE and not IS_INNER_DEBUG) and model == 'ml-plus' and source not in source_list and without_minus == 0 and not any(
-                item.get("type") == "ai_auto_recommand" for item in messages):
+                item.get("type") in ["ai_auto_recommand", "ai_plugin_swap"]  for item in messages):
             _user_id = ''
             if userid != 0:
                 _user_id = userid
