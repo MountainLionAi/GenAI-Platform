@@ -29,10 +29,12 @@ EMAIL_SCENES = {
 
 
 # 发送邮件的异步方法
-async def send_email(subject, content, to_email, source=''):
+async def send_email(subject, content, to_email, source='', option_params=None):
+    if option_params is None:
+        option_params = {}
     username = email_conf.SMTP_USER
     password = email_conf.SMTP_PASSWORD
-    if source == EMAIL_SOURCE['SWFTGPT']:
+    if source == EMAIL_SOURCE['SWFTGPT'] and option_params.get('source', 'Mlion') == EMAIL_SOURCE['SWFTGPT']:
         username = email_conf.SMTP_USER_SWFTGPT
         password = email_conf.SMTP_PASSWORD_SWFTGPT
     message = MIMEMultipart()
