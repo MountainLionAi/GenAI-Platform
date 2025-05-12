@@ -478,7 +478,7 @@ async def send_verify_code_new(email, captcha_resp, language, scene, need_captch
         else:
             email_key = REDIS_KEYS['USER_KEYS']['EMAIL_CODE'].format(email, scene)
         # 发送邮箱验证码
-        await email_utils.send_email(subject, email_content, email, source)
+        await email_utils.send_email(subject, email_content, email, source, option_params)
         redis_client.setex(email_key, 60 * 15, email_code)
 
         # 增加发送验证码的限制次数
