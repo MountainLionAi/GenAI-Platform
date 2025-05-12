@@ -148,12 +148,16 @@ async def send_verify_code_mobile(request: Request):
     uuid = request_params.get('uuid', '')
     fixed_source = request_params.get('fixedSource', 'MLAPP')
     if fixed_source == 'APP':
-        source = EMAIL_SOURCE['SWFTGPT']
+        options_params = {
+            'source': EMAIL_SOURCE['SWFTGPT'],
+        }
     else:
-        source = EMAIL_SOURCE['MLAPP']
+        options_params = {
+            'source': EMAIL_SOURCE['MLAPP'],
+        }
     if not email or not uuid:
         raise CustomerError(status_code=ERROR_CODE['PARAMS_ERROR'])
-    send_res = await user_service.send_verify_code_new(email, '', language, scene_type, False, {}, uuid, source)
+    send_res = await user_service.send_verify_code_new(email, '', language, scene_type, False, options_params, uuid, EMAIL_SOURCE['SWFTGPT'])
     return success(send_res)
 
 

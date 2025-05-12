@@ -467,7 +467,7 @@ async def send_verify_code_new(email, captcha_resp, language, scene, need_captch
         # 生成发送验证码邮件相关的模版
         email_code = generate_email_code()
         subject = EMAIL_INFO[scene]['subject'][language]
-        if source == email_utils.EMAIL_SOURCE['SWFTGPT']:
+        if source == email_utils.EMAIL_SOURCE['SWFTGPT'] and option_params['source'] == email_utils.EMAIL_SOURCE['SWFTGPT']:
             subject = subject.replace(SERVICE_NAME, source)
         email_content = await email_utils.format_captcha_email(email, email_code, language, scene, option_params, source)
         if need_captcha == False:
