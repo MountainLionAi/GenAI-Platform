@@ -11,7 +11,8 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 import asyncio
 
 EMAIL_SOURCE = {
-    'SWFTGPT': 'SWFTGPT'
+    'SWFTGPT': 'SWFTGPT',
+    'MLAPP': 'Mlion'
 }
 
 LIMIT_TIME_10MIN = {
