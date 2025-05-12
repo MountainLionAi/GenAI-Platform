@@ -308,11 +308,11 @@ def get_user_key(user_id, email):
 
 
 # 根据email获取用户信息
-async def get_user_info_from_db(email):
+async def get_user_info_from_db(email, source='MLION'):
     sql = 'SELECT id, email, password, auth_token, user_name, avatar_url, wallet_address, sub_id  FROM user_infos WHERE ' \
           'email=%s ' \
-          'AND status=%s'
-    result = await CollectionPool().query(sql, (email, 0))
+          'AND status=%s AND source=%s'
+    result = await CollectionPool().query(sql, (email, 0, source))
     return result
 
 
