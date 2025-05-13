@@ -11,7 +11,8 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 import asyncio
 
 EMAIL_SOURCE = {
-    'SWFTGPT': 'SWFTGPT'
+    'SWFTGPT': 'SWFTGPT',
+    'MLAPP': 'Mlion'
 }
 
 LIMIT_TIME_10MIN = {
@@ -28,10 +29,12 @@ EMAIL_SCENES = {
 
 
 # 发送邮件的异步方法
-async def send_email(subject, content, to_email, source=''):
+async def send_email(subject, content, to_email, source='', option_params=None):
+    if option_params is None:
+        option_params = {}
     username = email_conf.SMTP_USER
     password = email_conf.SMTP_PASSWORD
-    if source == EMAIL_SOURCE['SWFTGPT']:
+    if source == EMAIL_SOURCE['SWFTGPT'] and option_params.get('source', 'Mlion') == EMAIL_SOURCE['SWFTGPT']:
         username = email_conf.SMTP_USER_SWFTGPT
         password = email_conf.SMTP_PASSWORD_SWFTGPT
     message = MIMEMultipart()
@@ -73,7 +76,7 @@ async def format_captcha_email(email, captcha_code, language, scene, option_para
     
     company_name = os.getenv("COMPANY_NAME")
     company_url = os.getenv("COMPANY_URL")
-    if source == EMAIL_SOURCE['SWFTGPT']:
+    if source == EMAIL_SOURCE['SWFTGPT'] and option_params['source'] == EMAIL_SOURCE['SWFTGPT']:
         company_name = os.getenv("COMPANY_NAME_SWFTGPT")
 
     template = env.get_template(template_file)
@@ -99,7 +102,7 @@ async def format_captcha_email(email, captcha_code, language, scene, option_para
                 'company_url': company_url
             }
         )
-    if source == EMAIL_SOURCE['SWFTGPT']:
+    if source == EMAIL_SOURCE['SWFTGPT'] and option_params['source'] == EMAIL_SOURCE['SWFTGPT']:
         email_content = email_content.replace(f'<a href="{company_url}">', '')
         email_content = email_content.replace('</a>', '')
     return email_content

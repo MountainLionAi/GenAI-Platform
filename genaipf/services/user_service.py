@@ -308,11 +308,11 @@ def get_user_key(user_id, email):
 
 
 # 根据email获取用户信息
-async def get_user_info_from_db(email):
+async def get_user_info_from_db(email, source='MLION'):
     sql = 'SELECT id, email, password, auth_token, user_name, avatar_url, wallet_address, sub_id  FROM user_infos WHERE ' \
           'email=%s ' \
-          'AND status=%s'
-    result = await CollectionPool().query(sql, (email, 0))
+          'AND status=%s AND source=%s'
+    result = await CollectionPool().query(sql, (email, 0, source))
     return result
 
 
@@ -467,7 +467,7 @@ async def send_verify_code_new(email, captcha_resp, language, scene, need_captch
         # 生成发送验证码邮件相关的模版
         email_code = generate_email_code()
         subject = EMAIL_INFO[scene]['subject'][language]
-        if source == email_utils.EMAIL_SOURCE['SWFTGPT']:
+        if source == email_utils.EMAIL_SOURCE['SWFTGPT'] and option_params['source'] == email_utils.EMAIL_SOURCE['SWFTGPT']:
             subject = subject.replace(SERVICE_NAME, source)
         email_content = await email_utils.format_captcha_email(email, email_code, language, scene, option_params, source)
         if need_captcha == False:
@@ -478,7 +478,7 @@ async def send_verify_code_new(email, captcha_resp, language, scene, need_captch
         else:
             email_key = REDIS_KEYS['USER_KEYS']['EMAIL_CODE'].format(email, scene)
         # 发送邮箱验证码
-        await email_utils.send_email(subject, email_content, email, source)
+        await email_utils.send_email(subject, email_content, email, source, option_params)
         redis_client.setex(email_key, 60 * 15, email_code)
 
         # 增加发送验证码的限制次数
