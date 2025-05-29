@@ -8,7 +8,7 @@ from genaipf.utils.interface_error_notice_tg_bot_util import send_notice_message
 anthropic_api_key = os.getenv("ANTHROPIC_API_KEY")
 async_client = AsyncAnthropic(api_key=anthropic_api_key)
 
-async def claude_cached_api_call(model_name="claude-3-5-sonnet-20241022", system_prompt="", system_prompt_ref="", ml_messages=[]):
+async def claude_cached_api_call(model_name="claude-sonnet-4-20250514", system_prompt="", system_prompt_ref="", ml_messages=[]):
     # messages = []
     # for _m in ml_messages:
     #     message = {

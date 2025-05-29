@@ -623,9 +623,9 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
             # chain = prompt | chat | parser
             # response = chain.astream({})
             if (source == 'v005' or source == 'v006') and (not preset_name or 'check' not in preset_name): 
-                response = claude_cached_api_call("claude-3-5-sonnet-20240620", v005_006_system_prompt, v005_006_system_prompt_ref, messages)
+                response = claude_cached_api_call("claude-sonnet-4-20250514", v005_006_system_prompt, v005_006_system_prompt_ref, messages)
             else:
-                response = claude_cached_api_call("claude-3-5-sonnet-20240620", system_message, None, messages)
+                response = claude_cached_api_call("claude-sonnet-4-20250514", system_message, None, messages)
             logger.info(f'aref_answer_gpt claude called')
             return awrap_claude_generator(response, output_type)
         except Exception as e:
