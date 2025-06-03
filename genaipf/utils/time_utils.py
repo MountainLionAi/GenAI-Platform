@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import pytz
 
 
@@ -188,9 +188,6 @@ def utc_to_shanghai(utc_time_str):
 
     # 返回格式化后的上海时间
     return shanghai_time.strftime("%Y-%m-%d %H:%M:%S")
-
-
-from datetime import datetime, timedelta, timezone
 
 
 def modify_time_diff_utc8(start_time, diff_days, period='day'):
