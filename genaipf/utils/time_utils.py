@@ -210,3 +210,15 @@ def modify_time_diff_utc8(start_time, diff_days, period='day'):
     shanghai_time = final_date.astimezone(shanghai_tz)
 
     return shanghai_time.strftime('%Y-%m-%d %H:%M:%S')
+
+
+def get_format_time_utc8():
+    # 获取当前UTC时间
+    utc_now = datetime.now(timezone.utc)
+
+    # 转换为UTC+8时区（上海时间）
+    shanghai_tz = timezone(timedelta(hours=8))
+    shanghai_time = utc_now.astimezone(shanghai_tz)
+
+    # 格式化输出
+    return shanghai_time.strftime('%Y-%m-%d %H:%M:%S')
