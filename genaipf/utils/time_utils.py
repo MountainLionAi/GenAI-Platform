@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import pytz
 
 
@@ -188,3 +188,35 @@ def utc_to_shanghai(utc_time_str):
 
     # 返回格式化后的上海时间
     return shanghai_time.strftime("%Y-%m-%d %H:%M:%S")
+
+
+def modify_time_diff_utc8(start_time, diff_days, period='day'):
+    # 解析输入时间为datetime对象（假设输入是UTC时间）
+    start_date = datetime.strptime(start_time, '%Y-%m-%d %H:%M:%S').replace(tzinfo=timezone.utc)
+
+    # 根据周期进行时间加减
+    if period == 'minute':
+        final_date = start_date + timedelta(minutes=diff_days)
+    elif period == 'hour':
+        final_date = start_date + timedelta(hours=diff_days)
+    else:  # 默认按天处理
+        final_date = start_date + timedelta(days=diff_days)
+
+    # 转换为UTC+8时区（上海时间）
+    shanghai_tz = timezone(timedelta(hours=8))
+    shanghai_time = final_date.astimezone(shanghai_tz)
+
+    return shanghai_time.strftime('%Y-%m-%d %H:%M:%S')
+
+
+def get_format_time_utc8():
+    # 获取当前UTC时间
+    utc_now = datetime.now(timezone.utc)
+
+    # 转换为UTC+8时区（上海时间）
+    shanghai_tz = timezone(timedelta(hours=8))
+    shanghai_time = utc_now.astimezone(shanghai_tz)
+
+    # 格式化输出
+    return shanghai_time.strftime('%Y-%m-%d %H:%M:%S')
+  
