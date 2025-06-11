@@ -2,7 +2,7 @@ from sanic import Request, response
 from genaipf.exception.customer_exception import CustomerError
 from genaipf.utils.log_utils import logger
 from genaipf.interfaces.common_response import success, fail
-from genaipf.constant.error_code import ERROR_CODE
+from genaipf.constant.error_code import ERROR_CODE, ERROR_MESSAGE
 import genaipf.services.user_service as user_service
 from genaipf.utils.common_utils import mask_email
 # import lib.hcaptcha as hcaptcha
@@ -99,8 +99,10 @@ async def modify_password(request: Request):
     if not request_params or not request_params['email'] or not request_params['password'] or \
             not request_params['verifyCode']:
         raise CustomerError(status_code=ERROR_CODE['PARAMS_ERROR'])
-    modify_res = await user_service.user_modify_password(request_params['email'], request_params['password'],
+    modify_res, time_left = await user_service.user_modify_password(request_params['email'], request_params['password'],
                                                          request_params['verifyCode'])
+    if not modify_res:
+        return fail(ERROR_CODE['MODIFY_PASSWORD_VERIFY_TIME_ERROR'], ERROR_MESSAGE[ERROR_CODE['MODIFY_PASSWORD_VERIFY_TIME_ERROR']], time_left)
     return success(modify_res)
 
 
