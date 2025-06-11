@@ -307,8 +307,6 @@ async def user_modify_password(email, password, verify_code):
     except Exception as e:
         logger.error(f'User modify password error: {e}')
         if type(e) == CustomerError and e.status_code == 2006:
-            raise CustomerError(status_code=ERROR_CODE['VERIFY_CODE_ERROR'])
-        if type(e) == CustomerError and e.status_code == 2015:
             time_left = 3
             if verify_num != max_time:
                 verify_num += 1
@@ -316,6 +314,9 @@ async def user_modify_password(email, password, verify_code):
                 limit_time = email_utils.API_CHECK_TIME_LIMIT[email_utils.EMAIL_SCENES['FORGET_PASSWORD']] * 60
                 redis_client.set(verify_key, verify_num, limit_time)
             return False, time_left
+        if type(e) == CustomerError and e.status_code == 2015:
+            return False, 0
+
         raise CustomerError(status_code=ERROR_CODE['MODIFY_PASSWORD_ERROR'])
 
 
