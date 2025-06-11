@@ -309,6 +309,7 @@ async def user_modify_password(email, password, verify_code):
         if type(e) == CustomerError and e.status_code == 2006:
             raise CustomerError(status_code=ERROR_CODE['VERIFY_CODE_ERROR'])
         if type(e) == CustomerError and e.status_code == 2015:
+            time_left = 3
             if verify_num != max_time:
                 verify_num += 1
                 time_left = max_time - verify_num
