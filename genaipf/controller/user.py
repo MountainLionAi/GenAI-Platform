@@ -102,7 +102,7 @@ async def modify_password(request: Request):
     modify_res, time_left = await user_service.user_modify_password(request_params['email'], request_params['password'],
                                                          request_params['verifyCode'])
     if not modify_res:
-        return fail(ERROR_CODE['MODIFY_PASSWORD_VERIFY_TIME_ERROR'], ERROR_MESSAGE[ERROR_CODE['MODIFY_PASSWORD_VERIFY_TIME_ERROR']], time_left)
+        return success(time_left, code=ERROR_CODE['MODIFY_PASSWORD_VERIFY_TIME_ERROR'], message=ERROR_MESSAGE[ERROR_CODE['MODIFY_PASSWORD_VERIFY_TIME_ERROR']], status=modify_res)
     return success(modify_res)
 
 
