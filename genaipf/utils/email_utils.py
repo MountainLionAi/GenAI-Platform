@@ -27,6 +27,14 @@ EMAIL_SCENES = {
     'WITHDRAW': 'WITHDRAW',
 }
 
+API_CHECK_LIMIT = {
+    'FORGET_PASSWORD': 3
+}
+
+API_CHECK_TIME_LIMIT = {
+    'FORGET_PASSWORD': 15
+}
+
 
 # 发送邮件的异步方法
 async def send_email(subject, content, to_email, source='', option_params=None):

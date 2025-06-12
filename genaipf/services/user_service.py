@@ -284,7 +284,17 @@ async def user_register(email, password, verify_code, inviter):
 
 # 用户修改密码
 async def user_modify_password(email, password, verify_code):
+    redis_client = RedisConnectionPool().get_connection()
+    verify_key = REDIS_KEYS['USER_KEYS']['MODIFY_PASSWORD_WRONG_TIME'].format(email)
+    verify_num = redis_client.get(verify_key)
+    if not verify_num:
+        verify_num = 0
+    else:
+        verify_num = int(verify_num)
+    max_time = email_utils.API_CHECK_LIMIT[email_utils.EMAIL_SCENES['FORGET_PASSWORD']]
     try:
+        if verify_num and int(verify_num) >= max_time:
+            raise CustomerError(status_code=ERROR_CODE['MODIFY_PASSWORD_VERIFY_TIME_ERROR'])
         user = await get_user_info_from_db(email)
         if not user or len(user) == 0:
             raise CustomerError(status_code=ERROR_CODE['USER_NOT_EXIST'])
@@ -293,11 +303,20 @@ async def user_modify_password(email, password, verify_code):
         password_hashed = generate_user_password(password)
         await update_user_password(user['id'], password_hashed)
         await clear_user_status(user['id'], email)
-        return True
+        return True, None
     except Exception as e:
         logger.error(f'User modify password error: {e}')
         if type(e) == CustomerError and e.status_code == 2006:
-            raise CustomerError(status_code=ERROR_CODE['VERIFY_CODE_ERROR'])
+            time_left = 3
+            if verify_num != max_time:
+                verify_num += 1
+                time_left = max_time - verify_num
+                limit_time = email_utils.API_CHECK_TIME_LIMIT[email_utils.EMAIL_SCENES['FORGET_PASSWORD']] * 60
+                redis_client.set(verify_key, verify_num, limit_time)
+            return False, time_left
+        if type(e) == CustomerError and e.status_code == 2015:
+            return False, 0
+
         raise CustomerError(status_code=ERROR_CODE['MODIFY_PASSWORD_ERROR'])
 
 
