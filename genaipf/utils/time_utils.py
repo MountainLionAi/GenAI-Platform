@@ -219,4 +219,24 @@ def get_format_time_utc8():
 
     # 格式化输出
     return shanghai_time.strftime('%Y-%m-%d %H:%M:%S')
-  
+
+
+def shanghai_to_utc(shanghai_time_str):
+    """
+    将上海时间（北京时间）字符串（格式：%Y-%m-%d %H:%M:%S）转换为UTC时间。
+
+    :param shanghai_time_str: 上海时间字符串，例如 "2025-02-06 17:41:21"
+    :return: UTC时间字符串，格式为 "%Y-%m-%d %H:%M:%S"
+    """
+    # 解析上海时间字符串
+    shanghai_time = datetime.strptime(shanghai_time_str, "%Y-%m-%d %H:%M:%S")
+
+    # 设置上海时区
+    shanghai_timezone = pytz.timezone('Asia/Shanghai')
+    shanghai_time = shanghai_timezone.localize(shanghai_time)
+
+    # 转换为UTC时间
+    utc_time = shanghai_time.astimezone(pytz.UTC)
+
+    # 返回格式化后的UTC时间
+    return utc_time.strftime("%Y-%m-%d %H:%M:%S")
