@@ -624,6 +624,8 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
             # response = chain.astream({})
             if (source == 'v005' or source == 'v006') and (not preset_name or 'check' not in preset_name): 
                 response = claude_cached_api_call("claude-sonnet-4-20250514", v005_006_system_prompt, v005_006_system_prompt_ref, messages)
+            elif source == 'v012':
+                response = claude_cached_api_call("claude-sonnet-4-20250514", system_message, None, messages, source)
             else:
                 response = claude_cached_api_call("claude-sonnet-4-20250514", system_message, None, messages)
             logger.info(f'aref_answer_gpt claude called')

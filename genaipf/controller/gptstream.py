@@ -626,7 +626,9 @@ async def getAnswerAndCallGpt(question, userid, msggroup, language, front_messag
         if has_image:
             isvision = True
             used_gpt_functions = None
-
+        if llm_model.startswith('GPT'):
+            llm_model = 'openai'
+            
         aref_answer_gpt_generator_start_time = time.perf_counter()
         resp1 = await aref_answer_gpt_generator(msgs, model, language_, None, picked_content, related_qa, source, owner,
                                                 isvision, output_type, llm_model, quote_message)
