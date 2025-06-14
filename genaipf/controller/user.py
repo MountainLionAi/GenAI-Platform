@@ -136,7 +136,8 @@ async def send_verify_code_new(request: Request):
     logger.info('send verify code new')
     request_params = request.json
     email = request_params.get('email')
-    captcha_resp = request_params.get('g-recaptcha-response', '')
+    # captcha_resp = request_params.get('g-recaptcha-response', '')
+    captcha_resp = request_params.get('cf-turnstile-response', '')
     language = request_params.get('language', 'en')
     scene_type = request_params.get('scene', 'REGISTER')
     if not email:
