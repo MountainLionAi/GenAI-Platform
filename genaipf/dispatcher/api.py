@@ -741,7 +741,7 @@ def make_calling_messages_based_on_model(messages, use_model: str) -> List:
         ]
     """
     out_msgs = []
-    if use_model.startswith("gpt-4o") or use_model.startswith("gpt-4-vision"):
+    if use_model.startswith("gpt-4o") or use_model.startswith("gpt-4-vision") or use_model.startswith("gpt-4.1"):
         matching_indices = []
         for i in range(len(messages) - 1, -1, -1):
             if messages[i].get("type", "") == "image":
