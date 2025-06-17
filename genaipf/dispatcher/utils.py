@@ -40,7 +40,7 @@ DEEPSEEK_V3_MODEL = os.getenv("DEEPSEEK_V3_MODEL")
 DEEPSEEK_R1_MODEL = os.getenv("DEEPSEEK_R1_MODEL")
 MOUNTAINLION_C1_MODEL = os.getenv("MOUNTAINLION_C1_MODEL")
 MOUNTAINLION_C1_D_MODEL = os.getenv("MOUNTAINLION_C1_D_MODEL")
-
+QWEN_MODEL = os.getenv("DS_OPENROUTER_MODEL_QWEN")
 qdrant_url = "http://localhost:6333"
 
 openai_client = OpenAI(
