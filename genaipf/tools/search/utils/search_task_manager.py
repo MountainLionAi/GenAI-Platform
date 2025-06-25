@@ -378,7 +378,7 @@ async def multi_search_new(questions, related_qa=[], language=None):
         for question in questions:
             if not question_sources.get(question):
                 question_sources[question] = []
-            if client == 'AI_SEARCH':
+            if search_clients[0] == 'AI_SEARCH': # TODO 特殊处理用于AI-Search
                 search_result = await client.research_async(question)
                 related_qa.append(question + ' : ' + search_result)
             else:
