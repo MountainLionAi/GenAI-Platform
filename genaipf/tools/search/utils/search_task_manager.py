@@ -10,6 +10,7 @@ from genaipf.tools.search.duckduckgo.ddg_client import DuckduckgoClient
 from genaipf.utils.common_utils import aget_multi_coro, sync_to_async
 from genaipf.tools.search.google.google_search import google_search
 from genaipf.conf.rag_conf import RAG_SEARCH_CLIENT
+from genaipf.tools.search.ai_search.ai_search_openai import ResearchAssistant
 import genaipf.utils.sensitive_util as sensitive_utils
 import time
 
@@ -364,18 +365,25 @@ async def multi_search(questions: str, related_qa=[], language=None):
 
 
 async def multi_search_new(questions, related_qa=[], language=None):
-    search_clients = ['SERPER']  # 'SERPER' 由于apikey暂时去掉
+    search_clients = ['AI_SEARCH']  # 'SERPER' 由于apikey暂时去掉
+    # search_clients = ['SERPER']  # 'SERPER' 由于apikey暂时去掉
     question_sources = {}
     for search_client in search_clients:
         if search_client == 'Duckduckgo':
             client = DuckduckgoClient()
+        if search_client == 'AI_SEARCH':
+            client = ResearchAssistant()
         else:
             client = GoogleSerperClient()
         for question in questions:
             if not question_sources.get(question):
                 question_sources[question] = []
-            tmp_sources = await client.multi_search(question, language)
-            question_sources[question] = question_sources[question] + tmp_sources
+            if client == 'AI_SEARCH':
+                search_result = await client.research_async(question)
+                related_qa.append(question + ' : ' + search_result)
+            else:
+                tmp_sources = await client.multi_search(question, language)
+                question_sources[question] = question_sources[question] + tmp_sources
     results = await parse_results(question_sources)
     final_sources = []
     if results:
