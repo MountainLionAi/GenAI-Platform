@@ -40,7 +40,7 @@ DEEPSEEK_V3_MODEL = os.getenv("DEEPSEEK_V3_MODEL")
 DEEPSEEK_R1_MODEL = os.getenv("DEEPSEEK_R1_MODEL")
 MOUNTAINLION_C1_MODEL = os.getenv("MOUNTAINLION_C1_MODEL")
 MOUNTAINLION_C1_D_MODEL = os.getenv("MOUNTAINLION_C1_D_MODEL")
-
+QWEN_MODEL = os.getenv("DS_OPENROUTER_MODEL_QWEN")
 qdrant_url = "http://localhost:6333"
 
 openai_client = OpenAI(
@@ -505,8 +505,7 @@ async def async_simple_chat(messages: typing.List[typing.Mapping[str, str]], str
                 return response.choices[0].message.content
         except Exception as e:
             logger.error(f'>>>>>>>>>async_simple_chat openai error: {e}')
-            err_message = f"调用async_simple_chat出现异常：{e}"
-            logger.error(err_message)
+            err_message = f"调用async_simple_chat出现异常：使用的模型={model}"
             err_message = traceback.format_exc()
             logger.error(err_message)
             await send_notice_message('genai_utils', 'async_simple_chat', 0, err_message, 3)

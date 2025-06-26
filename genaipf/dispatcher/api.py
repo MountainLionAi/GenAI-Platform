@@ -3,7 +3,7 @@ import asyncio
 from typing import List
 from genaipf.conf.server import os
 from genaipf.dispatcher.functions import gpt_functions
-from genaipf.dispatcher.utils import openai, OPENAI_PLUS_MODEL, CLAUDE_MODEL, openai_chat_completion_acreate, PERPLEXITY_MODEL, MISTRAL_MODEL, DEEPSEEK_V3_MODEL, DEEPSEEK_R1_MODEL, MOUNTAINLION_C1_MODEL, MOUNTAINLION_C1_D_MODEL
+from genaipf.dispatcher.utils import openai, OPENAI_PLUS_MODEL, CLAUDE_MODEL, openai_chat_completion_acreate, PERPLEXITY_MODEL, MISTRAL_MODEL, DEEPSEEK_V3_MODEL, DEEPSEEK_R1_MODEL, MOUNTAINLION_C1_MODEL, MOUNTAINLION_C1_D_MODEL, QWEN_MODEL
 from genaipf.utils.log_utils import logger
 from datetime import datetime
 from genaipf.dispatcher.prompts_v001 import LionPrompt
@@ -456,6 +456,9 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
         use_model = MOUNTAINLION_C1_MODEL
     elif llm_model == 'MountainLion-C1-D':
         use_model = MOUNTAINLION_C1_D_MODEL
+    elif llm_model == 'qwen':
+        use_model = QWEN_MODEL
+
 
     if isvision:
         # 图片处理专用模型
@@ -580,7 +583,34 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
                 print(e)
                 logger.error(f'aref_answer_gpt_generator question_JSON call gpt4 error {e}', e)
                 return aget_error_generator(str(e))
-
+    elif use_model == QWEN_MODEL:
+        from genaipf.utils.deepseek_util import AsyncDeepSeekClient
+        cleint = AsyncDeepSeekClient()
+        for i in range(5):
+            mlength = len(messages)
+            try:
+                # messages.insert(0, system)
+                # print(f'>>>>>test 003 : {messages}')
+                _messages = [system] + messages
+                response = await cleint._openrouter_request(
+                    model= 'qwen',
+                    messages=_messages,
+                    temperature=temperature,  # 值在[0,1]之间，越大表示回复越具有不确定性
+                    max_tokens=max_tokens, # 输出的最大 token 数
+                    top_p=top_p, # 过滤掉低于阈值的 token 确保结果不散漫
+                    presence_penalty=presence_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
+                    stream=True
+                )
+                logger.info(f'aref_answer_qwen called')
+                return awrap_gpt_generator(response, output_type)
+            except BadRequestError as e:
+                print(e)
+                logger.error(f'aref_answer_gpt_generator BadRequestError {e}', e)
+                messages = messages[mlength // 2:]
+            except Exception as e:
+                print(e)
+                logger.error(f'aref_answer_gpt_generator question_JSON call gpt4 error {e}', e)
+                return aget_error_generator(str(e))
     elif use_model == MISTRAL_MODEL:
         client = None
         try:

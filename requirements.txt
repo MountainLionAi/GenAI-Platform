@@ -69,3 +69,5 @@ qianfan==0.4.9.1
 zhipuai==3.20.0
 oss2==2.19.1
 imgkit==1.2.3
+weasyprint==65.1
+pdfkit==1.0.0
