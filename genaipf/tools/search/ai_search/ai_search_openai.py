@@ -271,7 +271,7 @@ class ResearchAssistant:
             
             # 构建增强的搜索查询
             search_prompt = f"""
-当前精确时间：{current_time['datetime']} UTC
+当前精确时间：{current_time['datetime']} {self.timezone}
 今天是：{current_time['year']}年{current_time['month']}月{current_time['day']}日 {current_time['weekday']} {current_time['hour']}时{current_time['minute']}分
 
 请搜索以下问题的答案：
@@ -335,7 +335,7 @@ class ResearchAssistant:
                         "search_context_size": question.search_context_size,
                         "user_location": {
                             "type": "approximate", 
-                            "timezone": "UTC"
+                            "timezone": self.timezone
                         }
                     }],
                     input=search_prompt,
