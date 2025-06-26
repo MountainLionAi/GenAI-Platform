@@ -505,8 +505,7 @@ async def async_simple_chat(messages: typing.List[typing.Mapping[str, str]], str
                 return response.choices[0].message.content
         except Exception as e:
             logger.error(f'>>>>>>>>>async_simple_chat openai error: {e}')
-            err_message = f"调用async_simple_chat出现异常：{e}"
-            logger.error(err_message)
+            err_message = f"调用async_simple_chat出现异常：使用的模型={model}"
             err_message = traceback.format_exc()
             logger.error(err_message)
             await send_notice_message('genai_utils', 'async_simple_chat', 0, err_message, 3)
