@@ -364,7 +364,7 @@ async def multi_search(questions: str, related_qa=[], language=None):
     return final_sources, related_qa
 
 
-async def multi_search_new(questions, related_qa=[], language=None, front_messages=[]):
+async def multi_search_new(questions, related_qa=[], language=None, front_messages=None):
     search_clients = ['AI_SEARCH']  # 'SERPER' 由于apikey暂时去掉
     # search_clients = ['SERPER']  # 'SERPER' 由于apikey暂时去掉
     question_sources = {}
@@ -380,7 +380,7 @@ async def multi_search_new(questions, related_qa=[], language=None, front_messag
                 question_sources[question] = []
             if search_clients[0] == 'AI_SEARCH': # TODO 特殊处理用于AI-Search
                 tmp_question = '用户：'
-                for message in front_messages:
+                for message in front_messages['messages']:
                     if message['role'] == 'user':
                         tmp_question += f"{message['content']};"
                 search_result = await client.research_async(tmp_question)
