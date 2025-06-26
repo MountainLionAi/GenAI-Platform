@@ -168,7 +168,7 @@ async def multi_sources_task(front_messages, related_qa, language, source):
     final_related_qa = related_qa
     if enrich_questions and len(enrich_questions) != 0:
         multi_search_start_time = time.perf_counter()
-        sources, content = await multi_search_new(enrich_questions, related_qa, language)
+        sources, content = await multi_search_new(enrich_questions, related_qa, language, front_messages)
         multi_search_end_time = time.perf_counter()
         elapsed_multi_search_time = (multi_search_end_time - multi_search_start_time) * 1000
         logger.info(f'=====================>multi_search耗时：{elapsed_multi_search_time:.3f}毫秒')
@@ -364,7 +364,7 @@ async def multi_search(questions: str, related_qa=[], language=None):
     return final_sources, related_qa
 
 
-async def multi_search_new(questions, related_qa=[], language=None):
+async def multi_search_new(questions, related_qa=[], language=None, front_messages=[]):
     search_clients = ['AI_SEARCH']  # 'SERPER' 由于apikey暂时去掉
     # search_clients = ['SERPER']  # 'SERPER' 由于apikey暂时去掉
     question_sources = {}
@@ -379,8 +379,12 @@ async def multi_search_new(questions, related_qa=[], language=None):
             if not question_sources.get(question):
                 question_sources[question] = []
             if search_clients[0] == 'AI_SEARCH': # TODO 特殊处理用于AI-Search
-                search_result = await client.research_async(question)
-                related_qa.append(question + ' : ' + search_result)
+                tmp_question = '用户：'
+                for message in front_messages:
+                    if message['role'] == 'user':
+                        tmp_question += f"{message['content']};"
+                search_result = await client.research_async(tmp_question)
+                related_qa.append(tmp_question + ' : ' + search_result)
             else:
                 tmp_sources = await client.multi_search(question, language)
                 question_sources[question] = question_sources[question] + tmp_sources
