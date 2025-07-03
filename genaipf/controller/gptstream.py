@@ -141,7 +141,7 @@ userid={userid},language={language},msggroup={msggroup},device_no={device_no},qu
     messages = process_messages(messages)
     try:
         # v201、v202 swft移动端，v203 mlion tgbot，v204 external对外开放，v210 swftGpt
-        source_list = ['v005', 'v006', 'v008', 'v009', 'v010', 'v201', 'v202', 'v203', 'v204', 'v210']
+        source_list = ['v005', 'v006', 'v008', 'v009', 'v010', 'v201', 'v202', 'v203', 'v204', 'v210', 'v013']
         if (
                 not IS_UNLIMIT_USAGE and not IS_INNER_DEBUG) and model == 'ml-plus' and source not in source_list and without_minus == 0 and not any(
                 item.get("type") in ["ai_auto_recommand", "ai_plugin_swap"]  for item in messages):
@@ -233,6 +233,8 @@ async def getAnswerAndCallGpt(question, userid, msggroup, language, front_messag
                               regenerate_response):
     from genaipf.dispatcher.stylized_process import stylized_process_mapping
     last_sp_msg = front_messages[-1]
+    if source == 'v013':
+        source = 'v012'
     if last_sp_msg.get("type") in stylized_process_mapping.keys():
         _t = last_sp_msg.get("type")
         last_sp_msg["language"] = language
