@@ -639,6 +639,9 @@ async def getAnswerAndCallGpt(question, userid, msggroup, language, front_messag
                                                              aref_answer_gpt_generator_end_time - aref_answer_gpt_generator_start_time) * 1000
         logger.info(
             f'=====================>aref_answer_gpt_generator耗时：{elapsed_aref_answer_gpt_generator_time:.3f}毫秒')
+        total_time = aref_answer_gpt_generator_end_time - start_time1
+        logger.info(
+            f'=====================>user query {msgs[-1]} use {total_time:.3f}毫秒')
         rag_status['generateAnswer']['isCompleted'] = True
         yield json.dumps(get_format_output("rag_status", rag_status))
         _need_check_text = ''
@@ -676,6 +679,9 @@ async def getAnswerAndCallGpt(question, userid, msggroup, language, front_messag
                 run_tool_agent_end_time = time.perf_counter()
                 elapsed_run_tool_agent_time = (run_tool_agent_end_time - run_tool_agent_start_time) * 1000
                 logger.info(f'=====================>run_tool_agent耗时：{elapsed_run_tool_agent_time:.3f}毫秒')
+                total_time = run_tool_agent_end_time - start_time1
+                logger.info(
+                    f'=====================>user query {msgs[-1]} use {total_time:.3f}毫秒')
             else:
                 convert_func_out_to_stream_start_time = time.perf_counter()
                 stream_gen = convert_func_out_to_stream(func_chunk, messages, newest_question, model, language_,
@@ -687,6 +693,9 @@ async def getAnswerAndCallGpt(question, userid, msggroup, language, front_messag
                                                                       convert_func_out_to_stream_time_end_time - convert_func_out_to_stream_start_time) * 1000
                 logger.info(
                     f'=====================>convert_func_out_to_stream耗时：{elapsed_convert_func_out_to_stream_time:.3f}毫秒')
+                total_time = convert_func_out_to_stream_time_end_time - start_time1
+                logger.info(
+                    f'=====================>user query {msgs[-1]} use {total_time:.3f}毫秒')
         except Exception as e:
             logger.error(f'error: {e} \n func_chunk: {func_chunk}')
             raise e
