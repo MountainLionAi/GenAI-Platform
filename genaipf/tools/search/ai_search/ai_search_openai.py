@@ -161,10 +161,9 @@ class ResearchAssistant:
         current_time = self.get_current_time()
         
         prompt = f"""
-当前时间：{current_time['datetime']} 时区为：{self.timezone}（请基于这个时间生成问题）
-今天是：{current_time['year']}年{current_time['month']}月{current_time['day']}日 {current_time['weekday']}
+当前时间：{current_time['datetime']} 时区为：{self.timezone}（请基于当前时间对问题的时效性作出明确要求）
 
-基于以下用户和chatbot的聊天记录，请生成需要通过网络搜索才能精准回答的研究问题。
+基于以下用户和chatbot的聊天记录，把用户根本需求拆解，分成子问题并通过网络搜索解决子问题，从而能精准解决用户需求。
 
 聊天记录：
 {chat_history}
@@ -173,7 +172,7 @@ class ResearchAssistant:
 1. 所有问题必须基于当前时间：{current_time['datetime']}，时区为：{self.timezone}来生成
 2. 如果用户询问"最近"、"当前"、"现在"等信息，要查询当前时间：{current_time['datetime']}，时区为：{self.timezone}下的最新情况，根据情况增强实效性
 3. 不要生成关于过去年份的问题，除非用户明确要求历史数据对比
-4. 对于投资、市场、技术等快速变化的领域，只关注最近1个月内的信息
+4. 对于投资、市场、技术等快速变化的领域，只关注最近的信息
 
 要求：
 1. 智能分析用户需求的复杂度（根据问题难度判断需要搜索的主题数量）：
@@ -183,9 +182,10 @@ class ResearchAssistant:
 
 2. 问题设计原则：
    - 每个问题主题必须明确包含时间范围（如：2025年6月、本周、过去7天、本日、一小时内、实时等）
-   - 避免过于宽泛或哲学性的问题
-   - 确保全部问题主题以及具体子问题之间有逻辑关联但不重复
-   - 对于复杂问题主题，可将大问题拆分成1-3个具体子问题
+   - 避免过于宽泛或抽象的问题
+   - 确保全部问题主题以及具体子问题之间有逻辑关联但查询内容不重复。
+   - 对于需要确认虚拟币价格或者股价查询，必须为一个独立的实时问题主题，不能在问题主题不包含虚拟币价格情况下，具体子问题包含价格或者指标相关的。否则获得的价格结果会不准。
+   - 对于复杂问题主题，可将大问题进一步细化为1-3个具体子问题
 
 3. 时效性要求分类：
    - 实时数据：股价、汇率、天气等（标记为"实时"）
@@ -283,21 +283,16 @@ class ResearchAssistant:
 🔍 搜索及时性要求（重要）：
 1. **实时数据类**（股价、币价、汇率、指数）：
    - 必须是{current_time['year']}年{current_time['month']}月{current_time['day']}日{current_time['hour']}时{current_time['minute']}分前后10分钟内的数据
-   - 优先查找主要交易所/官方数据源的实时报价（https://coinmarketcap.com/）
+   - 优先查找主要交易所/官方数据源的实时报价，虚拟币价格查询通过：https://coinmarketcap.com/
    - 如果数据超过30分钟，明确标注"数据可能已过时"
-   - 避免使用新闻媒体的二手价格信息
+   - 不要采用新闻媒体文章内包含的过时价格信息
 
 2. **突发新闻类**（新闻事件、公告、突发消息）：
-   - 优先搜索{current_time['year']}年{current_time['month']}月{current_time['day']}日{current_time['hour']}时后发布的信息
+   - 优先搜索{current_time['year']}年{current_time['month']}月{current_time['day']}日发布的信息
    - 如果是{current_time['day']}日之前的消息，必须明确标注发布时间
    - 使用"最新"、"刚刚"、"今日"、"本小时"等关键词强化搜索
 
-3. **市场分析类**（行情分析、预测、观点）：
-   - 必须是{current_time['year']}年{current_time['month']}月份内发布的分析
-   - 优先使用本周（{current_time['day']}日前后3天）内的分析师观点
-   - 拒绝{previous_year}年{previous_month}月之前的过时分析
-
-4. **技术数据类**（技术指标、链上数据、统计数据）：
+3. **技术数据类**（技术指标、链上数据、统计数据）：
    - 搜索{current_time['year']}年{current_time['month']}月{current_time['day']}日的最新技术指标
    - 对于24小时周期数据，确保数据截止时间不早于昨日同一时间
 
@@ -305,7 +300,7 @@ class ResearchAssistant:
 - 在搜索查询中添加时间限定词："2025年6月23日"、"今日"、"实时"、"live"、"current"、"latest"
 - 对于价格查询，使用"real-time price"、"current quote"、"live data"
 - 验证数据时间戳，优先选择带有明确更新时间的数据源
-- 交叉验证：对比2-3个不同来源的数据确保准确性
+- 交叉验证：对比3-4个不同来源的数据确保准确性
 
 📋 答案格式要求：
 1. **必须包含数据时间**：明确标注"截至{current_time['year']}年{current_time['month']}月{current_time['day']}日{current_time['hour']}:{current_time['minute']}"
@@ -322,6 +317,7 @@ class ResearchAssistant:
 - 对于快速变化的数据（如加密货币），严格执行10分钟时效性要求
 - 遇到冲突数据时，选择更新时间最近且来源更权威的版本
 - 必须在答案开头标注数据获取的具体时间点
+- 问题主题内容如果和查询实时价格无关，则返回的结果中不要包含任何价格相关信息。只有在问题主题明确要求查询价格时，返回结果再包含价格信息。
 
 请严格按照以上时效性要求进行搜索和信息筛选。
 """
