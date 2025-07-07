@@ -10,6 +10,7 @@ from genaipf.tools.search.duckduckgo.ddg_client import DuckduckgoClient
 from genaipf.utils.common_utils import aget_multi_coro, sync_to_async
 from genaipf.tools.search.google.google_search import google_search
 from genaipf.conf.rag_conf import RAG_SEARCH_CLIENT
+from genaipf.tools.search.ai_search.ai_search_openai import ResearchAssistant
 import genaipf.utils.sensitive_util as sensitive_utils
 import time
 
@@ -167,7 +168,7 @@ async def multi_sources_task(front_messages, related_qa, language, source):
     final_related_qa = related_qa
     if enrich_questions and len(enrich_questions) != 0:
         multi_search_start_time = time.perf_counter()
-        sources, content = await multi_search_new(enrich_questions, related_qa, language)
+        sources, content = await multi_search_new(enrich_questions, related_qa, language, front_messages)
         multi_search_end_time = time.perf_counter()
         elapsed_multi_search_time = (multi_search_end_time - multi_search_start_time) * 1000
         logger.info(f'=====================>multi_search耗时：{elapsed_multi_search_time:.3f}毫秒')
@@ -363,19 +364,30 @@ async def multi_search(questions: str, related_qa=[], language=None):
     return final_sources, related_qa
 
 
-async def multi_search_new(questions, related_qa=[], language=None):
-    search_clients = ['SERPER']  # 'SERPER' 由于apikey暂时去掉
+async def multi_search_new(questions, related_qa=[], language=None, front_messages=None):
+    search_clients = ['AI_SEARCH']  # 'SERPER' 由于apikey暂时去掉
+    # search_clients = ['SERPER']  # 'SERPER' 由于apikey暂时去掉
     question_sources = {}
     for search_client in search_clients:
         if search_client == 'Duckduckgo':
             client = DuckduckgoClient()
+        if search_client == 'AI_SEARCH':
+            client = ResearchAssistant()
         else:
             client = GoogleSerperClient()
         for question in questions:
             if not question_sources.get(question):
                 question_sources[question] = []
-            tmp_sources = await client.multi_search(question, language)
-            question_sources[question] = question_sources[question] + tmp_sources
+            if search_clients[0] == 'AI_SEARCH': # TODO 特殊处理用于AI-Search
+                tmp_question = '用户：'
+                for message in front_messages['messages']:
+                    if message['role'] == 'user':
+                        tmp_question += f"{message['content']};"
+                search_result = await client.research_async(tmp_question)
+                related_qa.append(tmp_question + ' : ' + search_result)
+            else:
+                tmp_sources = await client.multi_search(question, language)
+                question_sources[question] = question_sources[question] + tmp_sources
     results = await parse_results(question_sources)
     final_sources = []
     if results:
