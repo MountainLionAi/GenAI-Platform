@@ -437,7 +437,8 @@ async def parse_results(question_sources):
                 if await sensitive_utils.isNormal(title) and await sensitive_utils.isNormal(tmp_content):
                     temp_source = {
                         "title": title,
-                        "url": url
+                        "url": url,
+                        "content": tmp_content
                     }
                     question_source.append(temp_source)
                     question_content += tmp_content + "\n引用地址" + url + "\n"
