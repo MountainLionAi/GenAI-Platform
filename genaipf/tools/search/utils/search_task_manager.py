@@ -389,6 +389,7 @@ async def multi_search_new(questions, related_qa=[], language=None, front_messag
                 search_result = await client.research_async(tmp_question)
                 related_qa.append(tmp_question + ' : ' + search_result)
                 tmp_sources, image_sources = await client1.multi_search(question, language)
+                question_sources[question] = question_sources[question] + tmp_sources
             else:
                 tmp_sources, image_sources = await client.multi_search(question, language)
 

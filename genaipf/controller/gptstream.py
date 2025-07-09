@@ -376,6 +376,8 @@ async def getAnswerAndCallGpt(question, userid, msggroup, language, front_messag
             "isCompleted": False,
             "totalSources": 0,
             "usedSources": 0,
+            "sources": [],
+            "imageSources": []
         },
         "generateAnswer": {
             "isCompleted": False
@@ -597,6 +599,7 @@ async def getAnswerAndCallGpt(question, userid, msggroup, language, front_messag
             rag_status['searchData']['isCompleted'] = True
             rag_status['searchData']['totalSources'] = get_random_number(80, 100)
             rag_status['searchData']['usedSources'] = len(sources) if (sources and len(sources)) else 9
+            rag_status['searchData']['sources'] = sources
             rag_status['searchData']['imageSources'] = image_sources
             yield json.dumps(get_format_output("rag_status", rag_status))
             sources_task_end_time = time.perf_counter()
