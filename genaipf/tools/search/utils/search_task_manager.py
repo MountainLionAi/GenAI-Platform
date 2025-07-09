@@ -165,10 +165,11 @@ async def multi_sources_task(front_messages, related_qa, language, source):
     elapsed_enrich_question_time = (enrich_question_end_time - enrich_question_start_time) * 1000
     logger.info(f'=====================>enrich_question耗时：{elapsed_enrich_question_time:.3f}毫秒')
     sources = []
+    image_sources = []
     final_related_qa = related_qa
     if enrich_questions and len(enrich_questions) != 0:
         multi_search_start_time = time.perf_counter()
-        sources, content = await multi_search_new(enrich_questions, related_qa, language, front_messages)
+        sources, content, image_sources = await multi_search_new(enrich_questions, related_qa, language, front_messages)
         multi_search_end_time = time.perf_counter()
         elapsed_multi_search_time = (multi_search_end_time - multi_search_start_time) * 1000
         logger.info(f'=====================>multi_search耗时：{elapsed_multi_search_time:.3f}毫秒')
@@ -200,7 +201,7 @@ async def multi_sources_task(front_messages, related_qa, language, source):
     get_sources_tasks_end_time = time.perf_counter()
     elapsed_get_sources_tasks_time = (get_sources_tasks_end_time - enrich_question_start_time) * 1000
     logger.info(f'=====================>get_sources_tasks耗时：{elapsed_get_sources_tasks_time:.3f}毫秒')
-    return sources, final_related_qa
+    return sources, final_related_qa, image_sources
 
 
 # 获取相关 url 摘要
@@ -365,14 +366,16 @@ async def multi_search(questions: str, related_qa=[], language=None):
 
 
 async def multi_search_new(questions, related_qa=[], language=None, front_messages=None):
-    search_clients = ['AI_SEARCH']  # 'SERPER' 由于apikey暂时去掉
+    search_clients = ['AI_SEARCH']
     # search_clients = ['SERPER']  # 'SERPER' 由于apikey暂时去掉
     question_sources = {}
+    image_sources = []
     for search_client in search_clients:
         if search_client == 'Duckduckgo':
             client = DuckduckgoClient()
         if search_client == 'AI_SEARCH':
             client = ResearchAssistant()
+            client1 = GoogleSerperClient()
         else:
             client = GoogleSerperClient()
         for question in questions:
@@ -385,8 +388,10 @@ async def multi_search_new(questions, related_qa=[], language=None, front_messag
                         tmp_question += f"{message['content']};"
                 search_result = await client.research_async(tmp_question)
                 related_qa.append(tmp_question + ' : ' + search_result)
+                tmp_sources, image_sources = await client1.multi_search(question, language)
             else:
-                tmp_sources = await client.multi_search(question, language)
+                tmp_sources, image_sources = await client.multi_search(question, language)
+
                 question_sources[question] = question_sources[question] + tmp_sources
     results = await parse_results(question_sources)
     final_sources = []
@@ -400,7 +405,7 @@ async def multi_search_new(questions, related_qa=[], language=None, front_messag
     logger.info(f'================最后的related_qa===============')
     logger.info(related_qa)
     logger.info(f'================最后的related_qa===============')
-    return final_sources, related_qa
+    return final_sources, related_qa, image_sources
 
 
 async def check_sensitive_words_in_sources(sources):
