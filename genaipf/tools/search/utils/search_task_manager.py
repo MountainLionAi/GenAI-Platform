@@ -398,7 +398,8 @@ async def multi_search_new(questions, related_qa=[], language=None, front_messag
     if results:
         for question_info in results:
             final_sources += question_info['sources']
-            related_qa.append(question_info['question'] + ' : ' + question_info['content'])
+            if search_clients[0] != 'AI_SEARCH':
+                related_qa.append(question_info['question'] + ' : ' + question_info['content'])
     logger.info(f'================最后的sources===============')
     logger.info(final_sources)
     logger.info(f'================最后的sources===============')
