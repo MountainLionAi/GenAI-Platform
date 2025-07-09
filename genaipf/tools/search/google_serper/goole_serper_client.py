@@ -121,8 +121,9 @@ class GoogleSerperClient:
         search_task.append(self.search_origin_images(question))
         search_res = await asyncio.gather(*search_task)
         title_keys = []
+        print(search_res)
         for search_info in search_res:
-            if search_info.get('type', '') == 'images' and len(search_info['data']) != 0:
+            if search_info['type'] == 'images' and len(search_info['data']) != 0:
                 images_sources = images_sources.extend(search_info['data'])
             else:
                 search_sources.extend(search_info)
