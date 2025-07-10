@@ -51,8 +51,19 @@ async def get_gpt_message_limit(userid, msggroup, limit):
 
 # 获取用户对话列表
 async def get_msggroup(userid):
-    sql = "SELECT id, content, type, msggroup, agent_id, create_time FROM gpt_messages WHERE " \
-          "userid=%s and type = 'user' and deleted=0 GROUP BY msggroup"
+    # origin sql
+    # sql = "SELECT id, content, type, msggroup, agent_id, create_time FROM gpt_messages WHERE " \
+    #       "userid=%s and type = 'user' and deleted=0 GROUP BY msggroup"
+    sql = f"""
+    SELECT m.id, m.content, m.type, m.msggroup, m.agent_id, m.create_time
+FROM gpt_messages m
+JOIN (
+    SELECT msggroup, MAX(id) AS max_id
+    FROM gpt_messages
+    WHERE userid = %s AND type = 'user' AND deleted = 0
+    GROUP BY msggroup
+) AS latest ON m.id = latest.max_id
+"""
     result = await CollectionPool().query(sql, (userid))
     return result
 
