@@ -41,7 +41,7 @@ async def convert_func_out_to_stream(chunk, messages, newest_question, model, la
         already_sources = True
     if is_need_search and (func_name not in not_need_sources):
         convert_task_start_time = time.perf_counter()
-        sources, related_qa = await sources_task
+        sources, related_qa, _ = await sources_task
         convert_task_emd_time = time.perf_counter()
         elapsed_related_questions_task_time = (convert_task_start_time - convert_task_emd_time) * 1000
         logger.info(f'=====================>convert_task_questions_task耗时：{elapsed_related_questions_task_time:.3f}毫秒')
