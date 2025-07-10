@@ -844,7 +844,8 @@ async def getAnswerAndCallGpt(question, userid, msggroup, language, front_messag
             # TODO 速度问题暂时注释掉
             if used_rag:
                 # data['chatSerpResults'] = [] # TODO 因为敏感词屏蔽RAG来源
-                # data['chatSerpResults'] = sources
+                data['chatSerpResults'] = sources if source else []
+                data['chatSerpImageSources'] = image_sources if image_sources else []
                 data['chatRelatedResults'] = related_questions
             data['responseType'] = responseType
             messageContent = json.dumps(data)
