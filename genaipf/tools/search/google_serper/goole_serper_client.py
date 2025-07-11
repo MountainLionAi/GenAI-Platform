@@ -57,10 +57,15 @@ class GoogleSerperClient:
         search_result = []
         try:
             client = AsyncHTTPClient()
-            payload = {
-                "q": question,
-                "tbs": f"qdr:{time}"
-            }
+            if not time:
+                payload = {
+                    "q": question
+                }
+            else:
+                payload = {
+                    "q": question,
+                    "tbs": f"qdr:{time}"
+                }
             # recent_search = LionPromptCommon.get_prompted_messages("recent_search", question)
             # is_recent = await simple_achat(recent_search)
             # if is_recent:
@@ -115,9 +120,10 @@ class GoogleSerperClient:
         sources_content = []
         final_sources = []
         images_sources = []
-        search_task.append(self.search_origin(question, 'd', 8))
-        search_task.append(self.search_origin(question, 'w', 5))
-        search_task.append(self.search_origin(question, 'm', 3))
+        search_task.append(self.search_origin(question, None, 12))
+        # search_task.append(self.search_origin(question, 'd', 8))
+        # search_task.append(self.search_origin(question, 'w', 5))
+        # search_task.append(self.search_origin(question, 'm', 3))
         search_task.append(self.search_origin_images(question))
         search_res = await asyncio.gather(*search_task)
         title_keys = []
