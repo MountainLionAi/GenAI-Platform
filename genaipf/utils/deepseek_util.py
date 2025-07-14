@@ -63,7 +63,7 @@ CLIENT_TYPE_OPENAI = 0
 CLIENT_TYPE_HTTPX = 1
 
 proxy_client = httpx.AsyncClient(
-    proxies="http://127.0.0.1:8022",  # 替换为你的代理地址
+    proxies=os.getenv("PROXY_URL"),  # 替换为你的代理地址
     timeout=60  # 设置超时时间
 )
 
@@ -198,7 +198,8 @@ class AsyncDeepSeekClient:
                     max_tokens=max_tokens,  # 输出的最大 token 数
                     top_p=top_p,  # 过滤掉低于阈值的 token 确保结果不散漫
                     presence_penalty=presence_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
-                    stream=stream
+                    stream=stream,
+                    extra_body={"include_reasoning": False} # reasoning 开关
                 ),
                 timeout=self.client.timeout
             )
@@ -216,10 +217,11 @@ class AsyncDeepSeekClient:
                 "max_tokens": max_tokens,
                 "top_p": top_p,
                 "presence_penalty": presence_penalty,
-                "stream": stream
+                "stream": stream,
+                "include_reasoning": False
             }
             response = await self.client.post(url, headers=headers, json=payload)
-            return response.json()
+            return response
 
     async def _deepseek_official_request(self, messages, model, stream, temperature, max_tokens, top_p, presence_penalty):
         """DeepSeek官方API异步请求实现"""
