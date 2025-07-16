@@ -531,6 +531,7 @@ async def getAnswerAndCallGpt(question, userid, msggroup, language, front_messag
         'reasoner': _reasoner_tmp_text
     }
     sources = []
+    image_sources = []
     related_questions = []
     _related_news = []
     if source == 'v004':
