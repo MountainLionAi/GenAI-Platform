@@ -7,6 +7,7 @@ from genaipf.utils.interface_error_notice_tg_bot_util import send_notice_message
 
 CLIENT_TYPE = 'google_serper'
 REQUEST_URL = 'https://google.serper.dev/search'
+REQUEST_IMAGE_URL = 'https://google.serper.dev/images'
 REQUEST_URL_NEWS = 'https://google.serper.dev/news'
 
 class GoogleSerperClient:
@@ -56,10 +57,15 @@ class GoogleSerperClient:
         search_result = []
         try:
             client = AsyncHTTPClient()
-            payload = {
-                "q": question,
-                "tbs": f"qdr:{time}"
-            }
+            if not time:
+                payload = {
+                    "q": question
+                }
+            else:
+                payload = {
+                    "q": question,
+                    "tbs": f"qdr:{time}"
+                }
             # recent_search = LionPromptCommon.get_prompted_messages("recent_search", question)
             # is_recent = await simple_achat(recent_search)
             # if is_recent:
@@ -80,18 +86,53 @@ class GoogleSerperClient:
             await send_notice_message('google_serper_client', 'search_origin', 0, err_message, 3)
         return search_result
 
+    async def search_origin_images(self, question, k=10):
+        logger.info(f'google serper image search current key is {self._api_key}')
+        search_result = {
+            'type': 'images',
+            'data': []
+        }
+        try:
+            client = AsyncHTTPClient()
+            payload = {
+                "q": question,
+                "num": k
+            }
+            logger.info(f'google serper image search payload: {payload}')
+            headers = {
+                'X-API-KEY': self._api_key,
+                'Content-Type': 'application/json'
+            }
+            result = await client.post_json(REQUEST_IMAGE_URL, payload, headers)
+            if result and len(result['images']) != 0:
+                search_result['data'] = result['images']
+        except Exception as e:
+            if '429' in str(e):
+                set_api_key_unavaiable(self._api_key, CLIENT_TYPE)
+            err_message = f'google serper image search error: {str(e)}'
+            logger.error(err_message)
+            await send_notice_message('google_serper_client', 'search_origin_image', 0, err_message, 3)
+        return search_result
+
     async def multi_search(self, question, language):
         search_task = []
         search_sources = []
         sources_content = []
         final_sources = []
-        search_task.append(self.search_origin(question, 'd', 8))
-        search_task.append(self.search_origin(question, 'w', 5))
-        search_task.append(self.search_origin(question, 'm', 3))
+        images_sources = []
+        search_task.append(self.search_origin(question, None, 12))
+        # search_task.append(self.search_origin(question, 'd', 8))
+        # search_task.append(self.search_origin(question, 'w', 5))
+        # search_task.append(self.search_origin(question, 'm', 3))
+        search_task.append(self.search_origin_images(question))
         search_res = await asyncio.gather(*search_task)
         title_keys = []
         for search_info in search_res:
-            search_sources.extend(search_info)
+            if isinstance(search_info, list):
+                search_sources.extend(search_info)
+            else:
+                if len(search_info['data']) != 0:
+                    images_sources = search_info['data']
         if search_sources and len(search_sources) != 0:
             final_sources = search_sources
             # for search_source in search_sources:
@@ -112,7 +153,7 @@ class GoogleSerperClient:
                     "body": final_source.get('snippet', '')
                 }
                 format_final_sources.append(tmp_source)
-        return format_final_sources
+        return format_final_sources, images_sources
 
 
     async def news(self, question, k=5):

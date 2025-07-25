@@ -139,24 +139,25 @@ userid={userid},language={language},msggroup={msggroup},device_no={device_no},qu
     # messages = [{"role": msg["role"], "content": msg["content"]} for msg in process_messages(messages)]
     # messages = messages[-10:]
     messages = process_messages(messages)
-    try:
-        # v201、v202 swft移动端，v203 mlion tgbot，v204 external对外开放，v210 swftGpt
-        source_list = ['v005', 'v006', 'v008', 'v009', 'v010', 'v201', 'v202', 'v203', 'v204', 'v210', 'v013']
-        if (
-                not IS_UNLIMIT_USAGE and not IS_INNER_DEBUG) and model == 'ml-plus' and source not in source_list and without_minus == 0 and not any(
-                item.get("type") in ["ai_auto_recommand", "ai_plugin_swap"]  for item in messages):
-            _user_id = ''
-            if userid != 0:
-                _user_id = userid
-            can_use = await points_service.check_user_can_use_time(_user_id, visitor_id)
-            # can_use = await user_account_service_wrapper.get_user_can_use_time(userid)
-            if can_use:
-                await points_service.minus_user_can_use_time(_user_id, 'query', visitor_id)
-            else:
-                return fail(ERROR_CODE['NO_REMAINING_TIMES'])
-    except Exception as e:
-        logger.error(e)
-        logger.error(traceback.format_exc())
+    # TODO 暂时取消聊天的收费
+    # try:
+    #     # v201、v202 swft移动端，v203 mlion tgbot，v204 external对外开放，v210 swftGpt
+    #     source_list = ['v005', 'v006', 'v008', 'v009', 'v010', 'v201', 'v202', 'v203', 'v204', 'v210', 'v013']
+    #     if (
+    #             not IS_UNLIMIT_USAGE and not IS_INNER_DEBUG) and model == 'ml-plus' and source not in source_list and without_minus == 0 and not any(
+    #             item.get("type") in ["ai_auto_recommand", "ai_plugin_swap"]  for item in messages):
+    #         _user_id = ''
+    #         if userid != 0:
+    #             _user_id = userid
+    #         can_use = await points_service.check_user_can_use_time(_user_id, visitor_id)
+    #         # can_use = await user_account_service_wrapper.get_user_can_use_time(userid)
+    #         if can_use:
+    #             await points_service.minus_user_can_use_time(_user_id, 'query', visitor_id)
+    #         else:
+    #             return fail(ERROR_CODE['NO_REMAINING_TIMES'])
+    # except Exception as e:
+    #     logger.error(e)
+    #     logger.error(traceback.format_exc())
 
     try:
         async def event_generator(_response):
@@ -376,6 +377,8 @@ async def getAnswerAndCallGpt(question, userid, msggroup, language, front_messag
             "isCompleted": False,
             "totalSources": 0,
             "usedSources": 0,
+            "sources": [],
+            "imageSources": []
         },
         "generateAnswer": {
             "isCompleted": False
@@ -528,6 +531,7 @@ async def getAnswerAndCallGpt(question, userid, msggroup, language, front_messag
         'reasoner': _reasoner_tmp_text
     }
     sources = []
+    image_sources = []
     related_questions = []
     _related_news = []
     if source == 'v004':
@@ -593,10 +597,12 @@ async def getAnswerAndCallGpt(question, userid, msggroup, language, front_messag
         logger.info(f"userid={userid},本次聊天未触发function")
         if used_rag and is_need_search:
             sources_task_start_time = time.perf_counter()
-            sources, related_qa = await sources_task
+            sources, related_qa, image_sources = await sources_task
             rag_status['searchData']['isCompleted'] = True
             rag_status['searchData']['totalSources'] = get_random_number(80, 100)
             rag_status['searchData']['usedSources'] = len(sources) if (sources and len(sources)) else 9
+            rag_status['searchData']['sources'] = sources
+            rag_status['searchData']['imageSources'] = image_sources
             yield json.dumps(get_format_output("rag_status", rag_status))
             sources_task_end_time = time.perf_counter()
             elapsed_sources_task_time = (sources_task_end_time - sources_task_start_time) * 1000
@@ -839,7 +845,8 @@ async def getAnswerAndCallGpt(question, userid, msggroup, language, front_messag
             # TODO 速度问题暂时注释掉
             if used_rag:
                 # data['chatSerpResults'] = [] # TODO 因为敏感词屏蔽RAG来源
-                # data['chatSerpResults'] = sources
+                data['chatSerpResults'] = sources if source else []
+                data['chatSerpImageSources'] = image_sources if image_sources else []
                 data['chatRelatedResults'] = related_questions
             data['responseType'] = responseType
             messageContent = json.dumps(data)
