@@ -603,6 +603,7 @@ async def getAnswerAndCallGpt(question, userid, msggroup, language, front_messag
             rag_status['searchData']['usedSources'] = len(sources) if (sources and len(sources)) else 9
             rag_status['searchData']['sources'] = sources
             rag_status['searchData']['imageSources'] = image_sources
+            rag_status['searchData']['subQuestoins'] = related_qa
             yield json.dumps(get_format_output("rag_status", rag_status))
             sources_task_end_time = time.perf_counter()
             elapsed_sources_task_time = (sources_task_end_time - sources_task_start_time) * 1000
