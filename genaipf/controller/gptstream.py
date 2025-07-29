@@ -500,7 +500,7 @@ async def getAnswerAndCallGpt(question, userid, msggroup, language, front_messag
         if is_need_search:
             premise_search2_start_time = time.perf_counter()
             # 问题分析已经完成
-            sources_task, related_questions_task = await multi_rag(front_messages, related_qa, language_, source)
+            sources_task, related_questions_task, ai_ranking_task = await multi_rag(front_messages, related_qa, language_, source)
             premise_search2_end_time = time.perf_counter()
             elapsed_premise_search2 = (premise_search2_end_time - premise_search2_start_time) * 1000
             logger.info(f'=====================>premise_search2耗时：{elapsed_premise_search2:.3f}毫秒')
@@ -585,6 +585,8 @@ async def getAnswerAndCallGpt(question, userid, msggroup, language, front_messag
             rag_status['usedRag'] = True
             rag_status['promptAnalysis']['isCompleted'] = True
             yield json.dumps(get_format_output("rag_status", rag_status))
+        ai_ranking_info = await ai_ranking_task
+        yield json.dumps(get_format_output("ai_ranking", ai_ranking_info))
     else:
         func_chunk = await resp1.__anext__()
         route_mode = "function"

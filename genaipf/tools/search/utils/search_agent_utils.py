@@ -11,7 +11,7 @@ import asyncio
 from genaipf.dispatcher.prompts_common import LionPromptCommon
 from genaipf.dispatcher.utils import async_simple_chat
 from genaipf.tools.search.utils.search_task_manager import get_related_question_task, get_sources_tasks, \
-    get_is_need_search_task, multi_sources_task
+    get_is_need_search_task, multi_sources_task, check_ai_ranking
 from genaipf.tools.search.google_serper.google_serper_agent import google_serper
 
 client = OpenAI()
@@ -148,10 +148,11 @@ async def multi_rag(front_messages, related_qa=None, language=None, source=''):
     newest_question_arr = {"messages": [data['messages'][-1]]}
     t1 = asyncio.create_task(multi_sources_task(data, related_qa, language, source))
     t2 = asyncio.create_task(get_related_question_task(newest_question_arr, fixed_related_question, language, source))
+    t3 = asyncio.create_task(check_ai_ranking(data, language, source))
     # await t1
     # need_search = t1.result()
     # return need_search, t2, t3
-    return t1, t2
+    return t1, t2, t3
 
 
 def is_need_rag_simple(message):
