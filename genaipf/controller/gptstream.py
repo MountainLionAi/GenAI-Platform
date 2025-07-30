@@ -31,8 +31,8 @@ from genaipf.conf.server import IS_INNER_DEBUG, IS_UNLIMIT_USAGE
 from genaipf.utils.speech_utils import transcribe, textToSpeech
 from genaipf.tools.search.utils.search_agent_utils import other_search
 from genaipf.tools.search.utils.search_agent_utils import premise_search, premise_search1, premise_search2, \
-    is_need_rag_simple, new_question_question, fixed_related_question, multi_rag
-from genaipf.tools.search.utils.search_task_manager import get_related_question_task
+    is_need_rag_simple, new_question_question, fixed_related_question, multi_rag, get_sub_qeustions
+from genaipf.tools.search.utils.search_task_manager import get_related_question_task, get_divide_questions
 from genaipf.utils.common_utils import contains_chinese
 from genaipf.utils.sensitive_util import isNormal
 from genaipf.dispatcher.model_selection import check_and_pick_model
@@ -499,8 +499,18 @@ async def getAnswerAndCallGpt(question, userid, msggroup, language, front_messag
         is_need_search = is_need_rag_simple(newest_question)
         if is_need_search:
             premise_search2_start_time = time.perf_counter()
+            # 生成子问题
+            enrich_question_start_time = time.perf_counter()
+            divid_data = {'messages': front_messages}
+            enrich_questions = await get_divide_questions(divid_data, language, source)  # 根据上下文生成新的问题数组
+            logger.info(f'丰富后的问题是: {enrich_questions}')
+            enrich_question_end_time = time.perf_counter()
+            elapsed_enrich_question_time = (enrich_question_end_time - enrich_question_start_time) * 1000
+            logger.info(f'=====================>enrich_question耗时：{elapsed_enrich_question_time:.3f}毫秒')
+            sub_qeustions = await get_sub_qeustions(enrich_questions, language)
+            yield json.dumps(get_format_output("sub_qeustions", sub_qeustions))
             # 问题分析已经完成
-            sources_task, related_questions_task = await multi_rag(front_messages, related_qa, language_, source)
+            sources_task, related_questions_task = await multi_rag(front_messages, related_qa, language_, source, enrich_questions)
             premise_search2_end_time = time.perf_counter()
             elapsed_premise_search2 = (premise_search2_end_time - premise_search2_start_time) * 1000
             logger.info(f'=====================>premise_search2耗时：{elapsed_premise_search2:.3f}毫秒')
@@ -603,7 +613,6 @@ async def getAnswerAndCallGpt(question, userid, msggroup, language, front_messag
             rag_status['searchData']['usedSources'] = len(sources) if (sources and len(sources)) else 9
             rag_status['searchData']['sources'] = sources
             rag_status['searchData']['imageSources'] = image_sources
-            rag_status['searchData']['subQuestions'] = related_qa
             yield json.dumps(get_format_output("rag_status", rag_status))
             sources_task_end_time = time.perf_counter()
             elapsed_sources_task_time = (sources_task_end_time - sources_task_start_time) * 1000

@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta, timezone
 import pytz
-
+import time
 
 # 获取当前时间
 def get_format_time():
@@ -240,3 +240,19 @@ def shanghai_to_utc(shanghai_time_str):
 
     # 返回格式化后的UTC时间
     return utc_time.strftime("%Y-%m-%d %H:%M:%S")
+
+def get_current_time():
+        """获取当前时间信息"""
+        now = datetime.now()
+        return {
+            'datetime': now.strftime('%Y-%m-%d %H:%M:%S'),
+            'date': now.strftime('%Y-%m-%d'),
+            'year': str(now.year),
+            'month': str(now.month),
+            'day': str(now.day),
+            'hour': str(now.hour),
+            'minute': str(now.minute),
+            'month_name': now.strftime('%B'),
+            'weekday': now.strftime('%A'),
+            'timestamp': int(time.time())
+        }
