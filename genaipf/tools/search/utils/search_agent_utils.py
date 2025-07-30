@@ -262,8 +262,17 @@ async def generate_questions(question: str, language=None):
         {"role": "user", "content": question +language_requirement}
     ]
     
+    # try:
+    #     _result = await async_simple_chat_with_model(messages, model='claude-sonnet-4-20250514', base_model='claude')
+    #     return _result
+    # except (SyntaxError, ValueError) as e:
+    #     return []
+    completion = client.chat.completions.create(
+        model="gpt-4o",
+        messages=messages
+    )
     try:
-        _result = await async_simple_chat_with_model(messages, model='claude-sonnet-4-20250514', base_model='claude')
-        return _result
+        python_object = ast.literal_eval(completion.choices[0].message.content)
+        return python_object
     except (SyntaxError, ValueError) as e:
         return []
