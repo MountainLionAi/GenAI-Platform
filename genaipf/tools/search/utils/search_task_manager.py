@@ -12,6 +12,7 @@ from genaipf.tools.search.google.google_search import google_search
 from genaipf.conf.rag_conf import RAG_SEARCH_CLIENT
 from genaipf.tools.search.ai_search.ai_search_openai import ResearchAssistant
 import genaipf.utils.sensitive_util as sensitive_utils
+import genaipf.utils.common_utils as common_utils
 import time
 
 WHITE_LIST_URL = [
@@ -440,3 +441,48 @@ async def parse_results(question_sources):
             })
 
     return final_sources
+
+
+async def check_ai_ranking(messages, language, source=''):
+    """
+    判断用户是否有对Web3行业内容进行排序对比的需求
+    
+    Args:
+        messages: 用户消息历史
+        language: 语言 ('zh', 'cn', 'en')
+        source: 来源标识
+    
+    Returns:
+        dict: 包含排序需求分析结果的字典
+    """
+    ranking_data = {
+        "need_ranking": False,
+        "category": None,
+        "keywords": [],
+        "ranking_type": None
+    }
+    try:
+        # 获取最新的用户消息
+        latest_message = messages['messages'][-1] if messages['messages'] else None
+        if not latest_message or latest_message.get('role') != 'user':
+            return ranking_data
+        # 使用prompt模板判断是否有排序需求
+        msgs = LionPromptCommon.get_prompted_messages("check_ai_ranking", messages, language)
+        result = await async_simple_chat(msgs, model='gpt-4o')
+        
+        # 解析返回的JSON结果
+        try:
+            ranking_result = common_utils.extract_json_from_response(result)
+            logger.info(f'AI ranking analysis result: {ranking_result}')
+            if not ranking_result:
+                return ranking_data
+            else:
+                ranking_data = ranking_result
+            return ranking_data
+        except Exception as e:
+            logger.error(f'Failed to parse AI ranking result: {e}, result: {result}')
+            # 如果解析失败，返回默认结果
+            return ranking_data
+    except Exception as e:
+        logger.error(f'Error in check_ai_ranking: {e}')
+        return ranking_data

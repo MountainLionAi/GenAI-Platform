@@ -10,6 +10,7 @@ from genaipf.dispatcher.prompt_templates_common.nft_agent_question import _get_n
 from genaipf.dispatcher.prompt_templates_common.recent_search import _get_recent_search_prompted_messages
 from genaipf.dispatcher.prompt_templates_common.share_summary import _get_share_summary_prompted_messages
 from genaipf.dispatcher.prompt_templates_common.divide_user_question import _get_divide_question_prompted_messages
+from genaipf.dispatcher.prompt_templates_common.check_ai_ranking import _get_check_ai_ranking_prompted_messages
 import typing
 
 _default_lang = "en"
@@ -42,6 +43,8 @@ class LionPromptCommon:
             return _get_share_summary_prompted_messages(data, language)
         elif preset_name=="divide_user_question":
             return _get_divide_question_prompted_messages(data, language, num)
+        elif preset_name=="check_ai_ranking":
+            return _get_check_ai_ranking_prompted_messages(data, language)
         else:
             raise Exception("has not")
 

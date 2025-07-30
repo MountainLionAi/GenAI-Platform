@@ -4,6 +4,7 @@ import asyncio
 import uuid
 from urllib.parse import urlparse
 from genaipf.utils.snowflake import SnowflakeIdWorker
+from genaipf.utils.log_utils import logger
 import functools
 import traceback
 import random
@@ -212,3 +213,23 @@ def get_uuid():
 def get_random_number(from_num, end_num):
     random_number = random.randint(from_num, end_num)
     return random_number
+
+
+def extract_json_from_response(response_str: str) -> list:
+    if "```json" in response_str:
+        start = response_str.find("```json")
+        end = response_str.find("```", start+1)
+        if end != -1:
+            json_str = response_str[start+7:end].strip()
+            try:
+                data = json.loads(json_str)
+                return data
+            except Exception as e:
+                logger.info(f'解析带json前缀的json数据失败: {str(e)}')
+                pass
+    try:
+        data = json.loads(response_str)
+        return data
+    except Exception as e:
+        logger.info(f'解析原生json数据失败: {str(e)}')
+        return None
