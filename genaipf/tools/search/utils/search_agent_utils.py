@@ -157,7 +157,7 @@ async def get_sub_qeustions(enrich_questions, language):
     final_questions = []
     for questions in enrich_questions:
         sub_questions = await generate_questions(questions, language)
-        final_questions.append(sub_questions)
+        final_questions.extend(sub_questions)
     return final_questions
 
 def is_need_rag_simple(message):
