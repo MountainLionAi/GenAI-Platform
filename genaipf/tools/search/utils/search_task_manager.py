@@ -131,12 +131,7 @@ async def get_divide_questions(front_messages, language, source, context_length=
     latest_user_msg = user_messages[-1]
     final_question_arr = []
     if source == 'v007':  # 单独处理空投的content
-        airdrop_info = json.loads(latest_user_msg['content'])
-        if language == 'zh':
-            add_question = f'请帮我介绍一下: {airdrop_info.get("title")}这个空投项目'
-        else:
-            add_question = f'Please introduce the {airdrop_info.get("title")} Airdrop Project'
-        final_question_arr.append(add_question)
+        return []
     else:
         if latest_user_msg.get('quote_info'):
             newest_question = latest_user_msg.get('quote_info')
@@ -158,13 +153,8 @@ async def get_divide_questions(front_messages, language, source, context_length=
 
 
 # 新的多轮搜索的方法
-async def multi_sources_task(front_messages, related_qa, language, source):
+async def multi_sources_task(front_messages, related_qa, language, source, enrich_questions):
     enrich_question_start_time = time.perf_counter()
-    enrich_questions = await get_divide_questions(front_messages, language, source)  # 根据上下文生成新的问题数组
-    logger.info(f'丰富后的问题是: {enrich_questions}')
-    enrich_question_end_time = time.perf_counter()
-    elapsed_enrich_question_time = (enrich_question_end_time - enrich_question_start_time) * 1000
-    logger.info(f'=====================>enrich_question耗时：{elapsed_enrich_question_time:.3f}毫秒')
     sources = []
     image_sources = []
     final_related_qa = related_qa
