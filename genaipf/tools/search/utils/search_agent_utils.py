@@ -258,6 +258,7 @@ async def generate_questions(question: str, language=None):
             }}
         ]
 
+        ***特别注意***: 只需要输出可解析的json，不要返回其他文字说明和符号        
         """},
         {"role": "user", "content": question +language_requirement}
     ]

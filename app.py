@@ -36,7 +36,7 @@ app.config.RESPONSE_TIMEOUT = server.RESPONSE_TIMEOUT
 app.config.KEEP_ALIVE_TIMEOUT = server.KEEP_ALIVE_TIMEOUT
 app.config.KEEP_ALIVE = server.KEEP_ALIVE
 app.config.REAL_IP_HEADER = "X-Forwarded-For"
-WorkerManager.THRESHOLD = 1200
+WorkerManager.THRESHOLD = 1800
 
 app.static('/static', server.STATIC_PATH)
 
@@ -72,7 +72,7 @@ if __name__ == "__main__":
         update_all_vdb()
     else:
         if server.IS_INNER_DEBUG:
-            app.run(host=server.HOST, port=server.PORT)
+            app.run(host=server.HOST, port=server.PORT, debug=True)
         else:
             # workers的数量可以单独设置，如果设置为fast则默认为8
             # app.run(host=server.HOST, port=server.PORT, fast=True)
