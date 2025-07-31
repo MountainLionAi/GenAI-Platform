@@ -556,10 +556,10 @@ async def async_simple_chat_with_model(messages: typing.List[typing.Mapping[str,
                 response = await asyncio.wait_for(
                     claude_client.messages.create(
                         model=model,
-                        max_tokens=2048,
                         temperature=0,
                         messages=messages,
-                        stream=stream
+                        stream=stream,
+                        max_tokens=6000
                     ),
                     timeout=expired_time  # 设置超时时间为180秒
                 )
