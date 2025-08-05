@@ -544,6 +544,7 @@ async def getAnswerAndCallGpt(question, userid, msggroup, language, front_messag
     image_sources = []
     related_questions = []
     _related_news = []
+    ai_ranking_info = None
     if source == 'v004':
         from genaipf.dispatcher.callgpt import DispatcherCallGpt
         _data = {"msgs": msgs, "model": model, "preset_name": "attitude", "source": source, "owner": owner,
@@ -860,6 +861,8 @@ async def getAnswerAndCallGpt(question, userid, msggroup, language, front_messag
                 data['chatSerpResults'] = sources if source else []
                 data['chatSerpImageSources'] = image_sources if image_sources else []
                 data['chatRelatedResults'] = related_questions
+            if ai_ranking_info:
+                data['aiRankingInfo'] = ai_ranking_info
             data['responseType'] = responseType
             messageContent = json.dumps(data)
             gpt_message = (
