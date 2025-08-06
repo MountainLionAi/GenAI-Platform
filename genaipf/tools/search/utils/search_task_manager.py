@@ -381,7 +381,7 @@ async def multi_search_new(questions, search_type, related_qa=[], language=None,
                 if search_type == 'deep_search':
                     search_result = await client.research_async(tmp_question)
                 else:
-                    search_result = await intelligent_search(front_messages)
+                    search_result = await intelligent_search(front_messages['messages'])
                 related_qa.append(tmp_question + ' : ' + search_result)
                 tmp_sources, image_sources = await client1.multi_search(question, language)
                 question_sources[question] = question_sources[question] + tmp_sources
