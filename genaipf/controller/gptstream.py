@@ -598,7 +598,7 @@ async def getAnswerAndCallGpt(question, userid, msggroup, language, front_messag
             rag_status['usedRag'] = True
             rag_status['promptAnalysis']['isCompleted'] = True
             yield json.dumps(get_format_output("rag_status", rag_status))
-        ai_ranking_info = await ai_ranking_task
+            ai_ranking_info = await ai_ranking_task
         yield json.dumps(get_format_output("ai_ranking", ai_ranking_info))
     else:
         func_chunk = await resp1.__anext__()
