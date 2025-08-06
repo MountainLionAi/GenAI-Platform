@@ -883,7 +883,7 @@ async def getAnswerAndCallGpt(question, userid, msggroup, language, front_messag
                 None,
                 None
             )
-            if data['content'] or data['type'] != 'gpt':
+            if data['content'] or data['reasoner'] or data['type'] != 'gpt':
                 await gpt_service.add_gpt_message_with_code(gpt_message)
     else:
         logger.info(
