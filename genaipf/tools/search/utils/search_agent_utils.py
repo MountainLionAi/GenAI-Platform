@@ -142,11 +142,11 @@ async def premise_search2(front_messages, related_qa=None, language=None, source
     return t2, t3
 
 
-async def multi_rag(front_messages, related_qa=None, language=None, source='', enrich_questions=''):
+async def multi_rag(front_messages, search_type, related_qa=None, language=None, source='', enrich_questions=''):
     data = {'messages': front_messages}
     # 相关问题取最新的
     newest_question_arr = {"messages": [data['messages'][-1]]}
-    t1 = asyncio.create_task(multi_sources_task(data, related_qa, language, source, enrich_questions))
+    t1 = asyncio.create_task(multi_sources_task(data, related_qa, language, source, enrich_questions, search_type))
     t2 = asyncio.create_task(get_related_question_task(newest_question_arr, fixed_related_question, language, source))
     t3 = asyncio.create_task(check_ai_ranking(data, language, source))
     # await t1

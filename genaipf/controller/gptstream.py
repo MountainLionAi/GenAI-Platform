@@ -130,9 +130,10 @@ async def send_stream_chat(request: Request):
     visitor_id = request_params.get('visitor_id', '')
     without_minus = int(request_params.get('without_minus', 0))
     regenerate_response = request_params.get('regenerate_response', None)
+    search_type = request_params.get('search_type', None)
     logger_content = f"""
 input_params:
-userid={userid},language={language},msggroup={msggroup},device_no={device_no},question_code={question_code},model={model},source={source},chain_id={chain_id},owner={owner},agent_id={agent_id},output_type={output_type},llm_model={llm_model},wallet_type={wallet_type},regenerate_response={regenerate_response}
+userid={userid},language={language},msggroup={msggroup},device_no={device_no},question_code={question_code},model={model},source={source},chain_id={chain_id},owner={owner},agent_id={agent_id},output_type={output_type},llm_model={llm_model},wallet_type={wallet_type},regenerate_response={regenerate_response},search_type={search_type}
     """
     logger.info(logger_content)
 
@@ -164,7 +165,7 @@ userid={userid},language={language},msggroup={msggroup},device_no={device_no},qu
             # async for _str in getAnswerAndCallGpt(request_params['content'], userid, msggroup, language, messages):
             async for _str in getAnswerAndCallGpt(request_params.get('content'), userid, msggroup, language, messages,
                                                   device_no, question_code, model, output_type, source, owner, agent_id,
-                                                  chain_id, llm_model, wallet_type, regenerate_response):
+                                                  chain_id, llm_model, search_type, wallet_type, regenerate_response):
                 await _response.write(f"data:{_str}\n\n")
                 await asyncio.sleep(0.01)
 
@@ -230,7 +231,7 @@ async def send_chat(request: Request):
 
 
 async def getAnswerAndCallGpt(question, userid, msggroup, language, front_messages, device_no, question_code, model,
-                              output_type, source, owner, agent_id, chain_id, llm_model, wallet_type,
+                              output_type, source, owner, agent_id, chain_id, llm_model, search_type, wallet_type,
                               regenerate_response):
     from genaipf.dispatcher.stylized_process import stylized_process_mapping
     last_sp_msg = front_messages[-1]
@@ -507,10 +508,11 @@ async def getAnswerAndCallGpt(question, userid, msggroup, language, front_messag
             enrich_question_end_time = time.perf_counter()
             elapsed_enrich_question_time = (enrich_question_end_time - enrich_question_start_time) * 1000
             logger.info(f'=====================>enrich_question耗时：{elapsed_enrich_question_time:.3f}毫秒')
-            sub_qeustions = await get_sub_qeustions(enrich_questions, language)
-            yield json.dumps(get_format_output("sub_qeustions", sub_qeustions))
+            if search_type == 'deep_search':
+                sub_qeustions = await get_sub_qeustions(enrich_questions, language)
+                yield json.dumps(get_format_output("sub_qeustions", sub_qeustions))
             # 问题分析已经完成
-            sources_task, related_questions_task, ai_ranking_task = await multi_rag(front_messages, related_qa, language_, source, enrich_questions)
+            sources_task, related_questions_task, ai_ranking_task = await multi_rag(front_messages,search_type, related_qa, language_, source, enrich_questions)
             premise_search2_end_time = time.perf_counter()
             elapsed_premise_search2 = (premise_search2_end_time - premise_search2_start_time) * 1000
             logger.info(f'=====================>premise_search2耗时：{elapsed_premise_search2:.3f}毫秒')
