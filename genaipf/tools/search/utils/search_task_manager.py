@@ -11,6 +11,7 @@ from genaipf.utils.common_utils import aget_multi_coro, sync_to_async
 from genaipf.tools.search.google.google_search import google_search
 from genaipf.conf.rag_conf import RAG_SEARCH_CLIENT
 from genaipf.tools.search.ai_search.ai_search_openai import ResearchAssistant
+from genaipf.tools.search.ai_search.intelligent_search_engine import intelligent_search
 import genaipf.utils.sensitive_util as sensitive_utils
 import genaipf.utils.common_utils as common_utils
 import time
@@ -153,14 +154,14 @@ async def get_divide_questions(front_messages, language, source, context_length=
 
 
 # 新的多轮搜索的方法
-async def multi_sources_task(front_messages, related_qa, language, source, enrich_questions):
+async def multi_sources_task(front_messages, related_qa, language, source, enrich_questions, search_type):
     enrich_question_start_time = time.perf_counter()
     sources = []
     image_sources = []
     final_related_qa = related_qa
     if enrich_questions and len(enrich_questions) != 0:
         multi_search_start_time = time.perf_counter()
-        sources, content, image_sources = await multi_search_new(enrich_questions, related_qa, language, front_messages)
+        sources, content, image_sources = await multi_search_new(enrich_questions,search_type, related_qa, language, front_messages)
         multi_search_end_time = time.perf_counter()
         elapsed_multi_search_time = (multi_search_end_time - multi_search_start_time) * 1000
         logger.info(f'=====================>multi_search耗时：{elapsed_multi_search_time:.3f}毫秒')
@@ -356,7 +357,7 @@ async def multi_search(questions: str, related_qa=[], language=None):
     return final_sources, related_qa
 
 
-async def multi_search_new(questions, related_qa=[], language=None, front_messages=None):
+async def multi_search_new(questions, search_type, related_qa=[], language=None, front_messages=None):
     search_clients = ['AI_SEARCH']
     # search_clients = ['SERPER']  # 'SERPER' 由于apikey暂时去掉
     question_sources = {}
@@ -377,7 +378,10 @@ async def multi_search_new(questions, related_qa=[], language=None, front_messag
                 for message in front_messages['messages']:
                     if message['role'] == 'user':
                         tmp_question += f"{message['content']};"
-                search_result = await client.research_async(tmp_question)
+                if search_type == 'deep_search':
+                    search_result = await client.research_async(tmp_question)
+                else:
+                    search_result = await intelligent_search(front_messages)
                 related_qa.append(tmp_question + ' : ' + search_result)
                 tmp_sources, image_sources = await client1.multi_search(question, language)
                 question_sources[question] = question_sources[question] + tmp_sources
