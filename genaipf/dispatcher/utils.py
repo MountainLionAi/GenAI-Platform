@@ -32,7 +32,7 @@ MAX_CH_LENGTH_GPT3 = 8000
 MAX_CH_LENGTH_GPT4 = 3000
 MAX_CH_LENGTH_QA_GPT3 = 3000
 MAX_CH_LENGTH_QA_GPT4 = 1500
-OPENAI_PLUS_MODEL = "gpt-4o-2024-11-20"
+OPENAI_PLUS_MODEL = os.getenv("OPENAI_PLUS_MODEL") 
 CLAUDE_MODEL = "claude-sonnet-4-20250514"
 PERPLEXITY_MODEL = "sonar-pro"  # "sonar-small-online"
 MISTRAL_MODEL = "open-mixtral-8x22b"
@@ -556,10 +556,10 @@ async def async_simple_chat_with_model(messages: typing.List[typing.Mapping[str,
                 response = await asyncio.wait_for(
                     claude_client.messages.create(
                         model=model,
-                        max_tokens=2048,
                         temperature=0,
                         messages=messages,
-                        stream=stream
+                        stream=stream,
+                        max_tokens=6000
                     ),
                     timeout=expired_time  # 设置超时时间为180秒
                 )

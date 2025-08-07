@@ -31,8 +31,8 @@ from genaipf.conf.server import IS_INNER_DEBUG, IS_UNLIMIT_USAGE
 from genaipf.utils.speech_utils import transcribe, textToSpeech
 from genaipf.tools.search.utils.search_agent_utils import other_search
 from genaipf.tools.search.utils.search_agent_utils import premise_search, premise_search1, premise_search2, \
-    is_need_rag_simple, new_question_question, fixed_related_question, multi_rag
-from genaipf.tools.search.utils.search_task_manager import get_related_question_task
+    is_need_rag_simple, new_question_question, fixed_related_question, multi_rag, get_sub_qeustions
+from genaipf.tools.search.utils.search_task_manager import get_related_question_task, get_divide_questions
 from genaipf.utils.common_utils import contains_chinese
 from genaipf.utils.sensitive_util import isNormal
 from genaipf.dispatcher.model_selection import check_and_pick_model
@@ -130,9 +130,10 @@ async def send_stream_chat(request: Request):
     visitor_id = request_params.get('visitor_id', '')
     without_minus = int(request_params.get('without_minus', 0))
     regenerate_response = request_params.get('regenerate_response', None)
+    search_type = request_params.get('search_type', None)
     logger_content = f"""
 input_params:
-userid={userid},language={language},msggroup={msggroup},device_no={device_no},question_code={question_code},model={model},source={source},chain_id={chain_id},owner={owner},agent_id={agent_id},output_type={output_type},llm_model={llm_model},wallet_type={wallet_type},regenerate_response={regenerate_response}
+userid={userid},language={language},msggroup={msggroup},device_no={device_no},question_code={question_code},model={model},source={source},chain_id={chain_id},owner={owner},agent_id={agent_id},output_type={output_type},llm_model={llm_model},wallet_type={wallet_type},regenerate_response={regenerate_response},search_type={search_type}
     """
     logger.info(logger_content)
 
@@ -164,7 +165,7 @@ userid={userid},language={language},msggroup={msggroup},device_no={device_no},qu
             # async for _str in getAnswerAndCallGpt(request_params['content'], userid, msggroup, language, messages):
             async for _str in getAnswerAndCallGpt(request_params.get('content'), userid, msggroup, language, messages,
                                                   device_no, question_code, model, output_type, source, owner, agent_id,
-                                                  chain_id, llm_model, wallet_type, regenerate_response):
+                                                  chain_id, llm_model, search_type, wallet_type, regenerate_response):
                 await _response.write(f"data:{_str}\n\n")
                 await asyncio.sleep(0.01)
 
@@ -230,7 +231,7 @@ async def send_chat(request: Request):
 
 
 async def getAnswerAndCallGpt(question, userid, msggroup, language, front_messages, device_no, question_code, model,
-                              output_type, source, owner, agent_id, chain_id, llm_model, wallet_type,
+                              output_type, source, owner, agent_id, chain_id, llm_model, search_type, wallet_type,
                               regenerate_response):
     from genaipf.dispatcher.stylized_process import stylized_process_mapping
     last_sp_msg = front_messages[-1]
@@ -499,8 +500,19 @@ async def getAnswerAndCallGpt(question, userid, msggroup, language, front_messag
         is_need_search = is_need_rag_simple(newest_question)
         if is_need_search:
             premise_search2_start_time = time.perf_counter()
+            # 生成子问题
+            enrich_question_start_time = time.perf_counter()
+            divid_data = {'messages': front_messages}
+            enrich_questions = await get_divide_questions(divid_data, language, source)  # 根据上下文生成新的问题数组
+            logger.info(f'丰富后的问题是: {enrich_questions}')
+            enrich_question_end_time = time.perf_counter()
+            elapsed_enrich_question_time = (enrich_question_end_time - enrich_question_start_time) * 1000
+            logger.info(f'=====================>enrich_question耗时：{elapsed_enrich_question_time:.3f}毫秒')
+            if search_type == 'deep_search':
+                sub_qeustions = await get_sub_qeustions(enrich_questions, language)
+                yield json.dumps(get_format_output("sub_qeustions", sub_qeustions))
             # 问题分析已经完成
-            sources_task, related_questions_task = await multi_rag(front_messages, related_qa, language_, source)
+            sources_task, related_questions_task, ai_ranking_task = await multi_rag(front_messages,search_type, related_qa, language_, source, enrich_questions)
             premise_search2_end_time = time.perf_counter()
             elapsed_premise_search2 = (premise_search2_end_time - premise_search2_start_time) * 1000
             logger.info(f'=====================>premise_search2耗时：{elapsed_premise_search2:.3f}毫秒')
@@ -534,6 +546,7 @@ async def getAnswerAndCallGpt(question, userid, msggroup, language, front_messag
     image_sources = []
     related_questions = []
     _related_news = []
+    ai_ranking_info = None
     if source == 'v004':
         from genaipf.dispatcher.callgpt import DispatcherCallGpt
         _data = {"msgs": msgs, "model": model, "preset_name": "attitude", "source": source, "owner": owner,
@@ -585,6 +598,8 @@ async def getAnswerAndCallGpt(question, userid, msggroup, language, front_messag
             rag_status['usedRag'] = True
             rag_status['promptAnalysis']['isCompleted'] = True
             yield json.dumps(get_format_output("rag_status", rag_status))
+            ai_ranking_info = await ai_ranking_task
+        yield json.dumps(get_format_output("ai_ranking", ai_ranking_info))
     else:
         func_chunk = await resp1.__anext__()
         route_mode = "function"
@@ -598,6 +613,16 @@ async def getAnswerAndCallGpt(question, userid, msggroup, language, front_messag
         if used_rag and is_need_search:
             sources_task_start_time = time.perf_counter()
             sources, related_qa, image_sources = await sources_task
+            # 增加ai ranking相关的related_qa
+            if ai_ranking_info and ai_ranking_info['need_ranking']:
+                import ml4gp.services.ai_ranking_service as ai_ranking_service
+                # userid, projects_type, order_by, direction, page, limit, language
+                ai_ranking_details = await ai_ranking_service.query_ai_ranking(0,ai_ranking_info['category'], 'influence', 'desc', 1, 8, language_)
+                related_qa = []  # 如果走了AI Ranking其他rag清空
+                if language_ == 'en':
+                    related_qa.append(question + '，The following content is ranked according to influence. Please output according to the ranking and include the number. : ' + json.dumps(ai_ranking_details))
+                else:
+                    related_qa.append(question + '，下面内容根据影响力进行了排名，请按照排名输出，并带上编号 : ' + json.dumps(ai_ranking_details))
             rag_status['searchData']['isCompleted'] = True
             rag_status['searchData']['totalSources'] = get_random_number(80, 100)
             rag_status['searchData']['usedSources'] = len(sources) if (sources and len(sources)) else 9
@@ -848,6 +873,8 @@ async def getAnswerAndCallGpt(question, userid, msggroup, language, front_messag
                 data['chatSerpResults'] = sources if source else []
                 data['chatSerpImageSources'] = image_sources if image_sources else []
                 data['chatRelatedResults'] = related_questions
+            if ai_ranking_info:
+                data['aiRankingInfo'] = ai_ranking_info
             data['responseType'] = responseType
             messageContent = json.dumps(data)
             gpt_message = (
@@ -866,7 +893,7 @@ async def getAnswerAndCallGpt(question, userid, msggroup, language, front_messag
                 None,
                 None
             )
-            if data['content'] or data['type'] != 'gpt':
+            if data['content'] or data['reasoner'] or data['type'] != 'gpt':
                 await gpt_service.add_gpt_message_with_code(gpt_message)
     else:
         logger.info(

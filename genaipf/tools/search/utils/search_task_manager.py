@@ -11,7 +11,9 @@ from genaipf.utils.common_utils import aget_multi_coro, sync_to_async
 from genaipf.tools.search.google.google_search import google_search
 from genaipf.conf.rag_conf import RAG_SEARCH_CLIENT
 from genaipf.tools.search.ai_search.ai_search_openai import ResearchAssistant
+from genaipf.tools.search.ai_search.intelligent_search_engine import intelligent_search
 import genaipf.utils.sensitive_util as sensitive_utils
+import genaipf.utils.common_utils as common_utils
 import time
 
 WHITE_LIST_URL = [
@@ -130,12 +132,7 @@ async def get_divide_questions(front_messages, language, source, context_length=
     latest_user_msg = user_messages[-1]
     final_question_arr = []
     if source == 'v007':  # 单独处理空投的content
-        airdrop_info = json.loads(latest_user_msg['content'])
-        if language == 'zh':
-            add_question = f'请帮我介绍一下: {airdrop_info.get("title")}这个空投项目'
-        else:
-            add_question = f'Please introduce the {airdrop_info.get("title")} Airdrop Project'
-        final_question_arr.append(add_question)
+        return []
     else:
         if latest_user_msg.get('quote_info'):
             newest_question = latest_user_msg.get('quote_info')
@@ -157,19 +154,14 @@ async def get_divide_questions(front_messages, language, source, context_length=
 
 
 # 新的多轮搜索的方法
-async def multi_sources_task(front_messages, related_qa, language, source):
+async def multi_sources_task(front_messages, related_qa, language, source, enrich_questions, search_type):
     enrich_question_start_time = time.perf_counter()
-    enrich_questions = await get_divide_questions(front_messages, language, source)  # 根据上下文生成新的问题数组
-    logger.info(f'丰富后的问题是: {enrich_questions}')
-    enrich_question_end_time = time.perf_counter()
-    elapsed_enrich_question_time = (enrich_question_end_time - enrich_question_start_time) * 1000
-    logger.info(f'=====================>enrich_question耗时：{elapsed_enrich_question_time:.3f}毫秒')
     sources = []
     image_sources = []
     final_related_qa = related_qa
     if enrich_questions and len(enrich_questions) != 0:
         multi_search_start_time = time.perf_counter()
-        sources, content, image_sources = await multi_search_new(enrich_questions, related_qa, language, front_messages)
+        sources, content, image_sources = await multi_search_new(enrich_questions,search_type, related_qa, language, front_messages)
         multi_search_end_time = time.perf_counter()
         elapsed_multi_search_time = (multi_search_end_time - multi_search_start_time) * 1000
         logger.info(f'=====================>multi_search耗时：{elapsed_multi_search_time:.3f}毫秒')
@@ -365,7 +357,42 @@ async def multi_search(questions: str, related_qa=[], language=None):
     return final_sources, related_qa
 
 
-async def multi_search_new(questions, related_qa=[], language=None, front_messages=None):
+async def multi_search_intellgent(questions, search_type, related_qa=[], language=None, front_messages=None):
+    search_clients = ['AI_SEARCH']
+    # search_clients = ['SERPER']  # 'SERPER' 由于apikey暂时去掉
+    question_sources = {}
+    image_sources = []
+    client1 = GoogleSerperClient()
+    for question in questions:
+        if not question_sources.get(question):
+            question_sources[question] = []
+        if search_clients[0] == 'AI_SEARCH': # TODO 特殊处理用于AI-Search
+            tmp_question = '用户：'
+            for message in front_messages['messages']:
+                if message['role'] == 'user':
+                    tmp_question += f"{message['content']};"
+            search_result, formatted_result = await intelligent_search(front_messages['messages'])
+            related_qa.append(tmp_question + ' : ' + formatted_result)
+            tmp_sources, image_sources = await client1.multi_search(question, language) 
+            question_sources[question] = question_sources[question] + tmp_sources
+
+    results = await parse_results_new(search_result, formatted_result)
+    final_sources = []
+    if results:
+        for question_info in results:
+            final_sources.append(question_info['sources'])
+            # if search_clients[0] != 'AI_SEARCH':
+            #     related_qa.append(question_info['question'] + ' : ' + question_info['content'])
+    logger.info(f'================最后的sources===============')
+    logger.info(final_sources)
+    logger.info(f'================最后的sources===============')
+    logger.info(f'================最后的related_qa===============')
+    logger.info(related_qa)
+    logger.info(f'================最后的related_qa===============')
+    return final_sources, related_qa, image_sources
+
+
+async def multi_search_new(questions, search_type, related_qa=[], language=None, front_messages=None):
     search_clients = ['AI_SEARCH']
     # search_clients = ['SERPER']  # 'SERPER' 由于apikey暂时去掉
     question_sources = {}
@@ -386,7 +413,10 @@ async def multi_search_new(questions, related_qa=[], language=None, front_messag
                 for message in front_messages['messages']:
                     if message['role'] == 'user':
                         tmp_question += f"{message['content']};"
-                search_result = await client.research_async(tmp_question)
+                if search_type == 'deep_search':
+                    search_result = await client.research_async(tmp_question)
+                else:
+                    search_result = await intelligent_search(front_messages['messages'])
                 related_qa.append(tmp_question + ' : ' + search_result)
                 tmp_sources, image_sources = await client1.multi_search(question, language)
                 question_sources[question] = question_sources[question] + tmp_sources
@@ -399,7 +429,8 @@ async def multi_search_new(questions, related_qa=[], language=None, front_messag
     if results:
         for question_info in results:
             final_sources += question_info['sources']
-            related_qa.append(question_info['question'] + ' : ' + question_info['content'])
+            if search_type == 'deep_search':
+                related_qa.append(question_info['question'] + ' : ' + question_info['content'])
             # if search_clients[0] != 'AI_SEARCH':
             #     related_qa.append(question_info['question'] + ' : ' + question_info['content'])
     logger.info(f'================最后的sources===============')
@@ -450,3 +481,67 @@ async def parse_results(question_sources):
             })
 
     return final_sources
+
+async def parse_results_new(question_sources, formatted_result):
+    final_sources = []
+    if question_sources:
+        for question_source in question_sources:
+            api = question_source.get('api')
+            query = question_source.get('query')
+            description = question_source.get('description')
+            question_content = ''
+            sources = {"title": description, "url": api, "content": formatted_result}
+     
+            question_content += formatted_result + "\n引用来源" + api + "\n"
+            final_sources.append({
+                "question": query,
+                "sources": sources,
+                "content": question_content
+            })
+
+    return final_sources
+
+
+async def check_ai_ranking(messages, language, source=''):
+    """
+    判断用户是否有对Web3行业内容进行排序对比的需求
+    
+    Args:
+        messages: 用户消息历史
+        language: 语言 ('zh', 'cn', 'en')
+        source: 来源标识
+    
+    Returns:
+        dict: 包含排序需求分析结果的字典
+    """
+    ranking_data = {
+        "need_ranking": False,
+        "category": None,
+        "keywords": [],
+        "ranking_type": None
+    }
+    try:
+        # 获取最新的用户消息
+        latest_message = messages['messages'][-1] if messages['messages'] else None
+        if not latest_message or latest_message.get('role') != 'user':
+            return ranking_data
+        # 使用prompt模板判断是否有排序需求
+        msgs = LionPromptCommon.get_prompted_messages("check_ai_ranking", messages, language)
+        result = await async_simple_chat(msgs, model='gpt-4o')
+        
+        # 解析返回的JSON结果
+        try:
+            ranking_result = common_utils.extract_json_from_response(result)
+            logger.info(f'AI ranking analysis result: {ranking_result}')
+            if not ranking_result:
+                return ranking_data
+            else:
+                ranking_data = ranking_result
+            return ranking_data
+        except Exception as e:
+            logger.error(f'Failed to parse AI ranking result: {e}, result: {result}')
+            # 如果解析失败，返回默认结果
+            return ranking_data
+    except Exception as e:
+        logger.error(f'Error in check_ai_ranking: {e}')
+        return ranking_data

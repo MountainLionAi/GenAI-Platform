@@ -69,8 +69,16 @@ JOIN (
 
 # 插件渠道获取用户对话列表（不返回币价预测,agent_id为'1099'）
 async def get_msggrou_plugin(userid):
-    sql = "SELECT id, content, type, msggroup, agent_id, create_time FROM gpt_messages WHERE " \
-          "userid=%s and type = 'user' and deleted=0 and agent_id != '1099' GROUP BY msggroup"
+    sql = """
+    SELECT m.id, m.content, m.type, m.msggroup, m.agent_id, m.create_time
+FROM gpt_messages m
+JOIN (
+    SELECT msggroup, MAX(id) AS max_id
+    FROM gpt_messages
+    WHERE userid = %s AND type = 'user' AND deleted = 0
+    GROUP BY msggroup
+) AS latest ON m.id = latest.max_id where agent_id != '1099'
+""" 
     result = await CollectionPool().query(sql, (userid))
     return result
 
