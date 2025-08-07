@@ -613,6 +613,12 @@ async def getAnswerAndCallGpt(question, userid, msggroup, language, front_messag
         if used_rag and is_need_search:
             sources_task_start_time = time.perf_counter()
             sources, related_qa, image_sources = await sources_task
+            # 增加ai ranking相关的related_qa
+            if ai_ranking_info and ai_ranking_info['need_ranking']:
+                import ml4gp.services.ai_ranking_service as ai_ranking_service
+                # userid, projects_type, order_by, direction, page, limit, language
+                ai_ranking_details = await ai_ranking_service.query_ai_ranking(0,ai_ranking_info['category'], 'project_id', 'asc', 1, 6)
+                related_qa.append(question + ' : ' + json.dumps(ai_ranking_details))
             rag_status['searchData']['isCompleted'] = True
             rag_status['searchData']['totalSources'] = get_random_number(80, 100)
             rag_status['searchData']['usedSources'] = len(sources) if (sources and len(sources)) else 9
