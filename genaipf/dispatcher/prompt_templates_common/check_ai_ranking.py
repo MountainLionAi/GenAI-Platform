@@ -25,6 +25,9 @@ def _get_check_ai_ranking_prompted_messages(data, language):
    - AI(Web3 AI产品)：ChatGPT、Claude、Perplexity等AI工具
    - Lending(借贷)：Aave、Compound、MakerDAO等
    - Bridge(跨链桥)：Multichain、Stargate、Hop Protocol等
+4. **重要约束**
+    4.1 识别问题一定要准确，不要将Layer2识别到上述的问题中
+    4.2 如果有上下问从最新的问题开始识别
 
 **输出格式：**
 如果用户有排序需求，返回JSON格式：
