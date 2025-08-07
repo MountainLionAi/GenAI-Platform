@@ -522,11 +522,13 @@ async def check_ai_ranking(messages, language, source=''):
     }
     try:
         # 获取最新的用户消息
+        print(messages)
         latest_message = messages['messages'][-1] if messages['messages'] else None
         if not latest_message or latest_message.get('role') != 'user':
             return ranking_data
         # 使用prompt模板判断是否有排序需求
-        _messages = [latest_message]
+        _messages = {"messages": [latest_message]}
+        print(_messages)
         msgs = LionPromptCommon.get_prompted_messages("check_ai_ranking", _messages, language)
         result = await async_simple_chat(msgs, model='gpt-4o')
         
