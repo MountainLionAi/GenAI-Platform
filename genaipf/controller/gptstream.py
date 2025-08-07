@@ -617,7 +617,7 @@ async def getAnswerAndCallGpt(question, userid, msggroup, language, front_messag
             if ai_ranking_info and ai_ranking_info['need_ranking']:
                 import ml4gp.services.ai_ranking_service as ai_ranking_service
                 # userid, projects_type, order_by, direction, page, limit, language
-                ai_ranking_details = await ai_ranking_service.query_ai_ranking(0,ai_ranking_info['category'], 'influence', 'desc', 1, 6)
+                ai_ranking_details = await ai_ranking_service.query_ai_ranking(0,ai_ranking_info['category'], 'influence', 'desc', 1, 6, language_)
                 related_qa.append(question + ' : ' + json.dumps(ai_ranking_details))
             rag_status['searchData']['isCompleted'] = True
             rag_status['searchData']['totalSources'] = get_random_number(80, 100)
