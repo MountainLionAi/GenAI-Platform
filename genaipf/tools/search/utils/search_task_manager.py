@@ -161,7 +161,10 @@ async def multi_sources_task(front_messages, related_qa, language, source, enric
     final_related_qa = related_qa
     if enrich_questions and len(enrich_questions) != 0:
         multi_search_start_time = time.perf_counter()
-        sources, content, image_sources = await multi_search_new(enrich_questions,search_type, related_qa, language, front_messages)
+        if search_type == 'deep_search':
+            sources, content, image_sources = await multi_search_new(enrich_questions,search_type, related_qa, language, front_messages)
+        else:
+            sources, content, image_sources = await multi_search_intellgent(enrich_questions,search_type, related_qa, language, front_messages)
         multi_search_end_time = time.perf_counter()
         elapsed_multi_search_time = (multi_search_end_time - multi_search_start_time) * 1000
         logger.info(f'=====================>multi_search耗时：{elapsed_multi_search_time:.3f}毫秒')
@@ -357,6 +360,41 @@ async def multi_search(questions: str, related_qa=[], language=None):
     return final_sources, related_qa
 
 
+async def multi_search_intellgent(questions, search_type, related_qa=[], language=None, front_messages=None):
+    search_clients = ['AI_SEARCH']
+    # search_clients = ['SERPER']  # 'SERPER' 由于apikey暂时去掉
+    question_sources = {}
+    image_sources = []
+    client1 = GoogleSerperClient()
+    for question in questions:
+        if not question_sources.get(question):
+            question_sources[question] = []
+        if search_clients[0] == 'AI_SEARCH': # TODO 特殊处理用于AI-Search
+            tmp_question = '用户：'
+            for message in front_messages['messages']:
+                if message['role'] == 'user':
+                    tmp_question += f"{message['content']};"
+            search_result, formatted_result = await intelligent_search(front_messages['messages'])
+            related_qa.append(tmp_question + ' : ' + formatted_result)
+            tmp_sources, image_sources = await client1.multi_search(question, language) 
+            question_sources[question] = question_sources[question] + tmp_sources
+
+    results = await parse_results_new(search_result, formatted_result)
+    final_sources = []
+    if results:
+        for question_info in results:
+            final_sources.append(question_info['sources'])
+            # if search_clients[0] != 'AI_SEARCH':
+            #     related_qa.append(question_info['question'] + ' : ' + question_info['content'])
+    logger.info(f'================最后的sources===============')
+    logger.info(final_sources)
+    logger.info(f'================最后的sources===============')
+    logger.info(f'================最后的related_qa===============')
+    logger.info(related_qa)
+    logger.info(f'================最后的related_qa===============')
+    return final_sources, related_qa, image_sources
+
+
 async def multi_search_new(questions, search_type, related_qa=[], language=None, front_messages=None):
     search_clients = ['AI_SEARCH']
     # search_clients = ['SERPER']  # 'SERPER' 由于apikey暂时去掉
@@ -441,6 +479,25 @@ async def parse_results(question_sources):
             final_sources.append({
                 "question": key,
                 "sources": question_source,
+                "content": question_content
+            })
+
+    return final_sources
+
+async def parse_results_new(question_sources, formatted_result):
+    final_sources = []
+    if question_sources:
+        for question_source in question_sources:
+            api = question_source.get('api')
+            query = question_source.get('query')
+            description = question_source.get('description')
+            question_content = ''
+            sources = {"title": description, "url": api, "content": formatted_result}
+     
+            question_content += formatted_result + "\n引用来源" + api + "\n"
+            final_sources.append({
+                "question": query,
+                "sources": sources,
                 "content": question_content
             })
 
