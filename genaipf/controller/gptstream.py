@@ -118,7 +118,7 @@ async def send_stream_chat(request: Request):
     messages = request_params.get('messages', [])
     device_no = request.remote_addr
     question_code = request_params.get('code', '')
-    model = request_params.get('model', 'ml-plus')
+    model = request_params.get('model', '')
     source = request_params.get('source', 'v001')
     chain_id = request_params.get('chain_id', '')
     owner = request_params.get('owner', 'Mlion.ai')
@@ -581,6 +581,7 @@ async def getAnswerAndCallGpt(question, userid, msggroup, language, front_messag
     #     logger.info(f"当前使用模型{llm_model}")
     #     yield json.dumps(get_format_output("model", llm_model))
     afunc_gpt_generator_start_time = time.perf_counter()
+    logger.info(f'======== {model} !!!!!!!!!!!!!!!!!!!!')
     resp1 = await afunc_gpt_generator(msgs, used_gpt_functions, language_, model, picked_content, related_qa, source,
                                       owner)
     afunc_gpt_generator_end_time = time.perf_counter()
