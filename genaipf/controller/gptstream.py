@@ -619,7 +619,10 @@ async def getAnswerAndCallGpt(question, userid, msggroup, language, front_messag
                 # userid, projects_type, order_by, direction, page, limit, language
                 ai_ranking_details = await ai_ranking_service.query_ai_ranking(0,ai_ranking_info['category'], 'influence', 'desc', 1, 6, language_)
                 related_qa = []  # 如果走了AI Ranking其他rag清空
-                related_qa.append(question + '，下面内容根据影响力进行了排名，请按照排名输出 : ' + json.dumps(ai_ranking_details))
+                if language_ == 'en':
+                    related_qa.append(question + '，The following content is ranked according to influence. Please output according to the ranking and include the number. : ' + json.dumps(ai_ranking_details))
+                else:
+                    related_qa.append(question + '，下面内容根据影响力进行了排名，请按照排名输出，并带上编号 : ' + json.dumps(ai_ranking_details))
             rag_status['searchData']['isCompleted'] = True
             rag_status['searchData']['totalSources'] = get_random_number(80, 100)
             rag_status['searchData']['usedSources'] = len(sources) if (sources and len(sources)) else 9
