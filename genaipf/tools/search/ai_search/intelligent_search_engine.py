@@ -12,7 +12,7 @@ from datetime import datetime, timezone
 from typing import List, Dict, Any, Optional, Union
 from dataclasses import dataclass, field
 from functools import wraps
-import logging
+from genaipf.utils.log_utils import logger
 from concurrent.futures import ThreadPoolExecutor
 
 import aiohttp
@@ -20,31 +20,6 @@ import anthropic
 from dotenv import load_dotenv
 import backoff
 import pytz
-
-# Load environment variables
-load_dotenv()
-
-# Configure structured logging
-logging.basicConfig(level=logging.INFO, format='%(message)s')
-logger = logging.getLogger(__name__)
-
-# Custom JSON formatter for structured logs
-class JSONFormatter(logging.Formatter):
-    def format(self, record):
-        log_obj = {
-            'timestamp': datetime.now(timezone.utc).isoformat(),
-            'level': record.levelname,
-            'message': record.getMessage(),
-            'module': record.module,
-        }
-        if hasattr(record, 'extra_data'):
-            log_obj.update(record.extra_data)
-        return json.dumps(log_obj)
-
-# Apply JSON formatter
-handler = logging.StreamHandler()
-handler.setFormatter(JSONFormatter())
-logger.handlers = [handler]
 
 
 @dataclass
@@ -76,7 +51,7 @@ class IntelligentSearchTool:
         # Load API keys from environment
         self.config = APIConfig(
             anthropic_api_key=os.getenv("ANTHROPIC_API_KEY"),
-            serper_api_key=os.getenv("GOOGLE_SERPER_API_KEY"),
+            serper_api_key=os.getenv("GOOGLE_SERPER_API_KEY_FOR_NEWS"),
             coingecko_api_key=os.getenv("COINGECKO_API_KEY")
         )
         
@@ -414,8 +389,7 @@ Focus on the most recent messages and ensure queries are specific and actionable
             for query in search_queries:
                 async with self.semaphore:  # Limit concurrent requests
                     if query.api_type == "serper":
-                        #task = self._execute_serper_search(session, query)
-                        continue
+                        task = self._execute_serper_search(session, query)
                     elif query.api_type == "coingecko":
                         task = self._execute_coingecko_search(session, query)
                     else:
@@ -616,7 +590,7 @@ Focus on the most recent messages and ensure queries are specific and actionable
             logger.info(f"Search completed in {elapsed_time:.2f} seconds", 
                       extra={'extra_data': {'elapsed_time': elapsed_time, 'query_count': len(search_queries)}})
             
-            return search_results, formatted_results
+            return formatted_results
             
         except Exception as e:
             logger.error(f"Search failed: {str(e)}", 
