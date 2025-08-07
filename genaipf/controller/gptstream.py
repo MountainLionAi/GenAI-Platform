@@ -617,7 +617,7 @@ async def getAnswerAndCallGpt(question, userid, msggroup, language, front_messag
             if ai_ranking_info and ai_ranking_info['need_ranking']:
                 import ml4gp.services.ai_ranking_service as ai_ranking_service
                 # userid, projects_type, order_by, direction, page, limit, language
-                ai_ranking_details = await ai_ranking_service.query_ai_ranking(0,ai_ranking_info['category'], 'influence', 'desc', 1, 6, language_)
+                ai_ranking_details = await ai_ranking_service.query_ai_ranking(0,ai_ranking_info['category'], 'influence', 'desc', 1, 8, language_)
                 related_qa = []  # 如果走了AI Ranking其他rag清空
                 if language_ == 'en':
                     related_qa.append(question + '，The following content is ranked according to influence. Please output according to the ranking and include the number. : ' + json.dumps(ai_ranking_details))
