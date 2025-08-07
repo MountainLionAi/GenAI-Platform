@@ -161,10 +161,7 @@ async def multi_sources_task(front_messages, related_qa, language, source, enric
     final_related_qa = related_qa
     if enrich_questions and len(enrich_questions) != 0:
         multi_search_start_time = time.perf_counter()
-        if search_type == 'deep_search':
-            sources, content, image_sources = await multi_search_new(enrich_questions,search_type, related_qa, language, front_messages)
-        else:
-            sources, content, image_sources = await multi_search_intellgent(enrich_questions,search_type, related_qa, language, front_messages)
+        sources, content, image_sources = await multi_search_new(enrich_questions,search_type, related_qa, language, front_messages)
         multi_search_end_time = time.perf_counter()
         elapsed_multi_search_time = (multi_search_end_time - multi_search_start_time) * 1000
         logger.info(f'=====================>multi_search耗时：{elapsed_multi_search_time:.3f}毫秒')
@@ -432,7 +429,8 @@ async def multi_search_new(questions, search_type, related_qa=[], language=None,
     if results:
         for question_info in results:
             final_sources += question_info['sources']
-            related_qa.append(question_info['question'] + ' : ' + question_info['content'])
+            if search_type == 'deep_search':
+                related_qa.append(question_info['question'] + ' : ' + question_info['content'])
             # if search_clients[0] != 'AI_SEARCH':
             #     related_qa.append(question_info['question'] + ' : ' + question_info['content'])
     logger.info(f'================最后的sources===============')
