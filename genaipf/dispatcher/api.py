@@ -360,6 +360,7 @@ async def afunc_gpt_generator(messages_in, functions=gpt_functions, language=Lio
         {"role": "user", "content": "Where is Tokyo?"},
     ]
     '''
+    logger.info(f'========== model2: {model} !!!!!!!!!!')
     use_model = 'gpt-4o-mini'
     if model == 'ml-plus':
         use_model = OPENAI_PLUS_MODEL
@@ -771,6 +772,7 @@ def make_calling_messages_based_on_model(messages, use_model: str) -> List:
         ]
     """
     out_msgs = []
+    logger.info(f'========== model3: {use_model} !!!!!!!!!!')
     if use_model.startswith("gpt-4o") or use_model.startswith("gpt-4-vision") or use_model.startswith("gpt-4.1"):
         matching_indices = []
         for i in range(len(messages) - 1, -1, -1):
