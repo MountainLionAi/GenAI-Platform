@@ -21,7 +21,12 @@ from dotenv import load_dotenv
 import backoff
 import pytz
 
-from genaipf.utils.log_utils import logger
+# Load environment variables
+load_dotenv()
+
+# Configure structured logging
+logging.basicConfig(level=logging.INFO, format='%(message)s')
+logger = logging.getLogger(__name__)
 
 # Custom JSON formatter for structured logs
 class JSONFormatter(logging.Formatter):
@@ -36,6 +41,10 @@ class JSONFormatter(logging.Formatter):
             log_obj.update(record.extra_data)
         return json.dumps(log_obj)
 
+# Apply JSON formatter
+handler = logging.StreamHandler()
+handler.setFormatter(JSONFormatter())
+logger.handlers = [handler]
 
 
 @dataclass
@@ -607,7 +616,7 @@ Focus on the most recent messages and ensure queries are specific and actionable
             logger.info(f"Search completed in {elapsed_time:.2f} seconds", 
                       extra={'extra_data': {'elapsed_time': elapsed_time, 'query_count': len(search_queries)}})
             
-            return formatted_results
+            return search_results, formatted_results
             
         except Exception as e:
             logger.error(f"Search failed: {str(e)}", 
