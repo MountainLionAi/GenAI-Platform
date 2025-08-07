@@ -118,7 +118,7 @@ async def send_stream_chat(request: Request):
     messages = request_params.get('messages', [])
     device_no = request.remote_addr
     question_code = request_params.get('code', '')
-    model = request_params.get('model', '')
+    model = request_params.get('model', 'ml-plus')
     source = request_params.get('source', 'v001')
     chain_id = request_params.get('chain_id', '')
     owner = request_params.get('owner', 'Mlion.ai')
