@@ -258,7 +258,7 @@ async def generate_questions(question: str, language=None):
             }}
         ]
 
-        ***特别注意***: 只需要输出可解析的json，不要返回其他文字说明和符号        
+        ***特别注意***: 只能输出可解析的json，不要返回如json代码块提示等其他文字说明和符号        
         """},
         {"role": "user", "content": question +language_requirement}
     ]
@@ -269,7 +269,7 @@ async def generate_questions(question: str, language=None):
     # except (SyntaxError, ValueError) as e:
     #     return []
     completion = client.chat.completions.create(
-        model="gpt-4o",
+        model="gpt-5",
         messages=messages
     )
     try:
