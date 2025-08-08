@@ -6,15 +6,16 @@ from genaipf.tools.search.metaphor.metaphor_search_agent import other_search
 from genaipf.tools.search.metaphor.llamaindex_tools import tools
 from genaipf.utils.log_utils import logger
 from genaipf.utils.time_utils import get_format_time_YYYY_mm_dd, get_current_time
-from openai import OpenAI
+from openai import OpenAI, AsyncOpenAI
+from anthropic import AsyncAnthropic
 import asyncio
 from genaipf.dispatcher.prompts_common import LionPromptCommon
 from genaipf.dispatcher.utils import async_simple_chat, async_simple_chat_with_model
 from genaipf.tools.search.utils.search_task_manager import get_related_question_task, get_sources_tasks, \
     get_is_need_search_task, multi_sources_task, get_divide_questions, check_ai_ranking
 from genaipf.tools.search.google_serper.google_serper_agent import google_serper
-
-client = OpenAI()
+claude_client = AsyncAnthropic(api_key=os.getenv('ANTHROPIC_API_KEY'))
+client = AsyncOpenAI(api_key=os.getenv('OPENAI_API_KEY'))
 
 fixed_related_question = {
     'zh': {
@@ -218,7 +219,7 @@ async def generate_questions(question: str, language=None):
     timezone =  os.getenv('TIMEZONE', 'UTC')
     language_requirement =  f"请使用{language}生成" if language!='en' else "Please use English to generate"
     messages = [
-        {"role": "system",
+        {"role": "assistant",
          "content": f"""
         当前时间：{current_time['datetime']} 时区为：{timezone}（请基于当前时间对问题的时效性作出明确要求）
 
@@ -258,22 +259,23 @@ async def generate_questions(question: str, language=None):
             }}
         ]
 
-        ***特别注意***: 只能输出可解析的json，不要返回如json代码块提示等其他文字说明和符号        
+        ***特别注意***: 只能输出可解析的json，json结构体外不要含有任何其他文字说明和符号！！！不然无法解析！！！        
         """},
         {"role": "user", "content": question +language_requirement}
     ]
     
-    # try:
-    #     _result = await async_simple_chat_with_model(messages, model='claude-sonnet-4-20250514', base_model='claude')
-    #     return _result
-    # except (SyntaxError, ValueError) as e:
-    #     return []
-    completion = client.chat.completions.create(
-        model="gpt-5",
-        messages=messages
-    )
     try:
-        python_object = ast.literal_eval(completion.choices[0].message.content)
+        _result = await async_simple_chat_with_model(messages, model='claude-sonnet-4-20250514', base_model='claude')
+        python_object = ast.literal_eval(_result)
         return python_object
     except (SyntaxError, ValueError) as e:
         return []
+    # completion = await client.chat.completions.create(
+    #     model="gpt-4o",
+    #     messages=messages
+    # )
+    # try:
+    #     python_object = ast.literal_eval(completion.choices[0].message.content)
+    #     return python_object
+    # except (SyntaxError, ValueError) as e:
+    #     return []
