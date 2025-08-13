@@ -131,9 +131,10 @@ async def send_stream_chat(request: Request):
     without_minus = int(request_params.get('without_minus', 0))
     regenerate_response = request_params.get('regenerate_response', None)
     search_type = request_params.get('search_type', None)
+    trade_signal_text = request_params.get('trade_signal_text')
     logger_content = f"""
 input_params:
-userid={userid},language={language},msggroup={msggroup},device_no={device_no},question_code={question_code},model={model},source={source},chain_id={chain_id},owner={owner},agent_id={agent_id},output_type={output_type},llm_model={llm_model},wallet_type={wallet_type},regenerate_response={regenerate_response},search_type={search_type}
+userid={userid},language={language},msggroup={msggroup},device_no={device_no},question_code={question_code},model={model},source={source},chain_id={chain_id},owner={owner},agent_id={agent_id},output_type={output_type},llm_model={llm_model},wallet_type={wallet_type},regenerate_response={regenerate_response},search_type={search_type},trade_signal_text={trade_signal_text}
     """
     logger.info(logger_content)
 
@@ -165,7 +166,7 @@ userid={userid},language={language},msggroup={msggroup},device_no={device_no},qu
             # async for _str in getAnswerAndCallGpt(request_params['content'], userid, msggroup, language, messages):
             async for _str in getAnswerAndCallGpt(request_params.get('content'), userid, msggroup, language, messages,
                                                   device_no, question_code, model, output_type, source, owner, agent_id,
-                                                  chain_id, llm_model, search_type, wallet_type, regenerate_response):
+                                                  chain_id, llm_model, search_type, wallet_type, regenerate_response, trade_signal_text):
                 await _response.write(f"data:{_str}\n\n")
                 await asyncio.sleep(0.01)
 
@@ -232,7 +233,7 @@ async def send_chat(request: Request):
 
 async def getAnswerAndCallGpt(question, userid, msggroup, language, front_messages, device_no, question_code, model,
                               output_type, source, owner, agent_id, chain_id, llm_model, search_type, wallet_type,
-                              regenerate_response):
+                              regenerate_response, trade_signal_text):
     from genaipf.dispatcher.stylized_process import stylized_process_mapping
     last_sp_msg = front_messages[-1]
     if source == 'v013':
@@ -665,7 +666,7 @@ async def getAnswerAndCallGpt(question, userid, msggroup, language, front_messag
             
         aref_answer_gpt_generator_start_time = time.perf_counter()
         resp1 = await aref_answer_gpt_generator(msgs, model, language_, None, picked_content, related_qa, source, owner,
-                                                isvision, output_type, llm_model, quote_message)
+                                                isvision, output_type, llm_model, quote_message, trade_signal_text)
         aref_answer_gpt_generator_end_time = time.perf_counter()
         elapsed_aref_answer_gpt_generator_time = (
                                                              aref_answer_gpt_generator_end_time - aref_answer_gpt_generator_start_time) * 1000
