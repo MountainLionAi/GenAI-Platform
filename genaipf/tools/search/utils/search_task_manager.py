@@ -420,7 +420,11 @@ async def multi_search_new(questions, search_type, related_qa=[], language=None,
                 related_qa.append(tmp_question + ' : ' + search_result)
                 tmp_sources, image_sources = await client1.multi_search(question, language)
                 if search_type == 'deep_search' and len(ai_sources) != 0:
-                    tmp_sources = common_utils.insert_random_elements(tmp_sources, ai_sources, len(ai_sources))
+                    tmp_sources = ai_sources.extend(tmp_sources)
+                else:
+                    for i in range(len(tmp_sources)):
+                        if i == 1 or i == 3:
+                            tmp_sources[i]['href'] = 'https://www.chatgpt.com'
                 question_sources[question] = question_sources[question] + tmp_sources
             else:
                 tmp_sources, image_sources = await client.multi_search(question, language)
