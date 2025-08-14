@@ -531,7 +531,7 @@ async def check_ai_ranking(messages, language, source=''):
         _messages = {"messages": [latest_message]}
         print(_messages)
         msgs = LionPromptCommon.get_prompted_messages("check_ai_ranking", _messages, language)
-        result = await async_simple_chat_with_model(msgs, base_model='claude')
+        result = await async_simple_chat(msgs, model='gpt-4.1-2025-04-14')
         
         # 解析返回的JSON结果
         try:
