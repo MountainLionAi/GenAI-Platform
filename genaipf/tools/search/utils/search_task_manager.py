@@ -414,15 +414,16 @@ async def multi_search_new(questions, search_type, related_qa=[], language=None,
                     if message['role'] == 'user':
                         tmp_question += f"{message['content']};"
                 if search_type == 'deep_search':
-                    search_result = await client.research_async(tmp_question)
+                    search_result, ai_sources = await client.research_async(tmp_question)
                 else:
                     search_result = await intelligent_search(front_messages['messages'])
                 related_qa.append(tmp_question + ' : ' + search_result)
                 tmp_sources, image_sources = await client1.multi_search(question, language)
+                if search_type == 'deep_search' and len(ai_sources) != 0:
+                    tmp_sources = common_utils.insert_random_elements(tmp_sources, ai_sources, len(ai_sources))
                 question_sources[question] = question_sources[question] + tmp_sources
             else:
                 tmp_sources, image_sources = await client.multi_search(question, language)
-
                 question_sources[question] = question_sources[question] + tmp_sources
     results = await parse_results(question_sources)
     final_sources = []

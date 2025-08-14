@@ -22,6 +22,7 @@ from aiolimiter import AsyncLimiter
 from contextlib import asynccontextmanager
 import aiohttp
 import re
+import genaipf.utils.common_utils as common_utils
 
 # 加载环境变量
 load_dotenv()
@@ -1219,12 +1220,17 @@ class ResearchAssistant:
         success_count = sum(1 for r in results if r.success)
         output.append(f"📊 搜索相关主题用于回答用户问题：成功 {success_count}/{len(results)} 个问题")
         output.append("")
-        
+        ai_source = []
         # 详细结果
         for i, result in enumerate(results, 1):
             output.append(f"【问题 {i}】{result.question.main_question}")
             output.append("-" * 70)
-            
+            temp_ai_source = {
+                'title': common_utils.filter_brackets(result.question.main_question),
+                'href': 'https://www.chatgpt.com/',
+                'body': result.answer
+            }
+            ai_source.append(temp_ai_source)
             # 显示子问题
             if result.question.sub_questions:
                 output.append("📌 具体方面：")
@@ -1251,7 +1257,7 @@ class ResearchAssistant:
             output.append("=" * 80)
             output.append("")
         
-        return "\n".join(output)
+        return "\n".join(output), ai_source
     
     async def research_async(self, chat_history: str) -> str:
         """异步执行研究流程（核心方法）"""
