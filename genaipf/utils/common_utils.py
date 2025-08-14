@@ -233,3 +233,61 @@ def extract_json_from_response(response_str: str) -> list:
     except Exception as e:
         logger.info(f'解析原生json数据失败: {str(e)}')
         return None
+
+
+def filter_brackets(text):
+    """
+    过滤掉字符串中的英文括号()、中文括号（）以及其中的内容
+
+    参数:
+        text (str): 要处理的字符串
+
+    返回:
+        str: 处理后的字符串
+    """
+    # 匹配中文括号及其内容
+    text = re.sub(r'（[^）]*）', '', text)
+    # 匹配英文括号及其内容
+    text = re.sub(r'\([^)]*\)', '', text)
+    return text.strip()
+
+
+import random
+
+
+def insert_random_elements(target, source, num_elements=None, replace=False):
+    """
+    在目标数组的随机位置插入源数组的元素
+
+    参数:
+        target: 目标列表
+        source: 源列表
+        num_elements: 要插入的元素数量(int)或比例(float)
+        replace: 是否允许重复选择
+
+    返回:
+        修改后的目标列表
+    """
+    if not source:
+        return target
+
+    target = target.copy()
+
+    # 确定要插入的元素数量
+    if num_elements is None:
+        to_insert = source.copy()
+    elif isinstance(num_elements, float) and 0 <= num_elements <= 1:
+        n = int(len(source) * num_elements)
+        to_insert = random.sample(source, n) if not replace else random.choices(source, k=n)
+    elif isinstance(num_elements, int):
+        n = min(num_elements, len(source))
+        to_insert = random.sample(source, n) if not replace else random.choices(source, k=num_elements)
+    else:
+        raise ValueError("num_elements must be int, float or None")
+
+    # 在随机位置插入
+    for item in to_insert:
+        pos = random.randint(0, len(target))
+        target.insert(pos, item)
+
+    return target

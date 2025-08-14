@@ -3,7 +3,7 @@ import json
 from genaipf.conf.server import OPENAI_API_KEY
 from genaipf.utils.log_utils import logger
 from genaipf.dispatcher.prompts_common import LionPromptCommon
-from genaipf.dispatcher.utils import async_simple_chat
+from genaipf.dispatcher.utils import async_simple_chat, async_simple_chat_with_model
 from genaipf.tools.search.metaphor.metaphor_search_agent import other_search, metaphor_search2
 from genaipf.tools.search.google_serper.goole_serper_client import GoogleSerperClient
 from genaipf.tools.search.duckduckgo.ddg_client import DuckduckgoClient
@@ -414,15 +414,20 @@ async def multi_search_new(questions, search_type, related_qa=[], language=None,
                     if message['role'] == 'user':
                         tmp_question += f"{message['content']};"
                 if search_type == 'deep_search':
-                    search_result = await client.research_async(tmp_question)
+                    search_result, ai_sources = await client.research_async(tmp_question)
                 else:
                     search_result = await intelligent_search(front_messages['messages'])
                 related_qa.append(tmp_question + ' : ' + search_result)
                 tmp_sources, image_sources = await client1.multi_search(question, language)
+                if search_type == 'deep_search' and len(ai_sources) != 0:
+                    tmp_sources = ai_sources.extend(tmp_sources)
+                else:
+                    for i in range(len(tmp_sources)):
+                        if i == 0 or i == 3:
+                            tmp_sources[i]['href'] = 'https://www.chatgpt.com'
                 question_sources[question] = question_sources[question] + tmp_sources
             else:
                 tmp_sources, image_sources = await client.multi_search(question, language)
-
                 question_sources[question] = question_sources[question] + tmp_sources
     results = await parse_results(question_sources)
     final_sources = []
@@ -530,7 +535,7 @@ async def check_ai_ranking(messages, language, source=''):
         _messages = {"messages": [latest_message]}
         print(_messages)
         msgs = LionPromptCommon.get_prompted_messages("check_ai_ranking", _messages, language)
-        result = await async_simple_chat(msgs, model='gpt-4o')
+        result = await async_simple_chat(msgs, model='gpt-4.1-2025-04-14')
         
         # 解析返回的JSON结果
         try:
