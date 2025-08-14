@@ -3,7 +3,7 @@ import json
 from genaipf.conf.server import OPENAI_API_KEY
 from genaipf.utils.log_utils import logger
 from genaipf.dispatcher.prompts_common import LionPromptCommon
-from genaipf.dispatcher.utils import async_simple_chat
+from genaipf.dispatcher.utils import async_simple_chat, async_simple_chat_with_model
 from genaipf.tools.search.metaphor.metaphor_search_agent import other_search, metaphor_search2
 from genaipf.tools.search.google_serper.goole_serper_client import GoogleSerperClient
 from genaipf.tools.search.duckduckgo.ddg_client import DuckduckgoClient
@@ -531,7 +531,7 @@ async def check_ai_ranking(messages, language, source=''):
         _messages = {"messages": [latest_message]}
         print(_messages)
         msgs = LionPromptCommon.get_prompted_messages("check_ai_ranking", _messages, language)
-        result = await async_simple_chat(msgs, model='gpt-4o')
+        result = await async_simple_chat_with_model(msgs, base_model='claude')
         
         # 解析返回的JSON结果
         try:

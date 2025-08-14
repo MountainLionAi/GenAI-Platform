@@ -11,14 +11,56 @@ def _get_check_ai_ranking_prompted_messages(data, language):
 3. 典型问法：
    - “哪个更…？”、“有哪些…的前十？”、“推荐几个…”、“…排行榜/榜单/清单”
 
-项目类型分类（从中选择一个最贴合的一级分类；若无法归类则为 null）：
-- Infra, Layer1, Layer2, DePIN, Gaming, DeSci, DeFi, RWA, LSD, Derivatives, Perp, NFT, zk, Social, Creator Economy, Data & Analysis, CeFi, CEX, Security Solutions, Environmental Solutions, Cloud Computing, DAO, Tools, DID, Privacy
+项目类型分类（必须精准识别，每个分类都有明确的Web3行业边界）：
 
-分类规则：
-- 优先选择最符合的分类，若用户问题涉及多个领域，则按逗号分隔返回多个分类（例如："DeFi,Layer2"）。
-- 若用户只说具体协议/项目名，请按其主要归属分类（例如 Uniswap→DeFi，Arbitrum→Layer2）。
-- 切勿将 Layer2 错误识别为其它方向；同理，CEX 是中心化交易所平台（Binance 等），DEX 属于 DeFi。
-- 无法确定时，category 置为 null。
+**基础设施类：**
+- Infra: 区块链基础设施、节点服务、API服务、开发框架（如 Infura、Alchemy、QuickNode）
+- Layer1: 基础公链（如 Bitcoin、Ethereum、Solana、Cardano、Polkadot）
+- Layer2: 二层扩展解决方案（如 Arbitrum、Optimism、Polygon、zkSync、StarkNet）
+- Cloud Computing: 去中心化云计算、存储服务（如 Filecoin、Arweave、Storj）
+
+**应用层：**
+- DeFi: 去中心化金融（如 Uniswap、Aave、Compound、MakerDAO、Curve）
+- CEX: 中心化交易所（如 Binance、Coinbase、OKX、Kraken）
+- DEX: 去中心化交易所（如 Uniswap、SushiSwap、PancakeSwap、dYdX、GMX）
+- Wallet: 数字钱包（如 MetaMask、Trust Wallet、TokenPocket、Phantom、Rainbow）
+- AI: Web3 AI产品（如 ChatGPT、Claude、Perplexity、Bard、AI驱动的DeFi协议）
+- Lending: 借贷平台（如 Aave、Compound、MakerDAO、Venus、dForce）
+- Bridge: 跨链桥（如 Multichain、Stargate、Hop Protocol、Across、Synapse）
+- Gaming: 区块链游戏、GameFi（如 Axie Infinity、The Sandbox、Decentraland）
+- NFT: NFT市场、NFT项目、数字艺术品（如 OpenSea、Blur、Bored Ape）
+- Social: 去中心化社交平台（如 Lens Protocol、Farcaster、Friend.tech）
+- Creator Economy: 创作者经济平台、内容变现（如 Mirror、Rally、Audius）
+
+**专业领域：**
+- DePIN: 去中心化物理基础设施（如 Helium、Render、Akash）
+- DeSci: 去中心化科学（如 Molecule、VitaDAO、LabDAO）
+- RWA: 现实世界资产代币化（如 Centrifuge、Goldfinch、Maple）
+- LSD: 流动性质押衍生品（如 Lido、Rocket Pool、Frax）
+- Derivatives: 衍生品交易（如 dYdX、GMX、Perpetual Protocol）
+- Perp: 永续合约（如 dYdX、GMX、Gains Network）
+- zk: 零知识证明技术（如 zkSync、StarkNet、Scroll）
+
+**服务与工具：**
+- Tools: 开发工具、分析工具、管理工具（如 Hardhat、Truffle、Dune Analytics）
+- Security Solutions: 安全解决方案、审计服务（如 Certik、OpenZeppelin、Consensys Diligence）
+- DID: 去中心化身份（如 ENS、Unstoppable Domains、Spruce）
+- Privacy: 隐私保护技术（如 Tornado Cash、Aztec、Secret Network）
+
+**组织与数据：**
+- DAO: 去中心化自治组织（如 Uniswap DAO、Aave DAO、MakerDAO）
+- Data & Analysis: 数据分析、链上数据（如 Glassnode、Messari、CoinGecko）
+- Environmental Solutions: 环保解决方案、碳信用（如 Klima DAO、Toucan Protocol）
+
+**重要分类规则：**
+1. **钱包类**：钱包（如 MetaMask、Trust Wallet、TokenPocket、Phantom、Rainbow）属于 **Wallet** 分类
+2. **交易所区分**：CEX（中心化交易所）和 DEX（去中心化交易所）是不同分类，DEX属于 **DEX** 分类
+3. **AI产品识别**：Web3 AI产品（如 ChatGPT、Claude、Perplexity、AI驱动的DeFi协议）属于 **AI** 分类
+4. **借贷平台**：借贷平台（如 Aave、Compound、MakerDAO、Venus）属于 **Lending** 分类
+5. **跨链桥**：跨链桥（如 Multichain、Stargate、Hop Protocol、Across）属于 **Bridge** 分类
+6. **Layer2精准识别**：Arbitrum、Optimism、Polygon等明确属于Layer2，不要误判
+7. **多分类处理**：若问题涉及多个领域，用逗号分隔（如"DeFi,Layer2"）
+8. **不确定时**：category置为null，不要猜测
 
 排序维度（ranking_type，五选一）：
 - popularity | security | performance | cost | speed
@@ -32,7 +74,7 @@ def _get_check_ai_ranking_prompted_messages(data, language):
 输出要求（仅返回 JSON，不要任何解释性文本）：
 {
     "need_ranking": true|false,
-    "category": "Infra|Layer1|Layer2|DePIN|Gaming|DeSci|DeFi|RWA|LSD|Derivatives|Perp|NFT|zk|Social|Creator Economy|Data & Analysis|CeFi|CEX|Security Solutions|Environmental Solutions|Cloud Computing|DAO|Tools|DID|Privacy|null|分类1,分类2",
+    "category": "Infra|Layer1|Layer2|DePIN|Gaming|DeSci|DeFi|RWA|LSD|Derivatives|Perp|NFT|zk|Social|Creator Economy|Data & Analysis|CeFi|CEX|DEX|Wallet|AI|Lending|Bridge|Security Solutions|Environmental Solutions|Cloud Computing|DAO|Tools|DID|Privacy|null|分类1,分类2",
     "keywords": ["触发排序意图的关键词或短语"],
     "ranking_type": "popularity|security|performance|cost|speed|null"
 }
@@ -47,14 +89,56 @@ Signals to set need_ranking=true (any one is sufficient):
 3. Typical queries:
    - “Which is better…?”, “Top N …?”, “Recommend some …”, “… ranking/top list/shortlist”
 
-Project categories (choose exactly one best-fit; use null if none applies):
-- Infra, Layer1, Layer2, DePIN, Gaming, DeSci, DeFi, RWA, LSD, Derivatives, Perp, NFT, zk, Social, Creator Economy, Data & Analysis, CeFi, CEX, Security Solutions, Environmental Solutions, Cloud Computing, DAO, Tools, DID, Privacy
+Project categories (must be precisely identified, each with clear Web3 industry boundaries):
 
-Classification rules:
-- Prefer the best-fit category, but if the user's question involves multiple domains, return multiple categories separated by commas (e.g., "DeFi,Layer2").
-- If the user mentions a concrete protocol/project, map it to its primary domain (e.g., Uniswap → DeFi, Arbitrum → Layer2).
-- Do not misclassify Layer2 as other domains; CEX refers to centralized exchanges (e.g., Binance), while DEX belongs to DeFi.
-- If uncertain, set category to null.
+**Infrastructure:**
+- Infra: Blockchain infrastructure, node services, API services, dev frameworks (e.g., Infura, Alchemy, QuickNode)
+- Layer1: Base blockchains (e.g., Bitcoin, Ethereum, Solana, Cardano, Polkadot)
+- Layer2: Layer 2 scaling solutions (e.g., Arbitrum, Optimism, Polygon, zkSync, StarkNet)
+- Cloud Computing: Decentralized cloud computing, storage services (e.g., Filecoin, Arweave, Storj)
+
+**Application Layer:**
+- DeFi: Decentralized finance (e.g., Uniswap, Aave, Compound, MakerDAO, Curve)
+- CEX: Centralized exchanges (e.g., Binance, Coinbase, OKX, Kraken)
+- DEX: Decentralized exchanges (e.g., Uniswap, SushiSwap, PancakeSwap, dYdX, GMX)
+- Wallet: Digital wallets (e.g., MetaMask, Trust Wallet, TokenPocket, Phantom, Rainbow)
+- AI: Web3 AI products (e.g., ChatGPT, Claude, Perplexity, Bard, AI-powered DeFi protocols)
+- Lending: Lending platforms (e.g., Aave, Compound, MakerDAO, Venus, dForce)
+- Bridge: Cross-chain bridges (e.g., Multichain, Stargate, Hop Protocol, Across, Synapse)
+- Gaming: Blockchain games, GameFi (e.g., Axie Infinity, The Sandbox, Decentraland)
+- NFT: NFT markets, NFT projects, digital art (e.g., OpenSea, Blur, Bored Ape)
+- Social: Decentralized social platforms (e.g., Lens Protocol, Farcaster, Friend.tech)
+- Creator Economy: Creator economy platforms, content monetization (e.g., Mirror, Rally, Audius)
+
+**Specialized Domains:**
+- DePIN: Decentralized physical infrastructure (e.g., Helium, Render, Akash)
+- DeSci: Decentralized science (e.g., Molecule, VitaDAO, LabDAO)
+- RWA: Real-world asset tokenization (e.g., Centrifuge, Goldfinch, Maple)
+- LSD: Liquid staking derivatives (e.g., Lido, Rocket Pool, Frax)
+- Derivatives: Derivative trading (e.g., dYdX, GMX, Perpetual Protocol)
+- Perp: Perpetual contracts (e.g., dYdX, GMX, Gains Network)
+- zk: Zero-knowledge proof technology (e.g., zkSync, StarkNet, Scroll)
+
+**Services & Tools:**
+- Tools: Development tools, analytics tools, management tools (e.g., Hardhat, Truffle, Dune Analytics)
+- Security Solutions: Security solutions, audit services (e.g., Certik, OpenZeppelin, Consensys Diligence)
+- DID: Decentralized identity (e.g., ENS, Unstoppable Domains, Spruce)
+- Privacy: Privacy protection technology (e.g., Tornado Cash, Aztec, Secret Network)
+
+**Organization & Data:**
+- DAO: Decentralized autonomous organizations (e.g., Uniswap DAO, Aave DAO, MakerDAO)
+- Data & Analysis: Data analytics, on-chain data (e.g., Glassnode, Messari, CoinGecko)
+- Environmental Solutions: Environmental solutions, carbon credits (e.g., Klima DAO, Toucan Protocol)
+
+**Critical Classification Rules:**
+1. **Wallets**: Wallets (e.g., MetaMask, Trust Wallet, TokenPocket, Phantom, Rainbow) belong to **Wallet** category
+2. **Exchange Distinction**: CEX (centralized exchanges) and DEX (decentralized exchanges) are different categories; DEX belongs to **DEX** category
+3. **AI Products**: Web3 AI products (e.g., ChatGPT, Claude, Perplexity, AI-powered DeFi protocols) belong to **AI** category
+4. **Lending Platforms**: Lending platforms (e.g., Aave, Compound, MakerDAO, Venus) belong to **Lending** category
+5. **Cross-chain Bridges**: Cross-chain bridges (e.g., Multichain, Stargate, Hop Protocol, Across) belong to **Bridge** category
+6. **Layer2 Precision**: Arbitrum, Optimism, Polygon, etc. clearly belong to Layer2, do not misclassify
+7. **Multi-category**: If question involves multiple domains, separate with commas (e.g., "DeFi,Layer2")
+8. **Uncertainty**: Set category to null if uncertain, do not guess
 
 Ranking dimension (ranking_type, pick one):
 - popularity | security | performance | cost | speed
@@ -68,7 +152,7 @@ Ranking dimension (ranking_type, pick one):
 Output (return JSON only, no extra text):
 {
     "need_ranking": true|false,
-    "category": "Infra|Layer1|Layer2|DePIN|Gaming|DeSci|DeFi|RWA|LSD|Derivatives|Perp|NFT|zk|Social|Creator Economy|Data & Analysis|CeFi|CEX|Security Solutions|Environmental Solutions|Cloud Computing|DAO|Tools|DID|Privacy|null|category1,category2",
+    "category": "Infra|Layer1|Layer2|DePIN|Gaming|DeSci|DeFi|RWA|LSD|Derivatives|Perp|NFT|zk|Social|Creator Economy|Data & Analysis|CeFi|CEX|DEX|Wallet|AI|Lending|Bridge|Security Solutions|Environmental Solutions|Cloud Computing|DAO|Tools|DID|Privacy|null|category1,category2",
     "keywords": ["trigger keywords or phrases you detected"],
     "ranking_type": "popularity|security|performance|cost|speed|null"
 }
