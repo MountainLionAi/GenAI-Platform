@@ -59,7 +59,7 @@ def _get_check_ai_ranking_prompted_messages(data, language):
 4. **借贷平台**：借贷平台（如 Aave、Compound、MakerDAO、Venus）属于 **Lending** 分类
 5. **跨链桥**：跨链桥（如 Multichain、Stargate、Hop Protocol、Across）属于 **Bridge** 分类
 6. **Layer2精准识别**：Arbitrum、Optimism、Polygon等明确属于Layer2，不要误判
-7. **多分类处理**：若问题涉及多个领域，用逗号分隔（如"DeFi,Layer2"）
+7. **多分类处理**：若问题涉及多个领域，必须用逗号分隔返回多个分类（如"DeFi,Layer2"、"Wallet,AI"、"DEX,Lending"、"CEX,Bridge"）
 8. **不确定时**：category置为null，不要猜测
 
 排序维度（ranking_type，五选一）：
@@ -72,6 +72,9 @@ def _get_check_ai_ranking_prompted_messages(data, language):
   - 速度/确认时间/延迟 → speed
 
 输出要求（仅返回 JSON，不要任何解释性文本）：
+- category字段：单个分类直接返回分类名，多个分类必须用逗号分隔（如"DeFi,Layer2"、"Wallet,AI"）
+- 示例：用户问"推荐几个钱包和AI产品"，category应返回"Wallet,AI"
+
 {
     "need_ranking": true|false,
     "category": "Infra|Layer1|Layer2|DePIN|Gaming|DeSci|DeFi|RWA|LSD|Derivatives|Perp|NFT|zk|Social|Creator Economy|Data & Analysis|CeFi|CEX|DEX|Wallet|AI|Lending|Bridge|Security Solutions|Environmental Solutions|Cloud Computing|DAO|Tools|DID|Privacy|null|分类1,分类2",
@@ -137,7 +140,7 @@ Project categories (must be precisely identified, each with clear Web3 industry 
 4. **Lending Platforms**: Lending platforms (e.g., Aave, Compound, MakerDAO, Venus) belong to **Lending** category
 5. **Cross-chain Bridges**: Cross-chain bridges (e.g., Multichain, Stargate, Hop Protocol, Across) belong to **Bridge** category
 6. **Layer2 Precision**: Arbitrum, Optimism, Polygon, etc. clearly belong to Layer2, do not misclassify
-7. **Multi-category**: If question involves multiple domains, separate with commas (e.g., "DeFi,Layer2")
+7. **Multi-category**: If question involves multiple domains, MUST separate with commas (e.g., "DeFi,Layer2", "Wallet,AI", "DEX,Lending", "CEX,Bridge")
 8. **Uncertainty**: Set category to null if uncertain, do not guess
 
 Ranking dimension (ranking_type, pick one):
@@ -150,6 +153,9 @@ Ranking dimension (ranking_type, pick one):
   - speed/latency/confirmation time → speed
 
 Output (return JSON only, no extra text):
+- category field: Return single category name directly, multiple categories MUST be separated by commas (e.g., "DeFi,Layer2", "Wallet,AI")
+- Example: If user asks "recommend some wallets and AI products", category should return "Wallet,AI"
+
 {
     "need_ranking": true|false,
     "category": "Infra|Layer1|Layer2|DePIN|Gaming|DeSci|DeFi|RWA|LSD|Derivatives|Perp|NFT|zk|Social|Creator Economy|Data & Analysis|CeFi|CEX|DEX|Wallet|AI|Lending|Bridge|Security Solutions|Environmental Solutions|Cloud Computing|DAO|Tools|DID|Privacy|null|category1,category2",
