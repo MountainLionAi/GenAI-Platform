@@ -423,7 +423,7 @@ async def multi_search_new(questions, search_type, related_qa=[], language=None,
                     tmp_sources = ai_sources.extend(tmp_sources)
                 else:
                     for i in range(len(tmp_sources)):
-                        if i == 1 or i == 3:
+                        if i == 0 or i == 3:
                             tmp_sources[i]['href'] = 'https://www.chatgpt.com'
                 question_sources[question] = question_sources[question] + tmp_sources
             else:
