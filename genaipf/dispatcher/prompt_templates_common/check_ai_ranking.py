@@ -60,7 +60,12 @@ def _get_check_ai_ranking_prompted_messages(data, language):
 5. **跨链桥**：跨链桥（如 Multichain、Stargate、Hop Protocol、Across）属于 **Bridge** 分类
 6. **Layer2精准识别**：Arbitrum、Optimism、Polygon等明确属于Layer2，不要误判
 7. **多分类处理**：若问题涉及多个领域，必须用逗号分隔返回多个分类（如"DeFi,Layer2"、"Wallet,AI"、"DEX,Lending"、"CEX,Bridge"）
-8. **不确定时**：category置为null，不要猜测
+8. **严格分类原则**：只匹配上述明确定义的分类，不要将未明确分类的项目硬匹配到相近分类
+9. **返回null的情况**：
+   - 项目类型不在上述分类范围内（如 memecoin、普通代币、未明确分类的项目）
+   - 无法确定具体分类的项目
+   - 跨多个领域但无法明确归类的项目
+10. **避免过度匹配**：宁可返回null也不要将不匹配的项目强制归类到相近分类
 
 排序维度（ranking_type，五选一）：
 - popularity | security | performance | cost | speed
@@ -74,6 +79,7 @@ def _get_check_ai_ranking_prompted_messages(data, language):
 输出要求（仅返回 JSON，不要任何解释性文本）：
 - category字段：单个分类直接返回分类名，多个分类必须用逗号分隔（如"DeFi,Layer2"、"Wallet,AI"）
 - 示例：用户问"推荐几个钱包和AI产品"，category应返回"Wallet,AI"
+- 重要：如果项目类型不在明确定义的分类范围内（如memecoin、普通代币等），必须返回null，不要硬匹配到相近分类
 
 {
     "need_ranking": true|false,
@@ -141,7 +147,12 @@ Project categories (must be precisely identified, each with clear Web3 industry 
 5. **Cross-chain Bridges**: Cross-chain bridges (e.g., Multichain, Stargate, Hop Protocol, Across) belong to **Bridge** category
 6. **Layer2 Precision**: Arbitrum, Optimism, Polygon, etc. clearly belong to Layer2, do not misclassify
 7. **Multi-category**: If question involves multiple domains, MUST separate with commas (e.g., "DeFi,Layer2", "Wallet,AI", "DEX,Lending", "CEX,Bridge")
-8. **Uncertainty**: Set category to null if uncertain, do not guess
+8. **Strict Classification Principle**: Only match the explicitly defined categories above, do not force-fit unclassified projects into similar categories
+9. **Return null when**:
+   - Project type is not within the defined categories (e.g., memecoin, generic tokens, unclassified projects)
+   - Cannot determine specific category for the project
+   - Project spans multiple domains but cannot be clearly classified
+10. **Avoid Over-matching**: Prefer returning null over forcing unmatched projects into similar categories
 
 Ranking dimension (ranking_type, pick one):
 - popularity | security | performance | cost | speed
@@ -155,6 +166,7 @@ Ranking dimension (ranking_type, pick one):
 Output (return JSON only, no extra text):
 - category field: Return single category name directly, multiple categories MUST be separated by commas (e.g., "DeFi,Layer2", "Wallet,AI")
 - Example: If user asks "recommend some wallets and AI products", category should return "Wallet,AI"
+- Important: If project type is not within the explicitly defined categories (e.g., memecoin, generic tokens), MUST return null, do not force-match to similar categories
 
 {
     "need_ranking": true|false,
