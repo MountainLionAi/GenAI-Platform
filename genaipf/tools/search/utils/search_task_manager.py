@@ -545,6 +545,8 @@ async def check_ai_ranking(messages, language, source=''):
             if not ranking_result:
                 return ranking_data
             else:
+                if ranking_result['category'] == 'null' or not ranking_result['category']:
+                    return ranking_data
                 ranking_data = ranking_result
             return ranking_data
         except Exception as e:

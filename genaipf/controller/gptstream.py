@@ -166,7 +166,7 @@ userid={userid},language={language},msggroup={msggroup},device_no={device_no},qu
             # async for _str in getAnswerAndCallGpt(request_params['content'], userid, msggroup, language, messages):
             async for _str in getAnswerAndCallGpt(request_params.get('content'), userid, msggroup, language, messages,
                                                   device_no, question_code, model, output_type, source, owner, agent_id,
-                                                  chain_id, llm_model, search_type, wallet_type, regenerate_response, trade_signal_text):
+                                                  chain_id, llm_model, search_type, wallet_type, regenerate_response, trade_signal_text, visitor_id):
                 await _response.write(f"data:{_str}\n\n")
                 await asyncio.sleep(0.01)
 
@@ -233,7 +233,7 @@ async def send_chat(request: Request):
 
 async def getAnswerAndCallGpt(question, userid, msggroup, language, front_messages, device_no, question_code, model,
                               output_type, source, owner, agent_id, chain_id, llm_model, search_type, wallet_type,
-                              regenerate_response, trade_signal_text):
+                              regenerate_response, trade_signal_text, visitor_id=''):
     from genaipf.dispatcher.stylized_process import stylized_process_mapping
     last_sp_msg = front_messages[-1]
     if source == 'v013':
@@ -720,7 +720,7 @@ async def getAnswerAndCallGpt(question, userid, msggroup, language, front_messag
                 stream_gen = convert_func_out_to_stream(func_chunk, messages, newest_question, model, language_,
                                                         related_qa, source, owner, sources, is_need_search,
                                                         sources_task, chain_id, output_type, llm_model, userid,
-                                                        wallet_type)
+                                                        wallet_type, visitor_id)
                 convert_func_out_to_stream_time_end_time = time.perf_counter()
                 elapsed_convert_func_out_to_stream_time = (
                                                                       convert_func_out_to_stream_time_end_time - convert_func_out_to_stream_start_time) * 1000
