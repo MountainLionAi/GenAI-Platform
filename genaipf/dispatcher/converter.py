@@ -8,7 +8,7 @@ from genaipf.tools.search.utils.search_agent_utils import not_need_search, not_n
 from genaipf.services.cmc_token import get_token_cmc_url
 import time
 
-async def convert_func_out_to_stream(chunk, messages, newest_question, model, language, related_qa, source, owner, sources=[], is_need_search=False, sources_task=None, chain_id='', output_type="", llm_model="", user_id="", wallet_type=""):
+async def convert_func_out_to_stream(chunk, messages, newest_question, model, language, related_qa, source, owner, sources=[], is_need_search=False, sources_task=None, chain_id='', output_type="", llm_model="", user_id="", wallet_type="", visitor_id=''):
     """
     chunk: afunc_gpt_generator return
     """
@@ -19,6 +19,7 @@ async def convert_func_out_to_stream(chunk, messages, newest_question, model, la
     _param["chain_id"] = chain_id
     _param["wallet_type"] = wallet_type
     _param["user_id"] = user_id
+    _param["visitor_id"] = visitor_id
     func_name = _param["func_name"]
     sub_func_name = _param["subtype"]
     logger.info(f'>>>>> func_name: {func_name}, sub_func_name: {sub_func_name}, _param: {_param}')
