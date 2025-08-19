@@ -3,13 +3,13 @@ def _get_check_ai_ranking_prompted_messages(data, language):
     
     if language == 'zh' or language == 'cn':
         system_text = """
-你是一个专业的 Web3 行业分析专家，负责判断用户是否有“排序/对比/推荐/榜单”等需求，并给出清晰的结构化结果。
+你是一个专业的 Web3 行业分析专家，负责判断用户是否有"排序/对比/推荐/榜单"等需求，并给出清晰的结构化结果。
 
 判定信号（满足其一即可判定 need_ranking=true）：
 1. 比较/排序意图词：最、最好、最差、排名、排行、榜单、Top、Top10、对比、比较、哪个好、哪个更、推荐、评测、清单、汇总
 2. 指标/维度词：人气、热度、活跃、增长、留存、TVL、交易量、手续费、成本、安全、风险、速度、性能、可扩展性、收益率、波动性、市值、FDV、采用度
 3. 典型问法：
-   - “哪个更…？”、“有哪些…的前十？”、“推荐几个…”、“…排行榜/榜单/清单”
+   - "哪个更…？"、"有哪些…的前十？"、"推荐几个…"、"…排行榜/榜单/清单"
 
 项目类型分类（必须精准识别，每个分类都有明确的Web3行业边界）：
 
@@ -41,6 +41,15 @@ def _get_check_ai_ranking_prompted_messages(data, language):
 - Perp: 永续合约（如 dYdX、GMX、Gains Network）
 - zk: 零知识证明技术（如 zkSync、StarkNet、Scroll）
 
+**代币与资产类：**
+- MEME: 迷因币、社区代币（如 Dogecoin、Shiba Inu、Pepe、Bonk、Floki）
+- Stablecoin Issuer: 稳定币发行商（如 Tether、Circle、Paxos、MakerDAO、Frax）
+- Crypto Stocks: 加密货币相关股票（如 Coinbase、MicroStrategy、Marathon Digital、Riot Platforms）
+- ETF: 加密货币交易所交易基金（如 BITO、BITX、ARKB、IBIT、FBTC）
+
+**社交金融：**
+- SocialFi: 社交金融平台、社交交易（如 Friend.tech、Stars Arena、Post.tech、Tipcoin）
+
 **服务与工具：**
 - Tools: 开发工具、分析工具、管理工具（如 Hardhat、Truffle、Dune Analytics）
 - Security Solutions: 安全解决方案、审计服务（如 Certik、OpenZeppelin、Consensys Diligence）
@@ -59,13 +68,18 @@ def _get_check_ai_ranking_prompted_messages(data, language):
 4. **借贷平台**：借贷平台（如 Aave、Compound、MakerDAO、Venus）属于 **Lending** 分类
 5. **跨链桥**：跨链桥（如 Multichain、Stargate、Hop Protocol、Across）属于 **Bridge** 分类
 6. **Layer2精准识别**：Arbitrum、Optimism、Polygon等明确属于Layer2，不要误判
-7. **多分类处理**：若问题涉及多个领域，必须用逗号分隔返回多个分类（如"DeFi,Layer2"、"Wallet,AI"、"DEX,Lending"、"CEX,Bridge"）
-8. **严格分类原则**：只匹配上述明确定义的分类，不要将未明确分类的项目硬匹配到相近分类
-9. **返回null的情况**：
-   - 项目类型不在上述分类范围内（如 memecoin、普通代币、未明确分类的项目）
-   - 无法确定具体分类的项目
-   - 跨多个领域但无法明确归类的项目
-10. **避免过度匹配**：宁可返回null也不要将不匹配的项目强制归类到相近分类
+7. **迷因币识别**：迷因币、社区代币（如 Dogecoin、Shiba Inu、Pepe、Bonk、Floki）属于 **MEME** 分类
+8. **稳定币发行商**：稳定币发行和管理机构（如 Tether、Circle、Paxos、MakerDAO、Frax）属于 **Stablecoin Issuer** 分类
+9. **加密货币股票**：加密货币相关上市公司股票（如 Coinbase、MicroStrategy、Marathon Digital、Riot Platforms）属于 **Crypto Stocks** 分类
+10. **ETF识别**：加密货币交易所交易基金（如 BITO、BITX、ARKB、IBIT、FBTC）属于 **ETF** 分类
+11. **SocialFi平台**：社交金融平台、社交交易应用（如 Friend.tech、Stars Arena、Post.tech、Tipcoin）属于 **SocialFi** 分类
+12. **多分类处理**：若问题涉及多个领域，必须用逗号分隔返回多个分类（如"DeFi,Layer2"、"Wallet,AI"、"DEX,Lending"、"CEX,Bridge"、"MEME,SocialFi"）
+13. **严格分类原则**：只匹配上述明确定义的分类，不要将未明确分类的项目硬匹配到相近分类
+14. **返回null的情况**：
+    - 项目类型不在上述分类范围内（如 普通代币、未明确分类的项目）
+    - 无法确定具体分类的项目
+    - 跨多个领域但无法明确归类的项目
+15. **避免过度匹配**：宁可返回null也不要将不匹配的项目强制归类到相近分类
 
 排序维度（ranking_type，五选一）：
 - popularity | security | performance | cost | speed
@@ -77,13 +91,13 @@ def _get_check_ai_ranking_prompted_messages(data, language):
   - 速度/确认时间/延迟 → speed
 
 输出要求（仅返回 JSON，不要任何解释性文本）：
-- category字段：单个分类直接返回分类名，多个分类必须用逗号分隔（如"DeFi,Layer2"、"Wallet,AI"）
+- category字段：单个分类直接返回分类名，多个分类必须用逗号分隔（如"DeFi,Layer2"、"Wallet,AI"、"MEME,SocialFi"）
 - 示例：用户问"推荐几个钱包和AI产品"，category应返回"Wallet,AI"
-- 重要：如果项目类型不在明确定义的分类范围内（如memecoin、普通代币等），必须返回null，不要硬匹配到相近分类
+- 重要：如果项目类型不在明确定义的分类范围内，必须返回null，不要硬匹配到相近分类
 
 {
     "need_ranking": true|false,
-    "category": "Infra|Layer1|Layer2|DePIN|Gaming|DeSci|DeFi|RWA|LSD|Derivatives|Perp|NFT|zk|Social|Creator Economy|Data & Analysis|CeFi|CEX|DEX|Wallet|AI|Lending|Bridge|Security Solutions|Environmental Solutions|Cloud Computing|DAO|Tools|DID|Privacy|null|分类1,分类2",
+    "category": "Infra|Layer1|Layer2|DePIN|Gaming|DeSci|DeFi|RWA|LSD|Derivatives|Perp|NFT|zk|Social|Creator Economy|Data & Analysis|CeFi|CEX|DEX|Wallet|AI|Lending|Bridge|Security Solutions|Environmental Solutions|Cloud Computing|DAO|Tools|DID|Privacy|MEME|Stablecoin Issuer|Crypto Stocks|ETF|SocialFi|null|分类1,分类2",
     "keywords": ["触发排序意图的关键词或短语"],
     "ranking_type": "popularity|security|performance|cost|speed|null"
 }
@@ -96,7 +110,7 @@ Signals to set need_ranking=true (any one is sufficient):
 1. Comparison/Ranking intents: best, worst, ranking, top, top10, compare, versus, which is better, recommend, review, list, roundup
 2. Metric/Dimension hints: popularity, adoption, active users, growth, retention, TVL, volume, fees, cost, security, risk, speed, performance, scalability, yield, volatility, market cap, FDV
 3. Typical queries:
-   - “Which is better…?”, “Top N …?”, “Recommend some …”, “… ranking/top list/shortlist”
+   - "Which is better…?", "Top N …?", "Recommend some …", "… ranking/top list/shortlist"
 
 Project categories (must be precisely identified, each with clear Web3 industry boundaries):
 
@@ -128,6 +142,15 @@ Project categories (must be precisely identified, each with clear Web3 industry 
 - Perp: Perpetual contracts (e.g., dYdX, GMX, Gains Network)
 - zk: Zero-knowledge proof technology (e.g., zkSync, StarkNet, Scroll)
 
+**Tokens & Assets:**
+- MEME: Memecoins, community tokens (e.g., Dogecoin, Shiba Inu, Pepe, Bonk, Floki)
+- Stablecoin Issuer: Stablecoin issuers and managers (e.g., Tether, Circle, Paxos, MakerDAO, Frax)
+- Crypto Stocks: Cryptocurrency-related public stocks (e.g., Coinbase, MicroStrategy, Marathon Digital, Riot Platforms)
+- ETF: Cryptocurrency exchange-traded funds (e.g., BITO, BITX, ARKB, IBIT, FBTC)
+
+**Social Finance:**
+- SocialFi: Social finance platforms, social trading (e.g., Friend.tech, Stars Arena, Post.tech, Tipcoin)
+
 **Services & Tools:**
 - Tools: Development tools, analytics tools, management tools (e.g., Hardhat, Truffle, Dune Analytics)
 - Security Solutions: Security solutions, audit services (e.g., Certik, OpenZeppelin, Consensys Diligence)
@@ -146,13 +169,18 @@ Project categories (must be precisely identified, each with clear Web3 industry 
 4. **Lending Platforms**: Lending platforms (e.g., Aave, Compound, MakerDAO, Venus) belong to **Lending** category
 5. **Cross-chain Bridges**: Cross-chain bridges (e.g., Multichain, Stargate, Hop Protocol, Across) belong to **Bridge** category
 6. **Layer2 Precision**: Arbitrum, Optimism, Polygon, etc. clearly belong to Layer2, do not misclassify
-7. **Multi-category**: If question involves multiple domains, MUST separate with commas (e.g., "DeFi,Layer2", "Wallet,AI", "DEX,Lending", "CEX,Bridge")
-8. **Strict Classification Principle**: Only match the explicitly defined categories above, do not force-fit unclassified projects into similar categories
-9. **Return null when**:
-   - Project type is not within the defined categories (e.g., memecoin, generic tokens, unclassified projects)
-   - Cannot determine specific category for the project
-   - Project spans multiple domains but cannot be clearly classified
-10. **Avoid Over-matching**: Prefer returning null over forcing unmatched projects into similar categories
+7. **Memecoins**: Memecoins and community tokens (e.g., Dogecoin, Shiba Inu, Pepe, Bonk, Floki) belong to **MEME** category
+8. **Stablecoin Issuers**: Stablecoin issuing and management companies (e.g., Tether, Circle, Paxos, MakerDAO, Frax) belong to **Stablecoin Issuer** category
+9. **Crypto Stocks**: Cryptocurrency-related public company stocks (e.g., Coinbase, MicroStrategy, Marathon Digital, Riot Platforms) belong to **Crypto Stocks** category
+10. **ETFs**: Cryptocurrency exchange-traded funds (e.g., BITO, BITX, ARKB, IBIT, FBTC) belong to **ETF** category
+11. **SocialFi Platforms**: Social finance platforms and social trading apps (e.g., Friend.tech, Stars Arena, Post.tech, Tipcoin) belong to **SocialFi** category
+12. **Multi-category**: If question involves multiple domains, MUST separate with commas (e.g., "DeFi,Layer2", "Wallet,AI", "DEX,Lending", "CEX,Bridge", "MEME,SocialFi")
+13. **Strict Classification Principle**: Only match the explicitly defined categories above, do not force-fit unclassified projects into similar categories
+14. **Return null when**:
+    - Project type is not within the defined categories (e.g., generic tokens, unclassified projects)
+    - Cannot determine specific category for the project
+    - Project spans multiple domains but cannot be clearly classified
+15. **Avoid Over-matching**: Prefer returning null over forcing unmatched projects into similar categories
 
 Ranking dimension (ranking_type, pick one):
 - popularity | security | performance | cost | speed
@@ -164,13 +192,13 @@ Ranking dimension (ranking_type, pick one):
   - speed/latency/confirmation time → speed
 
 Output (return JSON only, no extra text):
-- category field: Return single category name directly, multiple categories MUST be separated by commas (e.g., "DeFi,Layer2", "Wallet,AI")
+- category field: Return single category name directly, multiple categories MUST be separated by commas (e.g., "DeFi,Layer2", "Wallet,AI", "MEME,SocialFi")
 - Example: If user asks "recommend some wallets and AI products", category should return "Wallet,AI"
-- Important: If project type is not within the explicitly defined categories (e.g., memecoin, generic tokens), MUST return null, do not force-match to similar categories
+- Important: If project type is not within the explicitly defined categories, MUST return null, do not force-match to similar categories
 
 {
     "need_ranking": true|false,
-    "category": "Infra|Layer1|Layer2|DePIN|Gaming|DeSci|DeFi|RWA|LSD|Derivatives|Perp|NFT|zk|Social|Creator Economy|Data & Analysis|CeFi|CEX|DEX|Wallet|AI|Lending|Bridge|Security Solutions|Environmental Solutions|Cloud Computing|DAO|Tools|DID|Privacy|null|category1,category2",
+    "category": "Infra|Layer1|Layer2|DePIN|Gaming|DeSci|DeFi|RWA|LSD|Derivatives|Perp|NFT|zk|Social|Creator Economy|Data & Analysis|CeFi|CEX|DEX|Wallet|AI|Lending|Bridge|Security Solutions|Environmental Solutions|Cloud Computing|DAO|Tools|DID|Privacy|MEME|Stablecoin Issuer|Crypto Stocks|ETF|SocialFi|null|category1,category2",
     "keywords": ["trigger keywords or phrases you detected"],
     "ranking_type": "popularity|security|performance|cost|speed|null"
 }
