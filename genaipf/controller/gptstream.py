@@ -601,6 +601,14 @@ async def getAnswerAndCallGpt(question, userid, msggroup, language, front_messag
             rag_status['promptAnalysis']['isCompleted'] = True
             yield json.dumps(get_format_output("rag_status", rag_status))
             ai_ranking_info = await ai_ranking_task
+            if ai_ranking_info and ai_ranking_info['need_project_research']:
+                import ml4gp.services.ai_ranking_service as ai_ranking_service
+                ai_ranking_project_detail = await ai_ranking_service.get_project_detail(ai_ranking_info['project_keywords'][0], language_)
+                if ai_ranking_project_detail:
+                    ai_ranking_info['category'] = ai_ranking_project_detail['category']
+                    ai_ranking_info['project_detail'] = ai_ranking_project_detail['detail']
+                else:
+                    ai_ranking_info['need_project_research'] = False
         yield json.dumps(get_format_output("ai_ranking", ai_ranking_info))
     else:
         func_chunk = await resp1.__anext__()
