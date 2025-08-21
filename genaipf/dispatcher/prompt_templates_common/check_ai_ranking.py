@@ -131,6 +131,15 @@ def _get_check_ai_ranking_prompted_messages(data, language):
 - school: 学校、大学、学院、教育机构
 - position: 岗位、职位、角色
 
+**语言适配规则（状态2使用）：**
+- 当language为中文（zh/cn）时，target_entity必须返回中文
+- 当language为英文（en）时，target_entity必须返回英文
+- 示例：
+  - 中文：用户问"币安的组成人员有哪些" → target_entity: "币安"
+  - 英文：用户问"who are the team members of Binance" → target_entity: "Binance"
+  - 中文：用户问"某大学的知名校友" → target_entity: "某大学"
+  - 英文：用户问"famous alumni of a university" → target_entity: "university"
+
 **排序维度（状态1使用，五选一）：**
 - popularity | security | performance | cost | speed
 - 若出现 TVL/交易量/市值等更具体的指标，也请就近映射到上述 5 类：
@@ -164,7 +173,7 @@ def _get_check_ai_ranking_prompted_messages(data, language):
     "keywords": ["触发人物排名意图的关键词或短语"],
     "ranking_type": null,
     "person_ranking_type": "company|school|position",
-    "target_entity": "目标实体名称（如：Binance、某大学、某岗位）",
+    "target_entity": "目标实体名称（根据language返回相应语言：中文返回中文，英文返回英文）",
     "project_keywords": []
 }
 
@@ -184,7 +193,7 @@ def _get_check_ai_ranking_prompted_messages(data, language):
 **重要规则：**
 1. 三种状态互斥，只能有一种为true
 2. 状态1：category字段处理同原有逻辑，多个分类用逗号分隔
-3. 状态2：person_ranking_type必须是company、school、position之一
+3. 状态2：person_ranking_type必须是company、school、position之一；target_entity必须根据language返回相应语言
 4. 状态3：project_keywords必须提取出具体的项目名称（如Metamask、Uniswap等）
 5. 如果都不匹配，所有状态都设为false，其他字段为null或空数组
 """
@@ -318,6 +327,15 @@ When users ask questions like "why is Metamask the most popular wallet", "why is
 - school: School, university, college, educational institution
 - position: Position, role, job title
 
+**Language Adaptation Rules (for State 2):**
+- When language is Chinese (zh/cn), target_entity must be returned in Chinese
+- When language is English (en), target_entity must be returned in English
+- Examples:
+  - Chinese: User asks "币安的组成人员有哪些" → target_entity: "币安"
+  - English: User asks "who are the team members of Binance" → target_entity: "Binance"
+  - Chinese: User asks "某大学的知名校友" → target_entity: "某大学"
+  - English: User asks "famous alumni of a university" → target_entity: "university"
+
 **Ranking Dimension (for State 1, pick one):**
 - popularity | security | performance | cost | speed
 - Map specific metrics to the above when needed:
@@ -351,7 +369,7 @@ When users ask questions like "why is Metamask the most popular wallet", "why is
     "keywords": ["trigger keywords or phrases for person ranking"],
     "ranking_type": null,
     "person_ranking_type": "company|school|position",
-    "target_entity": "target entity name (e.g., Binance, a university, a position)",
+    "target_entity": "target entity name (return in corresponding language based on language parameter: Chinese for zh/cn, English for en)",
     "project_keywords": []
 }
 
@@ -371,7 +389,7 @@ When users ask questions like "why is Metamask the most popular wallet", "why is
 **Important Rules:**
 1. The three states are mutually exclusive, only one can be true
 2. State 1: category field processing follows original logic, multiple categories separated by commas
-3. State 2: person_ranking_type must be one of company, school, position
+3. State 2: person_ranking_type must be one of company, school, position; target_entity must be returned in corresponding language based on language parameter
 4. State 3: project_keywords must extract specific project names (e.g., Metamask, Uniswap, etc.)
 5. If none match, set all states to false, other fields as null or empty arrays
 """
@@ -381,7 +399,16 @@ When users ask questions like "why is Metamask the most popular wallet", "why is
         if m["role"] in ["system", "user", "assistant"]:
             msg_l.append(f'{m["role"]}: {m["content"]}')
     ref = "\n".join(msg_l)
+    
+    # 添加语言信息到用户消息中
+    if language == 'zh' or language == 'cn':
+        language_info = f"当前系统语言: {language}" if language else "当前系统语言: 未指定"
+    else:
+        language_info = f"Current system language: {language}" if language else "Current system language: Not specified"
+    
     last_msg = f"""
+{language_info}
+
 ```
 {ref}
 ```
