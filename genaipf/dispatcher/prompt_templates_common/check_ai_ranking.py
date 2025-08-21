@@ -88,6 +88,44 @@ def _get_check_ai_ranking_prompted_messages(data, language):
 - Data & Analysis: 数据分析、链上数据（如 Glassnode、Messari、CoinGecko）
 - Environmental Solutions: 环保解决方案、碳信用（如 Klima DAO、Toucan Protocol）
 
+**重要分类规则：**
+1. **钱包类**：钱包（如 MetaMask、Trust Wallet、TokenPocket、Phantom、Rainbow）属于 **Wallet** 分类
+2. **交易所区分**：CEX（中心化交易所）和 DEX（去中心化交易所）是不同分类，DEX属于 **DEX** 分类
+3. **AI产品识别**：Web3 AI产品（如 ChatGPT、Claude、Perplexity、AI驱动的DeFi协议）属于 **AI** 分类
+4. **借贷平台**：借贷平台（如 Aave、Compound、MakerDAO、Venus）属于 **Lending** 分类
+5. **跨链桥**：跨链桥（如 Multichain、Stargate、Hop Protocol、Across）属于 **Bridge** 分类
+6. **Layer2精准识别**：Arbitrum、Optimism、Polygon等明确属于Layer2，不要误判
+7. **迷因币识别**：迷因币、社区代币（如 Dogecoin、Shiba Inu、Pepe、Bonk、Floki）属于 **MEME** 分类
+8. **稳定币发行商**：稳定币发行和管理机构（如 Tether、Circle、Paxos、MakerDAO、Frax）属于 **Stablecoin Issuer** 分类
+9. **加密货币股票**：加密货币相关上市公司股票（如 Coinbase、MicroStrategy、Marathon Digital、Riot Platforms）属于 **Crypto Stocks** 分类
+10. **ETF识别**：加密货币交易所交易基金（如 BITO、BITX、ARKB、IBIT、FBTC）属于 **ETF** 分类
+11. **SocialFi平台**：社交金融平台、社交交易应用（如 Friend.tech、Stars Arena、Post.tech、Tipcoin）属于 **SocialFi** 分类
+12. **多分类处理**：若问题涉及多个领域，必须用逗号分隔返回多个分类（如"DeFi,Layer2"、"Wallet,AI"、"DEX,Lending"、"CEX,Bridge"、"MEME,SocialFi"）
+13. **严格分类原则**：只匹配上述明确定义的分类，不要将未明确分类的项目硬匹配到相近分类
+14. **返回null的情况**：
+    - 项目类型不在上述分类范围内（如 普通代币、未明确分类的项目）
+    - 无法确定具体分类的项目
+    - 跨多个领域但无法明确归类的项目
+15. **避免过度匹配**：宁可返回null也不要将不匹配的项目强制归类到相近分类
+
+**互斥分类规则（重要）：**
+16. **交易所互斥**：CEX和DEX是互斥概念，用户未明确说明去中心化偏好时，默认返回CEX
+    - 用户问"哪个交易所最好" → 返回CEX（不返回CEX,DEX）
+    - 用户问"去中心化交易所哪个最好" → 返回DEX
+    - 用户问"中心化交易所哪个最好" → 返回CEX
+17. **Layer1和Layer2互斥**：基础公链和二层扩展是互斥概念
+    - 用户问"哪个区块链最好" → 返回Layer1（不返回Layer1,Layer2）
+    - 用户问"哪个二层网络最好" → 返回Layer2
+18. **DeFi和具体DeFi协议互斥**：DeFi是总称，与具体协议分类互斥
+    - 用户问"哪个DeFi协议最好" → 返回DeFi（不返回DeFi,Lending等）
+    - 用户问"哪个借贷平台最好" → 返回Lending
+19. **钱包和具体钱包类型互斥**：Wallet是总称，与具体钱包类型互斥
+    - 用户问"哪个钱包最好" → 返回Wallet（不返回Wallet,AI等）
+    - 用户问"哪个AI钱包最好" → 返回AI
+20. **多分类返回原则**：只有在用户明确询问多个不同领域时才返回多分类
+    - 用户问"推荐几个钱包和AI产品" → 返回"Wallet,AI"
+    - 用户问"哪个交易所最好" → 返回"CEX"（单一分类）
+
 **人物排名类型（状态2使用）：**
 - company: 公司、企业、机构
 - school: 学校、大学、学院、教育机构
@@ -236,6 +274,44 @@ When users ask questions like "why is Metamask the most popular wallet", "why is
 - DAO: Decentralized autonomous organizations (e.g., Uniswap DAO, Aave DAO, MakerDAO)
 - Data & Analysis: Data analytics, on-chain data (e.g., Glassnode, Messari, CoinGecko)
 - Environmental Solutions: Environmental solutions, carbon credits (e.g., Klima DAO, Toucan Protocol)
+
+**Important Classification Rules:**
+1. **Wallets:** Wallets (e.g., MetaMask, Trust Wallet, TokenPocket, Phantom, Rainbow) belong to the **Wallet** category.
+2. **Exchange Distinction:** CEX (Centralized Exchanges) and DEX (Decentralized Exchanges) are different categories, and DEX belongs to the **DEX** category.
+3. **AI Product Identification:** Web3 AI products (e.g., ChatGPT, Claude, Perplexity, AI-powered DeFi protocols) belong to the **AI** category.
+4. **Lending Platforms:** Lending platforms (e.g., Aave, Compound, MakerDAO, Venus) belong to the **Lending** category.
+5. **Cross-chain Bridges:** Cross-chain bridges (e.g., Multichain, Stargate, Hop Protocol, Across) belong to the **Bridge** category.
+6. **Layer2 Precise Identification:** Arbitrum, Optimism, Polygon, etc., are explicitly Layer2, do not misidentify.
+7. **MEME Coin Identification:** Memecoins, community tokens (e.g., Dogecoin, Shiba Inu, Pepe, Bonk, Floki) belong to the **MEME** category.
+8. **Stablecoin Issuer:** Stablecoin issuers and managers (e.g., Tether, Circle, Paxos, MakerDAO, Frax) belong to the **Stablecoin Issuer** category.
+9. **Crypto Stocks:** Cryptocurrency-related public stocks (e.g., Coinbase, MicroStrategy, Marathon Digital, Riot Platforms) belong to the **Crypto Stocks** category.
+10. **ETF Identification:** Cryptocurrency exchange-traded funds (e.g., BITO, BITX, ARKB, IBIT, FBTC) belong to the **ETF** category.
+11. **SocialFi Platforms:** Social finance platforms, social trading applications (e.g., Friend.tech, Stars Arena, Post.tech, Tipcoin) belong to the **SocialFi** category.
+12. **Multiple Category Handling:** If a question involves multiple domains, multiple categories must be returned separated by commas (e.g., "DeFi,Layer2", "Wallet,AI", "DEX,Lending", "CEX,Bridge", "MEME,SocialFi").
+13. **Strict Classification Principle:** Only match the explicitly defined categories above, do not forcefully match projects that are not clearly categorized to similar categories.
+14. **Return null cases:**
+    - Project types are not within the scope of the above categories (e.g., ordinary tokens, projects not clearly categorized)
+    - Projects for which specific categories cannot be determined
+    - Projects that span multiple domains but cannot be clearly categorized
+15. **Avoid excessive matching:** Rather than forcing an unmatched project to be categorized, return null.
+
+**Mutually Exclusive Classification Rules (Important):**
+16. **Exchange Mutex:** CEX and DEX are mutually exclusive concepts. When a user does not explicitly state a decentralized preference, default to returning CEX.
+    - User asks "which exchange is the best" → returns CEX (does not return CEX, DEX)
+    - User asks "which decentralized exchange is the best" → returns DEX
+    - User asks "which centralized exchange is the best" → returns CEX
+17. **Layer1 and Layer2 Mutex:** Base blockchains and Layer 2 scaling are mutually exclusive concepts.
+    - User asks "which blockchain is the best" → returns Layer1 (does not return Layer1, Layer2)
+    - User asks "which Layer 2 network is the best" → returns Layer2
+18. **DeFi and Specific DeFi Protocols Mutex:** DeFi is the general term, and it is mutually exclusive with specific protocol categories.
+    - User asks "which DeFi protocol is the best" → returns DeFi (does not return DeFi, Lending, etc.)
+    - User asks "which lending platform is the best" → returns Lending
+19. **Wallet and Specific Wallet Types Mutex:** Wallet is the general term, and it is mutually exclusive with specific wallet types.
+    - User asks "which wallet is the best" → returns Wallet (does not return Wallet, AI, etc.)
+    - User asks "which AI wallet is the best" → returns AI
+20. **Multiple Category Return Principle:** Only return multiple categories when a user explicitly asks for multiple different domains.
+    - User asks "recommend some wallets and AI products" → returns "Wallet,AI"
+    - User asks "which exchange is the best" → returns "CEX" (single category)
 
 **Person Ranking Types (for State 2):**
 - company: Company, enterprise, institution
