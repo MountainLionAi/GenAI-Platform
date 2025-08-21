@@ -131,10 +131,19 @@ def _get_check_ai_ranking_prompted_messages(data, language):
 - school: 学校、大学、学院、教育机构
 - position: 岗位、职位、角色
 
+**target_entity字段说明（状态2使用）：**
+- target_entity是指具体的标签内容，不是实体名称
+- 当person_ranking_type为position时，target_entity应该是具体的职位标签（如"首席技术官"、"CEO"、"CTO"等）
+- 当person_ranking_type为company时，target_entity应该是具体的公司名称（如"币安"、"Binance"等）
+- 当person_ranking_type为school时，target_entity应该是具体的学校名称（如"某大学"、"university"等）
+
 **语言适配规则（状态2使用）：**
-- 当language为中文（zh/cn）时，target_entity必须返回中文
-- 当language为英文（en）时，target_entity必须返回英文
+- 当language为中文（zh/cn）时，target_entity必须返回中文标签
+- 当language为英文（en）时，target_entity必须返回英文标签
+- target_entity是指具体的标签内容，不是实体名称
 - 示例：
+  - 中文：用户问"web3行业有什么厉害的CTO" → target_entity: "首席技术官"
+  - 英文：用户问"who are the best CTOs in web3" → target_entity: "Chief Technology Officer"
   - 中文：用户问"币安的组成人员有哪些" → target_entity: "币安"
   - 英文：用户问"who are the team members of Binance" → target_entity: "Binance"
   - 中文：用户问"某大学的知名校友" → target_entity: "某大学"
@@ -173,7 +182,7 @@ def _get_check_ai_ranking_prompted_messages(data, language):
     "keywords": ["触发人物排名意图的关键词或短语"],
     "ranking_type": null,
     "person_ranking_type": "company|school|position",
-    "target_entity": "目标实体名称（根据language返回相应语言：中文返回中文，英文返回英文）",
+    "target_entity": "具体标签内容（根据language返回相应语言标签：中文返回中文标签，英文返回英文标签）",
     "project_keywords": []
 }
 
@@ -193,7 +202,7 @@ def _get_check_ai_ranking_prompted_messages(data, language):
 **重要规则：**
 1. 三种状态互斥，只能有一种为true
 2. 状态1：category字段处理同原有逻辑，多个分类用逗号分隔
-3. 状态2：person_ranking_type必须是company、school、position之一；target_entity必须根据language返回相应语言
+3. 状态2：person_ranking_type必须是company、school、position之一；target_entity必须根据language返回相应语言的具体标签内容
 4. 状态3：project_keywords必须提取出具体的项目名称（如Metamask、Uniswap等）
 5. 如果都不匹配，所有状态都设为false，其他字段为null或空数组
 """
@@ -327,10 +336,19 @@ When users ask questions like "why is Metamask the most popular wallet", "why is
 - school: School, university, college, educational institution
 - position: Position, role, job title
 
+**target_entity Field Description (for State 2):**
+- target_entity refers to specific label content, not entity names
+- When person_ranking_type is position, target_entity should be specific position labels (e.g., "Chief Technology Officer", "CEO", "CTO", etc.)
+- When person_ranking_type is company, target_entity should be specific company names (e.g., "Binance", "币安", etc.)
+- When person_ranking_type is school, target_entity should be specific school names (e.g., "university", "某大学", etc.)
+
 **Language Adaptation Rules (for State 2):**
-- When language is Chinese (zh/cn), target_entity must be returned in Chinese
-- When language is English (en), target_entity must be returned in English
+- When language is Chinese (zh/cn), target_entity must be returned in Chinese labels
+- When language is English (en), target_entity must be returned in English labels
+- target_entity refers to specific label content, not entity names
 - Examples:
+  - Chinese: User asks "web3行业有什么厉害的CTO" → target_entity: "首席技术官"
+  - English: User asks "who are the best CTOs in web3" → target_entity: "Chief Technology Officer"
   - Chinese: User asks "币安的组成人员有哪些" → target_entity: "币安"
   - English: User asks "who are the team members of Binance" → target_entity: "Binance"
   - Chinese: User asks "某大学的知名校友" → target_entity: "某大学"
@@ -369,7 +387,7 @@ When users ask questions like "why is Metamask the most popular wallet", "why is
     "keywords": ["trigger keywords or phrases for person ranking"],
     "ranking_type": null,
     "person_ranking_type": "company|school|position",
-    "target_entity": "target entity name (return in corresponding language based on language parameter: Chinese for zh/cn, English for en)",
+    "target_entity": "specific label content (return in corresponding language labels based on language parameter: Chinese labels for zh/cn, English labels for en)",
     "project_keywords": []
 }
 
@@ -389,7 +407,7 @@ When users ask questions like "why is Metamask the most popular wallet", "why is
 **Important Rules:**
 1. The three states are mutually exclusive, only one can be true
 2. State 1: category field processing follows original logic, multiple categories separated by commas
-3. State 2: person_ranking_type must be one of company, school, position; target_entity must be returned in corresponding language based on language parameter
+3. State 2: person_ranking_type must be one of company, school, position; target_entity must be returned in corresponding language labels based on language parameter
 4. State 3: project_keywords must extract specific project names (e.g., Metamask, Uniswap, etc.)
 5. If none match, set all states to false, other fields as null or empty arrays
 """
