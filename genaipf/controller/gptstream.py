@@ -601,6 +601,14 @@ async def getAnswerAndCallGpt(question, userid, msggroup, language, front_messag
             rag_status['promptAnalysis']['isCompleted'] = True
             yield json.dumps(get_format_output("rag_status", rag_status))
             ai_ranking_info = await ai_ranking_task
+            if ai_ranking_info and ai_ranking_info['need_project_research']:
+                import ml4gp.services.ai_ranking_service as ai_ranking_service
+                ai_ranking_project_detail = await ai_ranking_service.get_project_detail(ai_ranking_info['project_keywords'][0], language_)
+                if ai_ranking_project_detail:
+                    ai_ranking_info['category'] = ai_ranking_project_detail['category']
+                    ai_ranking_info['project_detail'] = ai_ranking_project_detail['detail']
+                else:
+                    ai_ranking_info['need_project_research'] = False
         yield json.dumps(get_format_output("ai_ranking", ai_ranking_info))
     else:
         func_chunk = await resp1.__anext__()
@@ -619,7 +627,10 @@ async def getAnswerAndCallGpt(question, userid, msggroup, language, front_messag
             if ai_ranking_info and ai_ranking_info['need_ranking']:
                 import ml4gp.services.ai_ranking_service as ai_ranking_service
                 # userid, projects_type, order_by, direction, page, limit, language
-                ai_ranking_details = await ai_ranking_service.query_ai_ranking(0,ai_ranking_info['category'], 'influence', 'desc', 1, 8, language_)
+                order_by = 'influence'
+                if ai_ranking_info['category'].upper() == 'MEME':
+                    order_by = 'ai_score'
+                ai_ranking_details = await ai_ranking_service.query_ai_ranking(0,ai_ranking_info['category'], order_by, 'desc', 1, 8, language_)
                 related_qa = []  # 如果走了AI Ranking其他rag清空
                 if language_ == 'en':
                     related_qa.append(question + '，The following content is ranked according to influence. Please output according to the ranking and include the number. : ' + json.dumps(ai_ranking_details))

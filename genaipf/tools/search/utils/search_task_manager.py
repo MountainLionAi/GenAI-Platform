@@ -522,19 +522,22 @@ async def check_ai_ranking(messages, language, source=''):
     """
     ranking_data = {
         "need_ranking": False,
-        "category": None,
+        "need_person_ranking": False,
+        "need_project_research": False,
+        "category": "",
         "keywords": [],
-        "ranking_type": None
+        "ranking_type": "",
+        "person_ranking_type": None,
+        "target_entity": None,
+        "project_keywords": []
     }
     try:
         # 获取最新的用户消息
-        print(messages)
         latest_message = messages['messages'][-1] if messages['messages'] else None
         if not latest_message or latest_message.get('role') != 'user':
             return ranking_data
         # 使用prompt模板判断是否有排序需求
         _messages = {"messages": [latest_message]}
-        print(_messages)
         msgs = LionPromptCommon.get_prompted_messages("check_ai_ranking", _messages, language)
         result = await async_simple_chat(msgs, model='gpt-4.1-2025-04-14')
         
@@ -544,10 +547,13 @@ async def check_ai_ranking(messages, language, source=''):
             logger.info(f'AI ranking analysis result: {ranking_result}')
             if not ranking_result:
                 return ranking_data
-            else:
-                if ranking_result['category'] == 'null' or not ranking_result['category']:
-                    return ranking_data
-                ranking_data = ranking_result
+            else:  # 分成三种类型处理
+                if ranking_result['need_ranking'] and ranking_result['category'] and ranking_result['category'] != 'null':  # 匹配tag项目排名
+                    ranking_data = ranking_result
+                elif ranking_result['need_person_ranking'] and ranking_result['person_ranking_type'] and ranking_result['target_entity']:  # 匹配人物排名
+                    ranking_data = ranking_result
+                elif ranking_result['need_project_research'] and ranking_result['project_keywords'] and len(ranking_result['project_keywords']) != 0:  # 匹配具体项目
+                    ranking_data = ranking_result
             return ranking_data
         except Exception as e:
             logger.error(f'Failed to parse AI ranking result: {e}, result: {result}')
