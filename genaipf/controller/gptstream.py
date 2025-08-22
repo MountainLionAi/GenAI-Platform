@@ -630,7 +630,7 @@ async def getAnswerAndCallGpt(question, userid, msggroup, language, front_messag
                 order_by = 'influence'
                 if ai_ranking_info['category'].upper() == 'MEME':
                     order_by = 'ai_score'
-                ai_ranking_details = await ai_ranking_service.query_ai_ranking(0,ai_ranking_info['category'], order_by, 'desc', 1, 8, language_)
+                ai_ranking_details = await ai_ranking_service.query_ai_ranking(0,ai_ranking_info['category'], order_by, 'desc', 1, 4, language_)
                 related_qa = []  # 如果走了AI Ranking其他rag清空
                 if language_ == 'en':
                     related_qa.append(question + '，The following content is ranked according to influence. Please output according to the ranking and include the number. : ' + json.dumps(ai_ranking_details))
