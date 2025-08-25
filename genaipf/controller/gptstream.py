@@ -639,17 +639,18 @@ async def getAnswerAndCallGpt(question, userid, msggroup, language, front_messag
                         related_qa.append(question + '，下面内容根据影响力进行了排名，请按照排名输出，并带上编号 : ' + json.dumps(ai_ranking_details))
                 if ai_ranking_info['need_investment_ranking']:
                     import ml4gp.services.ai_ranking_invenst_service as ai_ranking_invenst_service
-                    order_by = 'project_id'
+                    order_by = 'invest_num'
                     ai_invenst_ranking_details = await ai_ranking_invenst_service.query_ai_ranking(0, order_by, 'asc', '', '', 1, 4, language_)
-                    related_qa = []  # 如果走了AI Ranking其他rag清空
-                    if language_ == 'en':
-                        related_qa.append(
-                            question + '，The following content is ranked according to influence. Please output according to the ranking and include the number. : ' + json.dumps(
-                                ai_invenst_ranking_details))
-                    else:
-                        related_qa.append(
-                            question + '，下面内容根据影响力进行了排名，请按照排名输出，并带上编号 : ' + json.dumps(
-                                ai_invenst_ranking_details))
+                    if ai_invenst_ranking_details['total_nums'] and len(ai_invenst_ranking_details['investor']) != 0:
+                        related_qa = []  # 如果走了AI Ranking其他rag清空
+                        if language_ == 'en':
+                            related_qa.append(
+                                question + '，The following content is ranked according to influence. Please output according to the ranking and include the number. : ' + json.dumps(
+                                    ai_invenst_ranking_details['investor']))
+                        else:
+                            related_qa.append(
+                                question + '，下面内容根据影响力进行了排名，请按照排名输出，并带上编号 : ' + json.dumps(
+                                    ai_invenst_ranking_details['investor']))
             rag_status['searchData']['isCompleted'] = True
             rag_status['searchData']['totalSources'] = get_random_number(80, 100)
             rag_status['searchData']['usedSources'] = len(sources) if (sources and len(sources)) else 9
