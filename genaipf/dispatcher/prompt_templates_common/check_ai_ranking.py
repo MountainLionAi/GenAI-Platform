@@ -108,6 +108,36 @@ def _get_check_ai_ranking_prompted_messages(data, language):
     - 跨多个领域但无法明确归类的项目
 15. **避免过度匹配**：宁可返回null也不要将不匹配的项目强制归类到相近分类
 
+**新增严格分类边界规则：**
+16. **矿业相关**：比特币矿场、以太坊矿场、挖矿设备、矿池等矿业相关项目**不属于任何现有分类**，应返回null
+17. **传统金融产品**：传统银行产品、保险产品、基金产品等非Web3项目**不属于任何现有分类**，应返回null
+18. **实体企业**：传统制造业、服务业、零售业等实体企业**不属于任何现有分类**，应返回null
+19. **政府机构**：政府部门、监管机构、中央银行等**不属于任何现有分类**，应返回null
+20. **教育机构**：传统学校、培训机构、在线教育平台等**不属于任何现有分类**，应返回null
+21. **媒体机构**：新闻媒体、内容平台、社交媒体等**不属于任何现有分类**，应返回null
+22. **咨询公司**：投资咨询、技术咨询、管理咨询等**不属于任何现有分类**，应返回null
+23. **法律服务机构**：律师事务所、合规服务等**不属于任何现有分类**，应返回null
+24. **会计服务机构**：会计师事务所、审计服务等**不属于任何现有分类**，应返回null
+25. **人力资源服务**：招聘平台、人才服务等**不属于任何现有分类**，应返回null
+
+**分类匹配优先级（从高到低）：**
+26. **精确匹配优先**：优先使用最精确的分类，避免使用过于宽泛的分类
+27. **具体协议优先**：具体协议分类优先于总称分类（如Lending优先于DeFi）
+28. **技术特征优先**：根据技术特征而非业务相似性进行分类
+29. **用户意图优先**：根据用户明确表达的意图进行分类，而非推测
+
+**常见误分类情况（必须避免）：**
+30. **矿业项目**：比特币矿场、以太坊矿场 → 返回null（不属于Infra、Layer1等）
+31. **传统金融**：传统银行、保险公司 → 返回null（不属于DeFi、CEX等）
+32. **实体企业**：制造业公司、零售企业 → 返回null（不属于任何Web3分类）
+33. **政府机构**：央行、监管机构 → 返回null（不属于任何Web3分类）
+34. **教育机构**：传统学校、培训机构 → 返回null（不属于任何Web3分类）
+35. **媒体机构**：新闻媒体、内容平台 → 返回null（不属于任何Web3分类）
+36. **咨询服务**：投资咨询、技术咨询 → 返回null（不属于任何Web3分类）
+37. **法律服务**：律师事务所、合规服务 → 返回null（不属于任何Web3分类）
+38. **会计服务**：会计师事务所、审计服务 → 返回null（不属于任何Web3分类）
+39. **人力资源**：招聘平台、人才服务 → 返回null（不属于任何Web3分类）
+
 **互斥分类规则（重要）：**
 16. **交易所互斥**：CEX和DEX是互斥概念，用户未明确说明去中心化偏好时，默认返回CEX
     - 用户问"哪个交易所最好" → 返回CEX（不返回CEX,DEX）
@@ -205,6 +235,13 @@ def _get_check_ai_ranking_prompted_messages(data, language):
 3. 状态2：person_ranking_type必须是company、school、position之一；target_entity必须根据language返回相应语言的具体标签内容
 4. 状态3：project_keywords必须提取出具体的项目名称（如Metamask、Uniswap等）
 5. 如果都不匹配，所有状态都设为false，其他字段为null或空数组
+
+**分类系统核心原则总结：**
+6. **严格匹配原则**：只返回明确定义的分类，宁可返回null也不要硬匹配
+7. **Web3边界原则**：只有Web3相关项目才能分类，传统行业项目必须返回null
+8. **技术特征原则**：根据技术特征而非业务相似性进行分类
+9. **用户意图原则**：根据用户明确表达的意图进行分类，避免推测
+10. **矿业项目示例**：比特币矿场、以太坊矿场等矿业相关项目不属于任何现有分类，必须返回null
 """
     else:
         system_text = """
@@ -313,6 +350,36 @@ When users ask questions like "why is Metamask the most popular wallet", "why is
     - Projects that span multiple domains but cannot be clearly categorized
 15. **Avoid excessive matching:** Rather than forcing an unmatched project to be categorized, return null.
 
+**New Strict Classification Boundary Rules:**
+16. **Mining Related:** Bitcoin mining farms, Ethereum mining farms, mining equipment, mining pools, and other mining-related projects **do not belong to any existing category** and should return null
+17. **Traditional Financial Products:** Traditional banking products, insurance products, fund products, and other non-Web3 projects **do not belong to any existing category** and should return null
+18. **Physical Enterprises:** Traditional manufacturing, service industry, retail industry, and other physical enterprises **do not belong to any existing category** and should return null
+19. **Government Agencies:** Government departments, regulatory agencies, central banks, etc. **do not belong to any existing category** and should return null
+20. **Educational Institutions:** Traditional schools, training institutions, online education platforms, etc. **do not belong to any existing category** and should return null
+21. **Media Organizations:** News media, content platforms, social media, etc. **do not belong to any existing category** and should return null
+22. **Consulting Companies:** Investment consulting, technical consulting, management consulting, etc. **do not belong to any existing category** and should return null
+23. **Legal Service Organizations:** Law firms, compliance services, etc. **do not belong to any existing category** and should return null
+24. **Accounting Service Organizations:** Accounting firms, audit services, etc. **do not belong to any existing category** and should return null
+25. **Human Resources Services:** Recruitment platforms, talent services, etc. **do not belong to any existing category** and should return null
+
+**Classification Matching Priority (from high to low):**
+26. **Precise Matching Priority:** Prioritize the most precise classification, avoid using overly broad classifications
+27. **Specific Protocol Priority:** Specific protocol classifications take precedence over general terms (e.g., Lending over DeFi)
+28. **Technical Feature Priority:** Classify based on technical features rather than business similarity
+29. **User Intent Priority:** Classify based on user's explicitly expressed intent, not speculation
+
+**Common Misclassification Cases (Must Avoid):**
+30. **Mining Projects:** Bitcoin mining farms, Ethereum mining farms → return null (do not belong to Infra, Layer1, etc.)
+31. **Traditional Finance:** Traditional banks, insurance companies → return null (do not belong to DeFi, CEX, etc.)
+32. **Physical Enterprises:** Manufacturing companies, retail enterprises → return null (do not belong to any Web3 category)
+33. **Government Agencies:** Central banks, regulatory agencies → return null (do not belong to any Web3 category)
+34. **Educational Institutions:** Traditional schools, training institutions → return null (do not belong to any Web3 category)
+35. **Media Organizations:** News media, content platforms → return null (do not belong to any Web3 category)
+36. **Consulting Services:** Investment consulting, technical consulting → return null (do not belong to any Web3 category)
+37. **Legal Services:** Law firms, compliance services → return null (do not belong to any Web3 category)
+38. **Accounting Services:** Accounting firms, audit services → return null (do not belong to any Web3 category)
+39. **Human Resources:** Recruitment platforms, talent services → return null (do not belong to any Web3 category)
+
 **Mutually Exclusive Classification Rules (Important):**
 16. **Exchange Mutex:** CEX and DEX are mutually exclusive concepts. When a user does not explicitly state a decentralized preference, default to returning CEX.
     - User asks "which exchange is the best" → returns CEX (does not return CEX, DEX)
@@ -410,6 +477,13 @@ When users ask questions like "why is Metamask the most popular wallet", "why is
 3. State 2: person_ranking_type must be one of company, school, position; target_entity must be returned in corresponding language labels based on language parameter
 4. State 3: project_keywords must extract specific project names (e.g., Metamask, Uniswap, etc.)
 5. If none match, set all states to false, other fields as null or empty arrays
+
+**Classification System Core Principles Summary:**
+6. **Strict Matching Principle:** Only return explicitly defined categories, rather return null than force matching
+7. **Web3 Boundary Principle:** Only Web3-related projects can be classified, traditional industry projects must return null
+8. **Technical Feature Principle:** Classify based on technical features rather than business similarity
+9. **User Intent Principle:** Classify based on user's explicitly expressed intent, avoid speculation
+10. **Mining Project Example:** Bitcoin mining farms, Ethereum mining farms, and other mining-related projects do not belong to any existing category and must return null
 """
 
     msg_l = []
