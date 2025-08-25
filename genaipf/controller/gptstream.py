@@ -641,7 +641,7 @@ async def getAnswerAndCallGpt(question, userid, msggroup, language, front_messag
                     import ml4gp.services.ai_ranking_invenst_service as ai_ranking_invenst_service
                     order_by = 'invest_num'
                     ai_invenst_ranking_details = await ai_ranking_invenst_service.query_ai_ranking(0, order_by, 'asc', '', '', 1, 4, language_)
-                    if ai_invenst_ranking_details['total_nums'] and ai_invenst_ranking_details['investment_ranking_type']:
+                    if ai_invenst_ranking_details.get('total_nums') and ai_invenst_ranking_details.get('investor'):
                         related_qa = []  # 如果走了AI Ranking其他rag清空
                         if language_ == 'en':
                             related_qa.append(
