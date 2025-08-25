@@ -74,6 +74,20 @@ def _get_check_ai_ranking_prompted_messages(data, language):
 - Crypto Stocks: 加密货币相关股票（如 Coinbase、MicroStrategy、Marathon Digital、Riot Platforms）
 - ETF: 加密货币交易所交易基金（如 BITO、BITX、ARKB、IBIT、FBTC）
 
+**币股分类详细规则（Crypto Stocks）：**
+- **上市公司股票**：在传统股票市场上市的加密货币相关公司
+- **典型项目**：Coinbase（COIN）、MicroStrategy（MSTR）、Marathon Digital（MARA）、Riot Platforms（RIOT）、Hut 8（HUT）、Bitfarms（BITF）、Canaan（CAN）、Bit Digital（BTBT）
+- **识别关键词**：币股、股票、上市公司、美股、纳斯达克、纽交所、港股、A股
+- **业务范围**：加密货币挖矿、交易、投资、技术开发、设备制造等
+- **重要说明**：必须是传统股票市场的上市公司，不是代币或DeFi协议
+
+**稳定币分类详细规则（Stablecoin Issuer）：**
+- **稳定币发行商**：负责发行、管理和维护稳定币价值的机构
+- **典型项目**：Tether（USDT）、Circle（USDC）、Paxos（PAX、BUSD）、MakerDAO（DAI）、Frax（FRAX）、TrueUSD（TUSD）、USDK、GUSD
+- **识别关键词**：稳定币、USDT、USDC、DAI、BUSD、PAX、FRAX、TUSD、USDK、GUSD
+- **业务范围**：稳定币的发行、赎回、储备管理、价值稳定等
+- **重要说明**：必须是稳定币的发行方或管理机构，不是稳定币本身或使用稳定币的协议
+
 **社交金融：**
 - SocialFi: 社交金融平台、社交交易（如 Friend.tech、Stars Arena、Post.tech、Tipcoin）
 
@@ -96,8 +110,15 @@ def _get_check_ai_ranking_prompted_messages(data, language):
 5. **跨链桥**：跨链桥（如 Multichain、Stargate、Hop Protocol、Across）属于 **Bridge** 分类
 6. **Layer2精准识别**：Arbitrum、Optimism、Polygon等明确属于Layer2，不要误判
 7. **迷因币识别**：迷因币、社区代币（如 Dogecoin、Shiba Inu、Pepe、Bonk、Floki）属于 **MEME** 分类
-8. **稳定币发行商**：稳定币发行和管理机构（如 Tether、Circle、Paxos、MakerDAO、Frax）属于 **Stablecoin Issuer** 分类
-9. **加密货币股票**：加密货币相关上市公司股票（如 Coinbase、MicroStrategy、Marathon Digital、Riot Platforms）属于 **Crypto Stocks** 分类
+8. **稳定币发行商识别**：稳定币发行和管理机构（如 Tether、Circle、Paxos、MakerDAO、Frax）属于 **Stablecoin Issuer** 分类
+   - **关键识别**：必须是稳定币的发行方，不是稳定币本身或使用稳定币的协议
+   - **典型示例**：Tether公司（USDT发行商）、Circle公司（USDC发行商）、MakerDAO（DAI发行商）
+   - **常见误判**：USDT、USDC等稳定币本身不属于此分类，使用稳定币的DeFi协议也不属于此分类
+9. **加密货币股票识别**：加密货币相关上市公司股票（如 Coinbase、MicroStrategy、Marathon Digital、Riot Platforms）属于 **Crypto Stocks** 分类
+   - **关键识别**：必须是传统股票市场的上市公司，不是代币或DeFi协议
+   - **典型示例**：Coinbase（COIN股票）、MicroStrategy（MSTR股票）、Marathon Digital（MARA股票）
+   - **常见误判**：比特币、以太坊等代币不属于此分类，DeFi协议也不属于此分类
+   - **识别关键词**：币股、股票、上市公司、美股、纳斯达克、纽交所
 10. **ETF识别**：加密货币交易所交易基金（如 BITO、BITX、ARKB、IBIT、FBTC）属于 **ETF** 分类
 11. **SocialFi平台**：社交金融平台、社交交易应用（如 Friend.tech、Stars Arena、Post.tech、Tipcoin）属于 **SocialFi** 分类
 12. **多分类处理**：若问题涉及多个领域，必须用逗号分隔返回多个分类（如"DeFi,Layer2"、"Wallet,AI"、"DEX,Lending"、"CEX,Bridge"、"MEME,SocialFi"）
@@ -137,6 +158,18 @@ def _get_check_ai_ranking_prompted_messages(data, language):
 37. **法律服务**：律师事务所、合规服务 → 返回null（不属于任何Web3分类）
 38. **会计服务**：会计师事务所、审计服务 → 返回null（不属于任何Web3分类）
 39. **人力资源**：招聘平台、人才服务 → 返回null（不属于任何Web3分类）
+40. **稳定币误分类**：
+    - USDT、USDC等稳定币本身 → 返回null（不是发行商）
+    - 使用稳定币的DeFi协议 → 返回null（不是发行商）
+    - 只有Tether公司、Circle公司等发行商 → 返回Stablecoin Issuer
+41. **币股误分类**：
+    - 比特币、以太坊等代币 → 返回null（不是股票）
+    - DeFi协议 → 返回null（不是股票）
+    - 只有Coinbase、MicroStrategy等上市公司 → 返回Crypto Stocks
+42. **代币与股票混淆**：
+    - 代币项目（如比特币、以太坊）→ 返回相应代币分类或null
+    - 股票项目（如Coinbase股票）→ 返回Crypto Stocks
+    - 不要将代币误认为股票，也不要将股票误认为代币
 
 **互斥分类规则（重要）：**
 16. **交易所互斥**：CEX和DEX是互斥概念，用户未明确说明去中心化偏好时，默认返回CEX
@@ -316,6 +349,20 @@ When users ask questions like "why is Metamask the most popular wallet", "why is
 - Crypto Stocks: Cryptocurrency-related public stocks (e.g., Coinbase, MicroStrategy, Marathon Digital, Riot Platforms)
 - ETF: Cryptocurrency exchange-traded funds (e.g., BITO, BITX, ARKB, IBIT, FBTC)
 
+**Crypto Stocks Classification Detailed Rules:**
+- **Public Company Stocks:** Cryptocurrency-related companies listed on traditional stock markets
+- **Typical Projects:** Coinbase (COIN), MicroStrategy (MSTR), Marathon Digital (MARA), Riot Platforms (RIOT), Hut 8 (HUT), Bitfarms (BITF), Canaan (CAN), Bit Digital (BTBT)
+- **Identification Keywords:** crypto stocks, stocks, public companies, US stocks, NASDAQ, NYSE, Hong Kong stocks, A-shares
+- **Business Scope:** Cryptocurrency mining, trading, investment, technology development, equipment manufacturing, etc.
+- **Important Note:** Must be companies listed on traditional stock markets, not tokens or DeFi protocols
+
+**Stablecoin Issuer Classification Detailed Rules:**
+- **Stablecoin Issuers:** Institutions responsible for issuing, managing, and maintaining stablecoin value
+- **Typical Projects:** Tether (USDT), Circle (USDC), Paxos (PAX, BUSD), MakerDAO (DAI), Frax (FRAX), TrueUSD (TUSD), USDK, GUSD
+- **Identification Keywords:** stablecoin, USDT, USDC, DAI, BUSD, PAX, FRAX, TUSD, USDK, GUSD
+- **Business Scope:** Stablecoin issuance, redemption, reserve management, value stabilization, etc.
+- **Important Note:** Must be the issuer or management institution of stablecoins, not the stablecoin itself or protocols that use stablecoins
+
 **Social Finance:**
 - SocialFi: Social finance platforms, social trading (e.g., Friend.tech, Stars Arena, Post.tech, Tipcoin)
 
@@ -338,8 +385,15 @@ When users ask questions like "why is Metamask the most popular wallet", "why is
 5. **Cross-chain Bridges:** Cross-chain bridges (e.g., Multichain, Stargate, Hop Protocol, Across) belong to the **Bridge** category.
 6. **Layer2 Precise Identification:** Arbitrum, Optimism, Polygon, etc., are explicitly Layer2, do not misidentify.
 7. **MEME Coin Identification:** Memecoins, community tokens (e.g., Dogecoin, Shiba Inu, Pepe, Bonk, Floki) belong to the **MEME** category.
-8. **Stablecoin Issuer:** Stablecoin issuers and managers (e.g., Tether, Circle, Paxos, MakerDAO, Frax) belong to the **Stablecoin Issuer** category.
-9. **Crypto Stocks:** Cryptocurrency-related public stocks (e.g., Coinbase, MicroStrategy, Marathon Digital, Riot Platforms) belong to the **Crypto Stocks** category.
+8. **Stablecoin Issuer Identification:** Stablecoin issuers and managers (e.g., Tether, Circle, Paxos, MakerDAO, Frax) belong to the **Stablecoin Issuer** category.
+   - **Key Identification:** Must be the issuer of stablecoins, not the stablecoin itself or protocols that use stablecoins
+   - **Typical Examples:** Tether company (USDT issuer), Circle company (USDC issuer), MakerDAO (DAI issuer)
+   - **Common Misclassification:** USDT, USDC and other stablecoins themselves do not belong to this category, DeFi protocols that use stablecoins also do not belong to this category
+9. **Cryptocurrency Stock Identification:** Cryptocurrency-related public company stocks (e.g., Coinbase, MicroStrategy, Marathon Digital, Riot Platforms) belong to the **Crypto Stocks** category.
+   - **Key Identification:** Must be companies listed on traditional stock markets, not tokens or DeFi protocols
+   - **Typical Examples:** Coinbase (COIN stock), MicroStrategy (MSTR stock), Marathon Digital (MARA stock)
+   - **Common Misclassification:** Bitcoin, Ethereum and other tokens do not belong to this category, DeFi protocols also do not belong to this category
+   - **Identification Keywords:** crypto stocks, stocks, public companies, US stocks, NASDAQ, NYSE
 10. **ETF Identification:** Cryptocurrency exchange-traded funds (e.g., BITO, BITX, ARKB, IBIT, FBTC) belong to the **ETF** category.
 11. **SocialFi Platforms:** Social finance platforms, social trading applications (e.g., Friend.tech, Stars Arena, Post.tech, Tipcoin) belong to the **SocialFi** category.
 12. **Multiple Category Handling:** If a question involves multiple domains, multiple categories must be returned separated by commas (e.g., "DeFi,Layer2", "Wallet,AI", "DEX,Lending", "CEX,Bridge", "MEME,SocialFi").
@@ -379,6 +433,18 @@ When users ask questions like "why is Metamask the most popular wallet", "why is
 37. **Legal Services:** Law firms, compliance services → return null (do not belong to any Web3 category)
 38. **Accounting Services:** Accounting firms, audit services → return null (do not belong to any Web3 category)
 39. **Human Resources:** Recruitment platforms, talent services → return null (do not belong to any Web3 category)
+40. **Stablecoin Misclassification:**
+    - USDT, USDC, etc. themselves → return null (not issuers)
+    - DeFi protocols using stablecoins → return null (not issuers)
+    - Only issuers like Tether, Circle, etc. → return Stablecoin Issuer
+41. **Crypto Stocks Misclassification:**
+    - Bitcoin, Ethereum, etc. tokens → return null (not stocks)
+    - DeFi protocols → return null (not stocks)
+    - Only public companies like Coinbase, MicroStrategy, etc. → return Crypto Stocks
+42. **Token and Stock Confusion:**
+    - Token projects (e.g., Bitcoin, Ethereum) → return corresponding token category or null
+    - Stock projects (e.g., Coinbase stock) → return Crypto Stocks
+    - Do not confuse tokens with stocks, and do not confuse stocks with tokens
 
 **Mutually Exclusive Classification Rules (Important):**
 16. **Exchange Mutex:** CEX and DEX are mutually exclusive concepts. When a user does not explicitly state a decentralized preference, default to returning CEX.
