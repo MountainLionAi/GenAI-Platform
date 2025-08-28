@@ -16,5 +16,8 @@ REDIS_KEYS = {
         'API_KEYS': 'API_KEYS',
         'API_KEY_LIMIT': 'REQUEST_API_KEYS:{}_{}',
         'FORBID_API_KEYS': 'FORBID_API_KEYS:{}_{}',
+        'DAILY_STATS': 'API_KEY_DAILY_STATS:{}:{}',
+        'DAILY_STATS_TOTAL': 'API_KEY_DAILY_STATS_TOTAL:{}:{}',
+        'TRACKING_API_KEYS': 'TRACKING_API_KEYS',
     }
 }

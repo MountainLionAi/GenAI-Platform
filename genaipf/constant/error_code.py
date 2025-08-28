@@ -67,7 +67,8 @@ ERROR_CODE = {
     'DUPLICATED_BINDING': 20010,
     "SERVICE_UPDATING": 99999,
     "UPLOAD_FAIL": 1201,
-    "BASE64_FORMAT_ERROR": 1202
+    "BASE64_FORMAT_ERROR": 1202,
+    "DATA_NOT_FOUND": 1203
 }
 
 # 错误信息
@@ -139,5 +140,6 @@ ERROR_MESSAGE = {
     20010: 'Duplicated Binding',
     99999: 'Service Updating',
     1201: 'Upload fail',
-    1202: 'Base64 decode fail'
+    1202: 'Base64 decode fail',
+    1203: 'Data not found'
 }
