@@ -7,6 +7,7 @@ from genaipf.utils.redis_utils import RedisConnectionPool
 from genaipf.utils.mysql_utils import CollectionPool
 from genaipf.utils.log_utils import logger
 from genaipf.routers.routers import blueprint_v2
+from genaipf.utils.time_utils import get_format_time_YYYY_mm_dd
 import asyncio
 
 MAX_LIMIT_PER_MINUTE = 200
@@ -45,6 +46,12 @@ async def check_api_key(request: Request):
             redis_client.set(forbid_api_key, 1)
             redis_client.expire(forbid_api_key, 15 * 60)
             return fail(ERROR_CODE['REQUEST_FREQUENCY_TOO_HIGH'], '')
+    
+    # 统计每日访问次数
+    tracking_api_keys_key = REDIS_KEYS['REQUEST_API_KEYS']['TRACKING_API_KEYS']
+    is_tracking = redis_client.sismember(tracking_api_keys_key, api_key)
+    if is_tracking:
+        await record_daily_api_stats(redis_client, api_key, request.path)
 
 
 async def generate_api_key(source=''):
@@ -79,3 +86,76 @@ async def add_api_key_2redis(api_key):
 
 async def remove_api_key(api_key):
     return True
+
+
+async def record_daily_api_stats(redis_client, api_key: str, endpoint: str):
+    """
+    记录API key的每日访问统计
+    :param redis_client: Redis客户端
+    :param api_key: API key
+    :param endpoint: 访问的接口路径
+    """
+    try:
+        current_date = get_format_time_YYYY_mm_dd()
+        
+        # 记录特定接口的访问次数
+        endpoint_stats_key = REDIS_KEYS['REQUEST_API_KEYS']['DAILY_STATS'].format(api_key, current_date)
+        endpoint_key = f"{endpoint}"
+        redis_client.hincrby(endpoint_stats_key, endpoint_key, 1)
+        redis_client.expire(endpoint_stats_key, 60 * 60 * 24 * 40)  # 40天过期
+        
+        # 记录总访问次数
+        total_stats_key = REDIS_KEYS['REQUEST_API_KEYS']['DAILY_STATS_TOTAL'].format(api_key, current_date)
+        redis_client.incr(total_stats_key, 1)
+        redis_client.expire(total_stats_key, 60 * 60 * 24 * 40)  # 30天过期
+        
+        logger.info(f'记录API key {api_key} 在 {current_date} 访问 {endpoint} 的统计')
+    except Exception as e:
+        logger.error(f'记录API key统计失败: {e}')
+
+
+async def add_tracking_api_key(api_key: str):
+    """
+    添加需要统计的API key到名单中
+    :param api_key: 需要统计的API key
+    """
+    try:
+        redis_client = RedisConnectionPool().get_connection()
+        tracking_api_keys_key = REDIS_KEYS['REQUEST_API_KEYS']['TRACKING_API_KEYS']
+        redis_client.sadd(tracking_api_keys_key, api_key)
+        logger.info(f'添加API key {api_key} 到统计名单')
+        return True
+    except Exception as e:
+        logger.error(f'添加统计API key失败: {e}')
+        return False
+
+
+async def remove_tracking_api_key(api_key: str):
+    """
+    从统计名单中移除API key
+    :param api_key: 需要移除的API key
+    """
+    try:
+        redis_client = RedisConnectionPool().get_connection()
+        tracking_api_keys_key = REDIS_KEYS['REQUEST_API_KEYS']['TRACKING_API_KEYS']
+        redis_client.srem(tracking_api_keys_key, api_key)
+        logger.info(f'从统计名单中移除API key {api_key}')
+        return True
+    except Exception as e:
+        logger.error(f'移除统计API key失败: {e}')
+        return False
+
+
+async def get_tracking_api_keys():
+    """
+    获取所有需要统计的API key名单
+    :return: 需要统计的API key列表
+    """
+    try:
+        redis_client = RedisConnectionPool().get_connection()
+        tracking_api_keys_key = REDIS_KEYS['REQUEST_API_KEYS']['TRACKING_API_KEYS']
+        tracking_keys = redis_client.smembers(tracking_api_keys_key)
+        return list(tracking_keys)
+    except Exception as e:
+        logger.error(f'获取统计API key名单失败: {e}')
+        return []
