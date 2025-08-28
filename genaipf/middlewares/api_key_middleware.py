@@ -20,6 +20,7 @@ STATUS_UNAVAILABLE = 1
 async def check_api_key(request: Request):
     request_ip = request.remote_addr
     api_key = request.headers.get('x-api-key', '')
+    request.ctx.is_white_api = False
     if not api_key:
         return fail(ERROR_CODE['ILLEGAL_REQUEST'])
     redis_client = RedisConnectionPool().get_connection()
@@ -51,6 +52,7 @@ async def check_api_key(request: Request):
     tracking_api_keys_key = REDIS_KEYS['REQUEST_API_KEYS']['TRACKING_API_KEYS']
     is_tracking = redis_client.sismember(tracking_api_keys_key, api_key)
     if is_tracking:
+        request.ctx.is_white_api = True
         await record_daily_api_stats(redis_client, api_key, request.path)
 
 
