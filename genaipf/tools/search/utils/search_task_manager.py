@@ -524,11 +524,13 @@ async def check_ai_ranking(messages, language, source=''):
         "need_ranking": False,
         "need_person_ranking": False,
         "need_project_research": False,
+        "need_investment_ranking": False,
         "category": "",
         "keywords": [],
         "ranking_type": "",
         "person_ranking_type": None,
         "target_entity": None,
+        "investment_ranking_type": None,
         "project_keywords": []
     }
     try:
@@ -553,6 +555,8 @@ async def check_ai_ranking(messages, language, source=''):
                 elif ranking_result['need_person_ranking'] and ranking_result['person_ranking_type'] and ranking_result['target_entity']:  # 匹配人物排名
                     ranking_data = ranking_result
                 elif ranking_result['need_project_research'] and ranking_result['project_keywords'] and len(ranking_result['project_keywords']) != 0:  # 匹配具体项目
+                    ranking_data = ranking_result
+                elif ranking_result['need_investment_ranking'] and ranking_result['investment_ranking_type']:  # 匹配投资机构
                     ranking_data = ranking_result
             return ranking_data
         except Exception as e:

@@ -16,6 +16,9 @@ def _get_check_ai_ranking_prompted_messages(data, language):
 **状态3 - 项目研究需求（need_project_research=true）：**
 当用户询问"Metamask为什么是最火的钱包"、"为什么Uniswap这么受欢迎"等分析特定项目原因时，识别为项目研究需求。
 
+**状态4 - 投资机构排名需求（need_investment_ranking=true）：**
+当用户询问"web3行业有什么值得推荐的投资机构"、"哪些VC在web3领域比较活跃"、"推荐几个区块链投资机构"等涉及投资机构信息时，识别为投资机构排名需求。
+
 ---
 
 **状态1判定信号（满足其一即可判定 need_ranking=true）：**
@@ -35,6 +38,12 @@ def _get_check_ai_ranking_prompted_messages(data, language):
 2. 项目名称：具体的项目名称（如 Metamask、Uniswap、Binance、Ethereum 等）
 3. 典型问法：
    - "为什么某某项目这么火"、"分析某某项目"、"了解某某项目"
+
+**状态4判定信号（满足其一即可判定 need_investment_ranking=true）：**
+1. 投资机构相关词：投资机构、VC、风投、创投、基金、投资公司、投资方、投资人、投资者、天使投资人、机构投资者
+2. 投资相关词：投资、融资、募资、投融资、投资组合、投资策略、投资方向
+3. 典型问法：
+   - "web3行业有什么值得推荐的投资机构"、"哪些VC在web3领域比较活跃"、"推荐几个区块链投资机构"、"谁投资了某某项目"
 
 ---
 
@@ -194,13 +203,21 @@ def _get_check_ai_ranking_prompted_messages(data, language):
 - school: 学校、大学、学院、教育机构
 - position: 岗位、职位、角色
 
-**target_entity字段说明（状态2使用）：**
+**投资机构排名类型（状态4使用）：**
+- vc: 风险投资机构、VC、风投公司
+- fund: 投资基金、私募基金、对冲基金
+- angel: 天使投资人、个人投资者
+
+**target_entity字段说明（状态2和状态4使用）：**
 - target_entity是指具体的标签内容，不是实体名称
 - 当person_ranking_type为position时，target_entity应该是具体的职位标签（如"首席技术官"、"CEO"、"CTO"等）
 - 当person_ranking_type为company时，target_entity应该是具体的公司名称（如"币安"、"Binance"等）
 - 当person_ranking_type为school时，target_entity应该是具体的学校名称（如"某大学"、"university"等）
+- 当investment_ranking_type为vc时，target_entity应该是"风险投资机构"
+- 当investment_ranking_type为fund时，target_entity应该是"投资基金"
+- 当investment_ranking_type为angel时，target_entity应该是"天使投资人"
 
-**语言适配规则（状态2使用）：**
+**语言适配规则（状态2和状态4使用）：**
 - 当language为中文（zh/cn）时，target_entity必须返回中文标签
 - 当language为英文（en）时，target_entity必须返回英文标签
 - target_entity是指具体的标签内容，不是实体名称
@@ -211,6 +228,8 @@ def _get_check_ai_ranking_prompted_messages(data, language):
   - 英文：用户问"who are the team members of Binance" → target_entity: "Binance"
   - 中文：用户问"某大学的知名校友" → target_entity: "某大学"
   - 英文：用户问"famous alumni of a university" → target_entity: "university"
+  - 中文：用户问"web3行业有什么值得推荐的投资机构" → target_entity: "风险投资机构"
+  - 英文：用户问"what are the recommended investment institutions in web3" → target_entity: "Venture Capital"
 
 **排序维度（状态1使用，五选一）：**
 - popularity | security | performance | cost | speed
@@ -228,11 +247,13 @@ def _get_check_ai_ranking_prompted_messages(data, language):
     "need_ranking": true,
     "need_person_ranking": false,
     "need_project_research": false,
+    "need_investment_ranking": false,
     "category": "Infra|Layer1|Layer2|DePIN|Gaming|DeSci|DeFi|RWA|LSD|Derivatives|Perp|NFT|zk|Social|Creator Economy|Data & Analysis|CeFi|CEX|DEX|Wallet|AI|Lending|Bridge|Security Solutions|Environmental Solutions|Cloud Computing|DAO|Tools|DID|Privacy|MEME|Stablecoin Issuer|Crypto Stocks|ETF|SocialFi|null|分类1,分类2",
     "keywords": ["触发排序意图的关键词或短语"],
     "ranking_type": "popularity|security|performance|cost|speed|null",
     "person_ranking_type": null,
     "target_entity": null,
+    "investment_ranking_type": null,
     "project_keywords": []
 }
 
@@ -241,11 +262,13 @@ def _get_check_ai_ranking_prompted_messages(data, language):
     "need_ranking": false,
     "need_person_ranking": true,
     "need_project_research": false,
+    "need_investment_ranking": false,
     "category": null,
     "keywords": ["触发人物排名意图的关键词或短语"],
     "ranking_type": null,
     "person_ranking_type": "company|school|position",
     "target_entity": "具体标签内容（根据language返回相应语言标签：中文返回中文标签，英文返回英文标签）",
+    "investment_ranking_type": null,
     "project_keywords": []
 }
 
@@ -254,20 +277,38 @@ def _get_check_ai_ranking_prompted_messages(data, language):
     "need_ranking": false,
     "need_person_ranking": false,
     "need_project_research": true,
+    "need_investment_ranking": false,
     "category": null,
     "keywords": ["触发项目研究意图的关键词或短语"],
     "ranking_type": null,
     "person_ranking_type": null,
     "target_entity": null,
+    "investment_ranking_type": null,
     "project_keywords": ["提取的项目关键词列表"]
 }
 
+**状态4输出格式：**
+{
+    "need_ranking": false,
+    "need_person_ranking": false,
+    "need_project_research": false,
+    "need_investment_ranking": true,
+    "category": null,
+    "keywords": ["触发投资机构排名意图的关键词或短语"],
+    "ranking_type": null,
+    "person_ranking_type": null,
+    "target_entity": "具体标签内容（根据language返回相应语言标签：中文返回中文标签，英文返回英文标签）",
+    "investment_ranking_type": "vc|fund|angel",
+    "project_keywords": []
+}
+
 **重要规则：**
-1. 三种状态互斥，只能有一种为true
+1. 四种状态互斥，只能有一种为true
 2. 状态1：category字段处理同原有逻辑，多个分类用逗号分隔
 3. 状态2：person_ranking_type必须是company、school、position之一；target_entity必须根据language返回相应语言的具体标签内容
 4. 状态3：project_keywords必须提取出具体的项目名称（如Metamask、Uniswap等）
-5. 如果都不匹配，所有状态都设为false，其他字段为null或空数组
+5. 状态4：investment_ranking_type必须是vc、fund、angel之一；target_entity必须根据language返回相应语言的具体标签内容
+6. 如果都不匹配，所有状态都设为false，其他字段为null或空数组
 
 **分类系统核心原则总结：**
 6. **严格匹配原则**：只返回明确定义的分类，宁可返回null也不要硬匹配
@@ -291,6 +332,9 @@ When users ask questions like "who are the team members of Binance", "introducti
 **State 3 - Project Research Needs (need_project_research=true):**
 When users ask questions like "why is Metamask the most popular wallet", "why is Uniswap so popular" and other analysis of specific project reasons, identify as project research needs.
 
+**State 4 - Investment Institution Ranking Needs (need_investment_ranking=true):**
+When users ask questions like "what are the recommended investment institutions in web3", "which VCs are active in the web3 space", "recommend some blockchain investment institutions" and other questions involving investment institution information, identify as investment institution ranking needs.
+
 ---
 
 **State 1 Signals (any one is sufficient to set need_ranking=true):**
@@ -310,6 +354,12 @@ When users ask questions like "why is Metamask the most popular wallet", "why is
 2. Project names: specific project names (e.g., Metamask, Uniswap, Binance, Ethereum, etc.)
 3. Typical queries:
    - "Why is a project so popular", "analyze a project", "understand a project"
+
+**State 4 Signals (any one is sufficient to set need_investment_ranking=true):**
+1. Investment institution related words: investment institutions, VC, venture capital, investment firms, funds, investment companies, investors, angel investors, institutional investors
+2. Investment related words: investment, funding, fundraising, investment portfolio, investment strategy, investment direction
+3. Typical queries:
+   - "What are the recommended investment institutions in web3", "which VCs are active in the web3 space", "recommend some blockchain investment institutions", "who invested in a project"
 
 ---
 
@@ -469,13 +519,21 @@ When users ask questions like "why is Metamask the most popular wallet", "why is
 - school: School, university, college, educational institution
 - position: Position, role, job title
 
-**target_entity Field Description (for State 2):**
+**Investment Institution Ranking Types (for State 4):**
+- vc: Venture capital institutions, VC, venture capital firms
+- fund: Investment funds, private equity funds, hedge funds
+- angel: Angel investors, individual investors
+
+**target_entity Field Description (for State 2 and State 4):**
 - target_entity refers to specific label content, not entity names
 - When person_ranking_type is position, target_entity should be specific position labels (e.g., "Chief Technology Officer", "CEO", "CTO", etc.)
 - When person_ranking_type is company, target_entity should be specific company names (e.g., "Binance", "币安", etc.)
 - When person_ranking_type is school, target_entity should be specific school names (e.g., "university", "某大学", etc.)
+- When investment_ranking_type is vc, target_entity should be "Venture Capital"
+- When investment_ranking_type is fund, target_entity should be "Investment Fund"
+- When investment_ranking_type is angel, target_entity should be "Angel Investor"
 
-**Language Adaptation Rules (for State 2):**
+**Language Adaptation Rules (for State 2 and State 4):**
 - When language is Chinese (zh/cn), target_entity must be returned in Chinese labels
 - When language is English (en), target_entity must be returned in English labels
 - target_entity refers to specific label content, not entity names
@@ -486,6 +544,8 @@ When users ask questions like "why is Metamask the most popular wallet", "why is
   - English: User asks "who are the team members of Binance" → target_entity: "Binance"
   - Chinese: User asks "某大学的知名校友" → target_entity: "某大学"
   - English: User asks "famous alumni of a university" → target_entity: "university"
+  - Chinese: User asks "web3行业有什么值得推荐的投资机构" → target_entity: "风险投资机构"
+  - English: User asks "what are the recommended investment institutions in web3" → target_entity: "Venture Capital"
 
 **Ranking Dimension (for State 1, pick one):**
 - popularity | security | performance | cost | speed
@@ -503,11 +563,13 @@ When users ask questions like "why is Metamask the most popular wallet", "why is
     "need_ranking": true,
     "need_person_ranking": false,
     "need_project_research": false,
+    "need_investment_ranking": false,
     "category": "Infra|Layer1|Layer2|DePIN|Gaming|DeSci|DeFi|RWA|LSD|Derivatives|Perp|NFT|zk|Social|Creator Economy|Data & Analysis|CeFi|CEX|DEX|Wallet|AI|Lending|Bridge|Security Solutions|Environmental Solutions|Cloud Computing|DAO|Tools|DID|Privacy|MEME|Stablecoin Issuer|Crypto Stocks|ETF|SocialFi|null|category1,category2",
     "keywords": ["trigger keywords or phrases you detected"],
     "ranking_type": "popularity|security|performance|cost|speed|null",
     "person_ranking_type": null,
     "target_entity": null,
+    "investment_ranking_type": null,
     "project_keywords": []
 }
 
@@ -516,11 +578,13 @@ When users ask questions like "why is Metamask the most popular wallet", "why is
     "need_ranking": false,
     "need_person_ranking": true,
     "need_project_research": false,
+    "need_investment_ranking": false,
     "category": null,
     "keywords": ["trigger keywords or phrases for person ranking"],
     "ranking_type": null,
     "person_ranking_type": "company|school|position",
     "target_entity": "specific label content (return in corresponding language labels based on language parameter: Chinese labels for zh/cn, English labels for en)",
+    "investment_ranking_type": null,
     "project_keywords": []
 }
 
@@ -529,20 +593,38 @@ When users ask questions like "why is Metamask the most popular wallet", "why is
     "need_ranking": false,
     "need_person_ranking": false,
     "need_project_research": true,
+    "need_investment_ranking": false,
     "category": null,
     "keywords": ["trigger keywords or phrases for project research"],
     "ranking_type": null,
     "person_ranking_type": null,
     "target_entity": null,
+    "investment_ranking_type": null,
     "project_keywords": ["extracted project keywords list"]
 }
 
+**State 4 Output Format:**
+{
+    "need_ranking": false,
+    "need_person_ranking": false,
+    "need_project_research": false,
+    "need_investment_ranking": true,
+    "category": null,
+    "keywords": ["trigger keywords or phrases for investment institution ranking"],
+    "ranking_type": null,
+    "person_ranking_type": null,
+    "target_entity": "specific label content (return in corresponding language labels based on language parameter: Chinese labels for zh/cn, English labels for en)",
+    "investment_ranking_type": "vc|fund|angel",
+    "project_keywords": []
+}
+
 **Important Rules:**
-1. The three states are mutually exclusive, only one can be true
+1. The four states are mutually exclusive, only one can be true
 2. State 1: category field processing follows original logic, multiple categories separated by commas
 3. State 2: person_ranking_type must be one of company, school, position; target_entity must be returned in corresponding language labels based on language parameter
 4. State 3: project_keywords must extract specific project names (e.g., Metamask, Uniswap, etc.)
-5. If none match, set all states to false, other fields as null or empty arrays
+5. State 4: investment_ranking_type must be one of vc, fund, angel; target_entity must be returned in corresponding language labels based on language parameter
+6. If none match, set all states to false, other fields as null or empty arrays
 
 **Classification System Core Principles Summary:**
 6. **Strict Matching Principle:** Only return explicitly defined categories, rather return null than force matching

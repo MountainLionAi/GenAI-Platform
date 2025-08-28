@@ -624,18 +624,33 @@ async def getAnswerAndCallGpt(question, userid, msggroup, language, front_messag
             sources_task_start_time = time.perf_counter()
             sources, related_qa, image_sources = await sources_task
             # 增加ai ranking相关的related_qa
-            if ai_ranking_info and ai_ranking_info['need_ranking']:
-                import ml4gp.services.ai_ranking_service as ai_ranking_service
-                # userid, projects_type, order_by, direction, page, limit, language
-                order_by = 'influence'
-                if ai_ranking_info['category'].upper() == 'MEME':
-                    order_by = 'ai_score'
-                ai_ranking_details = await ai_ranking_service.query_ai_ranking(0,ai_ranking_info['category'], order_by, 'desc', 1, 4, language_)
-                related_qa = []  # 如果走了AI Ranking其他rag清空
-                if language_ == 'en':
-                    related_qa.append(question + '，The following content is ranked according to influence. Please output according to the ranking and include the number. : ' + json.dumps(ai_ranking_details))
-                else:
-                    related_qa.append(question + '，下面内容根据影响力进行了排名，请按照排名输出，并带上编号 : ' + json.dumps(ai_ranking_details))
+            if ai_ranking_info:
+                if ai_ranking_info['need_ranking']:
+                    import ml4gp.services.ai_ranking_service as ai_ranking_service
+                    # userid, projects_type, order_by, direction, page, limit, language
+                    order_by = 'influence'
+                    if ai_ranking_info['category'].upper() == 'MEME':
+                        order_by = 'ai_score'
+                    ai_ranking_details = await ai_ranking_service.query_ai_ranking(0,ai_ranking_info['category'], order_by, 'desc', 1, 4, language_)
+                    related_qa = []  # 如果走了AI Ranking其他rag清空
+                    if language_ == 'en':
+                        related_qa.append(question + '，The following content is ranked according to influence. Please output according to the ranking and include the number. : ' + json.dumps(ai_ranking_details))
+                    else:
+                        related_qa.append(question + '，下面内容根据影响力进行了排名，请按照排名输出，并带上编号 : ' + json.dumps(ai_ranking_details))
+                if ai_ranking_info['need_investment_ranking']:
+                    import ml4gp.services.ai_ranking_invenst_service as ai_ranking_invenst_service
+                    order_by = 'invest_num'
+                    ai_invenst_ranking_details = await ai_ranking_invenst_service.query_ai_ranking(0, order_by, 'desc', '', '', 1, 4, language_)
+                    if ai_invenst_ranking_details.get('total_nums') and ai_invenst_ranking_details.get('investor'):
+                        related_qa = []  # 如果走了AI Ranking其他rag清空
+                        if language_ == 'en':
+                            related_qa.append(
+                                question + '，The following content is ranked according to influence. Please output according to the ranking and include the number. : ' + json.dumps(
+                                    ai_invenst_ranking_details['investor']))
+                        else:
+                            related_qa.append(
+                                question + '，下面内容根据影响力进行了排名，请按照排名输出，并带上编号 : ' + json.dumps(
+                                    ai_invenst_ranking_details['investor']))
             rag_status['searchData']['isCompleted'] = True
             rag_status['searchData']['totalSources'] = get_random_number(80, 100)
             rag_status['searchData']['usedSources'] = len(sources) if (sources and len(sources)) else 9
