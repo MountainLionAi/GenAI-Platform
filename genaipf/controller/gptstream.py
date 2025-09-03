@@ -702,9 +702,11 @@ async def getAnswerAndCallGpt(question, userid, msggroup, language, front_messag
                     if BIG_BEAUTY_CHAT_USE_PROXY == "Y" and PROXY_URL:
                         logger.info("使用代理=====================================")
                         picked_content = await chat_data_support.get_picked_content_if_needed(user_question, PROXY_URL)
+                        logger.info("获取数据长度====================================" + len(picked_content))
                     else:
                         logger.info("未使用代理=====================================")
                         picked_content = await chat_data_support.get_picked_content_if_needed(user_question)
+                        logger.info("获取数据长度$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$" + len(picked_content))
                 except Exception as e:
                     logger.error("生成大漂亮聊天参考数据异常", e)
                 logger.info(f"大漂亮聊天参考数据:picked_content=\n{picked_content}")
