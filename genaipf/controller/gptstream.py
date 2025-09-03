@@ -690,8 +690,10 @@ async def getAnswerAndCallGpt(question, userid, msggroup, language, front_messag
         if llm_model.startswith('GPT'):
             llm_model = 'openai'
         if source == 'v012':
+            logger.info("source================================" + source)
             from importlib import import_module
             from genaipf.conf.server import PLUGIN_NAME
+            logger.info("PLUGIN_NAME========================" + PLUGIN_NAME)
             if PLUGIN_NAME:
                 try:
                     user_question = last_front_msg["content"]
