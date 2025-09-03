@@ -700,12 +700,14 @@ async def getAnswerAndCallGpt(question, userid, msggroup, language, front_messag
                     chat_data_support_name = f'{PLUGIN_NAME}.services.bigbeauty.chat_data_support'
                     chat_data_support = import_module(chat_data_support_name)
                     if BIG_BEAUTY_CHAT_USE_PROXY == "Y" and PROXY_URL:
+                        logger.info("使用代理=====================================")
                         picked_content = await chat_data_support.get_picked_content_if_needed(user_question, PROXY_URL)
                     else:
+                        logger.info("未使用代理=====================================")
                         picked_content = await chat_data_support.get_picked_content_if_needed(user_question)
                 except Exception as e:
                     logger.error("生成大漂亮聊天参考数据异常", e)
-                logger.info(f"大漂亮聊天参考数据:picked_content={picked_content}")
+                logger.info(f"大漂亮聊天参考数据:picked_content=\n{picked_content}")
         aref_answer_gpt_generator_start_time = time.perf_counter()
         resp1 = await aref_answer_gpt_generator(msgs, model, language_, None, picked_content, related_qa, source, owner,
                                                 isvision, output_type, llm_model, quote_message, trade_signal_text)
