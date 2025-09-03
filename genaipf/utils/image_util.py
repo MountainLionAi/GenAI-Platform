@@ -59,6 +59,6 @@ async def get_image_base64(url: str) -> Optional[str]:
                 base64_encoded = base64.b64encode(image_data).decode('utf-8')
                 base64_with_prefix = f"data:{kind.mime};base64,{base64_encoded}"
                 return base64_with_prefix
-
     except Exception as e:
-        logger.err
+        logger.error("根据url获取图片异常", e)
+        return None
