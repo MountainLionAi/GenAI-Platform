@@ -8,6 +8,9 @@ import base64
 import aiohttp
 import asyncio
 from io import BytesIO
+from typing import Optional
+import filetype
+
 
 access_key_id = os.getenv('OSS_ACCESS_KEY_ID')
 access_key_secret = os.getenv('OSS_ACCESS_KEY_SECRET')
@@ -28,35 +31,34 @@ async def put_image(name: str, file: str):
         await send_notice_message('genai_claude_client', 'claude_cached_api_call', 0, err_message, 4)
         return False
 
-async def get_image_base64(url):
+async def get_image_base64(url: str) -> Optional[str]:
     """
-    从指定的 URL 获取图片并生成 Base64 格式
+    从指定 URL 下载图片并生成 Base64 字符串（自动识别图片类型）
 
-    :param url: 图片的 URL
-    :return: 图片的 Base64 字符串
+    参数:
+        url (str): 图片的网络地址
+
+    返回:
+        str: 带 data:image/... 前缀的 Base64 编码字符串；无法识别为图片时返回 ''
     """
     try:
-        # 异步发送 HTTP 请求获取图片数据
         async with aiohttp.ClientSession() as session:
             async with session.get(url, timeout=10) as response:
-                # 检查响应状态
                 if response.status != 200:
-                    raise ValueError(f"Failed to fetch image, status code: {response.status}")
+                    raise ValueError(f"请求失败，状态码: {response.status}")
 
-                # 确保是图片类型
-                content_type = response.headers.get('Content-Type', '')
-                if 'image' not in content_type:
-                    raise ValueError("URL does not point to an image.")
-
-                # 读取图片数据并编码为 Base64
+                # 读取内容
                 image_data = await response.read()
+
+                # 使用 filetype 判断实际内容 MIME 类型
+                kind = filetype.guess(image_data)
+                if not kind or not kind.mime.startswith("image/"):
+                    raise ValueError(f"无法识别为图片，返回类型: {kind.mime if kind else '未知'}")
+
+                # 编码为 base64 并拼接 data URI
                 base64_encoded = base64.b64encode(image_data).decode('utf-8')
-
-                # 生成 HTML 标签可用的 Base64 格式
-                base64_with_prefix = f"data:{content_type};base64,{base64_encoded}"
-
-                # 返回 Base64 编码字符串
+                base64_with_prefix = f"data:{kind.mime};base64,{base64_encoded}"
                 return base64_with_prefix
+
     except Exception as e:
-        logger.error(f'获取url链接生成base64格式失败，url: {url}, 错误: {e}')
-        return ''
+        logger.err

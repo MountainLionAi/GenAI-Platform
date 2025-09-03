@@ -360,6 +360,7 @@ async def afunc_gpt_generator(messages_in, functions=gpt_functions, language=Lio
         {"role": "user", "content": "Where is Tokyo?"},
     ]
     '''
+    logger.info(f'========== model2: {model} !!!!!!!!!!')
     use_model = 'gpt-4o-mini'
     if model == 'ml-plus':
         use_model = OPENAI_PLUS_MODEL
@@ -419,7 +420,7 @@ async def afunc_gpt_generator(messages_in, functions=gpt_functions, language=Lio
     return aget_error_generator("error after retry many times")
 
 
-async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.default_lang, preset_name=None, picked_content="", related_qa=[], source='v001', owner='', isvision=False, output_type="", llm_model="", quote_message= ''):
+async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.default_lang, preset_name=None, picked_content="", related_qa=[], source='v001', owner='', isvision=False, output_type="", llm_model="", quote_message= '', trade_signal_text=None):
     """_summary_
 
     Args:
@@ -490,7 +491,7 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
     elif source == 'v011':
         content = prompts_v011.LionPrompt.get_aref_answer_prompt(language, preset_name, picked_content, related_qa, use_model, {}, quote_message)
     elif source == 'v012':
-        content = prompts_v012.LionPrompt.get_aref_answer_prompt(language, preset_name, picked_content, related_qa, use_model, {}, quote_message)
+        content = prompts_v012.LionPrompt.get_aref_answer_prompt(language, preset_name, picked_content, related_qa, use_model, {}, quote_message, trade_signal_text)
     else:
         content = LionPrompt.get_aref_answer_prompt(language, preset_name, picked_content, related_qa, use_model, '', owner, quote_message)
     system_message = content
@@ -771,6 +772,7 @@ def make_calling_messages_based_on_model(messages, use_model: str) -> List:
         ]
     """
     out_msgs = []
+    logger.info(f'========== model3: {use_model} !!!!!!!!!!')
     if use_model.startswith("gpt-4o") or use_model.startswith("gpt-4-vision") or use_model.startswith("gpt-4.1"):
         matching_indices = []
         for i in range(len(messages) - 1, -1, -1):

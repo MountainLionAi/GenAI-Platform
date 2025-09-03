@@ -131,9 +131,10 @@ async def send_stream_chat(request: Request):
     without_minus = int(request_params.get('without_minus', 0))
     regenerate_response = request_params.get('regenerate_response', None)
     search_type = request_params.get('search_type', None)
+    trade_signal_text = request_params.get('trade_signal_text')
     logger_content = f"""
 input_params:
-userid={userid},language={language},msggroup={msggroup},device_no={device_no},question_code={question_code},model={model},source={source},chain_id={chain_id},owner={owner},agent_id={agent_id},output_type={output_type},llm_model={llm_model},wallet_type={wallet_type},regenerate_response={regenerate_response},search_type={search_type}
+userid={userid},language={language},msggroup={msggroup},device_no={device_no},question_code={question_code},model={model},source={source},chain_id={chain_id},owner={owner},agent_id={agent_id},output_type={output_type},llm_model={llm_model},wallet_type={wallet_type},regenerate_response={regenerate_response},search_type={search_type},trade_signal_text={trade_signal_text}
     """
     logger.info(logger_content)
 
@@ -165,7 +166,7 @@ userid={userid},language={language},msggroup={msggroup},device_no={device_no},qu
             # async for _str in getAnswerAndCallGpt(request_params['content'], userid, msggroup, language, messages):
             async for _str in getAnswerAndCallGpt(request_params.get('content'), userid, msggroup, language, messages,
                                                   device_no, question_code, model, output_type, source, owner, agent_id,
-                                                  chain_id, llm_model, search_type, wallet_type, regenerate_response):
+                                                  chain_id, llm_model, search_type, wallet_type, regenerate_response, trade_signal_text, visitor_id):
                 await _response.write(f"data:{_str}\n\n")
                 await asyncio.sleep(0.01)
 
@@ -232,7 +233,7 @@ async def send_chat(request: Request):
 
 async def getAnswerAndCallGpt(question, userid, msggroup, language, front_messages, device_no, question_code, model,
                               output_type, source, owner, agent_id, chain_id, llm_model, search_type, wallet_type,
-                              regenerate_response):
+                              regenerate_response, trade_signal_text, visitor_id=''):
     from genaipf.dispatcher.stylized_process import stylized_process_mapping
     last_sp_msg = front_messages[-1]
     if source == 'v013':
@@ -581,6 +582,7 @@ async def getAnswerAndCallGpt(question, userid, msggroup, language, front_messag
     #     logger.info(f"当前使用模型{llm_model}")
     #     yield json.dumps(get_format_output("model", llm_model))
     afunc_gpt_generator_start_time = time.perf_counter()
+    logger.info(f'======== {model} !!!!!!!!!!!!!!!!!!!!')
     resp1 = await afunc_gpt_generator(msgs, used_gpt_functions, language_, model, picked_content, related_qa, source,
                                       owner)
     afunc_gpt_generator_end_time = time.perf_counter()
@@ -599,6 +601,14 @@ async def getAnswerAndCallGpt(question, userid, msggroup, language, front_messag
             rag_status['promptAnalysis']['isCompleted'] = True
             yield json.dumps(get_format_output("rag_status", rag_status))
             ai_ranking_info = await ai_ranking_task
+            if ai_ranking_info and ai_ranking_info['need_project_research']:
+                import ml4gp.services.ai_ranking_service as ai_ranking_service
+                ai_ranking_project_detail = await ai_ranking_service.get_project_detail(ai_ranking_info['project_keywords'][0], language_)
+                if ai_ranking_project_detail:
+                    ai_ranking_info['category'] = ai_ranking_project_detail['category']
+                    ai_ranking_info['project_detail'] = ai_ranking_project_detail['detail']
+                else:
+                    ai_ranking_info['need_project_research'] = False
         yield json.dumps(get_format_output("ai_ranking", ai_ranking_info))
     else:
         func_chunk = await resp1.__anext__()
@@ -613,6 +623,34 @@ async def getAnswerAndCallGpt(question, userid, msggroup, language, front_messag
         if used_rag and is_need_search:
             sources_task_start_time = time.perf_counter()
             sources, related_qa, image_sources = await sources_task
+            # 增加ai ranking相关的related_qa
+            if ai_ranking_info:
+                if ai_ranking_info['need_ranking']:
+                    import ml4gp.services.ai_ranking_service as ai_ranking_service
+                    # userid, projects_type, order_by, direction, page, limit, language
+                    order_by = 'influence'
+                    if ai_ranking_info['category'].upper() == 'MEME':
+                        order_by = 'ai_score'
+                    ai_ranking_details = await ai_ranking_service.query_ai_ranking(0,ai_ranking_info['category'], order_by, 'desc', 1, 4, language_)
+                    related_qa = []  # 如果走了AI Ranking其他rag清空
+                    if language_ == 'en':
+                        related_qa.append(question + '，The following content is ranked according to influence. Please output according to the ranking and include the number. : ' + json.dumps(ai_ranking_details))
+                    else:
+                        related_qa.append(question + '，下面内容根据影响力进行了排名，请按照排名输出，并带上编号 : ' + json.dumps(ai_ranking_details))
+                if ai_ranking_info['need_investment_ranking']:
+                    import ml4gp.services.ai_ranking_invenst_service as ai_ranking_invenst_service
+                    order_by = 'invest_num'
+                    ai_invenst_ranking_details = await ai_ranking_invenst_service.query_ai_ranking(0, order_by, 'desc', '', '', 1, 4, language_)
+                    if ai_invenst_ranking_details.get('total_nums') and ai_invenst_ranking_details.get('investor'):
+                        related_qa = []  # 如果走了AI Ranking其他rag清空
+                        if language_ == 'en':
+                            related_qa.append(
+                                question + '，The following content is ranked according to influence. Please output according to the ranking and include the number. : ' + json.dumps(
+                                    ai_invenst_ranking_details['investor']))
+                        else:
+                            related_qa.append(
+                                question + '，下面内容根据影响力进行了排名，请按照排名输出，并带上编号 : ' + json.dumps(
+                                    ai_invenst_ranking_details['investor']))
             rag_status['searchData']['isCompleted'] = True
             rag_status['searchData']['totalSources'] = get_random_number(80, 100)
             rag_status['searchData']['usedSources'] = len(sources) if (sources and len(sources)) else 9
@@ -654,7 +692,7 @@ async def getAnswerAndCallGpt(question, userid, msggroup, language, front_messag
             
         aref_answer_gpt_generator_start_time = time.perf_counter()
         resp1 = await aref_answer_gpt_generator(msgs, model, language_, None, picked_content, related_qa, source, owner,
-                                                isvision, output_type, llm_model, quote_message)
+                                                isvision, output_type, llm_model, quote_message, trade_signal_text)
         aref_answer_gpt_generator_end_time = time.perf_counter()
         elapsed_aref_answer_gpt_generator_time = (
                                                              aref_answer_gpt_generator_end_time - aref_answer_gpt_generator_start_time) * 1000
@@ -708,7 +746,7 @@ async def getAnswerAndCallGpt(question, userid, msggroup, language, front_messag
                 stream_gen = convert_func_out_to_stream(func_chunk, messages, newest_question, model, language_,
                                                         related_qa, source, owner, sources, is_need_search,
                                                         sources_task, chain_id, output_type, llm_model, userid,
-                                                        wallet_type)
+                                                        wallet_type, visitor_id)
                 convert_func_out_to_stream_time_end_time = time.perf_counter()
                 elapsed_convert_func_out_to_stream_time = (
                                                                       convert_func_out_to_stream_time_end_time - convert_func_out_to_stream_start_time) * 1000

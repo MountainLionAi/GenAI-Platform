@@ -3,7 +3,7 @@ import json
 from genaipf.conf.server import OPENAI_API_KEY
 from genaipf.utils.log_utils import logger
 from genaipf.dispatcher.prompts_common import LionPromptCommon
-from genaipf.dispatcher.utils import async_simple_chat
+from genaipf.dispatcher.utils import async_simple_chat, async_simple_chat_with_model
 from genaipf.tools.search.metaphor.metaphor_search_agent import other_search, metaphor_search2
 from genaipf.tools.search.google_serper.goole_serper_client import GoogleSerperClient
 from genaipf.tools.search.duckduckgo.ddg_client import DuckduckgoClient
@@ -414,15 +414,21 @@ async def multi_search_new(questions, search_type, related_qa=[], language=None,
                     if message['role'] == 'user':
                         tmp_question += f"{message['content']};"
                 if search_type == 'deep_search':
-                    search_result = await client.research_async(tmp_question)
+                    search_result, ai_sources = await client.research_async(tmp_question)
                 else:
                     search_result = await intelligent_search(front_messages['messages'])
                 related_qa.append(tmp_question + ' : ' + search_result)
                 tmp_sources, image_sources = await client1.multi_search(question, language)
+                if search_type == 'deep_search' and ai_sources and len(ai_sources) != 0:
+                    ai_sources.extend(tmp_sources)
+                    tmp_sources = ai_sources
+                else:
+                    for i in range(len(tmp_sources)):
+                        if i == 0 or i == 3:
+                            tmp_sources[i]['href'] = 'https://www.chatgpt.com'
                 question_sources[question] = question_sources[question] + tmp_sources
             else:
                 tmp_sources, image_sources = await client.multi_search(question, language)
-
                 question_sources[question] = question_sources[question] + tmp_sources
     results = await parse_results(question_sources)
     final_sources = []
@@ -516,9 +522,16 @@ async def check_ai_ranking(messages, language, source=''):
     """
     ranking_data = {
         "need_ranking": False,
-        "category": None,
+        "need_person_ranking": False,
+        "need_project_research": False,
+        "need_investment_ranking": False,
+        "category": "",
         "keywords": [],
-        "ranking_type": None
+        "ranking_type": "",
+        "person_ranking_type": None,
+        "target_entity": None,
+        "investment_ranking_type": None,
+        "project_keywords": []
     }
     try:
         # 获取最新的用户消息
@@ -526,8 +539,9 @@ async def check_ai_ranking(messages, language, source=''):
         if not latest_message or latest_message.get('role') != 'user':
             return ranking_data
         # 使用prompt模板判断是否有排序需求
-        msgs = LionPromptCommon.get_prompted_messages("check_ai_ranking", messages, language)
-        result = await async_simple_chat(msgs, model='gpt-4o')
+        _messages = {"messages": [latest_message]}
+        msgs = LionPromptCommon.get_prompted_messages("check_ai_ranking", _messages, language)
+        result = await async_simple_chat(msgs, model='gpt-4.1-2025-04-14')
         
         # 解析返回的JSON结果
         try:
@@ -535,8 +549,15 @@ async def check_ai_ranking(messages, language, source=''):
             logger.info(f'AI ranking analysis result: {ranking_result}')
             if not ranking_result:
                 return ranking_data
-            else:
-                ranking_data = ranking_result
+            else:  # 分成三种类型处理
+                if ranking_result['need_ranking'] and ranking_result['category'] and ranking_result['category'] != 'null':  # 匹配tag项目排名
+                    ranking_data = ranking_result
+                elif ranking_result['need_person_ranking'] and ranking_result['person_ranking_type'] and ranking_result['target_entity']:  # 匹配人物排名
+                    ranking_data = ranking_result
+                elif ranking_result['need_project_research'] and ranking_result['project_keywords'] and len(ranking_result['project_keywords']) != 0:  # 匹配具体项目
+                    ranking_data = ranking_result
+                elif ranking_result['need_investment_ranking'] and ranking_result['investment_ranking_type']:  # 匹配投资机构
+                    ranking_data = ranking_result
             return ranking_data
         except Exception as e:
             logger.error(f'Failed to parse AI ranking result: {e}, result: {result}')
