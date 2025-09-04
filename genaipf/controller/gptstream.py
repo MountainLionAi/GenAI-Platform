@@ -27,7 +27,7 @@ from genaipf.dispatcher.functions import gpt_functions_mapping, gpt_function_fil
 from genaipf.dispatcher.postprocess import posttext_mapping, PostTextParam
 from genaipf.dispatcher.converter import convert_func_out_to_stream, run_tool_agent
 from genaipf.utils.redis_utils import RedisConnectionPool
-from genaipf.conf.server import IS_INNER_DEBUG, IS_UNLIMIT_USAGE
+from genaipf.conf.server import IS_INNER_DEBUG, IS_UNLIMIT_USAGE, PROXY_URL, BIG_BEAUTY_CHAT_USE_PROXY
 from genaipf.utils.speech_utils import transcribe, textToSpeech
 from genaipf.tools.search.utils.search_agent_utils import other_search
 from genaipf.tools.search.utils.search_agent_utils import premise_search, premise_search1, premise_search2, \
@@ -689,7 +689,29 @@ async def getAnswerAndCallGpt(question, userid, msggroup, language, front_messag
             used_gpt_functions = None
         if llm_model.startswith('GPT'):
             llm_model = 'openai'
-            
+        if source == 'v012':
+            logger.info("source================================" + source)
+            from importlib import import_module
+            from genaipf.conf.server import PLUGIN_NAME
+            logger.info("PLUGIN_NAME========================" + PLUGIN_NAME)
+            if PLUGIN_NAME:
+                try:
+                    user_question = last_front_msg["content"]
+                    chat_data_support_name = f'{PLUGIN_NAME}.services.bigbeauty.chat_data_support'
+                    chat_data_support = import_module(chat_data_support_name)
+                    if BIG_BEAUTY_CHAT_USE_PROXY == "Y" and PROXY_URL:
+                        logger.info("使用代理=====================================")
+                        picked_content = await chat_data_support.get_picked_content_if_needed(user_question, PROXY_URL)
+                        logger.info("用户提的问题^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^" + user_question)
+                        logger.info("获取数据长度====================================" + str(len(picked_content)))
+                    else:
+                        logger.info("未使用代理=====================================")
+                        picked_content = await chat_data_support.get_picked_content_if_needed(user_question)
+                        logger.info("用户提的问题#################################" + user_question)
+                        logger.info("获取数据长度$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$" + str(len(picked_content)))
+                except Exception as e:
+                    logger.error("生成大漂亮聊天参考数据异常", e)
+                logger.info(f"大漂亮聊天参考数据:picked_content=\n{picked_content}")
         aref_answer_gpt_generator_start_time = time.perf_counter()
         resp1 = await aref_answer_gpt_generator(msgs, model, language_, None, picked_content, related_qa, source, owner,
                                                 isvision, output_type, llm_model, quote_message, trade_signal_text)
