@@ -15,8 +15,6 @@ from genaipf.tools.search.ai_search.intelligent_search_engine import intelligent
 import genaipf.utils.sensitive_util as sensitive_utils
 import genaipf.utils.common_utils as common_utils
 import time
-from .project_type_loader import get_project_type_loader
-from .smart_category_matcher import get_category_matcher
 
 WHITE_LIST_URL = [
     "trustwallet.com",
@@ -513,7 +511,6 @@ async def parse_results_new(question_sources, formatted_result):
 async def check_ai_ranking(messages, language, source=''):
     """
     判断用户是否有对Web3行业内容进行排序对比的需求
-    使用动态分类匹配，支持250+个项目类型
     
     Args:
         messages: 用户消息历史
@@ -536,170 +533,36 @@ async def check_ai_ranking(messages, language, source=''):
         "investment_ranking_type": None,
         "project_keywords": []
     }
-    
     try:
         # 获取最新的用户消息
         latest_message = messages['messages'][-1] if messages['messages'] else None
         if not latest_message or latest_message.get('role') != 'user':
             return ranking_data
-        
-        user_content = latest_message['content']
-        logger.info(f'分析用户消息: {user_content}')
-        
-        # 使用智能分类匹配器进行快速预匹配
-        category_matcher = get_category_matcher()
-        project_loader = get_project_type_loader()
-        
-        # 检查是否包含排序/对比关键词
-        ranking_keywords = [
-            '最', '最好', '最差', '排名', '排行', '榜单', 'top', 'top10', '对比', '比较', 
-            '哪个好', '哪个更', '推荐', '评测', '清单', '汇总', 'best', 'worst', 'ranking',
-            'compare', 'versus', 'which is better', 'recommend', 'review', 'list'
-        ]
-        
-        has_ranking_intent = any(keyword in user_content.lower() for keyword in ranking_keywords)
-        
-        if has_ranking_intent:
-            # 使用智能匹配器快速匹配项目类型
-            matched_categories = category_matcher.match_categories(user_content, max_matches=3)
-            
-            if matched_categories:
-                # 选择置信度最高的匹配
-                best_match = matched_categories[0]
-                if best_match[1] > 0.5:  # 置信度阈值
-                    ranking_data['need_ranking'] = True
-                    ranking_data['category'] = best_match[0]
-                    ranking_data['keywords'] = category_matcher.extract_keywords_from_text(user_content)
-                    
-                    # 确定排序维度
-                    ranking_type = _determine_ranking_type(user_content)
-                    ranking_data['ranking_type'] = ranking_type
-                    
-                    logger.info(f'智能匹配结果: {best_match[0]} (置信度: {best_match[1]:.2f})')
-                    return ranking_data
-            
-            # 如果智能匹配失败，回退到LLM分析
-            logger.info('智能匹配未找到合适分类，回退到LLM分析')
-            return await _fallback_llm_analysis(messages, language, source)
-        else:
-            # 检查其他类型的需求
-            return await _check_other_ranking_types(messages, language, source)
-            
-    except Exception as e:
-        logger.error(f'Error in check_ai_ranking: {e}')
-        return ranking_data
-
-
-def _determine_ranking_type(user_content: str) -> str:
-    """确定排序维度"""
-    content_lower = user_content.lower()
-    
-    # 人气/热度相关
-    if any(keyword in content_lower for keyword in ['人气', '热度', '活跃', '增长', 'tvl', '交易量', 'popularity', 'adoption']):
-        return 'popularity'
-    
-    # 安全相关
-    if any(keyword in content_lower for keyword in ['安全', '风控', '合规', 'security', 'risk', 'compliance']):
-        return 'security'
-    
-    # 性能相关
-    if any(keyword in content_lower for keyword in ['吞吐', '可扩展性', '稳定性', 'performance', 'scalability', 'stability']):
-        return 'performance'
-    
-    # 成本相关
-    if any(keyword in content_lower for keyword in ['手续费', '成本', '性价比', 'fees', 'cost', 'cost-efficiency']):
-        return 'cost'
-    
-    # 速度相关
-    if any(keyword in content_lower for keyword in ['速度', '确认时间', '延迟', 'speed', 'latency', 'confirmation']):
-        return 'speed'
-    
-    return 'popularity'  # 默认按人气排序
-
-
-async def _fallback_llm_analysis(messages, language, source):
-    """回退到LLM分析的fallback方法"""
-    try:
-        # 使用原有的prompt模板进行LLM分析
-        _messages = {"messages": [messages['messages'][-1]]}
+        # 使用prompt模板判断是否有排序需求
+        _messages = {"messages": [latest_message]}
         msgs = LionPromptCommon.get_prompted_messages("check_ai_ranking", _messages, language)
         result = await async_simple_chat(msgs, model='gpt-4.1-2025-04-14')
         
         # 解析返回的JSON结果
-        ranking_result = common_utils.extract_json_from_response(result)
-        logger.info(f'LLM分析结果: {ranking_result}')
-        
-        if ranking_result and ranking_result.get('need_ranking'):
-            return ranking_result
-        else:
-            return await _check_other_ranking_types(messages, language, source)
-            
+        try:
+            ranking_result = common_utils.extract_json_from_response(result)
+            logger.info(f'AI ranking analysis result: {ranking_result}')
+            if not ranking_result:
+                return ranking_data
+            else:  # 分成三种类型处理
+                if ranking_result['need_ranking'] and ranking_result['category'] and ranking_result['category'] != 'null':  # 匹配tag项目排名
+                    ranking_data = ranking_result
+                elif ranking_result['need_person_ranking'] and ranking_result['person_ranking_type'] and ranking_result['target_entity']:  # 匹配人物排名
+                    ranking_data = ranking_result
+                elif ranking_result['need_project_research'] and ranking_result['project_keywords'] and len(ranking_result['project_keywords']) != 0:  # 匹配具体项目
+                    ranking_data = ranking_result
+                elif ranking_result['need_investment_ranking'] and ranking_result['investment_ranking_type']:  # 匹配投资机构
+                    ranking_data = ranking_result
+            return ranking_data
+        except Exception as e:
+            logger.error(f'Failed to parse AI ranking result: {e}, result: {result}')
+            # 如果解析失败，返回默认结果
+            return ranking_data
     except Exception as e:
-        logger.error(f'LLM分析失败: {e}')
-        return await _check_other_ranking_types(messages, language, source)
-
-
-async def _check_other_ranking_types(messages, language, source):
-    """检查其他类型的排名需求"""
-    try:
-        _messages = {"messages": [messages['messages'][-1]]}
-        msgs = LionPromptCommon.get_prompted_messages("check_ai_ranking", _messages, language)
-        result = await async_simple_chat(msgs, model='gpt-4.1-2025-04-14')
-        
-        ranking_result = common_utils.extract_json_from_response(result)
-        logger.info(f'其他类型分析结果: {ranking_result}')
-        
-        if not ranking_result:
-            return {
-                "need_ranking": False,
-                "need_person_ranking": False,
-                "need_project_research": False,
-                "need_investment_ranking": False,
-                "category": "",
-                "keywords": [],
-                "ranking_type": "",
-                "person_ranking_type": None,
-                "target_entity": None,
-                "investment_ranking_type": None,
-                "project_keywords": []
-            }
-        
-        # 检查各种排名类型
-        if ranking_result.get('need_ranking') and ranking_result.get('category') and ranking_result['category'] != 'null':
-            return ranking_result
-        elif ranking_result.get('need_person_ranking') and ranking_result.get('person_ranking_type') and ranking_result.get('target_entity'):
-            return ranking_result
-        elif ranking_result.get('need_project_research') and ranking_result.get('project_keywords') and len(ranking_result['project_keywords']) != 0:
-            return ranking_result
-        elif ranking_result.get('need_investment_ranking') and ranking_result.get('investment_ranking_type'):
-            return ranking_result
-        else:
-            return {
-                "need_ranking": False,
-                "need_person_ranking": False,
-                "need_project_research": False,
-                "need_investment_ranking": False,
-                "category": "",
-                "keywords": [],
-                "ranking_type": "",
-                "person_ranking_type": None,
-                "target_entity": None,
-                "investment_ranking_type": None,
-                "project_keywords": []
-            }
-            
-    except Exception as e:
-        logger.error(f'检查其他排名类型失败: {e}')
-        return {
-            "need_ranking": False,
-            "need_person_ranking": False,
-            "need_project_research": False,
-            "need_investment_ranking": False,
-            "category": "",
-            "keywords": [],
-            "ranking_type": "",
-            "person_ranking_type": None,
-            "target_entity": None,
-            "investment_ranking_type": None,
-            "project_keywords": []
-        }
+        logger.error(f'Error in check_ai_ranking: {e}')
+        return ranking_data
