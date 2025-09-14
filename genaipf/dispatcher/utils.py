@@ -430,7 +430,7 @@ async def async_simple_chat(messages: typing.List[typing.Mapping[str, str]], str
             expired_time = 30.0
             api_key = OPENAI_API_KEY
             if key_type == 'trans':
-                expired_time = 90.0
+                expired_time = 180.0
             elif key_type != 'normal':
                 expired_time = 60.0
                 api_key = OPENAI_API_KEY_FOR_PREDICT
