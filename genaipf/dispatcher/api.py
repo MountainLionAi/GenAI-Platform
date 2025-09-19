@@ -271,9 +271,12 @@ async def awrap_gpt_generator(gpt_response, output_type=""):
             _tmp_voice_text += c0
             if output_type != 'voice':
                 yield get_format_output("gpt", c0)
-        async for chunk in resp: 
-            choice = chunk.choices[0]
-            delta = choice.delta
+        async for chunk in resp:
+            try: 
+                choice = chunk.choices[0]
+                delta = choice.delta
+            except Exception as e:
+                logger.error(f"{e}")
             # 安全获取 reasoning_content
             _reasoning_letter = getattr(delta, 'reasoning', None)
             if not _reasoning_letter:
