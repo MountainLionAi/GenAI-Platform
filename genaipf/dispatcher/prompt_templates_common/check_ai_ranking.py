@@ -91,6 +91,7 @@ def _get_check_ai_ranking_prompted_messages(data, language):
 - Stablecoin Issuer: 稳定币发行商（如 Tether、Circle、Paxos、MakerDAO、Frax）
 - Crypto Stocks: 加密货币相关股票（如 Coinbase、MicroStrategy、Marathon Digital、Riot Platforms）
 - ETF: 加密货币交易所交易基金（如 BITO、BITX、ARKB、IBIT、FBTC）
+- no-kyc card:免kyc的u卡厂商（如 bit2go solcard）
 
 **币股分类详细规则（Crypto Stocks）：**
 - **上市公司股票**：在传统股票市场上市的加密货币相关公司
@@ -416,6 +417,7 @@ When users ask questions like "what are the recommended investment institutions 
 - Stablecoin Issuer: Stablecoin issuers and managers (e.g., Tether, Circle, Paxos, MakerDAO, Frax)
 - Crypto Stocks: Cryptocurrency-related public stocks (e.g., Coinbase, MicroStrategy, Marathon Digital, Riot Platforms)
 - ETF: Cryptocurrency exchange-traded funds (e.g., BITO, BITX, ARKB, IBIT, FBTC)
+- no-kyc card:non kyc crypto cards (e.g. bit2go moon solcard)
 
 **Crypto Stocks Classification Detailed Rules:**
 - **Public Company Stocks:** Cryptocurrency-related companies listed on traditional stock markets
