@@ -91,6 +91,7 @@ def _get_check_ai_ranking_prompted_messages(data, language):
 - Stablecoin Issuer: 稳定币发行商（如 Tether、Circle、Paxos、MakerDAO、Frax）
 - Crypto Stocks: 加密货币相关股票（如 Coinbase、MicroStrategy、Marathon Digital、Riot Platforms）
 - ETF: 加密货币交易所交易基金（如 BITO、BITX、ARKB、IBIT、FBTC）
+- no-kyc card:不需要KYC的u卡/虚拟币卡（如 bit2go、moon、solcard）
 
 **币股分类详细规则（Crypto Stocks）：**
 - **上市公司股票**：在传统股票市场上市的加密货币相关公司
@@ -188,6 +189,7 @@ def _get_check_ai_ranking_prompted_messages(data, language):
     - 代币项目（如比特币、以太坊）→ 返回相应代币分类或null
     - 股票项目（如Coinbase股票）→ 返回Crypto Stocks
     - 不要将代币误认为股票，也不要将股票误认为代币
+43. **no kyc u卡和普通u卡误分类**：当用户咨询带有no kyc、non kyc、不需要kyc即可使用等含义的crypto card/u卡/虚拟币卡需要返回 no-kyc card
 
 **互斥分类规则（重要）：**
 16. **交易所互斥**：CEX和DEX是互斥概念，用户未明确说明去中心化偏好时，默认返回CEX
@@ -206,6 +208,12 @@ def _get_check_ai_ranking_prompted_messages(data, language):
 20. **多分类返回原则**：只有在用户明确询问多个不同领域时才返回多分类
     - 用户问"推荐几个钱包和AI产品" → 返回"Wallet,AI"
     - 用户问"哪个交易所最好" → 返回"CEX"（单一分类）
+21. **no-kyc u卡和普通 u卡分类返回原则**
+    - 用户问"推荐non kyc u卡" → 返回"no-kyc card"
+    - 用户问"最好的几个no-kyc 虚拟币卡" → 返回"no-kyc card"
+    - 用户问"那个non kyc u卡是最好的" → 返回"no-kyc card"
+    - 用户问"那个u卡是最好的" → 返回"crypto card"
+
 
 **人物排名类型（状态2使用）：**
 - company: 公司、企业、机构
@@ -416,6 +424,7 @@ When users ask questions like "what are the recommended investment institutions 
 - Stablecoin Issuer: Stablecoin issuers and managers (e.g., Tether, Circle, Paxos, MakerDAO, Frax)
 - Crypto Stocks: Cryptocurrency-related public stocks (e.g., Coinbase, MicroStrategy, Marathon Digital, Riot Platforms)
 - ETF: Cryptocurrency exchange-traded funds (e.g., BITO, BITX, ARKB, IBIT, FBTC)
+- no-kyc card:non kyc crypto card (e.g. bit2go, moon, solcard)
 
 **Crypto Stocks Classification Detailed Rules:**
 - **Public Company Stocks:** Cryptocurrency-related companies listed on traditional stock markets
@@ -513,6 +522,7 @@ When users ask questions like "what are the recommended investment institutions 
     - Token projects (e.g., Bitcoin, Ethereum) → return corresponding token category or null
     - Stock projects (e.g., Coinbase stock) → return Crypto Stocks
     - Do not confuse tokens with stocks, and do not confuse stocks with tokens
+43. **no kyc crypto card and common crypto card confusion**: when user asks no kyc/no-kyc、non kyc/non-kyc crypto card/u card -> return no-kyc card
 
 **Mutually Exclusive Classification Rules (Important):**
 16. **Exchange Mutex:** CEX and DEX are mutually exclusive concepts. When a user does not explicitly state a decentralized preference, default to returning CEX.
@@ -531,6 +541,12 @@ When users ask questions like "what are the recommended investment institutions 
 20. **Multiple Category Return Principle:** Only return multiple categories when a user explicitly asks for multiple different domains.
     - User asks "recommend some wallets and AI products" → returns "Wallet,AI"
     - User asks "which exchange is the best" → returns "CEX" (single category)
+21. **Specific type Crypto Return Principle**
+    - User asks "which non kyc crypto card is the best" → returns no-kyc card
+    - User asks "top ranking no-kyc crypto card" → returns no-kyc card
+    - User asks "recommend me non kyc crypto card" → returns no-kyc card
+    - User asks "which crypto card is the best" → returns crypto card
+
 
 **Person Ranking Types (for State 2):**
 - company: Company, enterprise, institution
