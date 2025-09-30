@@ -27,6 +27,15 @@ def _get_check_ai_ranking_prompted_messages(data, language):
 3. 典型问法：
    - "哪个更…？"、"有哪些…的前十？"、"推荐几个…"、"…排行榜/榜单/清单"
 
+**重要过滤规则（以下情况不应触发排名机制）：**
+- 模糊的投资建议问题：如"适合投资的项目"、"值得投资的项目"、"有什么好项目"等
+- 没有明确比较维度的推荐问题：如"推荐一些项目"、"有什么项目"等
+- 纯信息咨询：如"了解某个项目"、"某某项目怎么样"等
+- 必须同时满足以下条件才触发排名：
+  1. 包含明确的比较/排序意图词
+  2. 包含具体的分类或项目类型
+  3. 有明确的比较维度或指标
+
 **状态2判定信号（满足其一即可判定 need_person_ranking=true）：**
 1. 人物相关词：人员、团队、成员、创始人、CEO、CTO、高管、校友、学生、员工、开发者、投资者
 2. 组织相关词：公司、企业、机构、学校、大学、学院、组织、团队
@@ -342,6 +351,15 @@ When users ask questions like "what are the recommended investment institutions 
 2. Metric/Dimension hints: popularity, adoption, active users, growth, retention, TVL, volume, fees, cost, security, risk, speed, performance, scalability, yield, volatility, market cap, FDV
 3. Typical queries:
    - "Which is better…?", "Top N …?", "Recommend some …", "… ranking/top list/shortlist"
+
+**Important Filter Rules (the following cases should NOT trigger ranking mechanism):**
+- Vague investment advice questions: such as "suitable projects for investment", "worth investing projects", "what good projects are there", etc.
+- Recommendation questions without clear comparison dimensions: such as "recommend some projects", "what projects are there", etc.
+- Pure information inquiries: such as "learn about a project", "how is a project", etc.
+- Must satisfy ALL of the following conditions to trigger ranking:
+  1. Contains clear comparison/ranking intent words
+  2. Contains specific categories or project types
+  3. Has clear comparison dimensions or metrics
 
 **State 2 Signals (any one is sufficient to set need_person_ranking=true):**
 1. Person-related words: team members, staff, founders, CEO, CTO, executives, alumni, students, employees, developers, investors
