@@ -138,6 +138,11 @@ def _get_check_ai_ranking_prompted_messages(data, language):
    - 跨多个领域但无法明确归类的项目
 7. **交易所区分**：cex（中心化交易所）和 dex（去中心化交易所）是不同分类，DEX属于 **DEX** 分类，如果用户只问交易所默认是cex
 8. **no kyc u卡和普通u卡误分类**：当用户咨询带有no kyc、non kyc、不需要kyc即可使用等含义的crypto card/u卡/虚拟币卡需要返回 no-kyc card
+9. **no-kyc u卡和普通 u卡分类返回原则**
+    - 用户问"推荐non kyc u卡" → 返回"no-kyc card"
+    - 用户问"最好的几个no-kyc 虚拟币卡" → 返回"no-kyc card"
+    - 用户问"那个non kyc u卡是最好的" → 返回"no-kyc card"
+    - 用户问"那个u卡是最好的" → 返回"crypto card"
 
 **人物排名类型（状态2使用）：**
 - company: 公司、企业、机构
@@ -366,6 +371,11 @@ When users ask questions like "what are the recommended investment institutions 
 
 7. **Exchange Classification**: CEX (centralized exchange) and DEX (decentralized exchange) are different categories. DEX belongs to the **DEX** category. If the user only asks about the exchange, the default is CEX 
 8. **no kyc crypto card and common crypto card confusion**: when user asks no kyc/no-kyc、non kyc/non-kyc crypto card/u card -> return no-kyc card
+9. **Specific type Crypto Return Principle**
+    - User asks "which non kyc crypto card is the best" → returns no-kyc card
+    - User asks "top ranking no-kyc crypto card" → returns no-kyc card
+    - User asks "recommend me non kyc crypto card" → returns no-kyc card
+    - User asks "which crypto card is the best" → returns crypto card
 
 **Person Ranking Types (for State 2):**
 - company: Company, enterprise, institution
