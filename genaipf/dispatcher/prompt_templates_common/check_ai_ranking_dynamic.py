@@ -110,6 +110,7 @@ def _get_check_ai_ranking_prompted_messages(data, language):
 - stablecoin issuer: 稳定币发行商（如 Tether、Circle、Paxos、MakerDAO、Frax）
 - crypto stocks: 加密货币相关股票（如 Coinbase、MicroStrategy、Marathon Digital、Riot Platforms）
 - etf: 加密货币交易所交易基金（如 BITO、BITX、ARKB、IBIT、FBTC）
+- no-kyc card:不需要kyc的u卡（如 bit2go moon solcard）
 
 **社交金融：**
 - socialfi: 社交金融平台、社交交易（如 Friend.tech、Stars Arena、Post.tech、Tipcoin）
@@ -335,6 +336,7 @@ When users ask questions like "what are the recommended investment institutions 
 - stablecoin issuer: Stablecoin issuers and managers (e.g., Tether, Circle, Paxos, MakerDAO, Frax)
 - crypto stocks: Cryptocurrency-related public stocks (e.g., Coinbase, MicroStrategy, Marathon Digital, Riot Platforms)
 - etf: Cryptocurrency exchange-traded funds (e.g., BITO, BITX, ARKB, IBIT, FBTC)
+- no-kyc card:non kyc crypto cards (e.g. bit2go moon solcard)
 
 **Social Finance:**
 - socialfi: Social finance platforms, social trading (e.g., Friend.tech, Stars Arena, Post.tech, Tipcoin)
