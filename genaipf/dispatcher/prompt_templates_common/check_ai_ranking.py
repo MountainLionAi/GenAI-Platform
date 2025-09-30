@@ -91,7 +91,7 @@ def _get_check_ai_ranking_prompted_messages(data, language):
 - Stablecoin Issuer: 稳定币发行商（如 Tether、Circle、Paxos、MakerDAO、Frax）
 - Crypto Stocks: 加密货币相关股票（如 Coinbase、MicroStrategy、Marathon Digital、Riot Platforms）
 - ETF: 加密货币交易所交易基金（如 BITO、BITX、ARKB、IBIT、FBTC）
-- no-kyc card:免kyc的u卡厂商（如 bit2go solcard）
+- no-kyc card:不需要KYC的u卡/虚拟币卡（如 bit2go、moon、solcard）
 
 **币股分类详细规则（Crypto Stocks）：**
 - **上市公司股票**：在传统股票市场上市的加密货币相关公司
@@ -189,6 +189,7 @@ def _get_check_ai_ranking_prompted_messages(data, language):
     - 代币项目（如比特币、以太坊）→ 返回相应代币分类或null
     - 股票项目（如Coinbase股票）→ 返回Crypto Stocks
     - 不要将代币误认为股票，也不要将股票误认为代币
+43. **no kyc u卡误分类**：带有no-kyc、non-kyc等含义的crypto card 或者u卡需要匹配到**no-kyc card**类别
 
 **互斥分类规则（重要）：**
 16. **交易所互斥**：CEX和DEX是互斥概念，用户未明确说明去中心化偏好时，默认返回CEX
@@ -417,7 +418,7 @@ When users ask questions like "what are the recommended investment institutions 
 - Stablecoin Issuer: Stablecoin issuers and managers (e.g., Tether, Circle, Paxos, MakerDAO, Frax)
 - Crypto Stocks: Cryptocurrency-related public stocks (e.g., Coinbase, MicroStrategy, Marathon Digital, Riot Platforms)
 - ETF: Cryptocurrency exchange-traded funds (e.g., BITO, BITX, ARKB, IBIT, FBTC)
-- no-kyc card:non kyc crypto cards (e.g. bit2go moon solcard)
+- no-kyc card:non kyc crypto card (e.g. bit2go, moon, solcard)
 
 **Crypto Stocks Classification Detailed Rules:**
 - **Public Company Stocks:** Cryptocurrency-related companies listed on traditional stock markets
@@ -515,6 +516,7 @@ When users ask questions like "what are the recommended investment institutions 
     - Token projects (e.g., Bitcoin, Ethereum) → return corresponding token category or null
     - Stock projects (e.g., Coinbase stock) → return Crypto Stocks
     - Do not confuse tokens with stocks, and do not confuse stocks with tokens
+43. **no kyc crypto card confusion**: when user asks no-kyc、non-kyc crypto card -> return no-kyc card
 
 **Mutually Exclusive Classification Rules (Important):**
 16. **Exchange Mutex:** CEX and DEX are mutually exclusive concepts. When a user does not explicitly state a decentralized preference, default to returning CEX.

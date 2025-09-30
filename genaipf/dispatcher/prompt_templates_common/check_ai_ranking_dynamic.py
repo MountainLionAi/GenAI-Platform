@@ -110,7 +110,7 @@ def _get_check_ai_ranking_prompted_messages(data, language):
 - stablecoin issuer: 稳定币发行商（如 Tether、Circle、Paxos、MakerDAO、Frax）
 - crypto stocks: 加密货币相关股票（如 Coinbase、MicroStrategy、Marathon Digital、Riot Platforms）
 - etf: 加密货币交易所交易基金（如 BITO、BITX、ARKB、IBIT、FBTC）
-- no-kyc card:不需要kyc的u卡（如 bit2go moon solcard）
+- no-kyc card:不需要kyc的u卡/虚拟币卡（如 bit2go、 moon、 solcard）
 
 **社交金融：**
 - socialfi: 社交金融平台、社交交易（如 Friend.tech、Stars Arena、Post.tech、Tipcoin）
@@ -137,6 +137,7 @@ def _get_check_ai_ranking_prompted_messages(data, language):
    - 无法确定具体分类的项目
    - 跨多个领域但无法明确归类的项目
 7. **交易所区分**：cex（中心化交易所）和 dex（去中心化交易所）是不同分类，DEX属于 **DEX** 分类，如果用户只问交易所默认是cex
+8. **no kyc u卡区分**：带有no-kyc、non-kyc等含义的crypto card 或者u卡需要匹配到**no-kyc card**类别
 
 **人物排名类型（状态2使用）：**
 - company: 公司、企业、机构
@@ -336,7 +337,7 @@ When users ask questions like "what are the recommended investment institutions 
 - stablecoin issuer: Stablecoin issuers and managers (e.g., Tether, Circle, Paxos, MakerDAO, Frax)
 - crypto stocks: Cryptocurrency-related public stocks (e.g., Coinbase, MicroStrategy, Marathon Digital, Riot Platforms)
 - etf: Cryptocurrency exchange-traded funds (e.g., BITO, BITX, ARKB, IBIT, FBTC)
-- no-kyc card:non kyc crypto cards (e.g. bit2go moon solcard)
+- no-kyc card:non kyc crypto card (e.g. bit2go, moon, solcard)
 
 **Social Finance:**
 - socialfi: Social finance platforms, social trading (e.g., Friend.tech, Stars Arena, Post.tech, Tipcoin)
@@ -364,6 +365,7 @@ When users ask questions like "what are the recommended investment institutions 
    - Projects that span multiple domains but cannot be clearly categorized
 
 7. **Exchange Classification**: CEX (centralized exchange) and DEX (decentralized exchange) are different categories. DEX belongs to the **DEX** category. If the user only asks about the exchange, the default is CEX 
+8. **no kyc crypto card confusion**: when user asks no-kyc、non-kyc crypto card -> return no-kyc card
 
 **Person Ranking Types (for State 2):**
 - company: Company, enterprise, institution
