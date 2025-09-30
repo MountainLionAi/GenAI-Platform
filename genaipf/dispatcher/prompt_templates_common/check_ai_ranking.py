@@ -208,6 +208,12 @@ def _get_check_ai_ranking_prompted_messages(data, language):
 20. **多分类返回原则**：只有在用户明确询问多个不同领域时才返回多分类
     - 用户问"推荐几个钱包和AI产品" → 返回"Wallet,AI"
     - 用户问"哪个交易所最好" → 返回"CEX"（单一分类）
+21. **no-kyc u卡和普通 u卡分类返回原则**
+    - 用户问"推荐non kyc u卡" → 返回"no-kyc card"
+    - 用户问"最好的几个no-kyc 虚拟币卡" → 返回"no-kyc card"
+    - 用户问"那个non kyc u卡是最好的" → 返回"no-kyc card"
+    - 用户问"那个u卡是最好的" → 返回"crypto card"
+
 
 **人物排名类型（状态2使用）：**
 - company: 公司、企业、机构
@@ -537,6 +543,8 @@ When users ask questions like "what are the recommended investment institutions 
     - User asks "which exchange is the best" → returns "CEX" (single category)
 21. **Specific type Crypto Return Principle**
     - User asks "which non kyc crypto card is the best" → returns no-kyc card
+    - User asks "top ranking no-kyc crypto card" → returns no-kyc card
+    - User asks "recommend me non kyc crypto card" → returns no-kyc card
     - User asks "which crypto card is the best" → returns crypto card
 
 
