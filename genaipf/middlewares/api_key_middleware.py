@@ -32,6 +32,13 @@ async def check_api_key(request: Request):
         return fail(ERROR_CODE['ILLEGAL_REQUEST'], '')
 
     # 检查是否被封禁
+    is_a = False
+    if request_ip in ['103.215.164.218']:
+        is_a = True
+    print('=========================request ip===========================')
+    print(f'========================={request_ip}===========================')
+    print(f'========================={is_a}===========================')
+    print('=========================request ip===========================')
     if request_ip in ['103.215.164.218']:
         return fail(ERROR_CODE['REQUEST_FREQUENCY_TOO_HIGH'], '')
     forbid_api_key = REDIS_KEYS['REQUEST_API_KEYS']['FORBID_API_KEYS'].format(api_key, request_ip)
