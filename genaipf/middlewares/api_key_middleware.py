@@ -31,16 +31,14 @@ async def check_api_key(request: Request):
     if not is_valida:
         return fail(ERROR_CODE['ILLEGAL_REQUEST'], '')
 
-    # 检查是否被封禁
-    is_a = False
-    if request_ip in ['103.215.164.218']:
-        is_a = True
-    print('=========================request ip===========================')
-    print(f'========================={request_ip}===========================')
-    print(f'========================={is_a}===========================')
-    print('=========================request ip===========================')
-    if request_ip in ['103.215.164.218']:
+    # 检查IP是否在黑名单中
+    blocked_ips_key = REDIS_KEYS['REQUEST_API_KEYS']['BLOCKED_IPS']
+    is_blocked_ip = redis_client.sismember(blocked_ips_key, request_ip)
+    if is_blocked_ip:
+        logger.warning(f'IP {request_ip} 已被封禁，拒绝访问')
         return fail(ERROR_CODE['REQUEST_FREQUENCY_TOO_HIGH'], '')
+    
+    # 检查API key是否被封禁
     forbid_api_key = REDIS_KEYS['REQUEST_API_KEYS']['FORBID_API_KEYS'].format(api_key, request_ip)
     forbid = redis_client.get(forbid_api_key)
     if forbid:
@@ -169,4 +167,51 @@ async def get_tracking_api_keys():
         return list(tracking_keys)
     except Exception as e:
         logger.error(f'获取统计API key名单失败: {e}')
+        return []
+
+
+async def add_blocked_ip(ip_address: str):
+    """
+    添加IP到黑名单
+    :param ip_address: 需要封禁的IP地址
+    """
+    try:
+        redis_client = RedisConnectionPool().get_connection()
+        blocked_ips_key = REDIS_KEYS['REQUEST_API_KEYS']['BLOCKED_IPS']
+        redis_client.sadd(blocked_ips_key, ip_address)
+        logger.info(f'IP {ip_address} 已添加到黑名单')
+        return True
+    except Exception as e:
+        logger.error(f'添加IP到黑名单失败: {e}')
+        return False
+
+
+async def remove_blocked_ip(ip_address: str):
+    """
+    从黑名单中移除IP
+    :param ip_address: 需要解封的IP地址
+    """
+    try:
+        redis_client = RedisConnectionPool().get_connection()
+        blocked_ips_key = REDIS_KEYS['REQUEST_API_KEYS']['BLOCKED_IPS']
+        redis_client.srem(blocked_ips_key, ip_address)
+        logger.info(f'IP {ip_address} 已从黑名单中移除')
+        return True
+    except Exception as e:
+        logger.error(f'从黑名单中移除IP失败: {e}')
+        return False
+
+
+async def get_blocked_ips():
+    """
+    获取所有被封禁的IP列表
+    :return: 被封禁的IP列表
+    """
+    try:
+        redis_client = RedisConnectionPool().get_connection()
+        blocked_ips_key = REDIS_KEYS['REQUEST_API_KEYS']['BLOCKED_IPS']
+        blocked_ips = redis_client.smembers(blocked_ips_key)
+        return list(blocked_ips)
+    except Exception as e:
+        logger.error(f'获取黑名单IP列表失败: {e}')
         return []
