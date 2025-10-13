@@ -1091,7 +1091,7 @@ class ResearchAssistant:
             async with self.client_manager.openai_rate_limit():
                 openai_client = await self.client_manager.get_openai_client()
                 response = await openai_client.responses.create(
-                    model="gpt-5",
+                    model="gpt-4o",
                     tools=[{
                         "type": "web_search_preview",
                         "search_context_size": question.search_context_size,

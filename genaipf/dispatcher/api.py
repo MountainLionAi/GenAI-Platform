@@ -364,13 +364,12 @@ async def afunc_gpt_generator(messages_in, functions=gpt_functions, language=Lio
         {"role": "user", "content": "Where is Tokyo?"},
     ]
     '''
-    logger.info(f'========== model2: {model} !!!!!!!!!!')
-    use_model = 'gpt-5-mini'
+    use_model = 'gpt-4o-mini'
     if model == 'ml-plus':
         use_model = OPENAI_PLUS_MODEL
     if isvision:
         # 图片处理专用模型
-        use_model = 'gpt-5'
+        use_model = 'gpt-4o'
     messages = make_calling_messages_based_on_model(messages_in, use_model)
     for i in range(5):
         mlength = len(messages)
@@ -436,7 +435,7 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
                 {"role": "user", "content": "what color?", "type": "text", "version": "v001"},
             ]
     """
-    use_model = 'gpt-5-mini'
+    use_model = 'gpt-4o-mini'
     if llm_model == 'openai':
         use_model = OPENAI_PLUS_MODEL
     elif llm_model == 'perplexity':
@@ -467,7 +466,7 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
 
     if isvision:
         # 图片处理专用模型
-        # use_model = 'gpt-5'
+        # use_model = 'gpt-4o'
         use_model = OPENAI_PLUS_MODEL
     if source == 'v002':
         content = prompts_v002.LionPrompt.get_aref_answer_prompt(language, preset_name, picked_content, related_qa, use_model, {}, quote_message)
@@ -718,7 +717,7 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
 async def aref_oneshot_gpt_generator(messages, model='', language=LionPrompt.default_lang, preset_name=None, picked_content="", related_qa=[], data=None, stream=False, mode=None):
     front_messages = messages
     gpt_prams = data.get("gpt_prams", {})
-    use_model = 'gpt-5-mini'
+    use_model = 'gpt-4o-mini'
     if model == 'ml-plus':
         use_model = OPENAI_PLUS_MODEL
     try:
@@ -768,7 +767,7 @@ def make_calling_messages_based_on_model(messages, use_model: str) -> List:
                 {"role": "user", "content": "what color?", "type": "text", "version": "v001"},
             ]
         use_model (str): _description_
-            "gpt-5"
+            "gpt-4o"
     Outputs:
         [
             {"role": "system", "content": "You are a chatbot."},
@@ -779,7 +778,7 @@ def make_calling_messages_based_on_model(messages, use_model: str) -> List:
     """
     out_msgs = []
     logger.info(f'========== model3: {use_model} !!!!!!!!!!')
-    if use_model.startswith("gpt-5") or use_model.startswith("gpt-4-vision") or use_model.startswith("gpt-5") or use_model.startswith("gpt-5"):
+    if use_model.startswith("gpt-4o") or use_model.startswith("gpt-4-vision") or use_model.startswith("gpt-4.1") or use_model.startswith("gpt-5"):        
         matching_indices = []
         for i in range(len(messages) - 1, -1, -1):
             if messages[i].get("type", "") == "image":
