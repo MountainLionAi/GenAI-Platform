@@ -326,7 +326,7 @@ async def openai_chat_completion_acreate(
         logger.error(f'>>>>>>>>>test003 async_openai_client.chat.completions.create, e: {e}')
         # openai失败用deepbricks
         if model == OPENAI_PLUS_MODEL:
-            model = 'gpt-5'
+            model = 'gpt-4o-2024-08-06'
         if functions:
             try:
                 _base_urls = os.getenv("COMPATABLE_OPENAI_BASE_URLS", [])
@@ -411,7 +411,7 @@ async def openai_chat_completion_acreate(
         raise e
     return response
 
-async def simple_achat(messages: typing.List[typing.Mapping[str, str]], model: str = 'gpt-5'):
+async def simple_achat(messages: typing.List[typing.Mapping[str, str]], model: str = 'gpt-4o-mini'):
     from llama_index.llms import ChatMessage, OpenAI as OpenAI2
     OPENAI_API_KEY = openai.api_key
     _msgs = []
@@ -424,7 +424,7 @@ async def simple_achat(messages: typing.List[typing.Mapping[str, str]], model: s
     resp = await OpenAI2(model=model, api_key=OPENAI_API_KEY).achat(_msgs)
     return resp.message.content
 
-async def async_simple_chat(messages: typing.List[typing.Mapping[str, str]], stream: bool = False, model: str = 'gpt-5', key_type: str = 'normal'):
+async def async_simple_chat(messages: typing.List[typing.Mapping[str, str]], stream: bool = False, model: str = 'gpt-4o-mini', key_type: str = 'normal'):
     try:
         if SIMPLE_CHAT_MODEL == 'openai':
             expired_time = 30.0
@@ -477,9 +477,9 @@ async def async_simple_chat(messages: typing.List[typing.Mapping[str, str]], str
         logger.error(f'>>>>>>>>>async_simple_chat:test003 async_openai_client.chat.completions.create, e: {e}')
         if SIMPLE_CHAT_MODEL == 'openai':
             if model == OPENAI_PLUS_MODEL:
-                model = 'gpt-5'
+                model = 'gpt-4o-2024-08-06'
         else:
-            model = 'gpt-5'
+            model = 'gpt-4o-2024-08-06'
         try:
             _base_urls = os.getenv("COMPATABLE_OPENAI_BASE_URLS", [])
             _base_urls = json.loads(_base_urls)
@@ -514,7 +514,7 @@ async def async_simple_chat(messages: typing.List[typing.Mapping[str, str]], str
             raise e
 
 
-async def async_simple_chat_with_model(messages: typing.List[typing.Mapping[str, str]], stream: bool = False, model: str = 'gpt-5-mini', base_model:str = 'openai', key_type: str = 'normal', system_msg=''):
+async def async_simple_chat_with_model(messages: typing.List[typing.Mapping[str, str]], stream: bool = False, model: str = 'gpt-4o-mini', base_model:str = 'openai', key_type: str = 'normal', system_msg=''):
     try:
         simple_achat_model = base_model
         if simple_achat_model == 'openai':
@@ -579,9 +579,9 @@ async def async_simple_chat_with_model(messages: typing.List[typing.Mapping[str,
         logger.error(f'>>>>>>>>>async_simple_chat:test003 async_openai_client.chat.completions.create, e: {e}')
         if simple_achat_model == 'openai':
             if model == OPENAI_PLUS_MODEL:
-                model = 'gpt-5'
+                model = 'gpt-4o-2024-08-06'
         else:
-            model = 'gpt-5'
+            model = 'gpt-4o-2024-08-06'
         try:
             _base_urls = os.getenv("COMPATABLE_OPENAI_BASE_URLS", [])
             _base_urls = json.loads(_base_urls)
@@ -616,7 +616,7 @@ async def async_simple_chat_with_model(messages: typing.List[typing.Mapping[str,
             await send_notice_message('genai_utils', 'async_simple_chat', 0, err_message, 3)
             raise e
 
-async def async_simple_chat_stream(messages: typing.List[typing.Mapping[str, str]], model: str='gpt-4o-mini'):
+async def async_simple_chat_stream(messages: typing.List[typing.Mapping[str, str]], model: str='gpt-40-mini'):
     from genaipf.dispatcher.api import awrap_gpt_generator
     resp = await async_simple_chat(messages, True, model)
     return awrap_gpt_generator(resp, "text")
