@@ -46,8 +46,6 @@ async def claude_cached_api_call(model_name="claude-sonnet-4-5-20250929", system
             async with async_client.messages.stream(
                 model=model_name,
                 max_tokens=2048,
-                top_p = top_p,
-                temperature=temperature,
                 system=system,
                 messages=ml_messages,
                 extra_headers={"anthropic-beta": "prompt-caching-2024-07-31"}
@@ -70,8 +68,6 @@ async def claude_cached_api_call(model_name="claude-sonnet-4-5-20250929", system
             async with async_client.messages.stream(
                 model=model_name,
                 max_tokens=2048,
-                top_p = top_p,
-                temperature=temperature,
                 system=system_prompt,
                 messages=ml_messages
             ) as stream:
