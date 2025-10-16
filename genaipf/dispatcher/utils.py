@@ -616,7 +616,7 @@ async def async_simple_chat_with_model(messages: typing.List[typing.Mapping[str,
             await send_notice_message('genai_utils', 'async_simple_chat', 0, err_message, 3)
             raise e
 
-async def async_simple_chat_stream(messages: typing.List[typing.Mapping[str, str]], model: str='gpt-40-mini'):
+async def async_simple_chat_stream(messages: typing.List[typing.Mapping[str, str]], model: str='gpt-4o-mini'):
     from genaipf.dispatcher.api import awrap_gpt_generator
     resp = await async_simple_chat(messages, True, model)
     return awrap_gpt_generator(resp, "text")
