@@ -265,7 +265,7 @@ async def generate_questions(question: str, language=None):
     ]
     
     try:
-        _result = await async_simple_chat_with_model(messages, model='claude-sonnet-4-20250514', base_model='claude')
+        _result = await async_simple_chat_with_model(messages, model='claude-sonnet-4-5-20250929', base_model='claude')
         python_object = ast.literal_eval(_result)
         return python_object
     except (SyntaxError, ValueError) as e:
