@@ -27,8 +27,8 @@ async def claude_cached_api_call(model_name="claude-sonnet-4-5-20250929", system
     # else:
     #     system_prompt = system_prompt + "\n" + "Output format requirements: Try to use two or three markdown tables to describe or summarize the analysis.\nOutput language requirement: Return in the language of the system prompt, do not return in the user's input language, remember, remember!!!"
     logger.info(f"调用claude模型传入的消息列表:{ml_messages}")
-    temperature = 0.8 if source == 'v012' else 0
-    top_p = 0.9 if source == 'v012' else 1
+    temperature = 0
+    top_p = 1
     if system_prompt_ref:
         system = [
             {
@@ -46,8 +46,6 @@ async def claude_cached_api_call(model_name="claude-sonnet-4-5-20250929", system
             async with async_client.messages.stream(
                 model=model_name,
                 max_tokens=2048,
-                top_p = top_p,
-                temperature=temperature,
                 system=system,
                 messages=ml_messages,
                 extra_headers={"anthropic-beta": "prompt-caching-2024-07-31"}
@@ -70,8 +68,6 @@ async def claude_cached_api_call(model_name="claude-sonnet-4-5-20250929", system
             async with async_client.messages.stream(
                 model=model_name,
                 max_tokens=2048,
-                top_p = top_p,
-                temperature=temperature,
                 system=system_prompt,
                 messages=ml_messages
             ) as stream:
