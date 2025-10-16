@@ -364,7 +364,6 @@ async def afunc_gpt_generator(messages_in, functions=gpt_functions, language=Lio
         {"role": "user", "content": "Where is Tokyo?"},
     ]
     '''
-    logger.info(f'========== model2: {model} !!!!!!!!!!')
     use_model = 'gpt-4o-mini'
     if model == 'ml-plus':
         use_model = OPENAI_PLUS_MODEL
@@ -660,11 +659,11 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
             # chain = prompt | chat | parser
             # response = chain.astream({})
             if (source == 'v005' or source == 'v006') and (not preset_name or 'check' not in preset_name): 
-                response = claude_cached_api_call("claude-sonnet-4-20250514", v005_006_system_prompt, v005_006_system_prompt_ref, messages)
+                response = claude_cached_api_call("claude-sonnet-4-5-20250929", v005_006_system_prompt, v005_006_system_prompt_ref, messages)
             elif source == 'v012':
-                response = claude_cached_api_call("claude-sonnet-4-20250514", system_message, None, messages, source)
+                response = claude_cached_api_call("claude-sonnet-4-5-20250929", system_message, None, messages, source)
             else:
-                response = claude_cached_api_call("claude-sonnet-4-20250514", system_message, None, messages)
+                response = claude_cached_api_call("claude-sonnet-4-5-20250929", system_message, None, messages)
             logger.info(f'aref_answer_gpt claude called')
             return awrap_claude_generator(response, output_type)
         except Exception as e:
@@ -779,7 +778,7 @@ def make_calling_messages_based_on_model(messages, use_model: str) -> List:
     """
     out_msgs = []
     logger.info(f'========== model3: {use_model} !!!!!!!!!!')
-    if use_model.startswith("gpt-4o") or use_model.startswith("gpt-4-vision") or use_model.startswith("gpt-4.1"):
+    if use_model.startswith("gpt-4o") or use_model.startswith("gpt-4-vision") or use_model.startswith("gpt-4.1") or use_model.startswith("gpt-5"):        
         matching_indices = []
         for i in range(len(messages) - 1, -1, -1):
             if messages[i].get("type", "") == "image":
