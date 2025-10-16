@@ -623,7 +623,7 @@ async def _fallback_llm_analysis(messages, language, source):
         # 使用原有的prompt模板进行LLM分析
         _messages = {"messages": [messages['messages'][-1]]}
         msgs = LionPromptCommon.get_prompted_messages("check_ai_ranking", _messages, language)
-        result = await async_simple_chat(msgs, model='gpt-4o')
+        result = await async_simple_chat(msgs, model='gpt-4.1-2025-04-14')
         
         # 解析返回的JSON结果
         ranking_result = common_utils.extract_json_from_response(result)
@@ -644,7 +644,7 @@ async def _check_other_ranking_types(messages, language, source):
     try:
         _messages = {"messages": [messages['messages'][-1]]}
         msgs = LionPromptCommon.get_prompted_messages("check_ai_ranking", _messages, language)
-        result = await async_simple_chat(msgs, model='gpt-4o')
+        result = await async_simple_chat(msgs, model='gpt-4.1-2025-04-14')
         
         ranking_result = common_utils.extract_json_from_response(result)
         logger.info(f'其他类型分析结果: {ranking_result}')
