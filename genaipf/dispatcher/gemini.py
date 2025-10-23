@@ -335,7 +335,7 @@ async def async_make_gemini_contents_from_ml_messages(messages):
                 {"role": "user", "content": "summarize this file", "type": "pdf", "version": "v001", "extra_content": {"base64": "<base64 str>", "filename": "paper.pdf"}},
             ]
         use_model (str): _description_
-            "gemini-1.5-flash"
+            "gemini-2.5-flash"
     Outputs:
         [
             Content(role="user", parts=[Part.from_image?(img_mime_file), Part.from_text("it is an apple")]),
