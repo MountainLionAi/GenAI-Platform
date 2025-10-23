@@ -115,7 +115,7 @@ async def async_get_mime_files_cache(b64s_and_fname_l):
         mime_file_l = [x["mime_file"] for x in d_l]
         # Create a cache with a N minute TTL
         cache = await async_caching_CachedContent_create(
-            model='models/gemini-1.5-flash-001',
+            model='models/gemini-2.5-flash-001',
             display_name=gcache_hash, # used to identify the cache
             system_instruction=(
                 'You are an expert pdf analyzer, and your job is to answer '
@@ -414,7 +414,7 @@ async def async_make_gemini_contents_from_ml_messages(messages):
 
 
 async def async_get_gemini_chat_stream(gemini_contents, system_message):
-    model = genai.GenerativeModel(model_name='gemini-1.5-flash', system_instruction=system_message)
+    model = genai.GenerativeModel(model_name='gemini-2.5-flash', system_instruction=system_message)
     chat = model.start_chat(history=gemini_contents[:-1])
     response = await chat.send_message_async(gemini_contents[-1], stream=True)
     async for chunk in response:
@@ -472,7 +472,7 @@ pdf_hash = simple_hash(base64_str)
 pdf_mime_info = await async_process_pdf_b64s(pdf_hash, base64_str, filename)
 
 
-model = genai.GenerativeModel(model_name='gemini-1.5-flash', system_instruction=None)
+model = genai.GenerativeModel(model_name='gemini-2.5-flash', system_instruction=None)
 
 textbook = make_content_for_gemini(pdf_mime_info)
 
@@ -528,7 +528,7 @@ messages = [
 
 gemini_contents = await async_make_gemini_contents_from_ml_messages(messages)
 
-model = genai.GenerativeModel(model_name='gemini-1.5-flash', system_instruction="you can say up to 10 words")
+model = genai.GenerativeModel(model_name='gemini-2.5-flash', system_instruction="you can say up to 10 words")
 
 # chat = model.start_chat(history=gemini_contents)
 
