@@ -447,7 +447,7 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
         # use_model = OPENAI_PLUS_MODEL
         use_model = CLAUDE_MODEL
     elif llm_model == 'gemini':
-        use_model = 'gemini-1.5-flash'
+        use_model = 'gemini-2.5-flash'
     elif llm_model == 'glm':
         use_model = 'glm-4-flash'
     elif llm_model == 'ernie':
@@ -670,7 +670,7 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
             print(e)
             logger.error(f'aref_answer_gpt_generator claude error {e}')
             return aget_error_generator(str(e))
-    elif use_model == "gemini-1.5-flash":
+    elif use_model == "gemini-2.5-flash":
         try:
             from genaipf.dispatcher.gemini import (
                 async_make_gemini_contents_from_ml_messages,
