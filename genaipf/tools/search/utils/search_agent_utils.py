@@ -259,7 +259,7 @@ async def generate_questions(question: str, language=None):
             }}
         ]
 
-        ***特别注意***: 只能输出可解析的json，json结构体外不要含有任何其他文字说明和符号！！！不然无法解析！！！        
+        ***特别注意***: 不要使用markdown 格式的json块，只输出纯json字符串，json结构体的大括号外不要含有任何其他文字说明和符号！！！不然无法解析！！！        
         """},
         {"role": "user", "content": question +language_requirement}
     ]
