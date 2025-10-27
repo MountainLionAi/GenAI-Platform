@@ -745,7 +745,6 @@ async def getAnswerAndCallGpt(question, userid, msggroup, language, front_messag
                 #     yield json.dumps(get_format_output("step", "done"))
                 #     _tmp_text = 'response has sensitive word'
                 #     await resp1.aclose()
-                else:
                     yield json.dumps(chunk)
     else:
         try:
