@@ -738,13 +738,13 @@ async def getAnswerAndCallGpt(question, userid, msggroup, language, front_messag
             else:
                 if chunk["role"] == "gpt":
                     _need_check_text += chunk['content']
-                if chunk["role"] != 'tts' and not await isNormal(_need_check_text):
-                    logger.info(f'=====================>isNormal _need_check_text:{_need_check_text}')
-                    has_sensitive_word = True
-                    yield json.dumps(get_format_output("hasSensitiveWord", True))
-                    yield json.dumps(get_format_output("step", "done"))
-                    _tmp_text = 'response has sensitive word'
-                    await resp1.aclose()
+                # if chunk["role"] != 'tts' and not await isNormal(_need_check_text):
+                #     logger.info(f'=====================>isNormal _need_check_text:{_need_check_text}')
+                #     has_sensitive_word = True
+                #     yield json.dumps(get_format_output("hasSensitiveWord", True))
+                #     yield json.dumps(get_format_output("step", "done"))
+                #     _tmp_text = 'response has sensitive word'
+                #     await resp1.aclose()
                 else:
                     yield json.dumps(chunk)
     else:
