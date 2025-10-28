@@ -424,11 +424,11 @@ async def simple_achat(messages: typing.List[typing.Mapping[str, str]], model: s
     resp = await OpenAI2(model=model, api_key=OPENAI_API_KEY).achat(_msgs)
     return resp.message.content
 
-async def async_simple_chat(messages: typing.List[typing.Mapping[str, str]], stream: bool = False, model: str = 'gpt-4o-mini', key_type: str = 'normal'):
+async def async_simple_chat(messages: typing.List[typing.Mapping[str, str]], stream: bool = False, model: str = 'gpt-4o-mini', key_type: str = 'normal', openapikey: str = OPENAI_API_KEY):
     try:
         if SIMPLE_CHAT_MODEL == 'openai':
             expired_time = 30.0
-            api_key = OPENAI_API_KEY
+            api_key = openapikey
             if key_type == 'trans':
                 expired_time = 180.0
             elif key_type != 'normal':
