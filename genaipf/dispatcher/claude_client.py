@@ -92,7 +92,7 @@ async def claude_tools_call(functions=None, system_prompt="", ml_messages=[]):
         tool_name = ''
         _arguments = ''
         async with async_client.messages.stream(
-            model="claude-3-5-sonnet-20241022",
+            model="claude-sonnet-4-5-20250929",
             tools=functions,
             max_tokens=2048,
             temperature=0,
