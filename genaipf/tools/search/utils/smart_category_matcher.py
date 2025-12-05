@@ -52,6 +52,10 @@ class SmartCategoryMatcher:
             'crypto stocks': ['crypto stocks', '币股', '股票', '上市公司', 'public company'],
             'etf': ['etf', 'exchange traded fund', '交易所交易基金', '基金'],
             
+            # 卡片类 - 需要精确区分
+            'crypto card': ['crypto card', 'u卡', '虚拟币卡', '数字货币卡', 'crypto debit card', 'crypto credit card'],
+            'no-kyc card': ['no-kyc card', 'no kyc card', 'non-kyc card', 'non kyc card', '不需要kyc的u卡', '不需要kyc的虚拟币卡', '免kyc u卡', '免kyc虚拟币卡', '无kyc u卡', '无kyc虚拟币卡', 'no kyc u卡', 'non kyc u卡', 'no-kyc u卡', 'non-kyc u卡'],
+            
             # 社交金融
             'socialfi': ['socialfi', 'social finance', '社交金融', '社交交易'],
             
@@ -131,6 +135,23 @@ class SmartCategoryMatcher:
             'cryptocurrency stock': 'crypto stocks',
             'exchange-traded fund': 'etf',
             'social finance': 'socialfi',
+            
+            # 卡片类同义词
+            'u卡': 'crypto card',
+            '虚拟币卡': 'crypto card',
+            '数字货币卡': 'crypto card',
+            'crypto debit card': 'crypto card',
+            'crypto credit card': 'crypto card',
+            'no kyc u卡': 'no-kyc card',
+            'non kyc u卡': 'no-kyc card',
+            'no-kyc u卡': 'no-kyc card',
+            'non-kyc u卡': 'no-kyc card',
+            '不需要kyc的u卡': 'no-kyc card',
+            '不需要kyc的虚拟币卡': 'no-kyc card',
+            '免kyc u卡': 'no-kyc card',
+            '免kyc虚拟币卡': 'no-kyc card',
+            '无kyc u卡': 'no-kyc card',
+            '无kyc虚拟币卡': 'no-kyc card',
             'development tool': 'tools',
             'security solution': 'security solutions',
             'decentralized identity': 'did',
@@ -186,13 +207,29 @@ class SmartCategoryMatcher:
         logger.info(f"提取的关键词: {keywords}")
         
         matched_categories = []
+        text_lower = text.lower()
+        
+        # 特殊处理：优先匹配no-kyc card
+        no_kyc_keywords = ['no-kyc', 'no kyc', 'non-kyc', 'non kyc', '不需要kyc', '免kyc', '无kyc']
+        has_no_kyc = any(keyword in text_lower for keyword in no_kyc_keywords)
+        
+        if has_no_kyc and any(card_keyword in text_lower for card_keyword in ['u卡', '虚拟币卡', '数字货币卡', 'card']):
+            # 如果包含no-kyc相关词汇和卡片相关词汇，直接返回no-kyc card
+            if self.loader.is_valid_type('no-kyc card'):
+                matched_categories.append(('no-kyc card', 1.0))
+                logger.info("检测到no-kyc card需求，直接匹配")
+                return matched_categories[:max_matches]
         
         # 直接关键词匹配
         for keyword in keywords:
             if keyword in self.keyword_mapping:
                 project_type = self.keyword_mapping[keyword]
                 if self.loader.is_valid_type(project_type):
-                    matched_categories.append((project_type, 1.0))
+                    # 对于crypto card，如果文本中没有明确提到kyc，降低优先级
+                    if project_type == 'crypto card' and has_no_kyc:
+                        matched_categories.append((project_type, 0.3))  # 降低置信度
+                    else:
+                        matched_categories.append((project_type, 1.0))
         
         # 模糊匹配
         if not matched_categories:
