@@ -479,7 +479,7 @@ async def getAnswerAndCallGpt(question, userid, msggroup, language, front_messag
     # 判断是分析还是回答
     if source == 'v004':
         responseType = 1
-    if source == 'v005' or source == 'v006' or source == 'v008' or source == 'v009' or source == 'v010' or source== 'v014':
+    if source == 'v005' or source == 'v006' or source == 'v008' or source == 'v009' or source == 'v010' or source== 'v014' or source == 'v017':
         used_rag = False
         need_qa = False
         newest_question = newest_question + f'\nsource 来源信息:{source}'
