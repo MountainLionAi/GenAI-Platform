@@ -8,7 +8,7 @@ client = anthropic.Anthropic(api_key='')
 
 
 response = client.beta.prompt_caching.messages.create(
-    model="claude-3-5-sonnet-20240620",
+    model="claude-sonnet-4-6",
     max_tokens=1024,
     system=[
         {

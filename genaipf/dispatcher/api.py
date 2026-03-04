@@ -366,12 +366,12 @@ async def afunc_gpt_generator(messages_in, functions=gpt_functions, language=Lio
         {"role": "user", "content": "Where is Tokyo?"},
     ]
     '''
-    use_model = 'gpt-4o-mini'
+    use_model = 'gpt-5-mini'
     if model == 'ml-plus':
         use_model = OPENAI_PLUS_MODEL
     if isvision:
         # 图片处理专用模型
-        use_model = 'gpt-4o'
+        use_model = 'gpt-5.2'
     messages = make_calling_messages_based_on_model(messages_in, use_model)
     for i in range(5):
         mlength = len(messages)
@@ -437,7 +437,7 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
                 {"role": "user", "content": "what color?", "type": "text", "version": "v001"},
             ]
     """
-    use_model = 'gpt-4o-mini'
+    use_model = 'gpt-5-mini'
     if llm_model == 'openai':
         use_model = OPENAI_PLUS_MODEL
     elif llm_model == 'perplexity':
@@ -665,11 +665,11 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
             # chain = prompt | chat | parser
             # response = chain.astream({})
             if (source == 'v005' or source == 'v006') and (not preset_name or 'check' not in preset_name): 
-                response = claude_cached_api_call("claude-sonnet-4-5-20250929", v005_006_system_prompt, v005_006_system_prompt_ref, messages)
+                response = claude_cached_api_call("claude-sonnet-4-6", v005_006_system_prompt, v005_006_system_prompt_ref, messages)
             elif source == 'v012' or source == 'v015':
-                response = claude_cached_api_call("claude-sonnet-4-5-20250929", system_message, None, messages, source)
+                response = claude_cached_api_call("claude-sonnet-4-6", system_message, None, messages, source)
             else:
-                response = claude_cached_api_call("claude-sonnet-4-5-20250929", system_message, None, messages)
+                response = claude_cached_api_call("claude-sonnet-4-6", system_message, None, messages)
             logger.info(f'aref_answer_gpt claude called')
             return awrap_claude_generator(response, output_type)
         except Exception as e:
@@ -723,7 +723,7 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
 async def aref_oneshot_gpt_generator(messages, model='', language=LionPrompt.default_lang, preset_name=None, picked_content="", related_qa=[], data=None, stream=False, mode=None):
     front_messages = messages
     gpt_prams = data.get("gpt_prams", {})
-    use_model = 'gpt-4o-mini'
+    use_model = 'gpt-5-mini'
     if model == 'ml-plus':
         use_model = OPENAI_PLUS_MODEL
     try:
