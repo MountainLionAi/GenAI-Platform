@@ -187,7 +187,7 @@ Focus on the most recent messages and ensure queries are specific and actionable
         try:
             # Call Claude with tool use
             response = self.claude_client.messages.create(
-                model="claude-sonnet-4-5-20250929",
+                model="claude-sonnet-4-6",
                 max_tokens=2000,
                 temperature=0,
                 system=system_prompt,
