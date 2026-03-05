@@ -213,10 +213,13 @@ async def openai_chat_completion_acreate(
                 # defaults to os.environ.get("OPENAI_API_KEY")
                 api_key=openai.api_key,
             )
-            # gpt-5.x 系列用 max_completion_tokens，旧模型用 max_tokens
-            _token_kwarg = {'max_completion_tokens': max_tokens} if model.startswith('gpt-5') else {'max_tokens': max_tokens}
-            # gpt-5.x 系列不支持自定义 temperature，只能使用默认值 1
-            _temperature_kwarg = {} if model.startswith('gpt-5') else {'temperature': temperature}
+            # gpt-5.x 系列参数限制：用 max_completion_tokens；不支持 temperature/top_p/frequency_penalty/presence_penalty
+            if model.startswith('gpt-5'):
+                _token_kwarg = {'max_completion_tokens': max_tokens}
+                _extra_kwargs = {}
+            else:
+                _token_kwarg = {'max_tokens': max_tokens}
+                _extra_kwargs = {'temperature': temperature, 'top_p': top_p, 'frequency_penalty': frequency_penalty, 'presence_penalty': presence_penalty}
             # print(f'>>>>>>>>>test001.1 async_openai_client.chat.completions.create')
             if functions:
                 # try:
@@ -265,11 +268,8 @@ async def openai_chat_completion_acreate(
                         model=model,
                         messages=messages,
                         functions=functions if functions else NOT_GIVEN,
-                        **_temperature_kwarg, # 值在[0,1]之间，越大表示回复越具有不确定性
                         **_token_kwarg, # 输出的最大 token 数
-                        top_p=top_p, # 过滤掉低于阈值的 token 确保结果不散漫
-                        frequency_penalty=frequency_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
-                        presence_penalty=presence_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
+                        **_extra_kwargs, # temperature/top_p/frequency_penalty/presence_penalty（gpt-5.x不支持，跳过）
                         stream=stream
                     ),
                     timeout=60.0  # 设置超时时间为180秒
@@ -313,11 +313,8 @@ async def openai_chat_completion_acreate(
                     async_openai_client.chat.completions.create(
                         model=model,
                         messages=messages,
-                        **_temperature_kwarg, # 值在[0,1]之间，越大表示回复越具有不确定性
                         **_token_kwarg, # 输出的最大 token 数
-                        top_p=top_p, # 过滤掉低于阈值的 token 确保结果不散漫
-                        frequency_penalty=frequency_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
-                        presence_penalty=presence_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
+                        **_extra_kwargs, # temperature/top_p/frequency_penalty/presence_penalty（gpt-5.x不支持，跳过）
                         stream=stream
                     ),
                     timeout=60.0  # 设置超时时间为180秒
@@ -345,11 +342,8 @@ async def openai_chat_completion_acreate(
                     messages=messages,
                     tools=tools,
                     tool_choice=tool_choice,
-                    **_temperature_kwarg, # 值在[0,1]之间，越大表示回复越具有不确定性
                     **_token_kwarg, # 输出的最大 token 数
-                    top_p=top_p, # 过滤掉低于阈值的 token 确保结果不散漫
-                    frequency_penalty=frequency_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
-                    presence_penalty=presence_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
+                    **_extra_kwargs, # temperature/top_p/frequency_penalty/presence_penalty（gpt-5.x不支持，跳过）
                     stream=stream
                 )
                 logger.info(f'>>>>>>>>>openai retry (with functions) success')
@@ -366,11 +360,8 @@ async def openai_chat_completion_acreate(
                 response = await async_openai_client.chat.completions.create(
                     model=model,
                     messages=messages,
-                    **_temperature_kwarg, # 值在[0,1]之间，越大表示回复越具有不确定性
                     **_token_kwarg, # 输出的最大 token 数
-                    top_p=top_p, # 过滤掉低于阈值的 token 确保结果不散漫
-                    frequency_penalty=frequency_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
-                    presence_penalty=presence_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
+                    **_extra_kwargs, # temperature/top_p/frequency_penalty/presence_penalty（gpt-5.x不支持，跳过）
                     stream=stream
                 )
                 logger.info(f'>>>>>>>>>openai retry success')
