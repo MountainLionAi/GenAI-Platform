@@ -438,31 +438,30 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
             ]
     """
     use_model = 'gpt-5-mini'
-    if llm_model == 'openai':
+    _llm_model_lower = llm_model.lower()
+    if _llm_model_lower == 'openai':
         use_model = OPENAI_PLUS_MODEL
-    elif llm_model == 'perplexity':
+    elif _llm_model_lower == 'perplexity':
         use_model = PERPLEXITY_MODEL
-    elif llm_model == 'mistral':
+    elif _llm_model_lower == 'mistral':
         use_model = MISTRAL_MODEL
-    elif llm_model == 'claude' :
-        # claude挂了临时修改
-        # use_model = OPENAI_PLUS_MODEL
+    elif _llm_model_lower == 'claude':
         use_model = CLAUDE_MODEL
-    elif llm_model == 'gemini':
+    elif _llm_model_lower == 'gemini':
         use_model = 'gemini-2.5-flash'
-    elif llm_model == 'glm':
+    elif _llm_model_lower == 'glm':
         use_model = 'glm-4-flash'
-    elif llm_model == 'ernie':
+    elif _llm_model_lower == 'ernie':
         use_model = 'ERNIE-Speed-128K'
-    elif llm_model == 'deepseek':
+    elif _llm_model_lower == 'deepseek':
         use_model = DEEPSEEK_V3_MODEL
-    elif llm_model == 'DeepSeek-reasoner':
+    elif _llm_model_lower == 'deepseek-reasoner':
         use_model = DEEPSEEK_R1_MODEL
-    elif llm_model == 'MountainLion-C1':
-        use_model = MOUNTAINLION_C1_MODEL
-    elif llm_model == 'MountainLion-C1-D':
+    elif _llm_model_lower == 'mountainlion-c1-d':
         use_model = MOUNTAINLION_C1_D_MODEL
-    elif llm_model == 'qwen':
+    elif _llm_model_lower == 'mountainlion-c1':
+        use_model = MOUNTAINLION_C1_MODEL
+    elif _llm_model_lower == 'qwen':
         use_model = QWEN_MODEL
 
 
