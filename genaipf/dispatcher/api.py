@@ -258,6 +258,49 @@ async def awrap_gpt_generator(gpt_response, output_type=""):
         _tmp_reasoning_content = ""
         _tag_buffer = ""
         in_think_tag = False
+        # gpt-5.x 偶尔将 function call 输出为文本格式，需过滤掉
+        _fc_pending = ""
+        in_function_call = False
+        FC_OPEN = '<function_call'
+        FC_CLOSE = '</function_call>'
+
+        def _emit_to_buffers(text):
+            nonlocal _tmp_text, _tmp_voice_text
+            _tmp_text += text
+            _tmp_voice_text += text
+
+        def _flush_fc_pending():
+            """将 _fc_pending 中确定不属于 function_call 块的内容 flush 出来，返回可输出的字符串"""
+            nonlocal _fc_pending, in_function_call
+            to_yield = ""
+            # 检测 <function_call 开始
+            if not in_function_call and FC_OPEN in _fc_pending:
+                pre = _fc_pending[:_fc_pending.index(FC_OPEN)]
+                _fc_pending = _fc_pending[_fc_pending.index(FC_OPEN):]
+                in_function_call = True
+                _emit_to_buffers(pre)
+                to_yield += pre
+            # 检测 </function_call> 结束
+            if in_function_call and FC_CLOSE in _fc_pending:
+                after = _fc_pending[_fc_pending.index(FC_CLOSE) + len(FC_CLOSE):]
+                _fc_pending = ""
+                in_function_call = False
+                # 继续处理 close tag 之后的内容
+                _fc_pending = after
+            if not in_function_call:
+                # 安全 flush：_fc_pending 末尾可能是 FC_OPEN 的部分前缀，需保留
+                safe_len = len(_fc_pending)
+                for i in range(1, min(len(FC_OPEN), len(_fc_pending)) + 1):
+                    if FC_OPEN.startswith(_fc_pending[-i:]):
+                        safe_len = len(_fc_pending) - i
+                        break
+                if safe_len > 0:
+                    flush = _fc_pending[:safe_len]
+                    _fc_pending = _fc_pending[safe_len:]
+                    _emit_to_buffers(flush)
+                    to_yield += flush
+            return to_yield
+
         choice = chunk.choices[0]
         delta = choice.delta
         c0 = delta.content
@@ -269,12 +312,12 @@ async def awrap_gpt_generator(gpt_response, output_type=""):
             if output_type != 'voice':
                     yield get_format_output("reasoner", _reasoning_letter)
         if c0:
-            _tmp_text += c0
-            _tmp_voice_text += c0
-            if output_type != 'voice':
-                yield get_format_output("gpt", c0)
+            _fc_pending += c0
+            flushed = _flush_fc_pending()
+            if flushed and output_type != 'voice':
+                yield get_format_output("gpt", flushed)
         async for chunk in resp:
-            try: 
+            try:
                 choice = chunk.choices[0]
                 delta = choice.delta
             except Exception as e:
@@ -296,28 +339,30 @@ async def awrap_gpt_generator(gpt_response, output_type=""):
                     # 检查是否退出think标签
                     if '</think>' in _tag_buffer and in_think_tag:
                         in_think_tag = False
-                    if output_type != 'voice':
-                        if in_think_tag:
-                            _tmp_reasoning_content += _gpt_letter
+                    if in_think_tag:
+                        _tmp_reasoning_content += _gpt_letter
+                        if output_type != 'voice':
                             yield get_format_output("reasoner", _gpt_letter)
-                        else:
-                            _tmp_text += _gpt_letter
-                            _tmp_voice_text += _gpt_letter
-                            yield get_format_output("gpt", _gpt_letter)
                     else:
-                        if in_think_tag:
-                            _tmp_reasoning_content += _gpt_letter
-                            yield get_format_output("reasoner", _gpt_letter)
-                        else:
-                            _tmp_voice_text += _gpt_letter
-                if output_type == 'voice': 
+                        # 通过 pending buffer 过滤 <function_call> 块
+                        _fc_pending += _gpt_letter
+                        flushed = _flush_fc_pending()
+                        if flushed and output_type != 'voice':
+                            yield get_format_output("gpt", flushed)
+                if output_type == 'voice':
                     if len(_tmp_voice_text) == 200:
                         base64_encoded_voice = textToSpeech(_tmp_voice_text)
                         yield get_format_output("tts", base64_encoded_voice, "voice_mp3_v001")
                         for c in _tmp_voice_text:
                             yield get_format_output("gpt", c)
                         _tmp_voice_text = ""
-        if output_type == 'voice': 
+        # loop 结束后 flush 剩余 pending buffer
+        if _fc_pending and not in_function_call:
+            _emit_to_buffers(_fc_pending)
+            if output_type != 'voice':
+                yield get_format_output("gpt", _fc_pending)
+            _fc_pending = ""
+        if output_type == 'voice':
             base64_encoded_voice = textToSpeech(_tmp_voice_text)
             yield get_format_output("tts", base64_encoded_voice, "voice_mp3_v001")
             for c in _tmp_voice_text:
