@@ -258,6 +258,49 @@ async def awrap_gpt_generator(gpt_response, output_type=""):
         _tmp_reasoning_content = ""
         _tag_buffer = ""
         in_think_tag = False
+        # gpt-5.x 偶尔将 function call 输出为文本格式，需过滤掉
+        _fc_pending = ""
+        in_function_call = False
+        FC_OPEN = '<function_call'
+        FC_CLOSE = '</function_call>'
+
+        def _emit_to_buffers(text):
+            nonlocal _tmp_text, _tmp_voice_text
+            _tmp_text += text
+            _tmp_voice_text += text
+
+        def _flush_fc_pending():
+            """将 _fc_pending 中确定不属于 function_call 块的内容 flush 出来，返回可输出的字符串"""
+            nonlocal _fc_pending, in_function_call
+            to_yield = ""
+            # 检测 <function_call 开始
+            if not in_function_call and FC_OPEN in _fc_pending:
+                pre = _fc_pending[:_fc_pending.index(FC_OPEN)]
+                _fc_pending = _fc_pending[_fc_pending.index(FC_OPEN):]
+                in_function_call = True
+                _emit_to_buffers(pre)
+                to_yield += pre
+            # 检测 </function_call> 结束
+            if in_function_call and FC_CLOSE in _fc_pending:
+                after = _fc_pending[_fc_pending.index(FC_CLOSE) + len(FC_CLOSE):]
+                _fc_pending = ""
+                in_function_call = False
+                # 继续处理 close tag 之后的内容
+                _fc_pending = after
+            if not in_function_call:
+                # 安全 flush：_fc_pending 末尾可能是 FC_OPEN 的部分前缀，需保留
+                safe_len = len(_fc_pending)
+                for i in range(1, min(len(FC_OPEN), len(_fc_pending)) + 1):
+                    if FC_OPEN.startswith(_fc_pending[-i:]):
+                        safe_len = len(_fc_pending) - i
+                        break
+                if safe_len > 0:
+                    flush = _fc_pending[:safe_len]
+                    _fc_pending = _fc_pending[safe_len:]
+                    _emit_to_buffers(flush)
+                    to_yield += flush
+            return to_yield
+
         choice = chunk.choices[0]
         delta = choice.delta
         c0 = delta.content
@@ -269,12 +312,12 @@ async def awrap_gpt_generator(gpt_response, output_type=""):
             if output_type != 'voice':
                     yield get_format_output("reasoner", _reasoning_letter)
         if c0:
-            _tmp_text += c0
-            _tmp_voice_text += c0
-            if output_type != 'voice':
-                yield get_format_output("gpt", c0)
+            _fc_pending += c0
+            flushed = _flush_fc_pending()
+            if flushed and output_type != 'voice':
+                yield get_format_output("gpt", flushed)
         async for chunk in resp:
-            try: 
+            try:
                 choice = chunk.choices[0]
                 delta = choice.delta
             except Exception as e:
@@ -296,28 +339,30 @@ async def awrap_gpt_generator(gpt_response, output_type=""):
                     # 检查是否退出think标签
                     if '</think>' in _tag_buffer and in_think_tag:
                         in_think_tag = False
-                    if output_type != 'voice':
-                        if in_think_tag:
-                            _tmp_reasoning_content += _gpt_letter
+                    if in_think_tag:
+                        _tmp_reasoning_content += _gpt_letter
+                        if output_type != 'voice':
                             yield get_format_output("reasoner", _gpt_letter)
-                        else:
-                            _tmp_text += _gpt_letter
-                            _tmp_voice_text += _gpt_letter
-                            yield get_format_output("gpt", _gpt_letter)
                     else:
-                        if in_think_tag:
-                            _tmp_reasoning_content += _gpt_letter
-                            yield get_format_output("reasoner", _gpt_letter)
-                        else:
-                            _tmp_voice_text += _gpt_letter
-                if output_type == 'voice': 
+                        # 通过 pending buffer 过滤 <function_call> 块
+                        _fc_pending += _gpt_letter
+                        flushed = _flush_fc_pending()
+                        if flushed and output_type != 'voice':
+                            yield get_format_output("gpt", flushed)
+                if output_type == 'voice':
                     if len(_tmp_voice_text) == 200:
                         base64_encoded_voice = textToSpeech(_tmp_voice_text)
                         yield get_format_output("tts", base64_encoded_voice, "voice_mp3_v001")
                         for c in _tmp_voice_text:
                             yield get_format_output("gpt", c)
                         _tmp_voice_text = ""
-        if output_type == 'voice': 
+        # loop 结束后 flush 剩余 pending buffer
+        if _fc_pending and not in_function_call:
+            _emit_to_buffers(_fc_pending)
+            if output_type != 'voice':
+                yield get_format_output("gpt", _fc_pending)
+            _fc_pending = ""
+        if output_type == 'voice':
             base64_encoded_voice = textToSpeech(_tmp_voice_text)
             yield get_format_output("tts", base64_encoded_voice, "voice_mp3_v001")
             for c in _tmp_voice_text:
@@ -366,12 +411,12 @@ async def afunc_gpt_generator(messages_in, functions=gpt_functions, language=Lio
         {"role": "user", "content": "Where is Tokyo?"},
     ]
     '''
-    use_model = 'gpt-4o-mini'
+    use_model = 'gpt-5-mini'
     if model == 'ml-plus':
         use_model = OPENAI_PLUS_MODEL
     if isvision:
         # 图片处理专用模型
-        use_model = 'gpt-4o'
+        use_model = 'gpt-5.2'
     messages = make_calling_messages_based_on_model(messages_in, use_model)
     for i in range(5):
         mlength = len(messages)
@@ -437,32 +482,31 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
                 {"role": "user", "content": "what color?", "type": "text", "version": "v001"},
             ]
     """
-    use_model = 'gpt-4o-mini'
-    if llm_model == 'openai':
+    use_model = 'gpt-5-mini'
+    _llm_model_lower = llm_model.lower()
+    if _llm_model_lower == 'openai':
         use_model = OPENAI_PLUS_MODEL
-    elif llm_model == 'perplexity':
+    elif _llm_model_lower == 'perplexity':
         use_model = PERPLEXITY_MODEL
-    elif llm_model == 'mistral':
+    elif _llm_model_lower == 'mistral':
         use_model = MISTRAL_MODEL
-    elif llm_model == 'claude' :
-        # claude挂了临时修改
-        # use_model = OPENAI_PLUS_MODEL
+    elif _llm_model_lower == 'claude':
         use_model = CLAUDE_MODEL
-    elif llm_model == 'gemini':
+    elif _llm_model_lower == 'gemini':
         use_model = 'gemini-2.5-flash'
-    elif llm_model == 'glm':
+    elif _llm_model_lower == 'glm':
         use_model = 'glm-4-flash'
-    elif llm_model == 'ernie':
+    elif _llm_model_lower == 'ernie':
         use_model = 'ERNIE-Speed-128K'
-    elif llm_model == 'deepseek':
+    elif _llm_model_lower == 'deepseek':
         use_model = DEEPSEEK_V3_MODEL
-    elif llm_model == 'DeepSeek-reasoner':
+    elif _llm_model_lower == 'deepseek-reasoner':
         use_model = DEEPSEEK_R1_MODEL
-    elif llm_model == 'MountainLion-C1':
-        use_model = MOUNTAINLION_C1_MODEL
-    elif llm_model == 'MountainLion-C1-D':
+    elif _llm_model_lower == 'mountainlion-c1-d':
         use_model = MOUNTAINLION_C1_D_MODEL
-    elif llm_model == 'qwen':
+    elif _llm_model_lower == 'mountainlion-c1':
+        use_model = MOUNTAINLION_C1_MODEL
+    elif _llm_model_lower == 'qwen':
         use_model = QWEN_MODEL
 
 
@@ -502,7 +546,7 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
     elif source == 'v015':
         content = prompts_v015.LionPrompt.get_aref_answer_prompt(language, preset_name, picked_content, related_qa, use_model, {}, quote_message, trade_signal_text)
     elif source == 'v017':
-        content = prompts_v014.LionPrompt.get_aref_answer_prompt(language, preset_name, picked_content, related_qa, use_model, {}, quote_message)
+        content = prompts_v017.LionPrompt.get_aref_answer_prompt(language, preset_name, picked_content, related_qa, use_model, {}, quote_message)
     else:
         content = LionPrompt.get_aref_answer_prompt(language, preset_name, picked_content, related_qa, use_model, '', owner, quote_message)
     system_message = content
@@ -665,11 +709,11 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
             # chain = prompt | chat | parser
             # response = chain.astream({})
             if (source == 'v005' or source == 'v006') and (not preset_name or 'check' not in preset_name): 
-                response = claude_cached_api_call("claude-sonnet-4-5-20250929", v005_006_system_prompt, v005_006_system_prompt_ref, messages)
+                response = claude_cached_api_call("claude-sonnet-4-6", v005_006_system_prompt, v005_006_system_prompt_ref, messages)
             elif source == 'v012' or source == 'v015':
-                response = claude_cached_api_call("claude-sonnet-4-5-20250929", system_message, None, messages, source)
+                response = claude_cached_api_call("claude-sonnet-4-6", system_message, None, messages, source)
             else:
-                response = claude_cached_api_call("claude-sonnet-4-5-20250929", system_message, None, messages)
+                response = claude_cached_api_call("claude-sonnet-4-6", system_message, None, messages)
             logger.info(f'aref_answer_gpt claude called')
             return awrap_claude_generator(response, output_type)
         except Exception as e:
@@ -723,7 +767,7 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
 async def aref_oneshot_gpt_generator(messages, model='', language=LionPrompt.default_lang, preset_name=None, picked_content="", related_qa=[], data=None, stream=False, mode=None):
     front_messages = messages
     gpt_prams = data.get("gpt_prams", {})
-    use_model = 'gpt-4o-mini'
+    use_model = 'gpt-5-mini'
     if model == 'ml-plus':
         use_model = OPENAI_PLUS_MODEL
     try:

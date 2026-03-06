@@ -3,7 +3,7 @@ import time
 from examples.claude.prompt_caching.system_prompt_storage import system_prompts
 
 client = anthropic.Anthropic(api_key='')
-MODEL_NAME = "claude-3-5-sonnet-20240620"
+MODEL_NAME = "claude-sonnet-4-6"
 
 
 def make_cached_api_call():

@@ -64,8 +64,7 @@ class IntelligentSearchTool:
         
         # Get system timezone
         self.system_timezone = self._get_system_timezone()
-        self.current_time = datetime.now(self.system_timezone)
-        
+
         # Semaphore for rate limiting
         self.semaphore = asyncio.Semaphore(self.config.max_concurrent_requests)
     
@@ -87,7 +86,8 @@ class IntelligentSearchTool:
     )
     def _analyze_chat_with_claude(self, chat_history: List[Dict[str, str]]) -> List[SearchQuery]:
         """Use Claude Sonnet 4 to analyze chat history and generate search queries"""
-        
+        current_time = datetime.now(self.system_timezone)
+
         # Create the tool definition for structured output
         tools = [{
             "name": "generate_search_queries",
@@ -117,7 +117,7 @@ class IntelligentSearchTool:
         }]
         
         # Build the prompt
-        system_prompt = f"""You are an intelligent search query generator. Current time: {self.current_time.isoformat()}
+        system_prompt = f"""You are an intelligent search query generator. Current time: {current_time.isoformat()}
 System timezone: {self.system_timezone}
 
 Analyze the conversation and break down complex questions into simple, specific search queries (maximum 6).
@@ -176,9 +176,9 @@ IMPORTANT GUIDELINES:
    - Use "qdr:y" for annual trends, yearly comparisons
 
 3. Enhance query strings with temporal context:
-   - Add "August 2025" for current month
+   - Add "{current_time.strftime('%B %Y')}" for current month
    - Include "recent", "latest", "this week" when asking for current info
-   - Use specific year "2025" for current year searches
+   - Use specific year "{current_time.year}" for current year searches
 
 4. Prioritize queries by user intent and recency requirements.
 
@@ -187,7 +187,7 @@ Focus on the most recent messages and ensure queries are specific and actionable
         try:
             # Call Claude with tool use
             response = self.claude_client.messages.create(
-                model="claude-sonnet-4-5-20250929",
+                model="claude-sonnet-4-6",
                 max_tokens=2000,
                 temperature=0,
                 system=system_prompt,
@@ -416,9 +416,9 @@ Focus on the most recent messages and ensure queries are specific and actionable
     
     def _format_results(self, search_results: List[Dict[str, Any]]) -> str:
         """Format search results into a clean string output"""
-        
+        current_time = datetime.now(self.system_timezone)
         formatted_output = []
-        formatted_output.append(f"Search Results - Generated at {self.current_time.strftime('%Y-%m-%d %H:%M:%S %Z')}\n")
+        formatted_output.append(f"Search Results - Generated at {current_time.strftime('%Y-%m-%d %H:%M:%S %Z')}\n")
         formatted_output.append("=" * 80 + "\n")
         
         for i, result in enumerate(search_results, 1):

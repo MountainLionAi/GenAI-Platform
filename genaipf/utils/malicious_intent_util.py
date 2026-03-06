@@ -87,7 +87,7 @@ Please analyze if these messages contain malicious content, and strictly return 
                 response = await loop.run_in_executor(
                     self._executor,
                     lambda: self.client.messages.create(
-                        model="claude-sonnet-4-5-20250929",
+                        model="claude-sonnet-4-6",
                         max_tokens=5,
                         temperature=0,
                         system=system_prompt,

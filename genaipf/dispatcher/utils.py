@@ -33,7 +33,7 @@ MAX_CH_LENGTH_GPT4 = 3000
 MAX_CH_LENGTH_QA_GPT3 = 3000
 MAX_CH_LENGTH_QA_GPT4 = 1500
 OPENAI_PLUS_MODEL = os.getenv("OPENAI_PLUS_MODEL") 
-CLAUDE_MODEL = "claude-sonnet-4-5-20250929"
+CLAUDE_MODEL = "claude-sonnet-4-6"
 PERPLEXITY_MODEL = "sonar-pro"  # "sonar-small-online"
 MISTRAL_MODEL = "open-mixtral-8x22b"
 DEEPSEEK_V3_MODEL = os.getenv("DEEPSEEK_V3_MODEL")
@@ -213,6 +213,13 @@ async def openai_chat_completion_acreate(
                 # defaults to os.environ.get("OPENAI_API_KEY")
                 api_key=openai.api_key,
             )
+            # gpt-5.x 系列参数限制：用 max_completion_tokens；不支持 temperature/top_p/frequency_penalty/presence_penalty
+            if model.startswith('gpt-5'):
+                _token_kwarg = {'max_completion_tokens': max_tokens}
+                _extra_kwargs = {}
+            else:
+                _token_kwarg = {'max_tokens': max_tokens}
+                _extra_kwargs = {'temperature': temperature, 'top_p': top_p, 'frequency_penalty': frequency_penalty, 'presence_penalty': presence_penalty}
             # print(f'>>>>>>>>>test001.1 async_openai_client.chat.completions.create')
             if functions:
                 # try:
@@ -261,11 +268,8 @@ async def openai_chat_completion_acreate(
                         model=model,
                         messages=messages,
                         functions=functions if functions else NOT_GIVEN,
-                        temperature=temperature,  # 值在[0,1]之间，越大表示回复越具有不确定性
-                        max_tokens=max_tokens, # 输出的最大 token 数
-                        top_p=top_p, # 过滤掉低于阈值的 token 确保结果不散漫
-                        frequency_penalty=frequency_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
-                        presence_penalty=presence_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
+                        **_token_kwarg, # 输出的最大 token 数
+                        **_extra_kwargs, # temperature/top_p/frequency_penalty/presence_penalty（gpt-5.x不支持，跳过）
                         stream=stream
                     ),
                     timeout=60.0  # 设置超时时间为180秒
@@ -309,11 +313,8 @@ async def openai_chat_completion_acreate(
                     async_openai_client.chat.completions.create(
                         model=model,
                         messages=messages,
-                        temperature=temperature,  # 值在[0,1]之间，越大表示回复越具有不确定性
-                        max_tokens=max_tokens, # 输出的最大 token 数
-                        top_p=top_p, # 过滤掉低于阈值的 token 确保结果不散漫
-                        frequency_penalty=frequency_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
-                        presence_penalty=presence_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
+                        **_token_kwarg, # 输出的最大 token 数
+                        **_extra_kwargs, # temperature/top_p/frequency_penalty/presence_penalty（gpt-5.x不支持，跳过）
                         stream=stream
                     ),
                     timeout=60.0  # 设置超时时间为180秒
@@ -324,22 +325,9 @@ async def openai_chat_completion_acreate(
         raise Exception("The request to OpenAI timed out after 3 minutes.")
     except Exception as e:
         logger.error(f'>>>>>>>>>test003 async_openai_client.chat.completions.create, e: {e}')
-        # openai失败用deepbricks
-        if model == OPENAI_PLUS_MODEL:
-            model = 'gpt-4o-2024-08-06'
+        # 官方openai重试
         if functions:
             try:
-                _base_urls = os.getenv("COMPATABLE_OPENAI_BASE_URLS", [])
-                _base_urls = json.loads(_base_urls)
-                _api_keys = os.getenv("COMPATABLE_OPENAI_API_KEYS", [])
-                _api_keys = json.loads(_api_keys)
-                if len(_base_urls) == 0:
-                    raise
-                import random
-                i = random.randint(0, len(_base_urls) - 1)
-                _base_url = _base_urls[i]
-                _api_key = _api_keys[i]
-                _client = AsyncOpenAI(api_key=_api_key, base_url=_base_url)
                 tools = []
                 tool_choice = 'auto'
                 for function in functions:
@@ -349,61 +337,38 @@ async def openai_chat_completion_acreate(
                             "function": function
                         }
                     )
-                response = await asyncio.wait_for(
-                    _client.chat.completions.create(
-                        model=model,
-                        messages=messages,
-                        tools=tools,
-                        tool_choice=tool_choice,
-                        temperature=temperature,  # 值在[0,1]之间，越大表示回复越具有不确定性
-                        max_tokens=max_tokens, # 输出的最大 token 数
-                        top_p=top_p, # 过滤掉低于阈值的 token 确保结果不散漫
-                        frequency_penalty=frequency_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
-                        presence_penalty=presence_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
-                        stream=stream
-                    ),
-                    timeout=60.0  # 设置超时时间为180秒
+                response = await async_openai_client.chat.completions.create(
+                    model=model,
+                    messages=messages,
+                    tools=tools,
+                    tool_choice=tool_choice,
+                    **_token_kwarg, # 输出的最大 token 数
+                    **_extra_kwargs, # temperature/top_p/frequency_penalty/presence_penalty（gpt-5.x不支持，跳过）
+                    stream=stream
                 )
-                logger.info(f'>>>>>>>>>other openai use {_base_url}')
+                logger.info(f'>>>>>>>>>openai retry (with functions) success')
                 return response
             except Exception as e:
-                logger.error(f'>>>>>>>>>other openai error: {e}')
-                err_message = f"调用other openai functions模型出现异常：{e}"
+                logger.error(f'>>>>>>>>>openai retry error: {e}')
+                err_message = f"调用openai functions模型重试出现异常：{e}"
                 logger.error(err_message)
                 logger.error(traceback.format_exc())
                 await send_notice_message('genai_utils', 'openai_chat_completion_acreate', 0, err_message, 4)
                 raise e
         else:
             try:
-                _base_urls = os.getenv("COMPATABLE_OPENAI_BASE_URLS", [])
-                _base_urls = json.loads(_base_urls)
-                _api_keys = os.getenv("COMPATABLE_OPENAI_API_KEYS", [])
-                _api_keys = json.loads(_api_keys)
-                if len(_base_urls) == 0:
-                    raise
-                import random
-                i = random.randint(0, len(_base_urls) - 1)
-                _base_url = _base_urls[i]
-                _api_key = _api_keys[i]
-                _client = AsyncOpenAI(api_key=_api_key, base_url=_base_url)
-                response = await asyncio.wait_for(
-                    _client.chat.completions.create(
-                        model=model,
-                        messages=messages,
-                        temperature=temperature,  # 值在[0,1]之间，越大表示回复越具有不确定性
-                        max_tokens=max_tokens, # 输出的最大 token 数
-                        top_p=top_p, # 过滤掉低于阈值的 token 确保结果不散漫
-                        frequency_penalty=frequency_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
-                        presence_penalty=presence_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
-                        stream=stream
-                    ),
-                    timeout=60.0  # 设置超时时间为180秒
+                response = await async_openai_client.chat.completions.create(
+                    model=model,
+                    messages=messages,
+                    **_token_kwarg, # 输出的最大 token 数
+                    **_extra_kwargs, # temperature/top_p/frequency_penalty/presence_penalty（gpt-5.x不支持，跳过）
+                    stream=stream
                 )
-                logger.info(f'>>>>>>>>>other openai use {_base_url}')
+                logger.info(f'>>>>>>>>>openai retry success')
                 return response
             except Exception as e:
-                logger.error(f'>>>>>>>>>other openai error: {e}')
-                err_message = f"调用other openai模型出现异常：{e}"
+                logger.error(f'>>>>>>>>>openai retry error: {e}')
+                err_message = f"调用openai模型重试出现异常：{e}"
                 logger.error(err_message)
                 logger.error(traceback.format_exc())
                 await send_notice_message('genai_utils', 'openai_chat_completion_acreate', 0, err_message, 4)
@@ -411,7 +376,7 @@ async def openai_chat_completion_acreate(
         raise e
     return response
 
-async def simple_achat(messages: typing.List[typing.Mapping[str, str]], model: str = 'gpt-4o-mini'):
+async def simple_achat(messages: typing.List[typing.Mapping[str, str]], model: str = 'gpt-5-mini'):
     from llama_index.llms import ChatMessage, OpenAI as OpenAI2
     OPENAI_API_KEY = openai.api_key
     _msgs = []
@@ -424,7 +389,7 @@ async def simple_achat(messages: typing.List[typing.Mapping[str, str]], model: s
     resp = await OpenAI2(model=model, api_key=OPENAI_API_KEY).achat(_msgs)
     return resp.message.content
 
-async def async_simple_chat(messages: typing.List[typing.Mapping[str, str]], stream: bool = False, model: str = 'gpt-4o-mini', key_type: str = 'normal', openapikey: str = None):
+async def async_simple_chat(messages: typing.List[typing.Mapping[str, str]], stream: bool = False, model: str = 'gpt-5-mini', key_type: str = 'normal', openapikey: str = None):
     try:
         if SIMPLE_CHAT_MODEL == 'openai':
             expired_time = 30.0
@@ -475,46 +440,28 @@ async def async_simple_chat(messages: typing.List[typing.Mapping[str, str]], str
         raise Exception("async_simple_chat:The request to OpenAI timed out after 3 minutes.")
     except Exception as e:
         logger.error(f'>>>>>>>>>async_simple_chat:test003 async_openai_client.chat.completions.create, e: {e}')
-        if SIMPLE_CHAT_MODEL == 'openai':
-            if model == OPENAI_PLUS_MODEL:
-                model = 'gpt-4o-2024-08-06'
-        else:
-            model = 'gpt-4o-2024-08-06'
+        # 官方openai重试
         try:
-            _base_urls = os.getenv("COMPATABLE_OPENAI_BASE_URLS", [])
-            _base_urls = json.loads(_base_urls)
-            _api_keys = os.getenv("COMPATABLE_OPENAI_API_KEYS", [])
-            _api_keys = json.loads(_api_keys)
-            if len(_base_urls) == 0:
-                raise
-            import random
-            i = random.randint(0, len(_base_urls) - 1)
-            _base_url = _base_urls[i]
-            _api_key = _api_keys[i]
-            _client = AsyncOpenAI(api_key=_api_key, base_url=_base_url)
-            response = await asyncio.wait_for(
-                _client.chat.completions.create(
-                    model=model,
-                    messages=messages,
-                    stream=stream
-                ),
-                timeout=60.0  # 设置超时时间为180秒
+            _retry_client = AsyncOpenAI(api_key=OPENAI_API_KEY)
+            response = await _retry_client.chat.completions.create(
+                model=model,
+                messages=messages,
+                stream=stream
             )
-            logger.info(f'>>>>>>>>>async_simple_chat openai use {_base_url}')
+            logger.info(f'>>>>>>>>>async_simple_chat openai retry success')
             if stream:
                 return response
             else:
                 return response.choices[0].message.content
         except Exception as e:
-            logger.error(f'>>>>>>>>>async_simple_chat openai error: {e}')
-            err_message = f"调用async_simple_chat出现异常：使用的模型={model}"
+            logger.error(f'>>>>>>>>>async_simple_chat openai retry error: {e}')
             err_message = traceback.format_exc()
             logger.error(err_message)
             await send_notice_message('genai_utils', 'async_simple_chat', 0, err_message, 3)
             raise e
 
 
-async def async_simple_chat_with_model(messages: typing.List[typing.Mapping[str, str]], stream: bool = False, model: str = 'gpt-4o-mini', base_model:str = 'openai', key_type: str = 'normal', system_msg=''):
+async def async_simple_chat_with_model(messages: typing.List[typing.Mapping[str, str]], stream: bool = False, model: str = 'gpt-5-mini', base_model:str = 'openai', key_type: str = 'normal', system_msg=''):
     try:
         simple_achat_model = base_model
         if simple_achat_model == 'openai':
@@ -577,46 +524,27 @@ async def async_simple_chat_with_model(messages: typing.List[typing.Mapping[str,
         raise Exception("async_simple_chat:The request to OpenAI timed out after 3 minutes.")
     except Exception as e:
         logger.error(f'>>>>>>>>>async_simple_chat:test003 async_openai_client.chat.completions.create, e: {e}')
-        if simple_achat_model == 'openai':
-            if model == OPENAI_PLUS_MODEL:
-                model = 'gpt-4o-2024-08-06'
-        else:
-            model = 'gpt-4o-2024-08-06'
+        # 官方openai重试
         try:
-            _base_urls = os.getenv("COMPATABLE_OPENAI_BASE_URLS", [])
-            _base_urls = json.loads(_base_urls)
-            _api_keys = os.getenv("COMPATABLE_OPENAI_API_KEYS", [])
-            _api_keys = json.loads(_api_keys)
-            if len(_base_urls) == 0:
-                raise
-            import random
-            i = random.randint(0, len(_base_urls) - 1)
-            _base_url = _base_urls[i]
-            _api_key = _api_keys[i]
-            _client = AsyncOpenAI(api_key=_api_key, base_url=_base_url)
-            response = await asyncio.wait_for(
-                _client.chat.completions.create(
-                    model=model,
-                    messages=messages,
-                    stream=stream
-                ),
-                timeout=60.0  # 设置超时时间为180秒
+            _retry_client = AsyncOpenAI(api_key=OPENAI_API_KEY)
+            response = await _retry_client.chat.completions.create(
+                model=model,
+                messages=messages,
+                stream=stream
             )
-            logger.info(f'>>>>>>>>>async_simple_chat openai use {_base_url}')
+            logger.info(f'>>>>>>>>>async_simple_chat_with_model openai retry success')
             if stream:
                 return response
             else:
                 return response.choices[0].message.content
         except Exception as e:
-            logger.error(f'>>>>>>>>>async_simple_chat openai error: {e}')
-            err_message = f"调用async_simple_chat出现异常：{e}"
-            logger.error(err_message)
+            logger.error(f'>>>>>>>>>async_simple_chat_with_model openai retry error: {e}')
             err_message = traceback.format_exc()
             logger.error(err_message)
             await send_notice_message('genai_utils', 'async_simple_chat', 0, err_message, 3)
             raise e
 
-async def async_simple_chat_stream(messages: typing.List[typing.Mapping[str, str]], model: str='gpt-4o-mini'):
+async def async_simple_chat_stream(messages: typing.List[typing.Mapping[str, str]], model: str='gpt-5-mini'):
     from genaipf.dispatcher.api import awrap_gpt_generator
     resp = await async_simple_chat(messages, True, model)
     return awrap_gpt_generator(resp, "text")
