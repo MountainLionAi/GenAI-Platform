@@ -17,7 +17,7 @@ async def send_notice_message(fileName: str, method: str, code: int, message: st
         'speakjan1024', 'zhaogc88', 'waynetan0427'
     ]
     to_email_list = [
-        '497000015@qq.com', 'michael.zhaogc@gmail.com', 'twbest1@qq.com'
+        'michael.zhaogc@gmail.com', 'twbest1@qq.com'
     ]
     user_name_list = " ".join(['@'+ user_name for user_name in user_name_arr])
     text = f"""
