@@ -7,6 +7,7 @@ from genaipf.exception.customer_error_handler import CustomerErrorHandler
 from sanic_cors import CORS
 from sanic_ext import Extend
 from genaipf.middlewares.user_token_middleware import check_user
+from genaipf.middlewares.region_restriction_middleware import region_restriction_middleware
 from genaipf.middlewares.user_log_middleware import save_user_log
 from genaipf.middlewares.api_key_middleware import check_api_key
 from sanic_session import Session
@@ -45,6 +46,7 @@ app.blueprint(routers.blueprint_v1)
 app.blueprint(routers.blueprint_v2)
 app.blueprint(routers.blueprint_chatbot)
 app.register_middleware(check_user, "request")
+app.register_middleware(region_restriction_middleware, "request")
 app.register_middleware(save_user_log, "request")
 
 # parameter for different modes
