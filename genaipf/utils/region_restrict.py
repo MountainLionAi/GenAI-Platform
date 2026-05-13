@@ -345,3 +345,39 @@ def path_matches_restrict_prefix(path: str) -> bool:
         if path == prefix or path.startswith(prefix + "/"):
             return True
     return False
+
+
+# 登录与注册前置接口：不因美国 IP 拦截，便于用户登录后命中账号白名单
+_REGION_AUTH_EXEMPT_PATHS: frozenset[str] = frozenset(
+    {
+        "/v1/api/userLogin",
+        "/v1/api/userLoginOther",
+        "/v1/api/plugin/login",
+        "/v1/api/register",
+        "/v1/api/sendVerifyCode",
+        "/v1/api/sendEmailCode",
+        "/v1/api/getCaptcha",
+        "/v1/api/testVerifyCode",
+        "/v1/api/modifyPassword",
+        "/v1/api/userCheckExist",
+        "/v2/api/userLogin",
+        "/v2/api/userLoginOther",
+        "/v2/api/plugin/login",
+        "/v2/api/register",
+        "/v2/api/sendVerifyCode",
+        "/v2/api/sendEmailCode",
+        "/v2/api/sendAppEmailCode",
+        "/v2/api/getCaptcha",
+        "/v2/api/testVerifyCode",
+        "/v2/api/modifyPassword",
+        "/v2/api/userCheckExist",
+    }
+)
+
+
+def path_exempt_from_region_check(path: str) -> bool:
+    if path in _REGION_AUTH_EXEMPT_PATHS:
+        return True
+    if path in conf.REGION_RESTRICT_AUTH_EXEMPT_PATHS:
+        return True
+    return False

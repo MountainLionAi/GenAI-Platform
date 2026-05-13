@@ -25,6 +25,9 @@ async def region_restriction_middleware(request: Request):
     if not region_restrict.path_matches_restrict_prefix(path):
         return
 
+    if region_restrict.path_exempt_from_region_check(path):
+        return
+
     try:
         if await region_restrict.should_block_us_request(request):
             return fail(

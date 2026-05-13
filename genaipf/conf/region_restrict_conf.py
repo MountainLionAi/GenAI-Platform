@@ -11,6 +11,13 @@ def _truthy(raw: str | None, default: bool = False) -> bool:
 # 总开关：开启后对美国 IP 拦截（经白名单与解析链）
 REGION_RESTRICT_US_ENABLED = _truthy(os.getenv("REGION_RESTRICT_US_ENABLED"), False)
 
+# 在默认「登录/注册前置」豁免之外，额外不因美国 IP 拦截的路径（逗号分隔精确 path）
+REGION_RESTRICT_AUTH_EXEMPT_PATHS = frozenset(
+    p.strip()
+    for p in os.getenv("REGION_RESTRICT_AUTH_EXEMPT_PATHS", "").split(",")
+    if p.strip()
+)
+
 # 仅对这些 URL 前缀做检查（全站 API + chatbot）
 REGION_RESTRICT_PATH_PREFIXES = tuple(
     p.strip()

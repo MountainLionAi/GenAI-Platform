@@ -14,6 +14,7 @@
 
 - 路径前缀（可配置，默认）：`/v1/api`、`/v2/api`、`/mpcbot`
 - 跳过：`OPTIONS`（CORS 预检）、`/static` 开头路径
+- **登录与注册前置接口**（`userLogin`、`register`、`sendVerifyCode` 等，见 `genaipf/utils/region_restrict.py` 中 `_REGION_AUTH_EXEMPT_PATHS`）不做美国 IP 拦截，便于美国 IP 用户完成登录后命中**账号白名单**。另可通过环境变量 `REGION_RESTRICT_AUTH_EXEMPT_PATHS`（逗号分隔的完整 path）追加豁免。
 
 **判定顺序（与产品逻辑一致）：**
 
