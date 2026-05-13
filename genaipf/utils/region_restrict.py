@@ -32,15 +32,39 @@ def _trim_cache_unlocked() -> None:
             _geo_cache.pop(next(iter(_geo_cache)))
 
 
+def _strip_ip_token(raw: str) -> str:
+    return raw.strip().split("%")[0].strip()
+
+
 def get_client_ip(request: Request) -> str:
-    """与 app.config.REAL_IP_HEADER 一致时，取 X-Forwarded-For 第一个可见地址。"""
+    """
+    解析真实客户端公网 IP，供地区判断使用。
+
+    仅取 X-Forwarded-For 首段在「前置为内网/保留地址」时会误判（常见于网关追加
+    内网 hop），此时地区中间件会误判为内网而直接放行，而 remote_addr 仍为公网。
+    因此从左到右取第一个非公网地址；若无则尝试 X-Real-IP / True-Client-IP，
+    再回退 request.ip / request.remote_addr。
+    """
     hdr = getattr(request.app.config, "REAL_IP_HEADER", None) or "X-Forwarded-For"
     raw = request.headers.get(hdr) or request.headers.get(hdr.upper())
     if raw:
-        first = raw.split(",")[0].strip()
-        if first:
-            return first.split("%")[0].strip()
-    return request.ip or request.remote_addr or ""
+        for part in raw.split(","):
+            ip_str = _strip_ip_token(part)
+            if ip_str and not _is_private_or_reserved(ip_str):
+                return ip_str
+
+    for alt in ("X-Real-IP", "x-real-ip", "True-Client-IP", "true-client-ip"):
+        alt_raw = request.headers.get(alt)
+        if alt_raw:
+            ip_str = _strip_ip_token(alt_raw)
+            if ip_str and not _is_private_or_reserved(ip_str):
+                return ip_str
+
+    fallback = request.ip or request.remote_addr or ""
+    fb = _strip_ip_token(fallback)
+    if fb and not _is_private_or_reserved(fb):
+        return fb
+    return ""
 
 
 def _is_private_or_reserved(ip_str: str) -> bool:
