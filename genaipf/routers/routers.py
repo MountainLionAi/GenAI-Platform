@@ -1,5 +1,5 @@
 from sanic import Blueprint
-from genaipf.controller import gpt, user, gptstream, gpt_oneshot, userRate, pay, feedback
+from genaipf.controller import gpt, user, gptstream, gpt_oneshot, userRate, pay, feedback, region_whitelist_api
 from importlib import import_module
 from genaipf.conf.server import PLUGIN_NAME
 from genaipf.controller import assistant_api
@@ -103,6 +103,11 @@ blueprint_v2.add_route(pay.query_pay_card, "pay/cardInfo", methods=["GET"])
 blueprint_v2.add_route(pay.check_order, "pay/orderCheck", methods=["GET"])
 blueprint_v2.add_route(pay.query_user_account, "pay/account", methods=["GET"])
 blueprint_v2.add_route(pay.pay_success_callback, "pay/callback", methods=["POST"])
+
+# 美国区域探测与白名单管理
+blueprint_v2.add_route(region_whitelist_api.region_support_status, "region/supportStatus", methods=["GET"])
+blueprint_v2.add_route(region_whitelist_api.region_whitelist_get, "region/whitelist", methods=["GET"])
+blueprint_v2.add_route(region_whitelist_api.region_whitelist_post, "region/whitelist", methods=["POST"])
 
 if PLUGIN_NAME:
     plugin_submodule_name = f'{PLUGIN_NAME}.routers.entry'

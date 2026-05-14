@@ -60,6 +60,8 @@ PATH_WITHOUT_LOGIN = (
     '/v2/api/getAssistantHistory',
     '/v2/api/sendAppEmailCode',
     '/v2/api/tw/feedback',
+    '/v2/api/region/supportStatus',
+    '/v2/api/region/whitelist',
 )
 
 if PLUGIN_NAME:

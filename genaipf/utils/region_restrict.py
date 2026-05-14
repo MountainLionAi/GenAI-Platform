@@ -307,14 +307,32 @@ def _ip_in_redis_literal_sets(ip_str: str, literals: frozenset[str]) -> bool:
     return False
 
 
-async def should_block_us_request(request: Request) -> bool:
+async def evaluate_us_region_block(
+    request: Request,
+    *,
+    redis_users: Optional[frozenset[str]] = None,
+    redis_ips: Optional[frozenset[str]] = None,
+) -> dict:
     """
-    True = 应拦截（美国且未命中白名单）。
-    私有/内网 IP 不拦截。
+    返回是否按美国区策略拦截、原因码、国家码等，供中间件与探测接口共用。
+    block_reason 仅在 would_block 为 True 时有值。
     """
     ip_str = get_client_ip(request)
+    base = {
+        "would_block": False,
+        "block_reason": None,
+        "country_iso": None,
+        "client_ip": ip_str or "",
+        "is_private_or_reserved_ip": bool(
+            not ip_str or _is_private_or_reserved(ip_str)
+        ),
+        "restrict_us_enabled": bool(conf.REGION_RESTRICT_US_ENABLED),
+    }
+    if not conf.REGION_RESTRICT_US_ENABLED:
+        return base
+
     if not ip_str or _is_private_or_reserved(ip_str):
-        return False
+        return base
 
     user = getattr(request.ctx, "user", None)
     uid = None
@@ -322,22 +340,114 @@ async def should_block_us_request(request: Request) -> bool:
         uid = user.get("id")
     uid_str = str(uid).strip() if uid is not None else ""
 
-    redis_users = await redis_whitelist_user_ids()
+    if redis_users is None:
+        redis_users = await redis_whitelist_user_ids()
     if uid_str and (uid_str in conf.REGION_WHITELIST_USER_IDS or uid_str in redis_users):
-        return False
+        return base
 
     if ip_in_whitelist_networks(ip_str):
-        return False
+        return base
 
-    redis_ips = await redis_whitelist_ips_raw()
+    if redis_ips is None:
+        redis_ips = await redis_whitelist_ips_raw()
     if redis_ips and _ip_in_redis_literal_sets(ip_str, redis_ips):
-        return False
+        return base
 
     iso = await resolve_country_iso(request, ip_str)
+    out = {**base, "country_iso": iso}
     if iso is None:
-        return not conf.REGION_GEO_UNKNOWN_ALLOW
+        if not conf.REGION_GEO_UNKNOWN_ALLOW:
+            out["would_block"] = True
+            out["block_reason"] = "geo_unknown_blocked"
+        return out
 
-    return is_united_states(iso)
+    if is_united_states(iso):
+        out["would_block"] = True
+        out["block_reason"] = "united_states_geo_blocked"
+    return out
+
+
+async def should_block_us_request(request: Request) -> bool:
+    """
+    True = 应拦截（美国且未命中白名单）。
+    私有/内网 IP 不拦截。
+    """
+    ev = await evaluate_us_region_block(request)
+    return bool(ev["would_block"])
+
+
+def user_whitelist_hits(uid_str: str, redis_users: frozenset[str]) -> list[str]:
+    """当前用户 ID 命中的白名单来源：env / redis；未登录或空 ID 返回空列表。"""
+    if not uid_str:
+        return []
+    hits: list[str] = []
+    if uid_str in conf.REGION_WHITELIST_USER_IDS:
+        hits.append("env")
+    if uid_str in redis_users:
+        hits.append("redis")
+    return hits
+
+
+def ip_whitelist_hits(ip_str: str, redis_ips: frozenset[str]) -> list[str]:
+    """当前客户端 IP 命中的白名单来源。"""
+    if not ip_str:
+        return []
+    hits: list[str] = []
+    if ip_in_whitelist_networks(ip_str):
+        hits.append("env")
+    if redis_ips and _ip_in_redis_literal_sets(ip_str, redis_ips):
+        hits.append("redis")
+    return hits
+
+
+async def build_region_support_probe(request: Request) -> dict:
+    """未登录可调的探测数据（与中间件判定一致）。"""
+    ip_str = get_client_ip(request)
+    user = getattr(request.ctx, "user", None)
+    uid = None
+    if user and isinstance(user, dict):
+        uid = user.get("id")
+    uid_str = str(uid).strip() if uid is not None else ""
+
+    redis_users = await redis_whitelist_user_ids()
+    redis_ips = await redis_whitelist_ips_raw()
+
+    ev = await evaluate_us_region_block(
+        request, redis_users=redis_users, redis_ips=redis_ips
+    )
+    would_block = bool(ev["would_block"])
+    restrict_on = bool(ev["restrict_us_enabled"])
+    service_supported = True
+    if restrict_on:
+        service_supported = not would_block
+
+    return {
+        "supported": service_supported,
+        "restrict_on": restrict_on,
+        "ip": ev["client_ip"],
+        "uid": uid_str or None,
+        "country": ev["country_iso"],
+        "in_user_wl": user_whitelist_hits(uid_str, redis_users),
+        "in_ip_wl": ip_whitelist_hits(ip_str, redis_ips),
+        "reason": ev["block_reason"],
+    }
+
+
+async def merged_whitelist_view() -> dict[str, list[str]]:
+    """合并 .env 静态白名单与 Redis SET（仅值，不含管理逻辑）。"""
+    redis_users = await redis_whitelist_user_ids()
+    redis_ips = await redis_whitelist_ips_raw()
+    env_users = sorted(conf.REGION_WHITELIST_USER_IDS)
+    env_ips: list[str] = []
+    if conf.REGION_WHITELIST_IPS:
+        env_ips = [
+            p.strip()
+            for p in conf.REGION_WHITELIST_IPS.split(",")
+            if p.strip()
+        ]
+    user_ids = sorted(set(env_users) | set(redis_users))
+    ips = sorted(set(env_ips) | set(redis_ips))
+    return {"user_ids": user_ids, "ips": ips}
 
 
 def path_matches_restrict_prefix(path: str) -> bool:
@@ -371,6 +481,9 @@ _REGION_AUTH_EXEMPT_PATHS: frozenset[str] = frozenset(
         "/v2/api/testVerifyCode",
         "/v2/api/modifyPassword",
         "/v2/api/userCheckExist",
+        "/v2/api/ios/vip/config",
+        "/v2/api/region/supportStatus",
+        "/v2/api/region/whitelist",
     }
 )
 

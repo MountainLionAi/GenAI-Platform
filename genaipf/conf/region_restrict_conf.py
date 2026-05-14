@@ -73,3 +73,14 @@ REGION_REDIS_WHITELIST_IP_KEY = os.getenv(
 REGION_REDIS_WHITELIST_ENABLED = _truthy(
     os.getenv("REGION_REDIS_WHITELIST_ENABLED"), True
 )
+
+# --- 区域白名单管理接口（POST/GET /v2/api/region/whitelist）---
+# 管理密钥；未配置则拒绝所有写/查白名单管理请求
+REGION_WHITELIST_ADMIN_KEY = os.getenv("REGION_WHITELIST_ADMIN_KEY", "").strip()
+
+# 必须非空：仅允许这些操作者用户 ID（与登录态或 X-Region-Wl-Operator-Id 一致）
+REGION_WHITELIST_ADMIN_OPERATOR_IDS = frozenset(
+    x.strip()
+    for x in os.getenv("REGION_WHITELIST_ADMIN_OPERATOR_IDS", "").split(",")
+    if x.strip()
+)
