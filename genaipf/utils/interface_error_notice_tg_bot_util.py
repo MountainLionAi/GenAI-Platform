@@ -34,7 +34,8 @@ Mlion接口代码发生异常
         if limit:
             limit_num = int(limit)
             if limit_num == 2:
-                to_email_list.append('duty@swftc.info')
+                pass
+                # to_email_list.append('duty@swftc.info')
             else:
                 limit_num = limit_num + 1
                 redis_client.set(email_to_duty_limit_key, limit_num, ex=1800)
