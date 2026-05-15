@@ -376,28 +376,20 @@ async def should_block_us_request(request: Request) -> bool:
     return bool(ev["would_block"])
 
 
-def user_whitelist_hits(uid_str: str, redis_users: frozenset[str]) -> list[str]:
-    """当前用户 ID 命中的白名单来源：env / redis；未登录或空 ID 返回空列表。"""
+def user_whitelist_hit(uid_str: str, redis_users: frozenset[str]) -> bool:
+    """当前用户 ID 是否命中 env 或 Redis 用户白名单。"""
     if not uid_str:
-        return []
-    hits: list[str] = []
-    if uid_str in conf.REGION_WHITELIST_USER_IDS:
-        hits.append("env")
-    if uid_str in redis_users:
-        hits.append("redis")
-    return hits
+        return False
+    return uid_str in conf.REGION_WHITELIST_USER_IDS or uid_str in redis_users
 
 
-def ip_whitelist_hits(ip_str: str, redis_ips: frozenset[str]) -> list[str]:
-    """当前客户端 IP 命中的白名单来源。"""
+def ip_whitelist_hit(ip_str: str, redis_ips: frozenset[str]) -> bool:
+    """当前客户端 IP 是否命中 env 或 Redis IP 白名单。"""
     if not ip_str:
-        return []
-    hits: list[str] = []
+        return False
     if ip_in_whitelist_networks(ip_str):
-        hits.append("env")
-    if redis_ips and _ip_in_redis_literal_sets(ip_str, redis_ips):
-        hits.append("redis")
-    return hits
+        return True
+    return bool(redis_ips and _ip_in_redis_literal_sets(ip_str, redis_ips))
 
 
 async def build_region_support_probe(request: Request) -> dict:
@@ -427,27 +419,34 @@ async def build_region_support_probe(request: Request) -> dict:
         "ip": ev["client_ip"],
         "uid": uid_str or None,
         "country": ev["country_iso"],
-        "in_user_wl": user_whitelist_hits(uid_str, redis_users),
-        "in_ip_wl": ip_whitelist_hits(ip_str, redis_ips),
+        "in_user_wl": user_whitelist_hit(uid_str, redis_users),
+        "in_ip_wl": ip_whitelist_hit(ip_str, redis_ips),
         "reason": ev["block_reason"],
     }
 
 
-async def merged_whitelist_view() -> dict[str, list[str]]:
-    """合并 .env 静态白名单与 Redis SET（仅值，不含管理逻辑）。"""
-    redis_users = await redis_whitelist_user_ids()
-    redis_ips = await redis_whitelist_ips_raw()
+def _env_whitelist_lists() -> dict[str, list[str]]:
+    """.env 静态白名单（不含 Redis）。"""
     env_users = sorted(conf.REGION_WHITELIST_USER_IDS)
     env_ips: list[str] = []
     if conf.REGION_WHITELIST_IPS:
-        env_ips = [
-            p.strip()
-            for p in conf.REGION_WHITELIST_IPS.split(",")
-            if p.strip()
-        ]
-    user_ids = sorted(set(env_users) | set(redis_users))
-    ips = sorted(set(env_ips) | set(redis_ips))
-    return {"user_ids": user_ids, "ips": ips}
+        env_ips = sorted(
+            p.strip() for p in conf.REGION_WHITELIST_IPS.split(",") if p.strip()
+        )
+    return {"user_ids": env_users, "ips": env_ips}
+
+
+async def split_whitelist_view() -> dict[str, dict[str, list[str]]]:
+    """分别返回 .env 与 Redis 白名单（不合并）。"""
+    redis_users = await redis_whitelist_user_ids()
+    redis_ips = await redis_whitelist_ips_raw()
+    return {
+        "env": _env_whitelist_lists(),
+        "redis": {
+            "user_ids": sorted(redis_users),
+            "ips": sorted(redis_ips),
+        },
+    }
 
 
 def path_matches_restrict_prefix(path: str) -> bool:
