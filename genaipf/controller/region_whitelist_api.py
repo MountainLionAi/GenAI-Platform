@@ -1,12 +1,15 @@
 """区域限制探测与白名单管理接口。"""
 from __future__ import annotations
 
+import json
+
 from sanic import Request
 
 from genaipf.constant.error_code import ERROR_CODE
 from genaipf.interfaces.common_response import fail, success
 from genaipf.services import region_whitelist_admin_service as rw_admin
 from genaipf.utils import region_restrict
+from genaipf.utils.log_utils import logger
 
 
 def _map_admin_error_message(message: str) -> int:
@@ -28,6 +31,7 @@ def _map_admin_error_message(message: str) -> int:
 async def region_support_status(request: Request):
     """GET：未登录可查，返回是否支持当前区域及白名单命中情况。"""
     data = await region_restrict.build_region_support_probe(request)
+    logger.info(f"用户请求能否访问美国接口返回日志: user_id: {request.ctx.user.get('id', '')}, {json.dumps(data)}")
     return success(data)
 
 
