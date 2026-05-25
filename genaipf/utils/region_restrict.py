@@ -412,8 +412,7 @@ async def build_region_support_probe(request: Request) -> dict:
     service_supported = True
     if restrict_on:
         service_supported = not would_block
-
-    return {
+    response_data = {
         "supported": service_supported,
         "restrict_on": restrict_on,
         "ip": ev["client_ip"],
@@ -423,6 +422,8 @@ async def build_region_support_probe(request: Request) -> dict:
         "in_ip_wl": ip_whitelist_hit(ip_str, redis_ips),
         "reason": ev["block_reason"],
     }
+    logger.info(f"用户请求能否访问美国接口返回日志: user_id: {uid}, {json.dumps(response_data)}")
+    return response_data
 
 
 def _env_whitelist_lists() -> dict[str, list[str]]:

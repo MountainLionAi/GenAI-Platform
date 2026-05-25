@@ -31,7 +31,6 @@ def _map_admin_error_message(message: str) -> int:
 async def region_support_status(request: Request):
     """GET：未登录可查，返回是否支持当前区域及白名单命中情况。"""
     data = await region_restrict.build_region_support_probe(request)
-    logger.info(f"用户请求能否访问美国接口返回日志: user_id: {request.ctx.user.get('id', '')}, {json.dumps(data)}")
     return success(data)
 
 
