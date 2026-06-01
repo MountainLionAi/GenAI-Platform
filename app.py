@@ -44,6 +44,7 @@ app.static('/static', server.STATIC_PATH)
 # 加载路由
 app.blueprint(routers.blueprint_v1)
 app.blueprint(routers.blueprint_v2)
+app.blueprint(routers.blueprint_v3)
 app.blueprint(routers.blueprint_chatbot)
 app.register_middleware(check_user, "request")
 app.register_middleware(region_restriction_middleware, "request")

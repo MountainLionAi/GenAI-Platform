@@ -59,6 +59,9 @@ blueprint_v1 = Blueprint(name="v1_versions", url_prefix="api", version=1)
 # v2版本相关接口内容
 blueprint_v2 = Blueprint(name="v2_versions", url_prefix="api", version=2)
 
+# v3版本相关接口内容
+blueprint_v3 = Blueprint(name="v3_versions", url_prefix="api", version=3)
+
 # gpt相关接口
 # blueprint_v1.add_route(gpt.send_chat, "sendChat", methods=["POST"])
 blueprint_v2.add_route(gpt.add_message, "messages/add", methods=["POST"])
@@ -121,3 +124,12 @@ if PLUGIN_NAME:
         else:
             blueprint_v1.add_route(v["handler"], v["uri"], v["methods"])
             blueprint_v2.add_route(v["handler"], v["uri"], v["methods"])
+
+    plugin_router_v3_mapping = getattr(plugin_submodule, 'plugin_router_v3_mapping', None)
+    if plugin_router_v3_mapping:
+        for v in plugin_router_v3_mapping.values():
+            entry_name = v.get('name', '')
+            if entry_name:
+                blueprint_v3.add_route(v["handler"], v["uri"], v["methods"], name=entry_name)
+            else:
+                blueprint_v3.add_route(v["handler"], v["uri"], v["methods"])
