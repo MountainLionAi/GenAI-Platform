@@ -342,7 +342,7 @@ async def apply_mutate(
     return True, "", summary
 
 
-async def query_merged_whitelist(request: Request) -> tuple[bool, str, Optional[dict[str, Any]]]:
+async def query_whitelist(request: Request) -> tuple[bool, str, Optional[dict[str, Any]]]:
     ok_r, msg_r = redis_whitelist_precheck()
     if not ok_r:
         return False, msg_r, None
@@ -365,7 +365,7 @@ async def query_merged_whitelist(request: Request) -> tuple[bool, str, Optional[
     if not operator_allowed(op_id):
         return False, "当前操作者不在 REGION_WHITELIST_ADMIN_OPERATOR_IDS 允许列表中", None
 
-    data = await region_restrict.merged_whitelist_view()
+    data = await region_restrict.split_whitelist_view()
     client_ip = region_restrict.get_client_ip(request) or ""
     await audit_svc.insert_region_whitelist_audit(
         action_type="query",

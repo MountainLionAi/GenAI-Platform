@@ -32,8 +32,8 @@ async def region_support_status(request: Request):
 
 
 async def region_whitelist_get(request: Request):
-    """GET：合并 .env 与 Redis 白名单；需管理密钥与操作者。"""
-    ok, msg, data = await rw_admin.query_merged_whitelist(request)
+    """GET：分别返回 .env 与 Redis 白名单；需管理密钥与操作者。"""
+    ok, msg, data = await rw_admin.query_whitelist(request)
     if not ok:
         return fail(_map_admin_error_message(msg), message=msg)
     return success(data)
