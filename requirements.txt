@@ -47,7 +47,7 @@ pyppeteer==2.0.0
 playwright==1.44.0
 selenium==4.21.0
 spider-client==0.0.21
-mistralai==0.4.0
+mistralai==0.4.2
 pyTelegramBotAPI==4.19.1
 curl_cffi==0.6.4
 dune-client==1.7.4
@@ -73,5 +73,6 @@ imgkit==1.2.3
 weasyprint==65.1
 pdfkit==1.0.0
 filetype==1.2.0
+httpx~=0.27.0
 # Optional: MaxMind GeoIP2 local database reader (set GEOIP2_COUNTRY_MMDB in .env)
 # geoip2>=4.7.0
