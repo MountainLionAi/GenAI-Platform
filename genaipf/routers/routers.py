@@ -59,8 +59,8 @@ blueprint_v1 = Blueprint(name="v1_versions", url_prefix="api", version=1)
 # v2版本相关接口内容
 blueprint_v2 = Blueprint(name="v2_versions", url_prefix="api", version=2)
 
-# v3版本相关接口内容
-blueprint_v3 = Blueprint(name="v3_versions", url_prefix="api", version=3)
+# v3版本相关接口内容（路径形如 /api/v3/...，不再使用 /v3/api/...）
+blueprint_v3 = Blueprint(name="v3_versions", url_prefix="/api/v3")
 
 # gpt相关接口
 # blueprint_v1.add_route(gpt.send_chat, "sendChat", methods=["POST"])
