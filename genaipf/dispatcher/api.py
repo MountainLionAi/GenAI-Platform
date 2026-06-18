@@ -411,7 +411,7 @@ async def afunc_gpt_generator(messages_in, functions=gpt_functions, language=Lio
         {"role": "user", "content": "Where is Tokyo?"},
     ]
     '''
-    use_model = 'gpt-5-mini'
+    use_model = 'gpt-5.4-mini'
     if model == 'ml-plus':
         use_model = OPENAI_PLUS_MODEL
     if isvision:
@@ -482,7 +482,7 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
                 {"role": "user", "content": "what color?", "type": "text", "version": "v001"},
             ]
     """
-    use_model = 'gpt-5-mini'
+    use_model = 'gpt-5.4-mini'
     _llm_model_lower = llm_model.lower()
     if _llm_model_lower == 'openai':
         use_model = OPENAI_PLUS_MODEL
@@ -767,7 +767,7 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
 async def aref_oneshot_gpt_generator(messages, model='', language=LionPrompt.default_lang, preset_name=None, picked_content="", related_qa=[], data=None, stream=False, mode=None):
     front_messages = messages
     gpt_prams = data.get("gpt_prams", {})
-    use_model = 'gpt-5-mini'
+    use_model = 'gpt-5.4-mini'
     if model == 'ml-plus':
         use_model = OPENAI_PLUS_MODEL
     try:
