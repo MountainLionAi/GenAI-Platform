@@ -50,7 +50,7 @@ async def get_related_question_task(newest_question_arr, fixed_related_question,
     if source == 'v007':
         return related_questions
     msgs = LionPromptCommon.get_prompted_messages("related_question", newest_question_arr, language)
-    # questions_result = await async_simple_chat(msgs, 'gpt-4')
+    # questions_result = await async_simple_chat(msgs, 'gpt-5.6-luna')
     try:
         questions_result = await async_simple_chat(msgs)
         logger.info(f'===========>async_simple_chat介些相关问题的结果是: {questions_result}')
@@ -230,7 +230,7 @@ async def get_article_summary(front_messages):
     '''
     try:
         msgs = LionPromptCommon.get_prompted_messages("summary_page_by_msg", front_messages)
-        # summary_str = await async_simple_chat(msgs, model="gpt-4o")
+        # summary_str = await async_simple_chat(msgs, model="gpt-5.6-luna")
         summary_str = await async_simple_chat(msgs)
         return summary_str
     except Exception as e:
@@ -259,7 +259,7 @@ async def aload_web(url):
         aload = sync_to_async(loader.load)
         res = await aload()
         openai_api_key = OPENAI_API_KEY
-        llm = ChatOpenAI(temperature=0, openai_api_key=openai_api_key, model_name="gpt-5-mini")
+        llm = ChatOpenAI(temperature=0, openai_api_key=openai_api_key, model_name="gpt-5.6-luna")
         chain = load_summarize_chain(llm, chain_type="stuff")
         res = await chain.arun(res)
         return res
@@ -623,7 +623,7 @@ async def _fallback_llm_analysis(messages, language, source):
         # 使用原有的prompt模板进行LLM分析
         _messages = {"messages": [messages['messages'][-1]]}
         msgs = LionPromptCommon.get_prompted_messages("check_ai_ranking", _messages, language)
-        result = await async_simple_chat(msgs, model='gpt-5.2')
+        result = await async_simple_chat(msgs, model='gpt-5.6-luna')
         
         # 解析返回的JSON结果
         ranking_result = common_utils.extract_json_from_response(result)
@@ -644,7 +644,7 @@ async def _check_other_ranking_types(messages, language, source):
     try:
         _messages = {"messages": [messages['messages'][-1]]}
         msgs = LionPromptCommon.get_prompted_messages("check_ai_ranking", _messages, language)
-        result = await async_simple_chat(msgs, model='gpt-5.2')
+        result = await async_simple_chat(msgs, model='gpt-5.6-luna')
         
         ranking_result = common_utils.extract_json_from_response(result)
         logger.info(f'其他类型分析结果: {ranking_result}')

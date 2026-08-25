@@ -19,29 +19,69 @@ from genaipf.utils.common_utils import check_is_json
 from genaipf.utils.interface_error_notice_tg_bot_util import send_notice_message
 import traceback
 
-PERPLEXITY_API_KEY=os.getenv("PERPLEXITY_API_KEY")
-PERPLEXITY_URL=os.getenv("PERPLEXITY_URL", "https://api.perplexity.ai")
-DEEPSEEK_API_KEY=os.getenv("DEEPSEEK_API_KEY")
-DEEPSEEK_URL=os.getenv("DEEPSEEK_URL", "https://api.deepseek.com")
-openai.api_key = os.getenv("OPENAI_API_KEY")
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
-OPENAI_API_KEY_FOR_PREDICT = os.getenv("OPENAI_API_KEY_FOR_PREDICT")
-SIMPLE_CHAT_MODEL = os.getenv("SIMPLE_CHAT_MODEL")
+
+def _env(name: str, default: str = None):
+    """读环境变量并去掉脏引号/空白（测试服 .env 偶发行尾引号）。"""
+    v = os.getenv(name)
+    if v is None:
+        return default
+    v = v.strip().strip('"').strip("'").strip()
+    return v if v else default
+
+
+# OpenRouter：无效官方 Key 的统一出口（Mistral / Perplexity / GLM / Ernie 等）
+OPENROUTER_API_KEY = _env("DS_OPENROUTER_API_KEY")
+OPENROUTER_API_URL = (_env("DS_OPENROUTER_API_URL") or "https://openrouter.ai/api/v1").rstrip("/")
+
+PERPLEXITY_API_KEY = _env("PERPLEXITY_API_KEY")
+PERPLEXITY_URL = _env("PERPLEXITY_URL") or "https://api.perplexity.ai"
+# 对话/业务统一走 OR 上的同款模型（官方 PPLX Key 配额已尽）
+PERPLEXITY_MODEL = _env("PERPLEXITY_MODEL") or "perplexity/sonar-pro"
+
+DEEPSEEK_API_KEY = _env("DEEPSEEK_API_KEY") or _env("DS_OFFICIAL_API_KEY")
+# 默认官方；若 .env 仍指向 DMX（www.dmxapi.com/v1）也可，但模型名须是现网 ID
+DEEPSEEK_URL = (_env("DEEPSEEK_URL") or "https://api.deepseek.com").rstrip("/")
+
+openai.api_key = _env("OPENAI_API_KEY")
+OPENAI_API_KEY = _env("OPENAI_API_KEY")
+ANTHROPIC_API_KEY = _env("ANTHROPIC_API_KEY")
+OPENAI_API_KEY_FOR_PREDICT = _env("OPENAI_API_KEY_FOR_PREDICT")
+SIMPLE_CHAT_MODEL = _env("SIMPLE_CHAT_MODEL")
 MAX_CH_LENGTH_GPT3 = 8000
 MAX_CH_LENGTH_GPT4 = 3000
 MAX_CH_LENGTH_QA_GPT3 = 3000
 MAX_CH_LENGTH_QA_GPT4 = 1500
-OPENAI_PLUS_MODEL = os.getenv("OPENAI_PLUS_MODEL") 
-CLAUDE_MODEL = "claude-sonnet-4-6"
-PERPLEXITY_MODEL = "sonar-pro"  # "sonar-small-online"
-MISTRAL_MODEL = "open-mixtral-8x22b"
-DEEPSEEK_V3_MODEL = os.getenv("DEEPSEEK_V3_MODEL")
-DEEPSEEK_R1_MODEL = os.getenv("DEEPSEEK_R1_MODEL")
-MOUNTAINLION_C1_MODEL = os.getenv("MOUNTAINLION_C1_MODEL")
-MOUNTAINLION_C1_D_MODEL = os.getenv("MOUNTAINLION_C1_D_MODEL")
-QWEN_MODEL = os.getenv("DS_OPENROUTER_MODEL_QWEN")
+OPENAI_PLUS_MODEL = _env("OPENAI_PLUS_MODEL") or "gpt-5.6-terra"
+CLAUDE_MODEL = "claude-sonnet-5"
+MISTRAL_MODEL = _env("MISTRAL_MODEL") or "mistralai/mixtral-8x22b-instruct"
+GLM_MODEL = _env("GLM_MODEL") or "z-ai/glm-5.2"
+# OR 现网最接近的 Ernie；无官方千帆 Key 时走此 ID
+ERNIE_MODEL = _env("ERNIE_MODEL") or "baidu/ernie-4.5-vl-424b-a47b"
+DEEPSEEK_V3_MODEL = _env("DEEPSEEK_V3_MODEL") or "deepseek-v4-flash"
+DEEPSEEK_R1_MODEL = _env("DEEPSEEK_R1_MODEL") or "deepseek-v4-pro"
+# 旧别名/已下线 ID → 现网 v4（避免 .env 未改时直接 404）
+_DS_V3_DEAD = {
+    "DMXAPI-HuoShan-DeepSeek-V3", "DMXAPI-DeepSeek-V3", "deepseek-chat",
+    "deepseek-v3", "DeepSeek-V3",
+}
+_DS_R1_DEAD = {
+    "DMXAPI-HuoShan-DeepSeek-R1-671B-64k", "DMXAPI-DeepSeek-R1", "deepseek-reasoner",
+    "deepseek/deepseek-r1-0528:free", "deepseek-r1",
+}
+if DEEPSEEK_V3_MODEL in _DS_V3_DEAD:
+    DEEPSEEK_V3_MODEL = "deepseek-v4-flash"
+if DEEPSEEK_R1_MODEL in _DS_R1_DEAD:
+    DEEPSEEK_R1_MODEL = "deepseek-v4-pro"
+MOUNTAINLION_C1_MODEL = _env("MOUNTAINLION_C1_MODEL") or "claude-sonnet-5"
+MOUNTAINLION_C1_D_MODEL = _env("MOUNTAINLION_C1_D_MODEL") or "claude-sonnet-5"
+QWEN_MODEL = _env("DS_OPENROUTER_MODEL_QWEN")
 qdrant_url = "http://localhost:6333"
+
+
+def get_openrouter_client() -> AsyncOpenAI:
+    if not OPENROUTER_API_KEY:
+        raise ValueError("DS_OPENROUTER_API_KEY 未配置，无法走 OpenRouter")
+    return AsyncOpenAI(api_key=OPENROUTER_API_KEY, base_url=OPENROUTER_API_URL)
 
 openai_client = OpenAI(
     # defaults to os.environ.get("OPENAI_API_KEY")
@@ -62,7 +102,7 @@ gpt_func_coll_name = f"{SUB_VDB_GPT_FUNC_PREFIX}{vdb_prefix}_gpt_func"
 client = QdrantClient(qdrant_url)
 
 @cache
-def get_embedding(text, model = "text-embedding-ada-002"):
+def get_embedding(text, model = "text-embedding-3-small"):
     # result = openai.Embedding.create(
     text = limit_tokens_from_string(text, model, 8192)
     result = openai_client.embeddings.create(
@@ -78,40 +118,40 @@ async def openai_chat_completion_acreate(
     temperature, max_tokens, top_p, frequency_penalty, presence_penalty, stream
 ):
     try:
-        if model == PERPLEXITY_MODEL:
-            logger.info(f"调用perplexity模型传入的消息列表:{messages}")
-            async_openai_client = AsyncOpenAI(api_key=PERPLEXITY_API_KEY, base_url=PERPLEXITY_URL)
+        if model == PERPLEXITY_MODEL or (isinstance(model, str) and model.startswith("perplexity/")):
+            logger.info(f"调用perplexity(via OpenRouter)模型传入的消息列表:{messages}")
+            async_openai_client = get_openrouter_client()
+            or_model = model if str(model).startswith("perplexity/") else PERPLEXITY_MODEL
             try:
                 if functions:
                     response = await asyncio.wait_for(
                         async_openai_client.chat.completions.create(
-                            model=model,
+                            model=or_model,
                             messages=messages,
                             functions=functions if functions else NOT_GIVEN,
-                            temperature=temperature,  # 值在[0,1]之间，越大表示回复越具有不确定性
-                            max_tokens=max_tokens, # 输出的最大 token 数
-                            top_p=top_p, # 过滤掉低于阈值的 token 确保结果不散漫
-                            presence_penalty=presence_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
+                            temperature=temperature,
+                            max_tokens=max_tokens,
+                            top_p=top_p,
+                            presence_penalty=presence_penalty,
                             stream=stream
                         ),
-                        timeout=60.0  # 设置超时时间为180秒
+                        timeout=60.0
                     )
                 else:
-                    logger.info(f"调用perplexity模型传入的消息列表:{messages}")
                     response = await asyncio.wait_for(
                         async_openai_client.chat.completions.create(
-                            model=model,
+                            model=or_model,
                             messages=messages,
-                            temperature=temperature,  # 值在[0,1]之间，越大表示回复越具有不确定性
-                            max_tokens=max_tokens, # 输出的最大 token 数
-                            top_p=top_p, # 过滤掉低于阈值的 token 确保结果不散漫
-                            presence_penalty=presence_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
+                            temperature=temperature,
+                            max_tokens=max_tokens,
+                            top_p=top_p,
+                            presence_penalty=presence_penalty,
                             stream=stream
                         ),
-                        timeout=60.0  # 设置超时时间为180秒
+                        timeout=60.0
                     )
             except Exception as e:
-                err_message = f"调用perplexity模型出现异常：{e}"
+                err_message = f"调用perplexity(OpenRouter)模型出现异常：{e}"
                 logger.error(err_message)
                 logger.error(traceback.format_exc())
                 await send_notice_message('genai_utils', 'openai_chat_completion_acreate', 0, err_message, 3)
@@ -364,7 +404,7 @@ async def openai_chat_completion_acreate(
         raise e
     return response
 
-async def simple_achat(messages: typing.List[typing.Mapping[str, str]], model: str = 'gpt-5-mini'):
+async def simple_achat(messages: typing.List[typing.Mapping[str, str]], model: str = 'gpt-5.6-luna'):
     from llama_index.llms import ChatMessage, OpenAI as OpenAI2
     OPENAI_API_KEY = openai.api_key
     _msgs = []
@@ -377,7 +417,7 @@ async def simple_achat(messages: typing.List[typing.Mapping[str, str]], model: s
     resp = await OpenAI2(model=model, api_key=OPENAI_API_KEY).achat(_msgs)
     return resp.message.content
 
-async def async_simple_chat(messages: typing.List[typing.Mapping[str, str]], stream: bool = False, model: str = 'gpt-5-mini', key_type: str = 'normal', openapikey: str = None):
+async def async_simple_chat(messages: typing.List[typing.Mapping[str, str]], stream: bool = False, model: str = 'gpt-5.6-luna', key_type: str = 'normal', openapikey: str = None):
     try:
         if SIMPLE_CHAT_MODEL == 'openai':
             expired_time = 30.0
@@ -449,7 +489,7 @@ async def async_simple_chat(messages: typing.List[typing.Mapping[str, str]], str
             raise e
 
 
-async def async_simple_chat_with_model(messages: typing.List[typing.Mapping[str, str]], stream: bool = False, model: str = 'gpt-5-mini', base_model:str = 'openai', key_type: str = 'normal', system_msg=''):
+async def async_simple_chat_with_model(messages: typing.List[typing.Mapping[str, str]], stream: bool = False, model: str = 'gpt-5.6-luna', base_model:str = 'openai', key_type: str = 'normal', system_msg=''):
     try:
         simple_achat_model = base_model
         if simple_achat_model == 'openai':
@@ -474,32 +514,29 @@ async def async_simple_chat_with_model(messages: typing.List[typing.Mapping[str,
             else:
                 return response.choices[0].message.content
         elif simple_achat_model == 'claude':
-            model = CLAUDE_MODEL
-            expired_time = 60.0
+            # 显式传入 claude-* 时尊重调用方（如 claude-opus-5）；否则用默认 Sonnet
+            if not str(model).startswith("claude"):
+                model = CLAUDE_MODEL
+            expired_time = 180.0 if key_type != 'normal' else 60.0
             claude_client = AsyncAnthropic(api_key=ANTHROPIC_API_KEY)
-            if system_msg:
-                response = await asyncio.wait_for(
-                    claude_client.messages.create(
-                        model=model,
-                        max_tokens=2048,
-                        temperature=0,
-                        messages=messages,
-                        stream=stream,
-                        system=system_msg
-                    ),
-                    timeout=expired_time  # 设置超时时间为180秒
-                )
-            else:
-                response = await asyncio.wait_for(
-                    claude_client.messages.create(
-                        model=model,
-                        temperature=0,
-                        messages=messages,
-                        stream=stream,
-                        max_tokens=6000
-                    ),
-                    timeout=expired_time  # 设置超时时间为180秒
-                )
+            claude_messages = list(messages)
+            claude_system = system_msg or ""
+            if not claude_system and claude_messages and claude_messages[0].get("role") == "system":
+                claude_system = claude_messages[0].get("content") or ""
+                claude_messages = claude_messages[1:]
+            create_kwargs = {
+                "model": model,
+                "messages": claude_messages,
+                "stream": stream,
+                "temperature": 0,
+                "max_tokens": 6000 if key_type != 'normal' else 2048,
+            }
+            if claude_system:
+                create_kwargs["system"] = claude_system
+            response = await asyncio.wait_for(
+                claude_client.messages.create(**create_kwargs),
+                timeout=expired_time
+            )
             if stream:
                 return response
             else:
@@ -532,7 +569,7 @@ async def async_simple_chat_with_model(messages: typing.List[typing.Mapping[str,
             await send_notice_message('genai_utils', 'async_simple_chat', 0, err_message, 3)
             raise e
 
-async def async_simple_chat_stream(messages: typing.List[typing.Mapping[str, str]], model: str='gpt-5-mini'):
+async def async_simple_chat_stream(messages: typing.List[typing.Mapping[str, str]], model: str='gpt-5.6-luna'):
     from genaipf.dispatcher.api import awrap_gpt_generator
     resp = await async_simple_chat(messages, True, model)
     return awrap_gpt_generator(resp, "text")

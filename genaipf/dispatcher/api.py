@@ -3,7 +3,7 @@ import asyncio
 from typing import List
 from genaipf.conf.server import os
 from genaipf.dispatcher.functions import gpt_functions
-from genaipf.dispatcher.utils import openai, OPENAI_PLUS_MODEL, CLAUDE_MODEL, openai_chat_completion_acreate, PERPLEXITY_MODEL, MISTRAL_MODEL, DEEPSEEK_V3_MODEL, DEEPSEEK_R1_MODEL, MOUNTAINLION_C1_MODEL, MOUNTAINLION_C1_D_MODEL, QWEN_MODEL
+from genaipf.dispatcher.utils import openai, OPENAI_PLUS_MODEL, CLAUDE_MODEL, openai_chat_completion_acreate, PERPLEXITY_MODEL, MISTRAL_MODEL, GLM_MODEL, ERNIE_MODEL, DEEPSEEK_V3_MODEL, DEEPSEEK_R1_MODEL, MOUNTAINLION_C1_MODEL, MOUNTAINLION_C1_D_MODEL, QWEN_MODEL, get_openrouter_client
 from genaipf.utils.log_utils import logger
 from datetime import datetime
 from genaipf.dispatcher.prompts_v001 import LionPrompt
@@ -411,12 +411,12 @@ async def afunc_gpt_generator(messages_in, functions=gpt_functions, language=Lio
         {"role": "user", "content": "Where is Tokyo?"},
     ]
     '''
-    use_model = 'gpt-5-mini'
+    use_model = 'gpt-5.6-luna'
     if model == 'ml-plus':
         use_model = OPENAI_PLUS_MODEL
     if isvision:
         # 图片处理专用模型
-        use_model = 'gpt-5.2'
+        use_model = 'gpt-5.6-terra'
     messages = make_calling_messages_based_on_model(messages_in, use_model)
     for i in range(5):
         mlength = len(messages)
@@ -482,7 +482,7 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
                 {"role": "user", "content": "what color?", "type": "text", "version": "v001"},
             ]
     """
-    use_model = 'gpt-5-mini'
+    use_model = 'gpt-5.6-luna'
     _llm_model_lower = llm_model.lower()
     if _llm_model_lower == 'openai':
         use_model = OPENAI_PLUS_MODEL
@@ -493,11 +493,11 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
     elif _llm_model_lower == 'claude':
         use_model = CLAUDE_MODEL
     elif _llm_model_lower == 'gemini':
-        use_model = 'gemini-2.5-flash'
+        use_model = 'gemini-3.5-flash'
     elif _llm_model_lower == 'glm':
-        use_model = 'glm-4-flash'
+        use_model = GLM_MODEL
     elif _llm_model_lower == 'ernie':
-        use_model = 'ERNIE-Speed-128K'
+        use_model = ERNIE_MODEL
     elif _llm_model_lower == 'deepseek':
         use_model = DEEPSEEK_V3_MODEL
     elif _llm_model_lower == 'deepseek-reasoner':
@@ -512,7 +512,7 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
 
     if isvision:
         # 图片处理专用模型
-        # use_model = 'gpt-4o'
+        # use_model = 'gpt-5.6-luna'
         use_model = OPENAI_PLUS_MODEL
     if source == 'v002':
         content = prompts_v002.LionPrompt.get_aref_answer_prompt(language, preset_name, picked_content, related_qa, use_model, {}, quote_message)
@@ -583,7 +583,7 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
             logger.error(traceback.format_exc())
             await send_notice_message('genai_api', 'aref_answer_gpt_generator', 0, err_message, 3)
             return aget_error_generator(str(e))
-    elif use_model.startswith("gpt") or use_model == PERPLEXITY_MODEL:
+    elif use_model.startswith("gpt") or use_model == PERPLEXITY_MODEL or (isinstance(use_model, str) and use_model.startswith("perplexity/")):
         for i in range(5):
             mlength = len(messages)
             try:
@@ -667,22 +667,24 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
                 print(e)
                 logger.error(f'aref_answer_gpt_generator question_JSON call gpt4 error {e}', e)
                 return aget_error_generator(str(e))
-    elif use_model == MISTRAL_MODEL:
-        client = None
+    elif use_model == MISTRAL_MODEL or (isinstance(use_model, str) and use_model.startswith("mistralai/")):
         try:
             _messages = [system] + messages
-            __messages = [ChatMessage(role=x['role'], content=x['content']) for x in _messages]
-            logger.info(f"调用mistral模型传入的消息列表:{__messages}")
-            mistral_api_key = os.getenv("MISTRAL_API_KEY")
-            client = MistralAsyncClient(api_key=mistral_api_key)
-            response = client.chat_stream(
-                model=use_model,
-                messages=__messages,
+            client = get_openrouter_client()
+            response = await client.chat.completions.create(
+                model=use_model if str(use_model).startswith("mistralai/") else MISTRAL_MODEL,
+                messages=_messages,
+                temperature=temperature,
+                max_tokens=max_tokens,
+                top_p=top_p,
+                presence_penalty=presence_penalty,
+                stream=True,
             )
-            return awrap_mistral_generator(response, output_type, client)
+            logger.info(f'aref_answer_gpt mistral(via OpenRouter) called')
+            return awrap_gpt_generator(response, output_type)
         except Exception as e:
-            logger.error(f'aref_answer_gpt_generator call mistral error {e}', e)
-            err_message = f"调用aref_answer_gpt_generator mistral call 出现异常：{e}"
+            logger.error(f'aref_answer_gpt_generator call mistral(OpenRouter) error {e}', e)
+            err_message = f"调用aref_answer_gpt_generator mistral OpenRouter call 出现异常：{e}"
             logger.error(err_message)
             logger.error(traceback.format_exc())
             await send_notice_message('genai_api', 'aref_answer_gpt_generator', 0, err_message, 3)
@@ -703,24 +705,24 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
             #     else:
             #         lc_msgs.append(("ai", _m["content"]))
             # logger.info(f"调用claude模型传入的消息列表:{lc_msgs}")
-            # chat = ChatAnthropic(temperature=0, anthropic_api_key=anthropic_api_key, model_name="claude-3-opus-20240229")
+            # chat = ChatAnthropic(temperature=0, anthropic_api_key=anthropic_api_key, model_name="claude-opus-5")
             # prompt = ChatPromptTemplate.from_messages(lc_msgs)
             # parser = StrOutputParser()
             # chain = prompt | chat | parser
             # response = chain.astream({})
             if (source == 'v005' or source == 'v006') and (not preset_name or 'check' not in preset_name): 
-                response = claude_cached_api_call("claude-sonnet-4-6", v005_006_system_prompt, v005_006_system_prompt_ref, messages)
+                response = claude_cached_api_call("claude-sonnet-5", v005_006_system_prompt, v005_006_system_prompt_ref, messages)
             elif source == 'v012' or source == 'v015':
-                response = claude_cached_api_call("claude-sonnet-4-6", system_message, None, messages, source)
+                response = claude_cached_api_call("claude-sonnet-5", system_message, None, messages, source)
             else:
-                response = claude_cached_api_call("claude-sonnet-4-6", system_message, None, messages)
+                response = claude_cached_api_call("claude-sonnet-5", system_message, None, messages)
             logger.info(f'aref_answer_gpt claude called')
             return awrap_claude_generator(response, output_type)
         except Exception as e:
             print(e)
             logger.error(f'aref_answer_gpt_generator claude error {e}')
             return aget_error_generator(str(e))
-    elif use_model == "gemini-2.5-flash":
+    elif use_model == "gemini-3.5-flash":
         try:
             from genaipf.dispatcher.gemini import (
                 async_make_gemini_contents_from_ml_messages,
@@ -739,35 +741,44 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
             logger.error(traceback.format_exc())
             await send_notice_message('genai_api', 'aref_answer_gpt_generator', 0, err_message, 3)
             return aget_error_generator(str(e))
-    elif use_model.startswith('glm'):
+    elif use_model.startswith('glm') or use_model.startswith('z-ai/'):
         try:
             _messages = [system] + messages
-            from zhipuai import ZhipuAI
-            client = ZhipuAI(api_key=server.ZHIPU_GLM_API_KEY)  # 请填写您自己的APIKey
-            response = client.chat.completions.create(
-                model=use_model,  # 请填写您要调用的模型名称
+            client = get_openrouter_client()
+            response = await client.chat.completions.create(
+                model=use_model if str(use_model).startswith("z-ai/") else GLM_MODEL,
                 messages=_messages,
+                temperature=temperature,
+                max_tokens=max_tokens,
                 stream=True,
             )
-            return awrap_gml_generator(response, output_type)
+            logger.info(f'aref_answer_gpt glm(via OpenRouter) called')
+            return awrap_gpt_generator(response, output_type)
         except Exception as e:
-            logger.error(f'aref_answer_gpt_generator glm call error {e}', e)
+            logger.error(f'aref_answer_gpt_generator glm(OpenRouter) call error {e}', e)
             return aget_error_generator(str(e))
-    elif use_model.startswith('ERNIE'):
+    elif use_model.startswith('ERNIE') or use_model.startswith('baidu/'):
         try:
-            import qianfan
-            chat_comp = qianfan.ChatCompletion()
-            response = chat_comp.do(model=use_model, messages=messages, system=system['content'], stream=True)
-            return awrap_ernie_generator(response, output_type)
+            _messages = [system] + messages
+            client = get_openrouter_client()
+            response = await client.chat.completions.create(
+                model=use_model if str(use_model).startswith("baidu/") else ERNIE_MODEL,
+                messages=_messages,
+                temperature=temperature,
+                max_tokens=max_tokens,
+                stream=True,
+            )
+            logger.info(f'aref_answer_gpt ernie(via OpenRouter) called')
+            return awrap_gpt_generator(response, output_type)
         except Exception as e:
-            logger.error(f'aref_answer_gpt_generator ernie call error {e}', e)
+            logger.error(f'aref_answer_gpt_generator ernie(OpenRouter) call error {e}', e)
             return aget_error_generator(str(e))
     return aget_error_generator("error after retry many times")
 
 async def aref_oneshot_gpt_generator(messages, model='', language=LionPrompt.default_lang, preset_name=None, picked_content="", related_qa=[], data=None, stream=False, mode=None):
     front_messages = messages
     gpt_prams = data.get("gpt_prams", {})
-    use_model = 'gpt-5-mini'
+    use_model = 'gpt-5.6-luna'
     if model == 'ml-plus':
         use_model = OPENAI_PLUS_MODEL
     try:
@@ -817,7 +828,7 @@ def make_calling_messages_based_on_model(messages, use_model: str) -> List:
                 {"role": "user", "content": "what color?", "type": "text", "version": "v001"},
             ]
         use_model (str): _description_
-            "gpt-4o"
+            "gpt-5.6-luna"
     Outputs:
         [
             {"role": "system", "content": "You are a chatbot."},
@@ -828,7 +839,7 @@ def make_calling_messages_based_on_model(messages, use_model: str) -> List:
     """
     out_msgs = []
     logger.info(f'========== model3: {use_model} !!!!!!!!!!')
-    if use_model.startswith("gpt-4o") or use_model.startswith("gpt-4-vision") or use_model.startswith("gpt-4.1") or use_model.startswith("gpt-5"):        
+    if use_model.startswith("gpt-5.6-luna") or use_model.startswith("gpt-4-vision") or use_model.startswith("gpt-4.1") or use_model.startswith("gpt-5"):        
         matching_indices = []
         for i in range(len(messages) - 1, -1, -1):
             if messages[i].get("type", "") == "image":

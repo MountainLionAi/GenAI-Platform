@@ -944,7 +944,7 @@ class ResearchAssistant:
             async with self.client_manager.claude_rate_limit():
                 claude_client = await self.client_manager.get_claude_client()
                 response = await claude_client.messages.create(
-                    model="claude-sonnet-4-6",
+                    model="claude-sonnet-5",
                     max_tokens=2000,
                     temperature=0.3,
                     messages=[{"role": "user", "content": prompt}]
@@ -1091,7 +1091,7 @@ class ResearchAssistant:
             async with self.client_manager.openai_rate_limit():
                 openai_client = await self.client_manager.get_openai_client()
                 response = await openai_client.responses.create(
-                    model="gpt-5.2",
+                    model="gpt-5.6-luna",
                     tools=[{
                         "type": "web_search_preview",
                         "search_context_size": question.search_context_size,

@@ -10,21 +10,32 @@ import asyncio
 import traceback
 import os
 
-DS_DMX_API_KEY = os.getenv("DS_DMX_API_KEY")
-DS_DMX_API_URL = os.getenv("DS_DMX_API_URL")
-DS_DMX_MODEL_V3 = os.getenv("DS_DMX_MODEL_V3")
-DS_DMX_MODEL_R1 = os.getenv("DS_DMX_MODEL_R1")
+def _env(name, default=None):
+    v = os.getenv(name)
+    if v is None:
+        return default
+    v = v.strip().strip('"').strip("'").strip()
+    return v if v else default
 
-DS_OPENROUTER_API_KEY = os.getenv("DS_OPENROUTER_API_KEY")
-DS_OPENROUTER_API_URL = os.getenv("DS_OPENROUTER_API_URL")
-DS_OPENROUTER_MODEL_V3 = os.getenv("DS_OPENROUTER_MODEL_V3")
-DS_OPENROUTER_MODEL_R1 = os.getenv("DS_OPENROUTER_MODEL_R1")
-DS_OPENROUTER_MODEL_QWEN = os.getenv("DS_OPENROUTER_MODEL_QWEN")
+DS_DMX_API_KEY = _env("DS_DMX_API_KEY")
+DS_DMX_API_URL = (_env("DS_DMX_API_URL") or "https://www.dmxapi.com/v1").rstrip("/")
+DS_DMX_MODEL_V3 = _env("DS_DMX_MODEL_V3") or "deepseek-v4-flash"
+DS_DMX_MODEL_R1 = _env("DS_DMX_MODEL_R1") or "deepseek-v4-pro"
 
-DS_OFFICIAL_API_KEY = os.getenv("DS_OFFICIAL_API_KEY")
-DS_OFFICIAL_API_URL = os.getenv("DS_OFFICIAL_API_URL")
-DS_OFFICIAL_MODEL_V3 = os.getenv("DS_OFFICIAL_MODEL_V3")
-DS_OFFICIAL_MODEL_R1 = os.getenv("DS_OFFICIAL_MODEL_R1")
+DS_OPENROUTER_API_KEY = _env("DS_OPENROUTER_API_KEY")
+DS_OPENROUTER_API_URL = (_env("DS_OPENROUTER_API_URL") or "https://openrouter.ai/api/v1").rstrip("/")
+DS_OPENROUTER_MODEL_V3 = _env("DS_OPENROUTER_MODEL_V3") or "deepseek/deepseek-v4-flash"
+DS_OPENROUTER_MODEL_R1 = _env("DS_OPENROUTER_MODEL_R1") or "deepseek/deepseek-v4-pro"
+if DS_OPENROUTER_MODEL_R1 in {"deepseek/deepseek-r1-0528:free", "deepseek/deepseek-chat"}:
+    DS_OPENROUTER_MODEL_R1 = "deepseek/deepseek-v4-pro"
+if DS_OPENROUTER_MODEL_V3 in {"deepseek/deepseek-chat"}:
+    DS_OPENROUTER_MODEL_V3 = "deepseek/deepseek-v4-flash"
+DS_OPENROUTER_MODEL_QWEN = _env("DS_OPENROUTER_MODEL_QWEN")
+
+DS_OFFICIAL_API_KEY = _env("DS_OFFICIAL_API_KEY")
+DS_OFFICIAL_API_URL = (_env("DS_OFFICIAL_API_URL") or "https://api.deepseek.com").rstrip("/")
+DS_OFFICIAL_MODEL_V3 = _env("DS_OFFICIAL_MODEL_V3") or "deepseek-v4-flash"
+DS_OFFICIAL_MODEL_R1 = _env("DS_OFFICIAL_MODEL_R1") or "deepseek-v4-pro"
 
 class ProviderPriority(Enum):
     DMXAPI = 1
