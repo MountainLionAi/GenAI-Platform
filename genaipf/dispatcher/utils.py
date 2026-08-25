@@ -102,7 +102,7 @@ gpt_func_coll_name = f"{SUB_VDB_GPT_FUNC_PREFIX}{vdb_prefix}_gpt_func"
 client = QdrantClient(qdrant_url)
 
 @cache
-def get_embedding(text, model = "text-embedding-3-small"):
+def get_embedding(text, model = "text-embedding-ada-002"):
     # result = openai.Embedding.create(
     text = limit_tokens_from_string(text, model, 8192)
     result = openai_client.embeddings.create(
