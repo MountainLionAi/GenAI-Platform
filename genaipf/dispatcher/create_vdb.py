@@ -7,7 +7,6 @@ from genaipf.dispatcher.utils import (
     client,
     models,
     get_embedding,
-    get_local_embedding,
 )
 import tqdm
 import os
@@ -33,11 +32,10 @@ def _ensure_collection(collection_name, vector_size=dimension):
     colls = client.get_collections()
     names = [x.name for x in colls.collections]
     if collection_name not in names:
-        size = 4096 if "backup" in collection_name else vector_size
         client.create_collection(
             collection_name=collection_name,
             vectors_config=models.VectorParams(
-                size=size, distance=models.Distance.COSINE
+                size=vector_size, distance=models.Distance.COSINE
             ),
         )
 
@@ -95,14 +93,13 @@ def rebuild_vdb(
         client.delete_collection(collection_name)
         print(f">>>>> deleted collection {collection_name}")
 
-    size = 4096 if "backup" in collection_name else vector_size
     client.create_collection(
         collection_name=collection_name,
         vectors_config=models.VectorParams(
-            size=size, distance=models.Distance.COSINE
+            size=vector_size, distance=models.Distance.COSINE
         ),
     )
-    print(f">>>>> created collection {collection_name} dim={size}")
+    print(f">>>>> created collection {collection_name} dim={vector_size}")
 
     tobe_vectors = []
     for i, text in enumerate(tqdm.tqdm(list(vdb_map.keys())), start=1):
@@ -125,10 +122,7 @@ def rebuild_vdb(
 def update_all_vdb():
     for collection_name in [qa_coll_name, gpt_func_coll_name]:
         print(f">>>>> update vdb {collection_name} start.")
-        if "backup" in collection_name:
-            update_vdb(collection_name, get_local_embedding)
-        else:
-            update_vdb(collection_name, get_embedding)
+        update_vdb(collection_name, get_embedding)
         print(f">>>>> update vdb {collection_name} end.")
 
 
@@ -137,8 +131,5 @@ def rebuild_all_vdb(embedding_model=None):
     model = embedding_model or DEFAULT_EMBEDDING_MODEL
     for collection_name in [qa_coll_name, gpt_func_coll_name]:
         print(f">>>>> rebuild vdb {collection_name} start.")
-        if "backup" in collection_name:
-            rebuild_vdb(collection_name, embedding_func=get_local_embedding)
-        else:
-            rebuild_vdb(collection_name, embedding_model=model)
+        rebuild_vdb(collection_name, embedding_model=model)
         print(f">>>>> rebuild vdb {collection_name} end.")
