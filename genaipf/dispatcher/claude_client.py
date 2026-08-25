@@ -95,7 +95,6 @@ async def claude_tools_call(functions=None, system_prompt="", ml_messages=[]):
             model="claude-sonnet-5",
             tools=functions,
             max_tokens=2048,
-            temperature=0,
             system=system_prompt,
             messages=ml_messages
         ) as stream:

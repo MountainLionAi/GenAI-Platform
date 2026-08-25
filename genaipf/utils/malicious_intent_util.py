@@ -89,7 +89,6 @@ Please analyze if these messages contain malicious content, and strictly return 
                     lambda: self.client.messages.create(
                         model="claude-sonnet-5",
                         max_tokens=5,
-                        temperature=0,
                         system=system_prompt,
                         messages=user_messages
                     )

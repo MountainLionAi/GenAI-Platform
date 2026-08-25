@@ -946,7 +946,6 @@ class ResearchAssistant:
                 response = await claude_client.messages.create(
                     model="claude-sonnet-5",
                     max_tokens=2000,
-                    temperature=0.3,
                     messages=[{"role": "user", "content": prompt}]
                 )
             

@@ -189,7 +189,6 @@ Focus on the most recent messages and ensure queries are specific and actionable
             response = self.claude_client.messages.create(
                 model="claude-sonnet-5",
                 max_tokens=2000,
-                temperature=0,
                 system=system_prompt,
                 messages=[{"role": "user", "content": user_message}],
                 tools=tools,

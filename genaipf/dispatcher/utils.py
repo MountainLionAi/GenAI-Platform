@@ -242,9 +242,10 @@ async def openai_chat_completion_acreate(
                 api_key=openai.api_key,
             )
             # gpt-5.x 系列参数限制：用 max_completion_tokens；不支持 temperature/top_p/frequency_penalty/presence_penalty
+            # gpt-5.6-* 默认带 reasoning；chat.completions + function tools 必须显式 reasoning_effort=none
             if model.startswith('gpt-5'):
                 _token_kwarg = {'max_completion_tokens': max_tokens}
-                _extra_kwargs = {}
+                _extra_kwargs = {'reasoning_effort': 'none'} if functions else {}
             else:
                 _token_kwarg = {'max_tokens': max_tokens}
                 _extra_kwargs = {'temperature': temperature, 'top_p': top_p, 'frequency_penalty': frequency_penalty, 'presence_penalty': presence_penalty}
@@ -450,7 +451,6 @@ async def async_simple_chat(messages: typing.List[typing.Mapping[str, str]], str
                 claude_client.messages.create(
                     model=model,
                     max_tokens=2048,
-                    temperature=0,
                     messages=messages,
                     stream=stream
                 ),
@@ -528,7 +528,6 @@ async def async_simple_chat_with_model(messages: typing.List[typing.Mapping[str,
                 "model": model,
                 "messages": claude_messages,
                 "stream": stream,
-                "temperature": 0,
                 "max_tokens": 6000 if key_type != 'normal' else 2048,
             }
             if claude_system:
