@@ -47,7 +47,7 @@ import traceback
 
 # 240327
 temperature=0.8 # 值在[0,1]之间，越大表示回复越具有不确定性
-max_tokens=4000 # 输出的最大 token 数
+max_tokens=8000 # 输出的最大 token 数（币价长报告；过小会导致流式正文中途截断）
 top_p=0.85 # 过滤掉低于阈值的 token 确保结果不散漫
 frequency_penalty=0.3 # [-2,2]之间，该值越大则更倾向于产生不同的内容
 presence_penalty=0.2 # [-2,2]之间，该值越大则更倾向于产生不同的内容

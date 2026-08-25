@@ -241,11 +241,11 @@ async def openai_chat_completion_acreate(
                 # defaults to os.environ.get("OPENAI_API_KEY")
                 api_key=openai.api_key,
             )
-            # gpt-5.x 系列参数限制：用 max_completion_tokens；不支持 temperature/top_p/frequency_penalty/presence_penalty
-            # gpt-5.6-* 默认带 reasoning；chat.completions + function tools 必须显式 reasoning_effort=none
+            # gpt-5.x：max_completion_tokens；默认 reasoning 会吃掉补全额度导致正文中途截断
+            # chat.completions 场景统一 reasoning_effort=none（含 tools 与纯回答）
             if model.startswith('gpt-5'):
                 _token_kwarg = {'max_completion_tokens': max_tokens}
-                _extra_kwargs = {'reasoning_effort': 'none'} if functions else {}
+                _extra_kwargs = {'reasoning_effort': 'none'}
             else:
                 _token_kwarg = {'max_tokens': max_tokens}
                 _extra_kwargs = {'temperature': temperature, 'top_p': top_p, 'frequency_penalty': frequency_penalty, 'presence_penalty': presence_penalty}

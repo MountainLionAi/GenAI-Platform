@@ -45,7 +45,7 @@ async def claude_cached_api_call(model_name="claude-sonnet-5", system_prompt="",
         try:
             async with async_client.messages.stream(
                 model=model_name,
-                max_tokens=2048,
+                max_tokens=8192,
                 system=system,
                 messages=ml_messages,
                 extra_headers={"anthropic-beta": "prompt-caching-2024-07-31"}
@@ -67,7 +67,7 @@ async def claude_cached_api_call(model_name="claude-sonnet-5", system_prompt="",
         try:
             async with async_client.messages.stream(
                 model=model_name,
-                max_tokens=2048,
+                max_tokens=8192,
                 system=system_prompt,
                 messages=ml_messages
             ) as stream:
@@ -94,7 +94,7 @@ async def claude_tools_call(functions=None, system_prompt="", ml_messages=[]):
         async with async_client.messages.stream(
             model="claude-sonnet-5",
             tools=functions,
-            max_tokens=2048,
+            max_tokens=8192,
             system=system_prompt,
             messages=ml_messages
         ) as stream:
