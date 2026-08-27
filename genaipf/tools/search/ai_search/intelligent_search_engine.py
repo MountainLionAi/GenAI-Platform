@@ -358,7 +358,13 @@ Focus on the most recent messages and ensure queries are specific and actionable
                     return await self._execute_coingecko_search(session, query)
                 else:
                     error_text = await response.text()
-                    logger.error(f"CoinGecko API error: {response.status} - {error_text}")
+                    # 订阅失效等账号问题：降级为 warning，避免刷屏 ERROR
+                    if response.status == 401 and "subscription deactivated" in error_text.lower():
+                        logger.warning(
+                            "CoinGecko Pro subscription deactivated; skip coingecko until key renewed"
+                        )
+                    else:
+                        logger.error(f"CoinGecko API error: {response.status} - {error_text}")
                     return {
                         "query": query.query,
                         "api": "coingecko",

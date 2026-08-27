@@ -27,10 +27,15 @@ class GoogleSerperClient:
         return self._api_key
 
     async def search(self, question, k=5):
-        logger.info(f'google serper search current key is {self._api_key}')
-        type: Literal["news", "search", "places", "images"] = "search"
+        search_type = "search"
         search_result = []
         try:
+            if not question or not str(question).strip():
+                logger.warning('google serper search skipped: empty question')
+                return search_result, ''
+            if not self._api_key:
+                logger.error('google serper search error: missing API key')
+                return search_result, ''
             client = AsyncHTTPClient()
             payload = {
                 "q": question,
@@ -45,7 +50,7 @@ class GoogleSerperClient:
                 'Content-Type': 'application/json'
             }
             result = await client.post_json(REQUEST_URL, payload, headers)
-            return self.parse_snippets(result, type, k)
+            return self.parse_snippets(result, search_type, k)
         except Exception as e:
             if '429' in str(e):
                 set_api_key_unavaiable(self._api_key, CLIENT_TYPE)
@@ -53,9 +58,14 @@ class GoogleSerperClient:
             return search_result, ''
 
     async def search_origin(self, question, time, k=5):
-        logger.info(f'google serper search current key is {self._api_key}')
         search_result = []
         try:
+            if not question or not str(question).strip():
+                logger.warning('google serper search_origin skipped: empty question')
+                return search_result
+            if not self._api_key:
+                logger.error('google serper search_origin error: missing API key')
+                return search_result
             client = AsyncHTTPClient()
             if not time:
                 payload = {
@@ -87,12 +97,17 @@ class GoogleSerperClient:
         return search_result
 
     async def search_origin_images(self, question, k=10):
-        logger.info(f'google serper image search current key is {self._api_key}')
         search_result = {
             'type': 'images',
             'data': []
         }
         try:
+            if not question or not str(question).strip():
+                logger.warning('google serper image search skipped: empty question')
+                return search_result
+            if not self._api_key:
+                logger.error('google serper image search error: missing API key')
+                return search_result
             client = AsyncHTTPClient()
             payload = {
                 "q": question,
@@ -157,10 +172,15 @@ class GoogleSerperClient:
 
 
     async def news(self, question, k=5):
-        logger.info(f'google serper search current key is {self._api_key}')
-        type: Literal["news", "search", "places", "images"] = "news"
+        search_type = "news"
         search_result = []
         try:
+            if not question or not str(question).strip():
+                logger.warning('google serper news skipped: empty question')
+                return search_result, ''
+            if not self._api_key:
+                logger.error('google serper news error: missing API key')
+                return search_result, ''
             client = AsyncHTTPClient()
             payload = {
                 "q": question
@@ -170,7 +190,7 @@ class GoogleSerperClient:
                 'Content-Type': 'application/json'
             }
             result = await client.post_json(REQUEST_URL_NEWS, payload, headers)
-            return self.parse_snippets(result, type, k)
+            return self.parse_snippets(result, search_type, k)
         except Exception as e:
             if '429' in str(e):
                 set_api_key_unavaiable(self._api_key, CLIENT_TYPE)

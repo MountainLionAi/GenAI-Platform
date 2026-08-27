@@ -66,7 +66,13 @@ Mlion接口代码发生异常
         else:
             redis_client.incr(INTERFACE_ERROR_NOTICE_NUMBER_KEY)
             redis_client.expire(INTERFACE_ERROR_NOTICE_NUMBER_KEY, 600)
-            await interface_error_notice_bot.send_message(chat_id=tg_bot_conf.INTERFACE_ERROR_NOTICE_TG_BOT_CHAT_ID, text=text)
+            chat_id = tg_bot_conf.INTERFACE_ERROR_NOTICE_TG_BOT_CHAT_ID
+            if not chat_id:
+                logger.warning(
+                    f"skip TG notice {fileName}/{method}: INTERFACE_ERROR_NOTICE_TG_BOT_CHAT_ID empty"
+                )
+            else:
+                await interface_error_notice_bot.send_message(chat_id=chat_id, text=text)
             if to_email_list:
                 await send_notice_email(to_email_list, fileName, method, code, message)
     except Exception as e:
