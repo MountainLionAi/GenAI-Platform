@@ -1,25 +1,30 @@
 """
 Intelligent Search Tool
-Analyzes chat history using Claude Sonnet 4 to break down complex queries
-into simple search tasks, then executes them using Serper and CoinGecko APIs.
+Analyzes chat history using Claude to break down queries into search tasks,
+then executes them via Serper (web/news) and CoinGecko public API (spot prices).
 """
 
 import asyncio
 import json
 import os
+import re
 import time
 from datetime import datetime, timezone
-from typing import List, Dict, Any, Optional, Union
+from typing import List, Dict, Any
 from dataclasses import dataclass, field
-from functools import wraps
+
 from genaipf.utils.log_utils import logger
-from concurrent.futures import ThreadPoolExecutor
 
 import aiohttp
 import anthropic
-from dotenv import load_dotenv
 import backoff
-import pytz
+
+from genaipf.tools.search.ai_search.ai_search_openai import (
+    CRYPTO_MAPPING,
+    CRYPTO_PRICE_API_URL,
+)
+
+COINGECKO_PUBLIC_BASE = CRYPTO_PRICE_API_URL.rstrip("/")
 
 
 @dataclass
@@ -38,26 +43,47 @@ class APIConfig:
     """Configuration for API keys and settings"""
     anthropic_api_key: str
     serper_api_key: str
-    coingecko_api_key: str
     max_retries: int = 3
     timeout: int = 30
     max_concurrent_requests: int = 6
+
+
+def _resolve_coingecko_ids(query: str, parameters: Dict[str, Any]) -> str:
+    """Map query text / params to CoinGecko coin ids (comma-separated)."""
+    if parameters.get("ids"):
+        return str(parameters["ids"])
+    coin_id = parameters.get("coin_id")
+    if coin_id:
+        return str(coin_id)
+    text = (query or "").upper()
+    found = []
+    for symbol, cg_id in CRYPTO_MAPPING.items():
+        if re.search(rf"\b{re.escape(symbol)}\b", text):
+            found.append(cg_id)
+    if found:
+        # preserve order, dedupe
+        seen = set()
+        ordered = []
+        for cid in found:
+            if cid not in seen:
+                seen.add(cid)
+                ordered.append(cid)
+        return ",".join(ordered[:5])
+    slug = query.lower().strip().replace(" ", "-")
+    return slug or "bitcoin"
 
 
 class IntelligentSearchTool:
     """Main class for intelligent search functionality"""
     
     def __init__(self):
-        # Load API keys from environment
         self.config = APIConfig(
             anthropic_api_key=os.getenv("ANTHROPIC_API_KEY"),
             serper_api_key=os.getenv("GOOGLE_SERPER_API_KEY_FOR_NEWS"),
-            coingecko_api_key=os.getenv("COINGECKO_API_KEY")
         )
-        
-        # Validate API keys
-        if not all([self.config.anthropic_api_key, self.config.serper_api_key, self.config.coingecko_api_key]):
-            raise ValueError("Missing required API keys in .env file")
+
+        if not all([self.config.anthropic_api_key, self.config.serper_api_key]):
+            raise ValueError("Missing required API keys: ANTHROPIC_API_KEY, GOOGLE_SERPER_API_KEY_FOR_NEWS")
         
         # Initialize Anthropic client
         self.claude_client = anthropic.Anthropic(api_key=self.config.anthropic_api_key)
@@ -123,8 +149,8 @@ System timezone: {self.system_timezone}
 Analyze the conversation and break down complex questions into simple, specific search queries (maximum 6).
 
 For each query, determine:
-1. Use 'serper' API for: general web searches, news, images, shopping, places, academic content
-2. Use 'coingecko' API for: cryptocurrency prices, market data, trading volumes, historical crypto data
+1. Use 'serper' API for: general web searches, news, images, and crypto context (include coin name + "price" in q when helpful)
+2. Use 'coingecko' API ONLY for structured spot price / market cap / 24h change (public free tier; endpoint /simple/price preferred)
 
 Serper endpoints:
 - /search (general web)
@@ -146,11 +172,7 @@ Query string "q" should include current time context when relevant:
 - Include "this week", "today", "recent" when asking for latest info
 - Use "August 2025" for current month when relevant
 
-CoinGecko endpoints:
-- /simple/price (current prices)
-- /coins/markets (market overview)
-- /coins/{id}/market_chart (historical data)
-- /coins/{id}/ohlc (OHLC data)
+CoinGecko (public, no Pro key): prefer /simple/price with parameters.ids set to coin id (e.g. bitcoin, ethereum). Avoid /market_chart unless user explicitly asks for history.
 
 Consider time constraints and prioritize queries by importance."""
 
@@ -300,47 +322,38 @@ Focus on the most recent messages and ensure queries are specific and actionable
             }
     
     async def _execute_coingecko_search(self, session: aiohttp.ClientSession, query: SearchQuery) -> Dict[str, Any]:
-        """Execute a single CoinGecko API search"""
-        
-        base_url = "https://pro-api.coingecko.com/api/v3"
-        
-        # Handle different endpoints
-        if query.endpoint == "/simple/price":
-            url = f"{base_url}/simple/price"
-            params = {
-                "ids": query.parameters.get("ids", query.query.lower().replace(" ", "-")),
-                "vs_currencies": query.parameters.get("vs_currencies", "usd"),
-                "include_market_cap": "true",
-                "include_24hr_vol": "true",
-                "include_24hr_change": "true",
-                "include_last_updated_at": "true"
-            }
-        elif query.endpoint == "/coins/markets":
+        """CoinGecko public API (plan B): no Pro key required."""
+        base_url = COINGECKO_PUBLIC_BASE
+        coin_ids = _resolve_coingecko_ids(query.query, query.parameters)
+
+        if query.endpoint == "/coins/markets":
             url = f"{base_url}/coins/markets"
             params = {
                 "vs_currency": query.parameters.get("vs_currency", "usd"),
                 "order": query.parameters.get("order", "market_cap_desc"),
-                "per_page": query.parameters.get("per_page", 20),
+                "per_page": min(int(query.parameters.get("per_page", 10)), 20),
                 "page": query.parameters.get("page", 1),
-                "sparkline": "false"
+                "sparkline": "false",
             }
         elif "/market_chart" in query.endpoint:
-            coin_id = query.parameters.get("coin_id", query.query.lower().replace(" ", "-"))
-            url = f"{base_url}/coins/{coin_id}/market_chart"
+            url = f"{base_url}/coins/{coin_ids.split(',')[0]}/market_chart"
             params = {
                 "vs_currency": query.parameters.get("vs_currency", "usd"),
-                "days": query.parameters.get("days", 7)
+                "days": min(int(query.parameters.get("days", 7)), 30),
             }
         else:
-            # Default to simple price
             url = f"{base_url}/simple/price"
-            params = {"ids": query.query.lower().replace(" ", "-"), "vs_currencies": "usd"}
-        
-        headers = {
-            "x-cg-pro-api-key": self.config.coingecko_api_key,
-            "Content-Type": "application/json"
-        }
-        
+            params = {
+                "ids": coin_ids,
+                "vs_currencies": query.parameters.get("vs_currencies", "usd"),
+                "include_market_cap": "true",
+                "include_24hr_vol": "true",
+                "include_24hr_change": "true",
+                "include_last_updated_at": "true",
+            }
+
+        headers = {"Accept": "application/json"}
+
         try:
             async with session.get(url, params=params, headers=headers, timeout=self.config.timeout) as response:
                 if response.status == 200:
@@ -350,39 +363,35 @@ Focus on the most recent messages and ensure queries are specific and actionable
                         "api": "coingecko",
                         "endpoint": query.endpoint,
                         "description": query.description,
-                        "results": data
+                        "results": data,
                     }
-                elif response.status == 429:
-                    # Rate limited
-                    await asyncio.sleep(60)  # CoinGecko typically requires 1 minute wait
-                    return await self._execute_coingecko_search(session, query)
-                else:
-                    error_text = await response.text()
-                    # 订阅失效等账号问题：降级为 warning，避免刷屏 ERROR
-                    if response.status == 401 and "subscription deactivated" in error_text.lower():
-                        logger.warning(
-                            "CoinGecko Pro subscription deactivated; skip coingecko until key renewed"
-                        )
-                    else:
-                        logger.error(f"CoinGecko API error: {response.status} - {error_text}")
+                if response.status == 429:
+                    logger.warning("CoinGecko public API rate limited; skip coingecko for this query")
                     return {
                         "query": query.query,
                         "api": "coingecko",
-                        "error": f"HTTP {response.status}: {error_text}"
+                        "error": "HTTP 429: rate limited",
                     }
-                    
+                error_text = await response.text()
+                logger.warning(f"CoinGecko public API error: {response.status} - {error_text[:200]}")
+                return {
+                    "query": query.query,
+                    "api": "coingecko",
+                    "error": f"HTTP {response.status}: {error_text[:200]}",
+                }
+
         except asyncio.TimeoutError:
             return {
                 "query": query.query,
                 "api": "coingecko",
-                "error": "Request timeout"
+                "error": "Request timeout",
             }
         except Exception as e:
-            logger.error(f"CoinGecko search error: {str(e)}")
+            logger.warning(f"CoinGecko public search error: {e}")
             return {
                 "query": query.query,
                 "api": "coingecko",
-                "error": str(e)
+                "error": str(e),
             }
     
     async def _execute_searches_parallel(self, search_queries: List[SearchQuery]) -> List[Dict[str, Any]]:
