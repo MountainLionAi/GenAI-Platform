@@ -258,8 +258,8 @@ async def aload_web(url):
         loader = WebBaseLoader(url)
         aload = sync_to_async(loader.load)
         res = await aload()
-        openai_api_key = OPENAI_API_KEY
-        llm = ChatOpenAI(temperature=0, openai_api_key=openai_api_key, model_name="gpt-5.6-luna")
+        from genaipf.dispatcher.utils import OPENAI_DEFAULT_MODEL
+        llm = ChatOpenAI(openai_api_key=OPENAI_API_KEY, model_name=OPENAI_DEFAULT_MODEL)
         chain = load_summarize_chain(llm, chain_type="stuff")
         res = await chain.arun(res)
         return res

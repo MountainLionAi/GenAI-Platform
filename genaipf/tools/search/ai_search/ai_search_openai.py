@@ -16,7 +16,13 @@ from anthropic import AsyncAnthropic
 from openai import AsyncOpenAI
 import logging
 from datetime import datetime, timezone
-# from genaipf.dispatcher.utils import _claude_message_text,  ANTHROPIC_API_KEY, OPENAI_API_KEY
+from genaipf.dispatcher.utils import (
+    ANTHROPIC_API_KEY,
+    OPENAI_API_KEY,
+    CLAUDE_MODEL,
+    OPENAI_DEFAULT_MODEL,
+    _claude_message_text,
+)
 import time
 from aiolimiter import AsyncLimiter
 from contextlib import asynccontextmanager
@@ -26,8 +32,11 @@ import genaipf.utils.common_utils as common_utils
 
 # 加载环境变量
 load_dotenv()
-ANTHROPIC_API_KEY = os.getenv('ANTHROPIC_API_KEY')
-OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+# 兼容旧逻辑：若 dispatcher 未注入则回退 env
+if not ANTHROPIC_API_KEY:
+    ANTHROPIC_API_KEY = os.getenv('ANTHROPIC_API_KEY')
+if not OPENAI_API_KEY:
+    OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 
 # 配置日志
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -944,9 +953,10 @@ class ResearchAssistant:
             async with self.client_manager.claude_rate_limit():
                 claude_client = await self.client_manager.get_claude_client()
                 response = await claude_client.messages.create(
-                    model="claude-sonnet-5",
+                    model=CLAUDE_MODEL,
                     max_tokens=2000,
-                    messages=[{"role": "user", "content": prompt}]
+                    messages=[{"role": "user", "content": prompt}],
+                    thinking={"type": "disabled"},
                 )
             
             content = _claude_message_text(response)
@@ -1090,7 +1100,7 @@ class ResearchAssistant:
             async with self.client_manager.openai_rate_limit():
                 openai_client = await self.client_manager.get_openai_client()
                 response = await openai_client.responses.create(
-                    model="gpt-5.6-luna",
+                    model=OPENAI_DEFAULT_MODEL,
                     tools=[{
                         "type": "web_search_preview",
                         "search_context_size": question.search_context_size,
@@ -1100,7 +1110,7 @@ class ResearchAssistant:
                         }
                     }],
                     input=search_prompt,
-                    temperature=0.1
+                    # gpt-5.x Responses API 不支持 temperature
                 )
             
             # 提取答案
