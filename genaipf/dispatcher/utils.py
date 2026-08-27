@@ -52,7 +52,10 @@ MAX_CH_LENGTH_GPT4 = 3000
 MAX_CH_LENGTH_QA_GPT3 = 3000
 MAX_CH_LENGTH_QA_GPT4 = 1500
 OPENAI_PLUS_MODEL = _env("OPENAI_PLUS_MODEL") or "gpt-5.6-terra"
-CLAUDE_MODEL = "claude-sonnet-5"
+# 轻量默认 chat；仅认 OPENAI_DEFAULT_MODEL（勿回退 SIMPLE_CHAT_MODEL，后者常是 openai/claude 厂商名）
+OPENAI_DEFAULT_MODEL = _env("OPENAI_DEFAULT_MODEL") or "gpt-5.6-luna"
+# Anthropic 主模型；兼容 ANTHROPIC_MODEL（mlion2 同名）
+CLAUDE_MODEL = _env("CLAUDE_MODEL") or _env("ANTHROPIC_MODEL") or "claude-sonnet-5"
 MISTRAL_MODEL = _env("MISTRAL_MODEL") or "mistralai/mixtral-8x22b-instruct"
 GLM_MODEL = _env("GLM_MODEL") or "z-ai/glm-5.2"
 # OR 现网最接近的 Ernie；无官方千帆 Key 时走此 ID

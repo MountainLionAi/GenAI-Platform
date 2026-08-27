@@ -1,12 +1,14 @@
 import json
+import os
 
 from genaipf.tools.search.utils.apikey_manager import get_api_key_by_type, set_api_key_unavaiable
 from genaipf.utils.log_utils import logger
 import cohere
 
 CLIENT_TYPE = 'cohere'
-DEFAULT_MODEL = 'rerank-english-v3.0'
-MULTI_MODEL = 'rerank-multilingual-v3.0'
+# Cohere Rerank：可用 COHERE_RERANK_MODEL 覆盖（默认 3.5 单模型覆盖多语）
+DEFAULT_MODEL = (os.getenv('COHERE_RERANK_MODEL') or 'rerank-v3.5').strip()
+MULTI_MODEL = (os.getenv('COHERE_RERANK_MULTI_MODEL') or DEFAULT_MODEL).strip()
 TOP_N = 4
 DEFAULT_SCORE = 0.6
 

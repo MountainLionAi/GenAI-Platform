@@ -1,11 +1,14 @@
-from openai import OpenAI
-from pathlib import Path
+from openai import OpenAI, AsyncOpenAI
 import tempfile
-import os
 import base64
 from genaipf.conf.server import os
 
 client = OpenAI()
+
+# 可通过 env 升级同厂兼容版（对齐 ml_news TTS_OPENAI_MODEL）
+ASR_OPENAI_MODEL = (os.getenv("ASR_OPENAI_MODEL") or "gpt-4o-mini-transcribe").strip()
+TTS_OPENAI_MODEL = (os.getenv("TTS_OPENAI_MODEL") or "gpt-4o-mini-tts").strip()
+
 
 def transcribe(base64_audio):
     # 解码 Base64 字符串以获取字节数据
@@ -18,7 +21,7 @@ def transcribe(base64_audio):
     # 使用临时文件进行 API 调用
     with open(tmp_file_path, "rb") as audio_file:
         transcript = client.audio.transcriptions.create(
-            model="whisper-1",
+            model=ASR_OPENAI_MODEL,
             file=audio_file
         )
 
@@ -30,7 +33,7 @@ def textToSpeech(text):
 
     # 调用 OpenAI 的语音合成 API
     response = client.audio.speech.create(
-      model="tts-1",
+      model=TTS_OPENAI_MODEL,
       voice="nova",
       input=text
     )
@@ -49,8 +52,7 @@ async def transcribe_v2(base64_audio):
     """
     异步方法，使用 OpenAI 最新的模型将 base64 编码的音频转换为文本
     """
-    # 创建异步客户端
-    async_client = OpenAI()
+    async_client = AsyncOpenAI()
 
     # 解码 Base64 字符串以获取字节数据
     decoded_bytes = base64.b64decode(base64_audio)
@@ -63,10 +65,8 @@ async def transcribe_v2(base64_audio):
     try:
         # 使用临时文件进行 API 调用
         with open(tmp_file_path, "rb") as audio_file:
-            # 使用最新的 whisper 模型进行转录
-            # 注意: 请根据 OpenAI 的最新文档确认当前最新的模型名称
             transcript = await async_client.audio.transcriptions.create(
-                model="whisper-1",  # 可以更新为最新的模型，如 "whisper-large-v3" 等
+                model=ASR_OPENAI_MODEL,
                 file=audio_file
             )
 

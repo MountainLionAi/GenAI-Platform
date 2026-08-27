@@ -3,7 +3,7 @@ import asyncio
 from typing import List
 from genaipf.conf.server import os
 from genaipf.dispatcher.functions import gpt_functions
-from genaipf.dispatcher.utils import openai, OPENAI_PLUS_MODEL, CLAUDE_MODEL, openai_chat_completion_acreate, PERPLEXITY_MODEL, MISTRAL_MODEL, GLM_MODEL, ERNIE_MODEL, DEEPSEEK_V3_MODEL, DEEPSEEK_R1_MODEL, MOUNTAINLION_C1_MODEL, MOUNTAINLION_C1_D_MODEL, QWEN_MODEL, get_openrouter_client
+from genaipf.dispatcher.utils import openai, OPENAI_PLUS_MODEL, OPENAI_DEFAULT_MODEL, CLAUDE_MODEL, openai_chat_completion_acreate, PERPLEXITY_MODEL, MISTRAL_MODEL, GLM_MODEL, ERNIE_MODEL, DEEPSEEK_V3_MODEL, DEEPSEEK_R1_MODEL, MOUNTAINLION_C1_MODEL, MOUNTAINLION_C1_D_MODEL, QWEN_MODEL, get_openrouter_client
 from genaipf.utils.log_utils import logger
 from datetime import datetime
 from genaipf.dispatcher.prompts_v001 import LionPrompt
@@ -411,12 +411,12 @@ async def afunc_gpt_generator(messages_in, functions=gpt_functions, language=Lio
         {"role": "user", "content": "Where is Tokyo?"},
     ]
     '''
-    use_model = 'gpt-5.6-luna'
+    use_model = OPENAI_DEFAULT_MODEL
     if model == 'ml-plus':
         use_model = OPENAI_PLUS_MODEL
     if isvision:
         # 图片处理专用模型
-        use_model = 'gpt-5.6-terra'
+        use_model = OPENAI_PLUS_MODEL
     messages = make_calling_messages_based_on_model(messages_in, use_model)
     for i in range(5):
         mlength = len(messages)
@@ -482,7 +482,7 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
                 {"role": "user", "content": "what color?", "type": "text", "version": "v001"},
             ]
     """
-    use_model = 'gpt-5.6-luna'
+    use_model = OPENAI_DEFAULT_MODEL
     _llm_model_lower = llm_model.lower()
     if _llm_model_lower == 'openai':
         use_model = OPENAI_PLUS_MODEL
@@ -512,7 +512,7 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
 
     if isvision:
         # 图片处理专用模型
-        # use_model = 'gpt-5.6-luna'
+        # use_model = OPENAI_DEFAULT_MODEL
         use_model = OPENAI_PLUS_MODEL
     if source == 'v002':
         content = prompts_v002.LionPrompt.get_aref_answer_prompt(language, preset_name, picked_content, related_qa, use_model, {}, quote_message)
@@ -778,7 +778,7 @@ async def aref_answer_gpt_generator(messages_in, model='', language=LionPrompt.d
 async def aref_oneshot_gpt_generator(messages, model='', language=LionPrompt.default_lang, preset_name=None, picked_content="", related_qa=[], data=None, stream=False, mode=None):
     front_messages = messages
     gpt_prams = data.get("gpt_prams", {})
-    use_model = 'gpt-5.6-luna'
+    use_model = OPENAI_DEFAULT_MODEL
     if model == 'ml-plus':
         use_model = OPENAI_PLUS_MODEL
     try:
