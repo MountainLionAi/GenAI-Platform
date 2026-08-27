@@ -16,7 +16,7 @@ from anthropic import AsyncAnthropic
 from openai import AsyncOpenAI
 import logging
 from datetime import datetime, timezone
-# from genaipf.dispatcher.utils import ANTHROPIC_API_KEY, OPENAI_API_KEY
+# from genaipf.dispatcher.utils import _claude_message_text,  ANTHROPIC_API_KEY, OPENAI_API_KEY
 import time
 from aiolimiter import AsyncLimiter
 from contextlib import asynccontextmanager
@@ -949,7 +949,7 @@ class ResearchAssistant:
                     messages=[{"role": "user", "content": prompt}]
                 )
             
-            content = response.content[0].text
+            content = _claude_message_text(response)
             
             # 提取JSON
             start_idx = content.find('[')

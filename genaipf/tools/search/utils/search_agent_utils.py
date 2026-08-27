@@ -10,7 +10,7 @@ from openai import OpenAI, AsyncOpenAI
 from anthropic import AsyncAnthropic
 import asyncio
 from genaipf.dispatcher.prompts_common import LionPromptCommon
-from genaipf.dispatcher.utils import async_simple_chat, async_simple_chat_with_model
+from genaipf.dispatcher.utils import async_simple_chat, async_simple_chat_with_model, CLAUDE_MODEL
 from genaipf.tools.search.utils.search_task_manager import get_related_question_task, get_sources_tasks, \
     get_is_need_search_task, multi_sources_task, get_divide_questions, check_ai_ranking
 from genaipf.tools.search.google_serper.google_serper_agent import google_serper
@@ -265,7 +265,7 @@ async def generate_questions(question: str, language=None):
     ]
     
     try:
-        _result = await async_simple_chat_with_model(messages, model='claude-sonnet-5', base_model='claude')
+        _result = await async_simple_chat_with_model(messages, model=CLAUDE_MODEL, base_model='claude')
         python_object = ast.literal_eval(_result)
         return python_object
     except (SyntaxError, ValueError) as e:

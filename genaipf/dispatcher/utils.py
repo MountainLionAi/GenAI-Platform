@@ -29,6 +29,18 @@ def _env(name: str, default: str = None):
     return v if v else default
 
 
+def _claude_message_text(response) -> str:
+    """Claude Sonnet 5+ 可能先返回 ThinkingBlock，不能直接 content[0].text。"""
+    parts = []
+    for block in getattr(response, "content", None) or []:
+        if getattr(block, "type", None) == "text" and hasattr(block, "text"):
+            parts.append(block.text or "")
+        elif hasattr(block, "text") and getattr(block, "type", None) != "thinking":
+            # 兼容旧 SDK / 未知块：有 text 且非 thinking 则拼上
+            parts.append(block.text or "")
+    return "".join(parts).strip()
+
+
 # OpenRouter：无效官方 Key 的统一出口（Mistral / Perplexity / GLM / Ernie 等）
 OPENROUTER_API_KEY = _env("DS_OPENROUTER_API_KEY")
 OPENROUTER_API_URL = (_env("DS_OPENROUTER_API_URL") or "https://openrouter.ai/api/v1").rstrip("/")
@@ -455,14 +467,16 @@ async def async_simple_chat(messages: typing.List[typing.Mapping[str, str]], str
                     model=model,
                     max_tokens=2048,
                     messages=messages,
-                    stream=stream
+                    stream=stream,
+                    # Sonnet 5 默认可能带 ThinkingBlock；simple chat 只要最终文本
+                    **({} if stream else {"thinking": {"type": "disabled"}}),
                 ),
                 timeout=expired_time  # 设置超时时间为180秒
             )
             if stream:
                 return response
             else:
-                return response.content[0].text
+                return _claude_message_text(response)
 
     except asyncio.TimeoutError as e:
         err_message = f'>>>>>>>>>async_simple_chat:test002 创建对话失败,出现超时异常，当前使用模型{SIMPLE_CHAT_MODEL}，模型版本: {model}, e: {e}'
@@ -471,15 +485,18 @@ async def async_simple_chat(messages: typing.List[typing.Mapping[str, str]], str
         raise Exception("async_simple_chat:The request to OpenAI timed out after 3 minutes.")
     except Exception as e:
         logger.error(f'>>>>>>>>>async_simple_chat:test003 async_openai_client.chat.completions.create, e: {e}')
-        # 官方openai重试
+        # 官方openai重试（若当前是 Claude 模型名，改走 OpenAI 默认模型）
         try:
+            retry_model = model
+            if str(SIMPLE_CHAT_MODEL).lower() == 'claude' or str(model).startswith('claude'):
+                retry_model = OPENAI_DEFAULT_MODEL
             _retry_client = AsyncOpenAI(api_key=OPENAI_API_KEY)
             response = await _retry_client.chat.completions.create(
-                model=model,
+                model=retry_model,
                 messages=messages,
                 stream=stream
             )
-            logger.info(f'>>>>>>>>>async_simple_chat openai retry success')
+            logger.info(f'>>>>>>>>>async_simple_chat openai retry success model={retry_model}')
             if stream:
                 return response
             else:
@@ -535,6 +552,9 @@ async def async_simple_chat_with_model(messages: typing.List[typing.Mapping[str,
             }
             if claude_system:
                 create_kwargs["system"] = claude_system
+            # Sonnet 5 复杂题会先吐 ThinkingBlock；非流式工具调用关掉 thinking，避免解析炸掉
+            if not stream:
+                create_kwargs["thinking"] = {"type": "disabled"}
             response = await asyncio.wait_for(
                 claude_client.messages.create(**create_kwargs),
                 timeout=expired_time
@@ -542,7 +562,7 @@ async def async_simple_chat_with_model(messages: typing.List[typing.Mapping[str,
             if stream:
                 return response
             else:
-                return response.content[0].text
+                return _claude_message_text(response)
 
     except asyncio.TimeoutError as e:
         err_message = f'>>>>>>>>>async_simple_chat:test002 创建对话失败,出现超时异常，当前使用模型{SIMPLE_CHAT_MODEL}，模型版本: {model}, e: {e}'
@@ -551,15 +571,18 @@ async def async_simple_chat_with_model(messages: typing.List[typing.Mapping[str,
         raise Exception("async_simple_chat:The request to OpenAI timed out after 3 minutes.")
     except Exception as e:
         logger.error(f'>>>>>>>>>async_simple_chat:test003 async_openai_client.chat.completions.create, e: {e}')
-        # 官方openai重试
+        # Claude 失败时不要用 OpenAI 客户端硬调 claude-*（会 404）；改走默认 OpenAI 模型
+        retry_model = model
+        if str(base_model).lower() == 'claude' or str(model).startswith('claude'):
+            retry_model = OPENAI_DEFAULT_MODEL
         try:
             _retry_client = AsyncOpenAI(api_key=OPENAI_API_KEY)
             response = await _retry_client.chat.completions.create(
-                model=model,
+                model=retry_model,
                 messages=messages,
                 stream=stream
             )
-            logger.info(f'>>>>>>>>>async_simple_chat_with_model openai retry success')
+            logger.info(f'>>>>>>>>>async_simple_chat_with_model openai retry success model={retry_model}')
             if stream:
                 return response
             else:
