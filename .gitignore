@@ -113,5 +113,6 @@ doc/
 logs
 
 test/
+
 # Local agent context
 AGENTS.md
