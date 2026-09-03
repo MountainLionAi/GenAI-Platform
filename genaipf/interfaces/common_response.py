@@ -15,9 +15,11 @@ def success(data, message="success", status="true", code=200):
 
 # 错误返回
 def fail(code=500, message="fail", status="false"):
+    # ERROR_MESSAGE 无 500 等键时勿 KeyError；默认文案兜底
+    msg_prefix = ERROR_MESSAGE.get(code, "Internal error")
     format_response = {
         "code": code,
-        "message": ERROR_MESSAGE[code] + " " + message,
+        "message": msg_prefix + " " + message,
         "status": status
     }
     return response.json(format_response)
