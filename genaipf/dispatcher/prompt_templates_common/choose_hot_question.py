@@ -31,6 +31,11 @@ Questions:
 23. What is the historical lowest price of BTC?
 (The names of the cryptocurrencies and NFTs mentioned above can be randomly generated.)
 
+Output format (must follow):
+Print exactly 10 lines, one question per line, numbered like:
+1. question text
+No preamble, no explanation, no markdown.
+
 """
     else:
         user_text = f"""
@@ -61,6 +66,11 @@ Questions:
 23、BTC历史最高价是多少？
 24、BTC历史最低价是多少？
 （上述币种名称和NFT名称可随机生成）
+
+输出格式（必须遵守）：
+只输出 10 行，每行一个问题，编号格式必须是：
+1、问题内容
+不要前言、不要解释、不要 markdown。
 
 """
     return [
