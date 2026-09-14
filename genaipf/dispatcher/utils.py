@@ -50,9 +50,9 @@ PERPLEXITY_URL = _env("PERPLEXITY_URL") or "https://api.perplexity.ai"
 # 对话/业务统一走 OR 上的同款模型（官方 PPLX Key 配额已尽）
 PERPLEXITY_MODEL = _env("PERPLEXITY_MODEL") or "perplexity/sonar-pro"
 
-DEEPSEEK_API_KEY = _env("DEEPSEEK_API_KEY") or _env("DS_OFFICIAL_API_KEY")
-# 默认官方；若 .env 仍指向 DMX（www.dmxapi.com/v1）也可，但模型名须是现网 ID
-DEEPSEEK_URL = (_env("DEEPSEEK_URL") or "https://api.deepseek.com").rstrip("/")
+# DeepSeek 一律走 OpenRouter；不再读 DS_OFFICIAL_API_KEY / DEEPSEEK_API_KEY
+DEEPSEEK_API_KEY = OPENROUTER_API_KEY
+DEEPSEEK_URL = OPENROUTER_API_URL
 
 openai.api_key = _env("OPENAI_API_KEY")
 OPENAI_API_KEY = _env("OPENAI_API_KEY")
@@ -72,21 +72,21 @@ MISTRAL_MODEL = _env("MISTRAL_MODEL") or "mistralai/mixtral-8x22b-instruct"
 GLM_MODEL = _env("GLM_MODEL") or "z-ai/glm-5.2"
 # OR 现网最接近的 Ernie；无官方千帆 Key 时走此 ID
 ERNIE_MODEL = _env("ERNIE_MODEL") or "baidu/ernie-4.5-vl-424b-a47b"
-DEEPSEEK_V3_MODEL = _env("DEEPSEEK_V3_MODEL") or "deepseek-v4-flash"
-DEEPSEEK_R1_MODEL = _env("DEEPSEEK_R1_MODEL") or "deepseek-v4-pro"
-# 旧别名/已下线 ID → 现网 v4（避免 .env 未改时直接 404）
+DEEPSEEK_V3_MODEL = _env("DEEPSEEK_V3_MODEL") or _env("DS_OPENROUTER_MODEL_V3") or "deepseek/deepseek-v4-flash"
+DEEPSEEK_R1_MODEL = _env("DEEPSEEK_R1_MODEL") or _env("DS_OPENROUTER_MODEL_R1") or "deepseek/deepseek-v4-pro"
+# 旧别名/官方 ID → OpenRouter 现网 ID（避免 .env 未改时 404）
 _DS_V3_DEAD = {
     "DMXAPI-HuoShan-DeepSeek-V3", "DMXAPI-DeepSeek-V3", "deepseek-chat",
-    "deepseek-v3", "DeepSeek-V3",
+    "deepseek-v3", "DeepSeek-V3", "deepseek-v4-flash",
 }
 _DS_R1_DEAD = {
     "DMXAPI-HuoShan-DeepSeek-R1-671B-64k", "DMXAPI-DeepSeek-R1", "deepseek-reasoner",
-    "deepseek/deepseek-r1-0528:free", "deepseek-r1",
+    "deepseek/deepseek-r1-0528:free", "deepseek-r1", "deepseek-v4-pro",
 }
 if DEEPSEEK_V3_MODEL in _DS_V3_DEAD:
-    DEEPSEEK_V3_MODEL = "deepseek-v4-flash"
+    DEEPSEEK_V3_MODEL = "deepseek/deepseek-v4-flash"
 if DEEPSEEK_R1_MODEL in _DS_R1_DEAD:
-    DEEPSEEK_R1_MODEL = "deepseek-v4-pro"
+    DEEPSEEK_R1_MODEL = "deepseek/deepseek-v4-pro"
 MOUNTAINLION_C1_MODEL = _env("MOUNTAINLION_C1_MODEL") or "claude-sonnet-5"
 MOUNTAINLION_C1_D_MODEL = _env("MOUNTAINLION_C1_D_MODEL") or "claude-sonnet-5"
 QWEN_MODEL = _env("DS_OPENROUTER_MODEL_QWEN")

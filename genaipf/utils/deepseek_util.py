@@ -32,15 +32,9 @@ if DS_OPENROUTER_MODEL_V3 in {"deepseek/deepseek-chat"}:
     DS_OPENROUTER_MODEL_V3 = "deepseek/deepseek-v4-flash"
 DS_OPENROUTER_MODEL_QWEN = _env("DS_OPENROUTER_MODEL_QWEN")
 
-DS_OFFICIAL_API_KEY = _env("DS_OFFICIAL_API_KEY")
-DS_OFFICIAL_API_URL = (_env("DS_OFFICIAL_API_URL") or "https://api.deepseek.com").rstrip("/")
-DS_OFFICIAL_MODEL_V3 = _env("DS_OFFICIAL_MODEL_V3") or "deepseek-v4-flash"
-DS_OFFICIAL_MODEL_R1 = _env("DS_OFFICIAL_MODEL_R1") or "deepseek-v4-pro"
-
 class ProviderPriority(Enum):
     DMXAPI = 1
-    OPENROUTER = 3
-    DEEPSEEK_OFFICIAL = 2
+    OPENROUTER = 2
 
 API_INFOs = {
     ProviderPriority.DMXAPI: {
@@ -60,14 +54,6 @@ API_INFOs = {
             'qwen': DS_OPENROUTER_MODEL_QWEN,
         }
     },
-    ProviderPriority.DEEPSEEK_OFFICIAL: {
-        'API_KEY': DS_OFFICIAL_API_KEY,
-        'API_URL': DS_OFFICIAL_API_URL,
-        'MODEL': {
-            'V3': DS_OFFICIAL_MODEL_V3,
-            'R1': DS_OFFICIAL_MODEL_R1,
-        }
-    }
 }
 
 CLIENT_TYPE_OPENAI = 0
@@ -124,7 +110,8 @@ class AsyncDeepSeekClient:
         """
         # logger.info(f"调用deepseek模型传入的消息列表:{messages}")
         for provider in self.provider_order:
-            if provider not in self.api_infos:
+            info = self.api_infos.get(provider) or {}
+            if not (info.get("API_KEY") or "").strip():
                 continue
 
             for attempt in range(self.max_retries):
@@ -135,9 +122,8 @@ class AsyncDeepSeekClient:
                     elif provider == ProviderPriority.OPENROUTER:
                         response = await self._openrouter_request(
                             messages, model, stream, temperature, max_tokens, top_p, presence_penalty)
-                    elif provider == ProviderPriority.DEEPSEEK_OFFICIAL:
-                        response = await self._deepseek_official_request(
-                            messages, model, stream, temperature, max_tokens, top_p, presence_penalty)
+                    else:
+                        continue
 
                     return self._format_text_response(response, stream)
 
@@ -233,44 +219,6 @@ class AsyncDeepSeekClient:
             }
             response = await self.client.post(url, headers=headers, json=payload)
             return response
-
-    async def _deepseek_official_request(self, messages, model, stream, temperature, max_tokens, top_p, presence_penalty):
-        """DeepSeek官方API异步请求实现"""
-        final_model = self.api_infos[ProviderPriority.DEEPSEEK_OFFICIAL]['MODEL'][model]
-        logger.info(f'正在使用{ProviderPriority.DEEPSEEK_OFFICIAL.name}, model: {final_model}')
-        if self.client_type == CLIENT_TYPE_OPENAI:
-            self.client.base_url = self.api_infos[ProviderPriority.DEEPSEEK_OFFICIAL]['API_URL']
-            self.client.api_key = self.api_infos[ProviderPriority.DEEPSEEK_OFFICIAL]['API_KEY']
-            response = await asyncio.wait_for(
-                self.client.chat.completions.create(
-                    model=final_model,
-                    messages=messages,
-                    temperature=temperature,  # 值在[0,1]之间，越大表示回复越具有不确定性
-                    max_tokens=max_tokens,  # 输出的最大 token 数
-                    top_p=top_p,  # 过滤掉低于阈值的 token 确保结果不散漫
-                    presence_penalty=presence_penalty,  # [-2,2]之间，该值越大则更倾向于产生不同的内容
-                    stream=stream
-                ),
-                timeout=self.client.timeout
-            )
-            return response
-        else:
-            url = f"{self.api_infos[ProviderPriority.DEEPSEEK_OFFICIAL]['API_URL']}/v1/chat/completions"
-            headers = {
-                "Authorization": f"Bearer {self.api_infos[ProviderPriority.DEEPSEEK_OFFICIAL]['API_KEY']}",
-                "Content-Type": "application/json"
-            }
-            payload = {
-                "model": final_model,
-                "messages": messages,
-                "temperature": temperature,
-                "max_tokens": max_tokens,
-                "top_p": top_p,
-                "presence_penalty": presence_penalty,
-                "stream": stream
-            }
-            response = await self.client.post(url, headers=headers, json=payload)
-            return response.json()
 
     def _format_text_response(self, raw_response, stream) -> str:
         """标准化响应格式（异步版本）"""
