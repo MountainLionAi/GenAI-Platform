@@ -93,6 +93,35 @@ QWEN_MODEL = _env("DS_OPENROUTER_MODEL_QWEN")
 qdrant_url = "http://localhost:6333"
 
 
+def openai_model_supports_temperature(model: str) -> bool:
+    """o-series / gpt-5.x 仅支持默认 temperature，传自定义值会 400。"""
+    m = (model or "").lower()
+    return not (
+        m.startswith("o1")
+        or m.startswith("o3")
+        or m.startswith("o4")
+        or m.startswith("gpt-5")
+    )
+
+
+def make_langchain_chat_openai(model: str, **kwargs):
+    """langchain-openai 0.1.x 默认 temperature=0.7，gpt-5 必须从请求体去掉。"""
+    from langchain_openai import ChatOpenAI
+
+    class _ChatOpenAI(ChatOpenAI):
+        @property
+        def _default_params(self):
+            params = dict(super()._default_params)
+            name = getattr(self, "model_name", None) or getattr(self, "model", "") or ""
+            if not openai_model_supports_temperature(name):
+                params.pop("temperature", None)
+            return params
+
+    if not openai_model_supports_temperature(model):
+        kwargs.pop("temperature", None)
+    return _ChatOpenAI(model=model, **kwargs)
+
+
 def get_openrouter_client() -> AsyncOpenAI:
     if not OPENROUTER_API_KEY:
         raise ValueError("DS_OPENROUTER_API_KEY 未配置，无法走 OpenRouter")

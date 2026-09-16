@@ -1,5 +1,4 @@
 from genaipf.tools.search.metaphor.tools import tools
-from langchain_openai import ChatOpenAI
 from langchain.agents import create_openai_tools_agent, AgentExecutor
 from langchain_core.prompts import (
     ChatPromptTemplate,
@@ -9,6 +8,7 @@ from langchain_core.prompts import (
     HumanMessagePromptTemplate,
 )
 from genaipf.utils.time_utils import get_format_time_YYYY_mm_dd
+from genaipf.dispatcher.utils import make_langchain_chat_openai, OPENAI_PLUS_MODEL
 
 
 async def metaphor_search(question: str, language=None):
@@ -16,7 +16,7 @@ async def metaphor_search(question: str, language=None):
     question: 问题1
     language: en-英文;zh-中文
     """
-    llm = ChatOpenAI(temperature=0.8, model='gpt-5.6-terra')
+    llm = make_langchain_chat_openai(OPENAI_PLUS_MODEL, temperature=0.8)
     date = get_format_time_YYYY_mm_dd()
     system_message = (
             f"Today is {date}.\n\n"

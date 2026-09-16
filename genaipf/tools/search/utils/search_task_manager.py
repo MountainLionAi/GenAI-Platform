@@ -254,12 +254,11 @@ async def aload_web(url):
         # print(f"url: {url}")
         from langchain.chains.summarize import load_summarize_chain
         from langchain_community.document_loaders import WebBaseLoader
-        from langchain_openai import ChatOpenAI
         loader = WebBaseLoader(url)
         aload = sync_to_async(loader.load)
         res = await aload()
-        from genaipf.dispatcher.utils import OPENAI_DEFAULT_MODEL
-        llm = ChatOpenAI(openai_api_key=OPENAI_API_KEY, model_name=OPENAI_DEFAULT_MODEL)
+        from genaipf.dispatcher.utils import OPENAI_DEFAULT_MODEL, make_langchain_chat_openai
+        llm = make_langchain_chat_openai(OPENAI_DEFAULT_MODEL, openai_api_key=OPENAI_API_KEY)
         chain = load_summarize_chain(llm, chain_type="stuff")
         res = await chain.arun(res)
         return res

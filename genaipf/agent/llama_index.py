@@ -9,6 +9,7 @@ from llama_index.llms import OpenAI
 from genaipf.conf.server import OPENAI_API_KEY
 from genaipf.dispatcher.api import get_format_output
 from genaipf.agent.utils import create_function_from_method
+from genaipf.dispatcher.utils import openai_model_supports_temperature, OPENAI_PLUS_MODEL
 
 AsyncCallable = Callable[..., Awaitable[Any]]
 
@@ -26,12 +27,16 @@ class LlamaIndexAgent:
         self.is_stopped = False
         self.traceable_tools: List[FunctionTool] = list()
         self.tools_to_traceable_tools(async_tools)
-        llm = OpenAI(
-            model="gpt-5.6-terra",
-            api_key=OPENAI_API_KEY, 
-            temperature=temperature,
-            max_tokens=max_tokens
-        )
+        class _OpenAI(OpenAI):
+            def _get_model_kwargs(self, **kwargs):
+                d = super()._get_model_kwargs(**kwargs)
+                if not openai_model_supports_temperature(self.model):
+                    d.pop("temperature", None)
+                return d
+        llm_kwargs = dict(model=OPENAI_PLUS_MODEL, api_key=OPENAI_API_KEY, max_tokens=max_tokens)
+        if openai_model_supports_temperature(OPENAI_PLUS_MODEL):
+            llm_kwargs["temperature"] = temperature
+        llm = _OpenAI(**llm_kwargs)
         self.agent = OpenAIAgent.from_tools(
             self.traceable_tools, llm=llm,
             chat_history=chat_history, verbose=verbose,

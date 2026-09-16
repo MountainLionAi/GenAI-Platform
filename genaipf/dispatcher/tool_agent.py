@@ -29,12 +29,14 @@ async def fake_example_func(messages, newest_question, model, language, related_
     from langchain_core.callbacks import Callbacks
     from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
     from langchain_core.messages import AIMessage, HumanMessage
-    from langchain_openai import ChatOpenAI
+    from genaipf.dispatcher.utils import make_langchain_chat_openai, OPENAI_PLUS_MODEL
     
     from genaipf.conf.server import os
     from genaipf.dispatcher.api import get_format_output
     OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-    model = ChatOpenAI(model="gpt-5.6-terra", temperature=0, streaming=True, openai_api_key=OPENAI_API_KEY)
+    model = make_langchain_chat_openai(
+        OPENAI_PLUS_MODEL, temperature=0, streaming=True, openai_api_key=OPENAI_API_KEY
+    )
     
     prompt = ChatPromptTemplate.from_messages(
         [
