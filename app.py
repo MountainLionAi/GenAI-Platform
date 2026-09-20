@@ -12,6 +12,7 @@ from genaipf.middlewares.user_log_middleware import save_user_log
 from genaipf.middlewares.api_key_middleware import check_api_key
 from sanic_session import Session
 from sanic.worker.manager import WorkerManager
+from sanic.worker.process import WorkerProcess
 from genaipf.bot.tg.tg_ai_bot import tgAiBot
 
 Sanic(server.SERVICE_NAME)
@@ -37,7 +38,9 @@ app.config.RESPONSE_TIMEOUT = server.RESPONSE_TIMEOUT
 app.config.KEEP_ALIVE_TIMEOUT = server.KEEP_ALIVE_TIMEOUT
 app.config.KEEP_ALIVE = server.KEEP_ALIVE
 app.config.REAL_IP_HEADER = "X-Forwarded-For"
-WorkerManager.THRESHOLD = 1200
+# Sanic 23.x 单位是 0.1 秒（报错文案会 THRESHOLD/10）。原先 1200 实际只有 120s，双 worker 来不及 ack。
+WorkerProcess.THRESHOLD = 12000
+WorkerManager.THRESHOLD = 12000
 
 app.static('/static', server.STATIC_PATH)
 
