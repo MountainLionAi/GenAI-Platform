@@ -1,17 +1,29 @@
 from genaipf.interfaces.common_response import success, fail
 from sanic import Request
-from genaipf.conf.path_without_login import PATH_WITHOUT_LOGIN
+from genaipf.conf import path_without_login as path_without_login_conf
 from genaipf.constant.error_code import ERROR_CODE
 import genaipf.services.user_service as user_service
 from genaipf.utils.jwt_utils import JWTManager
 from genaipf.utils.redis_utils import RedisConnectionPool
 
 
+def _no_login_required(path: str) -> bool:
+    if '/static/' in path:
+        return True
+    table = path_without_login_conf.PATH_WITHOUT_LOGIN
+    if path in table:
+        return True
+    # 浏览器或反代有时会带尾斜杠，免登名单是精确匹配
+    if path.endswith('/') and path.rstrip('/') in table:
+        return True
+    return False
+
+
 # 判断用户的登陆态并赋值给request对象
 async def check_user(request: Request):
     request_path = request.path
     # 判断当前路由是否在不需要登陆态的路由中
-    if request_path in PATH_WITHOUT_LOGIN or '/static/' in request_path:
+    if _no_login_required(request_path):
         token = request.token
         if token is None or len(request.token) == 0:
             return

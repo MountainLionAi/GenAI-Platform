@@ -62,6 +62,27 @@ PATH_WITHOUT_LOGIN = (
     '/v2/api/tw/feedback',
     '/v2/api/region/supportStatus',
     '/v2/api/region/whitelist',
+    # AI快讯未登录可读；写在宿主名单里，避免只依赖插件启动合并
+    '/v1/api/news/aihot/reports',
+    '/v1/api/news/aihot/reports/detail',
+    '/v1/api/news/aihot/hot',
+    '/v1/api/news/aihot/hot/detail',
+    '/v1/api/news/aihot/topics',
+    '/v1/api/news/aihot/topics/detail',
+    '/v1/api/news/aihot/models',
+    '/v1/api/news/aihot/models/detail',
+    '/v1/api/news/aihot/item',
+    '/v1/api/news/search',
+    '/v2/api/news/aihot/reports',
+    '/v2/api/news/aihot/reports/detail',
+    '/v2/api/news/aihot/hot',
+    '/v2/api/news/aihot/hot/detail',
+    '/v2/api/news/aihot/topics',
+    '/v2/api/news/aihot/topics/detail',
+    '/v2/api/news/aihot/models',
+    '/v2/api/news/aihot/models/detail',
+    '/v2/api/news/aihot/item',
+    '/v2/api/news/search',
 )
 
 if PLUGIN_NAME:
