@@ -5,11 +5,13 @@ import time
 import traceback
 import urllib.error
 import urllib.request
-from typing import Optional
+from io import BytesIO
+from typing import Optional, Tuple
 from urllib.parse import parse_qs, urlparse, unquote
 
 import oss2
 import filetype
+from PIL import Image
 from genaipf.utils.log_utils import logger
 from genaipf.utils.interface_error_notice_tg_bot_util import send_notice_message
 
@@ -28,9 +30,13 @@ _FETCH_SEM = asyncio.Semaphore(4)
 # 套接字空闲超时：无数据读写超过该值即断（有数据持续到达可一直读）
 _SOCK_IDLE_TIMEOUT = 12
 # 单图绝对上限：常规 CDN/OSS 多在 1–3s，远超则强杀（防慢速滴流占坑）
-_IMG_WALL_TIMEOUT = 35
+_IMG_WALL_TIMEOUT = 25
 _MAX_IMG_BYTES = 15 * 1024 * 1024
 _READ_CHUNK = 64 * 1024
+# 分享/PDF 场景：原图数 MB×多张会使 JSON 响应数十 MB，客户端下载像「卡住」
+_SHARE_SKIP_SHRINK = 180 * 1024
+_SHARE_MAX_EDGE = 1200
+_SHARE_JPEG_Q = 78
 
 
 def _guess_image_mime(data: bytes) -> Optional[str]:
@@ -48,6 +54,39 @@ def _guess_image_mime(data: bytes) -> Optional[str]:
     if data[:6] in (b'GIF87a', b'GIF89a'):
         return 'image/gif'
     return None
+
+
+def _shrink_for_share(image_data: bytes, mime: str) -> Tuple[bytes, str]:
+    """缩小体积供 PDF/分享用；失败则原样返回。"""
+    if len(image_data) <= _SHARE_SKIP_SHRINK:
+        return image_data, mime
+    try:
+        im = Image.open(BytesIO(image_data))
+        if getattr(im, 'n_frames', 1) > 1:
+            im.seek(0)
+        if im.mode in ('RGBA', 'LA') or (im.mode == 'P' and 'transparency' in im.info):
+            bg = Image.new('RGB', im.size, (255, 255, 255))
+            rgba = im.convert('RGBA')
+            bg.paste(rgba, mask=rgba.split()[-1])
+            im = bg
+        else:
+            im = im.convert('RGB')
+        w, h = im.size
+        edge = max(w, h)
+        if edge > _SHARE_MAX_EDGE:
+            scale = _SHARE_MAX_EDGE / float(edge)
+            im = im.resize(
+                (max(1, int(w * scale)), max(1, int(h * scale))),
+                Image.Resampling.LANCZOS if hasattr(Image, 'Resampling') else Image.LANCZOS,
+            )
+        buf = BytesIO()
+        im.save(buf, format='JPEG', quality=_SHARE_JPEG_Q, optimize=True)
+        out = buf.getvalue()
+        if len(out) < len(image_data):
+            return out, 'image/jpeg'
+    except Exception as e:
+        logger.warning(f'_shrink_for_share skip: {type(e).__name__}: {e!r}')
+    return image_data, mime
 
 
 def _unwrap_img_proxy(url: str) -> Optional[str]:
@@ -132,10 +171,14 @@ async def get_image_base64(url: str) -> Optional[str]:
                 if not mime:
                     last_err = ValueError(f'无法识别为图片 head={image_data[:16]!r} n={len(image_data)}')
                     continue
+                raw_n = len(image_data)
+                image_data, mime = _shrink_for_share(image_data, mime)
                 base64_encoded = base64.b64encode(image_data).decode('utf-8')
                 dt = time.monotonic() - t0
-                if dt >= 5:
-                    logger.warning(f'get_image_base64 slow {dt:.1f}s n={len(image_data)} {u[:160]}')
+                if dt >= 5 or raw_n != len(image_data):
+                    logger.warning(
+                        f'get_image_base64 slow {dt:.1f}s n={raw_n}->{len(image_data)} {u[:160]}'
+                    )
                 return f'data:{mime};base64,{base64_encoded}'
             except asyncio.TimeoutError:
                 last_err = TimeoutError(f'单图墙钟超时 {_IMG_WALL_TIMEOUT}s')
