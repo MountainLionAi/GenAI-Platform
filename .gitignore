@@ -108,11 +108,13 @@ venv.bak/
 .vscode/
 .dag
 doc/
-.DS_Store
+**/.DS_Store
 .variables
 logs
 
 test/
+*.zip
+**/__MACOSX
 
 # Local agent context
 AGENTS.md
