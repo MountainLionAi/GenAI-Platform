@@ -1,6 +1,7 @@
 import os
 import asyncio
 import base64
+import ipaddress
 import time
 import traceback
 import urllib.error
@@ -151,6 +152,38 @@ def _candidate_urls(url: str) -> list:
     return [url]
 
 
+def _url_allowed_for_fetch(url: str) -> bool:
+    """
+    只允许 http/https；字面量内网/回环/链路本地 IP 拒绝（防 SSRF 探测）。
+    例：caption:@/etc/passwd、msl:...、file:///etc/passwd → False
+         https://cdn.example.com/a.png → True
+         http://127.0.0.1/x、http://169.254.169.254/... → False
+    """
+    try:
+        u = urlparse(url)
+    except Exception:
+        return False
+    if u.scheme not in ('http', 'https'):
+        return False
+    host = u.hostname
+    if not host:
+        return False
+    try:
+        ip = ipaddress.ip_address(host)
+        if (
+            ip.is_private
+            or ip.is_loopback
+            or ip.is_link_local
+            or ip.is_reserved
+            or ip.is_multicast
+            or ip.is_unspecified
+        ):
+            return False
+    except ValueError:
+        pass  # 域名不解析，避免额外 DNS；只拦 URL 里写死的内网 IP
+    return True
+
+
 async def get_image_base64(url: str) -> Optional[str]:
     """
     从指定 URL 下载图片并生成 Base64 字符串（自动识别图片类型）。
@@ -162,6 +195,10 @@ async def get_image_base64(url: str) -> Optional[str]:
     last_err = None
     async with _FETCH_SEM:
         for u in _candidate_urls(url):
+            if not _url_allowed_for_fetch(u):
+                last_err = ValueError(f'disallowed url scheme/host: {u[:160]}')
+                logger.warning(f'get_image_base64 skip {last_err}')
+                continue
             try:
                 image_data = await asyncio.wait_for(
                     _fetch_image_bytes(u),

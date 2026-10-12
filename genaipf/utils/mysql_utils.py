@@ -1,8 +1,24 @@
+import asyncio
 import pymysql
 import pymysql.cursors
 from queue import Queue
 from genaipf.conf import db_conf
 from genaipf.utils.log_utils import logger
+
+# RDS LOCK_WRITE_GROWTH（errno 1290）常为短暂写锁；轻量重试，不改调用方契约（仍返回 True/False）
+_LOCK_WRITE_ERRNO = 1290
+_WRITE_RETRY = 2
+_WRITE_RETRY_BASE_SLEEP = 1.0
+
+
+def _sql_preview(sql, limit=180):
+    s = " ".join(str(sql).split())
+    return s if len(s) <= limit else s[:limit] + "..."
+
+
+def _is_lock_write_growth(exc) -> bool:
+    args = getattr(exc, "args", ())
+    return bool(args) and args[0] == _LOCK_WRITE_ERRNO
 
 
 class CollectionPool:
@@ -56,33 +72,52 @@ class CollectionPool:
             self.release_connection(conn)
             return False
 
+    async def _write_with_retry(self, kind, runner, sql):
+        """runner(conn, cursor) -> None；成功返回 True，失败返回 False。"""
+        for attempt in range(_WRITE_RETRY + 1):
+            conn = self.get_connection()
+            cursor = conn.cursor()
+            try:
+                runner(conn, cursor)
+                conn.commit()
+                self.release_connection(conn)
+                return True
+            except Exception as e:
+                try:
+                    conn.rollback()
+                except Exception:
+                    pass
+                self.release_connection(conn)
+                preview = _sql_preview(sql)
+                if _is_lock_write_growth(e) and attempt < _WRITE_RETRY:
+                    logger.error(
+                        f"{kind} LOCK_WRITE_GROWTH errno=1290 "
+                        f"attempt={attempt + 1}/{_WRITE_RETRY + 1} sql={preview}: {e}"
+                    )
+                    await asyncio.sleep(_WRITE_RETRY_BASE_SLEEP * (attempt + 1))
+                    continue
+                if _is_lock_write_growth(e):
+                    logger.error(
+                        f"{kind} LOCK_WRITE_GROWTH errno=1290 exhausted sql={preview}: {e}"
+                    )
+                else:
+                    logger.error(f"{kind} sql={preview}: {e}")
+                return False
+        return False
+
     # 插入数据
     async def insert(self, sql, params=None):
-        conn = self.get_connection()
-        cursor = conn.cursor()
-        try:
+        def _run(conn, cursor):
             cursor.execute(sql, params)
-            conn.commit()
-            self.release_connection(conn)
-            return True
-        except Exception as e:
-            logger.error(f"InsertDataError: {e}")
-            self.release_connection(conn)
-            return False
+
+        return await self._write_with_retry("InsertDataError", _run, sql)
 
     # 批量插入数据
     async def insert_batch(self, sql, params=None):
-        conn = self.get_connection()
-        cursor = conn.cursor()
-        try:
+        def _run(conn, cursor):
             cursor.executemany(sql, params)
-            conn.commit()
-            self.release_connection(conn)
-            return True
-        except Exception as e:
-            logger.error(f"InsertDataError: {e}")
-            self.release_connection(conn)
-            return False
+
+        return await self._write_with_retry("InsertDataError", _run, sql)
 
     # 删除数据
     async def delete(self, sql, params=None):

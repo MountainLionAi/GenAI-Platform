@@ -9,6 +9,19 @@ CLIENT_TYPE = 'google_serper'
 REQUEST_URL = 'https://google.serper.dev/search'
 REQUEST_IMAGE_URL = 'https://google.serper.dev/images'
 REQUEST_URL_NEWS = 'https://google.serper.dev/news'
+_SERPER_Q_MAX = 400
+
+
+def _sanitize_serper_q(question) -> str:
+    """去掉空字节/折叠空白，截断过长 q（极端长文本偶发 400）。"""
+    if question is None:
+        return ''
+    q = str(question).replace('\x00', ' ').strip()
+    q = ' '.join(q.split())
+    if len(q) > _SERPER_Q_MAX:
+        q = q[:_SERPER_Q_MAX]
+    return q
+
 
 class GoogleSerperClient:
     _api_key = None
@@ -30,7 +43,8 @@ class GoogleSerperClient:
         search_type = "search"
         search_result = []
         try:
-            if not question or not str(question).strip():
+            question = _sanitize_serper_q(question)
+            if not question:
                 logger.warning('google serper search skipped: empty question')
                 return search_result, ''
             if not self._api_key:
@@ -60,7 +74,8 @@ class GoogleSerperClient:
     async def search_origin(self, question, time, k=5):
         search_result = []
         try:
-            if not question or not str(question).strip():
+            question = _sanitize_serper_q(question)
+            if not question:
                 logger.warning('google serper search_origin skipped: empty question')
                 return search_result
             if not self._api_key:
@@ -102,7 +117,8 @@ class GoogleSerperClient:
             'data': []
         }
         try:
-            if not question or not str(question).strip():
+            question = _sanitize_serper_q(question)
+            if not question:
                 logger.warning('google serper image search skipped: empty question')
                 return search_result
             if not self._api_key:
@@ -175,7 +191,8 @@ class GoogleSerperClient:
         search_type = "news"
         search_result = []
         try:
-            if not question or not str(question).strip():
+            question = _sanitize_serper_q(question)
+            if not question:
                 logger.warning('google serper news skipped: empty question')
                 return search_result, ''
             if not self._api_key:

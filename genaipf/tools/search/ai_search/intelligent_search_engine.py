@@ -106,12 +106,12 @@ class IntelligentSearchTool:
     
     @backoff.on_exception(
         backoff.expo,
-        (anthropic.RateLimitError, anthropic.APITimeoutError),
+        (anthropic.RateLimitError, anthropic.APITimeoutError, anthropic.APIConnectionError),
         max_tries=3,
         jitter=backoff.full_jitter
     )
     def _analyze_chat_with_claude(self, chat_history: List[Dict[str, str]]) -> List[SearchQuery]:
-        """Use Claude Sonnet 4 to analyze chat history and generate search queries"""
+        """Use Claude to analyze chat history and generate search queries"""
         current_time = datetime.now(self.system_timezone)
 
         # Create the tool definition for structured output
@@ -249,6 +249,28 @@ Focus on the most recent messages and ensure queries are specific and actionable
             logger.error(f"Claude API error: {str(e)}", 
                         extra={'extra_data': {'error_type': type(e).__name__}})
             raise
+
+    def _fallback_queries_from_history(self, chat_history: List[Dict[str, str]]) -> List[SearchQuery]:
+        """Claude 不可用时：用最近一条用户消息直接走 Serper /search（单查询降级）。"""
+        text = ""
+        for msg in reversed(chat_history or []):
+            if msg.get("role") == "user" and msg.get("content"):
+                text = str(msg["content"]).strip()
+                break
+        if not text:
+            return []
+        # Serper q 过长易 400；降级只取前 300 字
+        q = " ".join(text.split())[:300]
+        return [
+            SearchQuery(
+                query=q,
+                api_type="serper",
+                endpoint="/search",
+                parameters={"num": 10},
+                priority=1,
+                description="fallback: claude unavailable",
+            )
+        ]
     
     async def _execute_serper_search(self, session: aiohttp.ClientSession, query: SearchQuery) -> Dict[str, Any]:
         """Execute a single Serper API search"""
@@ -583,8 +605,14 @@ Focus on the most recent messages and ensure queries are specific and actionable
         
         try:
             # Step 1: Analyze chat with Claude to generate search queries
-            logger.info("Analyzing chat history with Claude Sonnet 4...")
-            search_queries = self._analyze_chat_with_claude(chat_history)
+            logger.info("Analyzing chat history with Claude...")
+            try:
+                search_queries = self._analyze_chat_with_claude(chat_history)
+            except Exception as e:
+                logger.warning(
+                    f"Claude analyze failed, fallback to raw user Serper query: {type(e).__name__}: {e}"
+                )
+                search_queries = self._fallback_queries_from_history(chat_history)
             
             if not search_queries:
                 return "No search queries generated. Please provide more context in the conversation."

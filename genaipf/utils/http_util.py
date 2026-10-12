@@ -25,7 +25,16 @@ class AsyncHTTPClient:
         """
         async with aiohttp.ClientSession(timeout=self.timeout) as session:
             async with session.post(url, json=data, headers=headers) as response:
-                response.raise_for_status()  # 如果响应状态码不是200，将抛出异常
+                if response.status >= 400:
+                    # HTTP 状态码 ≥400；body 只留短 reason（不必整段响应）
+                    body = (await response.text())[:200]
+                    raise aiohttp.ClientResponseError(
+                        request_info=response.request_info,
+                        history=response.history,
+                        status=response.status,
+                        message=body,
+                        headers=response.headers,
+                    )
                 return await response.json()
 
     async def post_form(self, url: str, data: Dict[str, Any], headers: Dict[str, str] = None) -> Dict[str, Any]:
