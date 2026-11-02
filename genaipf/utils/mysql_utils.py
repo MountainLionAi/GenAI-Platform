@@ -34,13 +34,17 @@ class CollectionPool:
 
     def _initialize_pool(self):
         for _ in range(self.pool_size):
+            # 超时避免慢 SQL / 网络抖动无限堵住 Sanic worker 事件循环
             conn = pymysql.connect(
                 host=self.host,
                 port=self.port,
                 user=self.user,
                 password=self.password,
                 database=self.database,
-                cursorclass=pymysql.cursors.DictCursor
+                cursorclass=pymysql.cursors.DictCursor,
+                connect_timeout=10,
+                read_timeout=30,
+                write_timeout=30,
             )
             self.connection_pool.put(conn)
 
