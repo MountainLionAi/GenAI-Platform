@@ -1,7 +1,9 @@
 import asyncio
+import threading
+from queue import Queue
+
 import pymysql
 import pymysql.cursors
-from queue import Queue
 from genaipf.conf import db_conf
 from genaipf.utils.log_utils import logger
 
@@ -22,19 +24,42 @@ def _is_lock_write_growth(exc) -> bool:
 
 
 class CollectionPool:
+    """pymysql 连接池。假异步会冻 Sanic 事件循环，所有阻塞 I/O 走 to_thread。
+
+    调用方普遍写 CollectionPool().query(...)；必须单例，否则每次新建 POOL_SIZE 条连接。
+    """
+
+    _instance = None
+    _instance_lock = threading.Lock()
+
+    def __new__(cls):
+        if cls._instance is None:
+            with cls._instance_lock:
+                if cls._instance is None:
+                    cls._instance = super().__new__(cls)
+                    cls._instance._constructed = False
+        return cls._instance
+
     def __init__(self):
-        self.host = db_conf.HOST
-        self.port = db_conf.PORT
-        self.user = db_conf.USER
-        self.password = db_conf.PASSWORD
-        self.database = db_conf.DATABASE
-        self.pool_size = db_conf.POOL_SIZE
-        self.connection_pool = Queue(maxsize=db_conf.POOL_SIZE)
-        self._initialize_pool()
+        if getattr(self, "_constructed", False):
+            return
+        with self._instance_lock:
+            if getattr(self, "_constructed", False):
+                return
+            self.host = db_conf.HOST
+            self.port = db_conf.PORT
+            self.user = db_conf.USER
+            self.password = db_conf.PASSWORD
+            self.database = db_conf.DATABASE
+            self.pool_size = db_conf.POOL_SIZE
+            self.connection_pool = Queue(maxsize=db_conf.POOL_SIZE)
+            self._pool_ready = False
+            self._pool_lock = threading.Lock()
+            self._constructed = True
 
     def _initialize_pool(self):
         for _ in range(self.pool_size):
-            # 超时避免慢 SQL / 网络抖动无限堵住 Sanic worker 事件循环
+            # 超时避免慢 SQL / 网络抖动无限占用连接
             conn = pymysql.connect(
                 host=self.host,
                 port=self.port,
@@ -48,8 +73,22 @@ class CollectionPool:
             )
             self.connection_pool.put(conn)
 
-    # 查询数据
-    async def query(self, sql, params=None):
+    def _ensure_pool_sync(self):
+        if self._pool_ready:
+            return
+        with self._pool_lock:
+            if self._pool_ready:
+                return
+            self._initialize_pool()
+            self._pool_ready = True
+
+    async def _ensure_pool(self):
+        if self._pool_ready:
+            return
+        await asyncio.to_thread(self._ensure_pool_sync)
+
+    def _query_sync(self, sql, params=None):
+        self._ensure_pool_sync()
         conn = self.get_connection()
         cursor = conn.cursor()
         try:
@@ -62,8 +101,12 @@ class CollectionPool:
             self.release_connection(conn)
             return False
 
-    # 更新数据
-    async def update(self, sql, params=None):
+    async def query(self, sql, params=None):
+        await self._ensure_pool()
+        return await asyncio.to_thread(self._query_sync, sql, params)
+
+    def _update_sync(self, sql, params=None):
+        self._ensure_pool_sync()
         conn = self.get_connection()
         cursor = conn.cursor()
         try:
@@ -76,55 +119,68 @@ class CollectionPool:
             self.release_connection(conn)
             return False
 
+    async def update(self, sql, params=None):
+        await self._ensure_pool()
+        return await asyncio.to_thread(self._update_sync, sql, params)
+
+    def _write_once_sync(self, kind, runner, sql):
+        """成功返回 ('ok', None)；可重试返回 ('retry', None)；失败返回 ('fail', None)。"""
+        self._ensure_pool_sync()
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        try:
+            runner(conn, cursor)
+            conn.commit()
+            self.release_connection(conn)
+            return "ok"
+        except Exception as e:
+            try:
+                conn.rollback()
+            except Exception:
+                pass
+            self.release_connection(conn)
+            preview = _sql_preview(sql)
+            if _is_lock_write_growth(e):
+                logger.error(f"{kind} LOCK_WRITE_GROWTH errno=1290 sql={preview}: {e}")
+                return "retry"
+            logger.error(f"{kind} sql={preview}: {e}")
+            return "fail"
+
     async def _write_with_retry(self, kind, runner, sql):
         """runner(conn, cursor) -> None；成功返回 True，失败返回 False。"""
+        await self._ensure_pool()
         for attempt in range(_WRITE_RETRY + 1):
-            conn = self.get_connection()
-            cursor = conn.cursor()
-            try:
-                runner(conn, cursor)
-                conn.commit()
-                self.release_connection(conn)
+            status = await asyncio.to_thread(self._write_once_sync, kind, runner, sql)
+            if status == "ok":
                 return True
-            except Exception as e:
-                try:
-                    conn.rollback()
-                except Exception:
-                    pass
-                self.release_connection(conn)
-                preview = _sql_preview(sql)
-                if _is_lock_write_growth(e) and attempt < _WRITE_RETRY:
-                    logger.error(
-                        f"{kind} LOCK_WRITE_GROWTH errno=1290 "
-                        f"attempt={attempt + 1}/{_WRITE_RETRY + 1} sql={preview}: {e}"
-                    )
-                    await asyncio.sleep(_WRITE_RETRY_BASE_SLEEP * (attempt + 1))
-                    continue
-                if _is_lock_write_growth(e):
-                    logger.error(
-                        f"{kind} LOCK_WRITE_GROWTH errno=1290 exhausted sql={preview}: {e}"
-                    )
-                else:
-                    logger.error(f"{kind} sql={preview}: {e}")
-                return False
+            if status == "retry" and attempt < _WRITE_RETRY:
+                logger.error(
+                    f"{kind} LOCK_WRITE_GROWTH errno=1290 "
+                    f"attempt={attempt + 1}/{_WRITE_RETRY + 1} sql={_sql_preview(sql)}"
+                )
+                await asyncio.sleep(_WRITE_RETRY_BASE_SLEEP * (attempt + 1))
+                continue
+            if status == "retry":
+                logger.error(
+                    f"{kind} LOCK_WRITE_GROWTH errno=1290 exhausted sql={_sql_preview(sql)}"
+                )
+            return False
         return False
 
-    # 插入数据
     async def insert(self, sql, params=None):
         def _run(conn, cursor):
             cursor.execute(sql, params)
 
         return await self._write_with_retry("InsertDataError", _run, sql)
 
-    # 批量插入数据
     async def insert_batch(self, sql, params=None):
         def _run(conn, cursor):
             cursor.executemany(sql, params)
 
         return await self._write_with_retry("InsertDataError", _run, sql)
 
-    # 删除数据
-    async def delete(self, sql, params=None):
+    def _delete_sync(self, sql, params=None):
+        self._ensure_pool_sync()
         conn = self.get_connection()
         cursor = conn.cursor()
         try:
@@ -137,32 +193,37 @@ class CollectionPool:
             self.release_connection(conn)
             return False
 
-    # 执行事务操作
-    async def execute_transaction(self, operations):
-        """
-        执行多步操作作为一个事务。
-        operations 是一个列表，每个元素是一个 (sql, params) 元组。
-        """
+    async def delete(self, sql, params=None):
+        await self._ensure_pool()
+        return await asyncio.to_thread(self._delete_sync, sql, params)
+
+    def _execute_transaction_sync(self, operations):
+        self._ensure_pool_sync()
         conn = self.get_connection()
         cursor = conn.cursor()
         try:
             for sql, params in operations:
                 cursor.execute(sql, params)
-            conn.commit()  # 全部操作成功后提交事务
+            conn.commit()
             self.release_connection(conn)
             return True
         except Exception as e:
-            conn.rollback()  # 发生异常时回滚事务
+            conn.rollback()
             logger.error(f"TransactionError: {e}")
             self.release_connection(conn)
             return False
-        return True
 
+    async def execute_transaction(self, operations):
+        """
+        执行多步操作作为一个事务。
+        operations 是一个列表，每个元素是一个 (sql, params) 元组。
+        """
+        await self._ensure_pool()
+        return await asyncio.to_thread(self._execute_transaction_sync, operations)
 
-    # 获取数据库连接
     def get_connection(self):
-        return self.connection_pool.get()
+        # 池耗尽时最多等 10s，避免无限卡住线程
+        return self.connection_pool.get(timeout=10)
 
-    # 释放数据库连接
     def release_connection(self, conn):
         self.connection_pool.put(conn)
