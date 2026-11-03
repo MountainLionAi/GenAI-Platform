@@ -118,3 +118,6 @@ test/
 
 # Local agent context
 AGENTS.md
+
+# Local ops reports (do not commit)
+docs/reports/
