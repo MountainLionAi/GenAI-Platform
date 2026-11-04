@@ -23,6 +23,19 @@ def _is_lock_write_growth(exc) -> bool:
     return bool(args) and args[0] == _LOCK_WRITE_ERRNO
 
 
+def _is_dead_connection_error(exc) -> bool:
+    """连接已断：pymysql InterfaceError (0,'') / 2006/2013 等，放回池会让后续全挂。"""
+    if isinstance(exc, (pymysql.err.InterfaceError, pymysql.err.OperationalError)):
+        code = exc.args[0] if getattr(exc, "args", None) else None
+        # (0, '')：socket 已死但 Connection.open 仍可能为 True
+        if code in (0, 2006, 2013, 2014, 4031):
+            return True
+        msg = str(exc).lower()
+        if "gone away" in msg or "lost connection" in msg or "not connected" in msg:
+            return True
+    return False
+
+
 class CollectionPool:
     """pymysql 连接池。假异步会冻 Sanic 事件循环，所有阻塞 I/O 走 to_thread。
 
@@ -67,7 +80,8 @@ class CollectionPool:
             database=self.database,
             cursorclass=pymysql.cursors.DictCursor,
             connect_timeout=10,
-            read_timeout=30,
+            # 慢查询（AI 列表 CONVERT_TZ/大表）30s 易被客户端掐死连接；提到 120
+            read_timeout=120,
             write_timeout=30,
         )
 
@@ -100,7 +114,7 @@ class CollectionPool:
             return query_data
         except Exception as e:
             logger.error(f"FetchDataError: {e}")
-            self.release_connection(conn)
+            self.release_connection(conn, discard=_is_dead_connection_error(e))
             return False
 
     async def query(self, sql, params=None):
@@ -118,7 +132,7 @@ class CollectionPool:
             return True
         except Exception as e:
             logger.error(f"UpdateDataError: {e}")
-            self.release_connection(conn)
+            self.release_connection(conn, discard=_is_dead_connection_error(e))
             return False
 
     async def update(self, sql, params=None):
@@ -140,7 +154,7 @@ class CollectionPool:
                 conn.rollback()
             except Exception:
                 pass
-            self.release_connection(conn)
+            self.release_connection(conn, discard=_is_dead_connection_error(e))
             preview = _sql_preview(sql)
             if _is_lock_write_growth(e):
                 logger.error(f"{kind} LOCK_WRITE_GROWTH errno=1290 sql={preview}: {e}")
@@ -192,7 +206,7 @@ class CollectionPool:
             return True
         except Exception as e:
             logger.error(f"DeleteDataError: {e}")
-            self.release_connection(conn)
+            self.release_connection(conn, discard=_is_dead_connection_error(e))
             return False
 
     async def delete(self, sql, params=None):
@@ -210,9 +224,12 @@ class CollectionPool:
             self.release_connection(conn)
             return True
         except Exception as e:
-            conn.rollback()
+            try:
+                conn.rollback()
+            except Exception:
+                pass
             logger.error(f"TransactionError: {e}")
-            self.release_connection(conn)
+            self.release_connection(conn, discard=_is_dead_connection_error(e))
             return False
 
     async def execute_transaction(self, operations):
@@ -226,7 +243,7 @@ class CollectionPool:
     def get_connection(self):
         # 池耗尽时最多等 10s，避免无限卡住线程
         conn = self.connection_pool.get(timeout=10)
-        # POOL_SIZE=1 时空闲连接易被服务端踢掉，表现为 FetchDataError: (0, '')
+        # 取出时校验：死连接在 pymysql 里 open 仍可能为 True，必须 ping
         try:
             conn.ping(reconnect=True)
             return conn
@@ -238,9 +255,18 @@ class CollectionPool:
                 pass
             return self._new_connection()
 
-    def release_connection(self, conn):
+    def release_connection(self, conn, discard=False):
+        """归还连接。discard=True：连接已不可用，换新的进池，避免 POOL_SIZE=1 时全站卡死。"""
+        if discard or conn is None:
+            try:
+                if conn is not None:
+                    conn.close()
+            except Exception:
+                pass
+            self.connection_pool.put(self._new_connection())
+            return
         try:
-            if conn is None or not getattr(conn, "open", True):
+            if not getattr(conn, "open", True):
                 self.connection_pool.put(self._new_connection())
                 return
         except Exception:
