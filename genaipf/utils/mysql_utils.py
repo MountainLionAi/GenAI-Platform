@@ -57,21 +57,23 @@ class CollectionPool:
             self._pool_lock = threading.Lock()
             self._constructed = True
 
+    def _new_connection(self):
+        # 超时避免慢 SQL / 网络抖动无限占用连接
+        return pymysql.connect(
+            host=self.host,
+            port=self.port,
+            user=self.user,
+            password=self.password,
+            database=self.database,
+            cursorclass=pymysql.cursors.DictCursor,
+            connect_timeout=10,
+            read_timeout=30,
+            write_timeout=30,
+        )
+
     def _initialize_pool(self):
         for _ in range(self.pool_size):
-            # 超时避免慢 SQL / 网络抖动无限占用连接
-            conn = pymysql.connect(
-                host=self.host,
-                port=self.port,
-                user=self.user,
-                password=self.password,
-                database=self.database,
-                cursorclass=pymysql.cursors.DictCursor,
-                connect_timeout=10,
-                read_timeout=30,
-                write_timeout=30,
-            )
-            self.connection_pool.put(conn)
+            self.connection_pool.put(self._new_connection())
 
     def _ensure_pool_sync(self):
         if self._pool_ready:
@@ -223,7 +225,25 @@ class CollectionPool:
 
     def get_connection(self):
         # 池耗尽时最多等 10s，避免无限卡住线程
-        return self.connection_pool.get(timeout=10)
+        conn = self.connection_pool.get(timeout=10)
+        # POOL_SIZE=1 时空闲连接易被服务端踢掉，表现为 FetchDataError: (0, '')
+        try:
+            conn.ping(reconnect=True)
+            return conn
+        except Exception as e:
+            logger.error(f"MySQL ping failed, reconnecting: {e}")
+            try:
+                conn.close()
+            except Exception:
+                pass
+            return self._new_connection()
 
     def release_connection(self, conn):
+        try:
+            if conn is None or not getattr(conn, "open", True):
+                self.connection_pool.put(self._new_connection())
+                return
+        except Exception:
+            self.connection_pool.put(self._new_connection())
+            return
         self.connection_pool.put(conn)
