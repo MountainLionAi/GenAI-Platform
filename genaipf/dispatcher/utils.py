@@ -12,6 +12,7 @@ from openai import OpenAI, AsyncOpenAI
 from openai._types import NOT_GIVEN
 from genaipf.conf.server import os
 from anthropic import AsyncAnthropic
+import httpx
 
 from genaipf.utils.log_utils import logger
 import json
@@ -27,6 +28,20 @@ def _env(name: str, default: str = None):
         return default
     v = v.strip().strip('"').strip("'").strip()
     return v if v else default
+
+
+# SDK 默认 connect=5s，测试服直连上游偶发踩线；总超时保持宽松
+_OPENAI_TIMEOUT = httpx.Timeout(600.0, connect=15.0)
+
+
+def _async_openai(**kwargs) -> AsyncOpenAI:
+    kwargs.setdefault("timeout", _OPENAI_TIMEOUT)
+    return AsyncOpenAI(**kwargs)
+
+
+def _openai(**kwargs) -> OpenAI:
+    kwargs.setdefault("timeout", _OPENAI_TIMEOUT)
+    return OpenAI(**kwargs)
 
 
 def _claude_message_text(response) -> str:
@@ -125,13 +140,13 @@ def make_langchain_chat_openai(model: str, **kwargs):
 def get_openrouter_client() -> AsyncOpenAI:
     if not OPENROUTER_API_KEY:
         raise ValueError("DS_OPENROUTER_API_KEY 未配置，无法走 OpenRouter")
-    return AsyncOpenAI(api_key=OPENROUTER_API_KEY, base_url=OPENROUTER_API_URL)
+    return _async_openai(api_key=OPENROUTER_API_KEY, base_url=OPENROUTER_API_URL)
 
-openai_client = OpenAI(
+openai_client = _openai(
     # defaults to os.environ.get("OPENAI_API_KEY")
     api_key=openai.api_key,
 )
-# async_openai_client = AsyncOpenAI(
+# async_openai_client = _async_openai(
 #     # defaults to os.environ.get("OPENAI_API_KEY")
 #     api_key=openai.api_key,
 # )
@@ -202,7 +217,7 @@ async def openai_chat_completion_acreate(
                 raise e
         elif model == DEEPSEEK_V3_MODEL:
             logger.info(f"调用deepseek模型传入的消息列表:{messages}")
-            async_openai_client = AsyncOpenAI(
+            async_openai_client = _async_openai(
                 api_key=DEEPSEEK_API_KEY, base_url=DEEPSEEK_URL
             )
             try:
@@ -242,7 +257,7 @@ async def openai_chat_completion_acreate(
                 raise e
         elif model == DEEPSEEK_R1_MODEL:
             logger.info(f"调用deepseek模型传入的消息列表:{messages}")
-            async_openai_client = AsyncOpenAI(
+            async_openai_client = _async_openai(
                 api_key=DEEPSEEK_API_KEY, base_url=DEEPSEEK_URL
             )
             try:
@@ -281,7 +296,7 @@ async def openai_chat_completion_acreate(
                 await send_notice_message('genai_utils', 'openai_chat_completion_acreate', 0, err_message, 3)
                 raise e
         else:
-            async_openai_client = AsyncOpenAI(
+            async_openai_client = _async_openai(
                 # defaults to os.environ.get("OPENAI_API_KEY")
                 api_key=openai.api_key,
             )
@@ -472,7 +487,7 @@ async def async_simple_chat(messages: typing.List[typing.Mapping[str, str]], str
             elif key_type != 'normal':
                 expired_time = 60.0
                 api_key = OPENAI_API_KEY_FOR_PREDICT
-            async_openai_client = AsyncOpenAI(
+            async_openai_client = _async_openai(
                 api_key=api_key,
             )
             response = await asyncio.wait_for(
@@ -519,7 +534,7 @@ async def async_simple_chat(messages: typing.List[typing.Mapping[str, str]], str
             retry_model = model
             if str(SIMPLE_CHAT_MODEL).lower() == 'claude' or str(model).startswith('claude'):
                 retry_model = OPENAI_DEFAULT_MODEL
-            _retry_client = AsyncOpenAI(api_key=OPENAI_API_KEY)
+            _retry_client = _async_openai(api_key=OPENAI_API_KEY)
             response = await _retry_client.chat.completions.create(
                 model=retry_model,
                 messages=messages,
@@ -547,7 +562,7 @@ async def async_simple_chat_with_model(messages: typing.List[typing.Mapping[str,
             if key_type != 'normal':
                 expired_time = 60.0
                 api_key = OPENAI_API_KEY_FOR_PREDICT
-            async_openai_client = AsyncOpenAI(
+            async_openai_client = _async_openai(
                 api_key=api_key,
             )
             response = await asyncio.wait_for(
@@ -605,7 +620,7 @@ async def async_simple_chat_with_model(messages: typing.List[typing.Mapping[str,
         if str(base_model).lower() == 'claude' or str(model).startswith('claude'):
             retry_model = OPENAI_DEFAULT_MODEL
         try:
-            _retry_client = AsyncOpenAI(api_key=OPENAI_API_KEY)
+            _retry_client = _async_openai(api_key=OPENAI_API_KEY)
             response = await _retry_client.chat.completions.create(
                 model=retry_model,
                 messages=messages,
